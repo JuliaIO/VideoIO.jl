@@ -1,18 +1,11 @@
-
-recurs_sym_type(ex::Any) = 
-  (ex==None || typeof(ex)==Symbol || length(ex.args)==1) ? eval(ex) : Expr(ex.head, ex.args[1], recurs_sym_type(ex.args[2]))
 macro c(ret_type, func, arg_types, lib)
-  local _arg_types = Expr(:tuple, [recurs_sym_type(a) for a in arg_types.args]...)
-  local _ret_type = recurs_sym_type(ret_type)
-  local _args_in = Any[ symbol(string('a',x)) for x in 1:length(_arg_types.args) ]
-  local _lib = eval(lib)
+  local args_in = Any[ symbol(string('a',x)) for x in 1:length(arg_types.args) ]
   quote
-    $(esc(func))($(_args_in...)) = ccall( ($(string(func)), $(Expr(:quote, _lib)) ), $_ret_type, $_arg_types, $(_args_in...) )
+    $(esc(func))($(args_in...)) = ccall( ($(string(func)), $(Expr(:quote, lib)) ), $ret_type, $arg_types, $(args_in...) )
   end
 end
 
 macro ctypedef(fake_t,real_t)
-  real_t = recurs_sym_type(real_t)
   quote
     typealias $fake_t $real_t
   end
@@ -53,8 +46,6 @@ const AV_SAMPLE_FMT_FLTP = 8
 const AV_SAMPLE_FMT_DBLP = 9
 const AV_SAMPLE_FMT_NB = 10
 # end
-@ctypedef AVDictionaryEntry Void
-@ctypedef AVDictionary Void
 @ctypedef AVClass Void
 # enum PixelFormat
 const PIX_FMT_NONE = -1
@@ -627,7 +618,6 @@ const FF_OPT_TYPE_CONST = 128
 @ctypedef AVOption Void
 @ctypedef vda_frame Void
 @ctypedef AVIOInterruptCB Void
-@ctypedef AVIOContext Void
 @ctypedef URLContext Void
 @ctypedef URLProtocol Void
 @ctypedef URLPollEntry Void
@@ -654,12 +644,6 @@ const AVSTREAM_PARSE_FULL_ONCE = 4
 @ctypedef AVChapter Void
 @ctypedef AVFormatContext Void
 @ctypedef AVPacketList Void
-@ctypedef AVIOInterruptCB Void
-@ctypedef URLContext Void
-@ctypedef URLProtocol Void
-@ctypedef URLPollEntry Void
-@ctypedef URLInterruptCB Void
-@ctypedef ByteIOContext AVIOContext
 @ctypedef SwsVector Void
 @ctypedef SwsFilter Void
 @ctypedef AVCRC uint32_t
@@ -681,7 +665,6 @@ const AV_CRC_MAX = 5
 @ctypedef av_alias32 Void
 @ctypedef av_alias16 Void
 @ctypedef AVLFG Void
-@ctypedef AVClass Void
 # enum AVRounding
 const AV_ROUND_ZERO = 0
 const AV_ROUND_INF = 1
@@ -689,7 +672,3 @@ const AV_ROUND_DOWN = 2
 const AV_ROUND_UP = 3
 const AV_ROUND_NEAR_INF = 5
 # end
-@ctypedef AVOption Void
-@ctypedef AVComponentDescriptor Void
-@ctypedef AVPixFmtDescriptor Void
-@ctypedef AVRational Void
