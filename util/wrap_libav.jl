@@ -14,10 +14,10 @@ clang_includes = map(x->joinpath(ENV["JULIAHOME"], x), [
   ])
  
 av_hpath = [
+  "/usr/include/libavutil/",
   "/usr/include/libavcodec/",
   "/usr/include/libavformat/",
-  "/usr/include/libswscale/",
-  "/usr/include/libavutil/"]
+  "/usr/include/libswscale/"]
 
 append!(clang_includes, av_hpath)
 av_headers = Array(ASCIIString, 0)
