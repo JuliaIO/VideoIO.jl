@@ -1,7 +1,21 @@
 # Julia wrapper for header: /usr/include/libavutil/crc.h
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-@c Int32 av_crc_init (Ptr{AVCRC}, Int32, Int32, uint32_t, Int32) libavutil
-@c Ptr{AVCRC} av_crc_get_table (AVCRCId,) libavutil
-@c uint32_t av_crc (Ptr{AVCRC}, uint32_t, Ptr{uint8_t}, size_t) libavutil
 
+function av_crc_init(_ctx::Ptr,_le::Integer,_bits::Integer,_poly::Integer,_ctx_size::Integer)
+    ctx = convert(Ptr{AVCRC},_ctx)
+    le = int32(_le)
+    bits = int32(_bits)
+    poly = uint32(_poly)
+    ctx_size = int32(_ctx_size)
+    ccall((:av_crc_init,libavutil),Cint,(Ptr{AVCRC},Cint,Cint,Uint32,Cint),ctx,le,bits,poly,ctx_size)
+end
+function av_crc_get_table(crc_id::AVCRCId)
+    ccall((:av_crc_get_table,libavutil),Ptr{AVCRC},(AVCRCId,),crc_id)
+end
+function av_crc(_ctx::Ptr,_start_crc::Integer,_buffer::Union(Ptr,ByteString),length::Csize_t)
+    ctx = convert(Ptr{AVCRC},_ctx)
+    start_crc = uint32(_start_crc)
+    buffer = convert(Ptr{Uint8},_buffer)
+    ccall((:av_crc,libavutil),Uint32,(Ptr{AVCRC},Uint32,Ptr{Uint8},Csize_t),ctx,start_crc,buffer,length)
+end

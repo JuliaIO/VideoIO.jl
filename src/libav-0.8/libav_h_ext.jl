@@ -4,17 +4,17 @@ libavformat = :libavformat
 libavcodec = :libavcodec
 libswscale = :libswscale
 
-### Fixups
-typealias size_t Int32
-typealias uint64_t Uint64
-typealias int64_t Int64
-typealias uint32_t Uint32
-typealias int32_t Int32
-typealias uint8_t Uint8
-typealias int8_t Int8
-typealias uint16_t Uint16
-typealias int16_t Int16
+### Aliases
+typealias AVResampleContext Void
+typealias FILE Void
+typealias SwsContext Void
+typealias AVAES Void
 
 ###
 include("libav_h.jl")
 include("avutil.jl")
+
+### Manually defined global var, func
+const p_av_pix_fmt_descriptors = cglobal((:av_pix_fmt_descriptors, :libavutil), AVPixFmtDescriptor)
+get_pix_fmt_descriptor_ptr(n::Integer) = p_av_pix_fmt_descriptors + n*sizeof(AVPixFmtDescriptor)
+
