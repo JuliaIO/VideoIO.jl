@@ -1,8 +1,8 @@
 ### Libraries
-libavutil = :libavutil
-libavformat = :libavformat
-libavcodec = :libavcodec
-libswscale = :libswscale
+const libavutil = :libavutil
+const libavformat = :libavformat
+const libavcodec = :libavcodec
+const libswscale = :libswscale
 
 ### Aliases
 typealias AVResampleContext Void
@@ -11,6 +11,7 @@ typealias SwsContext Void
 typealias AVAES Void
 
 ###
+include("exports.jl")
 include("libav_h.jl")
 include("avutil.jl")
 
