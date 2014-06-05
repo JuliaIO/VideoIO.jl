@@ -271,7 +271,7 @@ end
 function read(c::AVCapture)
     if !have_frame(c)
         retval = grab(c)
-        !retval && throw EOFError()
+        !retval && throw(EOFError())
     end
     retrieve(c)
 end
@@ -284,7 +284,7 @@ function read!(c::AVCapture, buf::Array{Uint8})
 
     if !have_frame(c)
         retval = grab(c)
-        !retval && throw EOFError()
+        !retval && throw(EOFError())
     end
     retrieve!(c, buf)
 end

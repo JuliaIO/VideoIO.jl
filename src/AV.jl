@@ -1,4 +1,4 @@
-module libAV
+module AV
 
 const lib="libav-0.8"
 w(f) = joinpath(Pkg.dir("libAV"), "src", lib, f)
