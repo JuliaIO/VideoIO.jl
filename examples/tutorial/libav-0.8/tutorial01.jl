@@ -1,5 +1,5 @@
-
-if length(ARGS) < 1
+# Fail fast if we need args
+if !isinteractive() && length(ARGS) < 1
     error("Please provide an input video.")
 end
 
@@ -30,9 +30,9 @@ import ImageView
 
 
 function show_vid(sample_file)
-    apFormatCtx = Ptr{AVFormatContext}[C_NULL]
-
     av_register_all();
+
+    apFormatCtx = Ptr{AVFormatContext}[C_NULL]
 
     if avformat_open_input(pointer(apFormatCtx),
                            sample_file,
@@ -151,6 +151,16 @@ function show_vid(sample_file)
     avformat_close_input(pointer(apFormatCtx))
 end
 
-for arg in ARGS
-    show_vid(arg)
+function main(args)
+    if length(args) < 1
+        error("Please provide an input video.")
+    end
+
+    for arg in args
+        show_vid(arg)
+    end
+end
+
+if !isinteractive()
+    main(ARGS)
 end

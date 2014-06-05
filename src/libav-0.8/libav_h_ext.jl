@@ -14,6 +14,7 @@ typealias AVAES Void
 include("exports.jl")
 include("libav_h.jl")
 include("avutil.jl")
+include("pixdesc.jl")
 
 ### Manually defined global var, func
 const p_av_pix_fmt_descriptors = cglobal((:av_pix_fmt_descriptors, :libavutil), AVPixFmtDescriptor)

@@ -29,4 +29,6 @@ module Format
   include(w("avio.jl"))
 end
 
+include("av_capture.jl")
+
 end # libAV
