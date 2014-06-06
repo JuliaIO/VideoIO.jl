@@ -4,7 +4,7 @@ import Base: read, read!, show
 
 export open, grab, retrieve, read, read!, close, AVCapture
 
-import libAV.Format: 
+import AV.Format: 
     av_register_all, 
     avformat_open_input, 
     avformat_find_stream_info, 
@@ -12,7 +12,7 @@ import libAV.Format:
     av_read_frame,
     avformat_close_input
 
-import libAV.Codec: 
+import AV.Codec: 
     avcodec_find_decoder, 
     avcodec_open2, 
     avpicture_get_size,
@@ -21,7 +21,7 @@ import libAV.Codec:
     av_free_packet,
     avcodec_close
 
-import libAV.SWScale: 
+import AV.SWScale: 
     sws_getContext, 
     sws_scale
 
@@ -71,8 +71,8 @@ check_isopen(c::AVCapture) = !c.isopen && error("AVCapture $(c.source) not open"
 
 function open(source::String; 
               transcode::Bool=true, 
-              transcode_interp=libAV.SWS_BILINEAR,
-              target_pix_fmt=libAV.PIX_FMT_RGB24
+              transcode_interp=AV.SWS_BILINEAR,
+              target_pix_fmt=AV.PIX_FMT_RGB24
               )
     av_register_all();
 
@@ -106,7 +106,7 @@ function open(source::String;
         push!(streams, stream)
         codec = unsafe_load(stream.codec)
         push!(codecContexts, codec)
-        if jVideoStreamIdx == -1 && codec.codec_type == libAV.AVMEDIA_TYPE_VIDEO
+        if jVideoStreamIdx == -1 && codec.codec_type == AV.AVMEDIA_TYPE_VIDEO
             jVideoStreamIdx = i
         end
     end
@@ -148,7 +148,7 @@ function open(source::String;
 
     sws_context = sws_getContext(width, height, pix_fmt, 
                              width, height, target_pix_fmt,
-                             libAV.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
+                             AV.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
 
     avpicture_fill(pointer(aTargetVideoFrame), pointer(target_buf), int32(target_pix_fmt), width, height)
 
@@ -301,9 +301,25 @@ end
 
 try
     if isa(Main.Images, Module)
-        global retrieve!, read!
-        retrieve!(c::AVCapture, img::Main.Images.Image) = retrieve!(c, Main.Images.data(img))
-        read!(c::AVCapture, img::Main.Images.Image) = read!(c, Main.Images.data(img))
+        # Define read and retrieve for Images
+        global retrieve, retrieve!, read!, read
+        for r in [:read, :retrieve]
+            r! = symbol("$r!")
+
+            @eval begin
+                # read!, retrieve!
+                $r!(c::AVCapture, img::Main.Images.Image) = $r!(c, Main.Images.data(img))
+
+                # read, retrieve
+                function $r(c::AVCapture, ::Type{Main.Images.Image}, colorspace="RGB", colordim=1, spatialorder=["x","y"])
+                    img = $r(c::AVCapture)
+                    Main.Images.Image(img, 
+                                      colorspace=colorspace, 
+                                      colordim=colordim, 
+                                      spatialorder=spatialorder)
+                end
+            end
+        end
     end
 end
 
