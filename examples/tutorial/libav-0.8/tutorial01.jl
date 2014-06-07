@@ -3,8 +3,8 @@ if !isinteractive() && length(ARGS) < 1
     error("Please provide an input video.")
 end
 
-using libAV
-import libAV.Format: 
+using AV
+import AV.Format: 
     av_register_all, 
     avformat_open_input, 
     avformat_find_stream_info, 
@@ -12,7 +12,7 @@ import libAV.Format:
     av_read_frame,
     avformat_close_input
 
-import libAV.Codec: 
+import AV.Codec: 
     avcodec_find_decoder, 
     avcodec_open2, 
     avpicture_get_size,
@@ -21,7 +21,7 @@ import libAV.Codec:
     av_free_packet,
     avcodec_close
 
-import libAV.SWScale: 
+import AV.SWScale: 
     sws_getContext, 
     sws_scale
 
@@ -63,7 +63,7 @@ function show_vid(sample_file)
         push!(streams, stream)
         codec = unsafe_load(stream.codec)
         push!(codecCtxs, codec)
-        if videoStream == -1 && codec.codec_type == libAV.AVMEDIA_TYPE_VIDEO
+        if videoStream == -1 && codec.codec_type == AV.AVMEDIA_TYPE_VIDEO
             videoStream = i
             cVideoStream = i-1  # C index, for later comparison
         end
@@ -94,18 +94,18 @@ function show_vid(sample_file)
     aFrame = [AVFrame()]
     aFrameRGB = [AVFrame()]
 
-    # pFmtDesc = get_pix_fmt_descriptor_ptr(libAV.PIX_FMT_RGB24)
+    # pFmtDesc = get_pix_fmt_descriptor_ptr(AV.PIX_FMT_RGB24)
     # bits_per_pixel = av_get_bits_per_pixel(pFmtDesc)
     # buffer = Array(Uint8, bits_per_pixel>>3, codecCtx.width, codecCtx.height)
 
-    numBytes = avpicture_get_size(libAV.PIX_FMT_RGB24, width, height);
+    numBytes = avpicture_get_size(AV.PIX_FMT_RGB24, width, height);
     rgb_buffer = Array(Uint8, 3, width, height)
 
     sws_ctx = sws_getContext(width, height, pix_fmt, 
-                             width, height, libAV.PIX_FMT_RGB24,
-                             libAV.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
+                             width, height, AV.PIX_FMT_RGB24,
+                             AV.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
 
-    avpicture_fill(pointer(aFrameRGB), pointer(rgb_buffer), int32(libAV.PIX_FMT_RGB24), width, height)
+    avpicture_fill(pointer(aFrameRGB), pointer(rgb_buffer), int32(AV.PIX_FMT_RGB24), width, height)
 
     aPacket = [AVPacket()]
 
