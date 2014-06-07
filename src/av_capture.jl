@@ -304,7 +304,7 @@ try
         # Define read and retrieve for Images
         global retrieve, retrieve!, read!, read
         for r in [:read, :retrieve]
-            r! = symbol("$r!")
+            r! = symbol("$(r)!")
 
             @eval begin
                 # read!, retrieve!
