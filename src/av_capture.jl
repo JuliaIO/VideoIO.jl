@@ -1,8 +1,8 @@
 # AVCapture
 
-import Base: read, read!, show
+import Base: read, read!, show, close
 
-export open, grab, retrieve, read, read!, close, AVCapture
+export grab, retrieve, read, read!, AVCapture
 
 import AV.Format: 
     av_register_all, 
