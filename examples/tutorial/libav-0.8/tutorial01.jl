@@ -55,6 +55,7 @@ function show_vid(sample_file)
 
     videoStream = -1
     cVideoStream = -1
+    framerate = 30.0
 
     # Load streams, codec_contexts
     for i = 1:formatCtx.nb_streams
@@ -66,6 +67,7 @@ function show_vid(sample_file)
         if videoStream == -1 && codec.codec_type == AV.AVMEDIA_TYPE_VIDEO
             videoStream = i
             cVideoStream = i-1  # C index, for later comparison
+            framerate = codec.time_base.den / codec.time_base.num
         end
     end
 
@@ -139,6 +141,7 @@ function show_vid(sample_file)
                 else
                     ImageView.display(canvas, img)
                 end
+                sleep(1/framerate)
 
                 i += 1
             end
