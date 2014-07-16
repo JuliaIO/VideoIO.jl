@@ -1,0 +1,133 @@
+diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_h.jl
+--- ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl	2014-07-22 00:47:48.694270821 -0700
++++ v54/libavcodec_h.jl	2014-07-22 02:47:24.766142311 -0700
+@@ -846,11 +846,11 @@
+     AV_LOCK_CREATE,
+     AV_LOCK_OBTAIN,
+     AV_LOCK_RELEASE,
+-    AV_LOCK_DESTROY,
+-    vaapi_context,
+-    vdpau_render_state,
+-    AV_XVMC_ID,
+-    xvmc_pix_fmt
++    AV_LOCK_DESTROY #,
++    # vaapi_context,
++    # vdpau_render_state,
++    # AV_XVMC_ID,
++    # xvmc_pix_fmt
+ 
+ 
+ 
+@@ -2436,52 +2436,52 @@
+ const AV_LOCK_DESTROY = uint32(3)
+ # end enum AVLockOp
+ 
+-immutable vaapi_context
+-    display::Ptr{Void}
+-    config_id::Uint32
+-    context_id::Uint32
+-    pic_param_buf_id::Uint32
+-    iq_matrix_buf_id::Uint32
+-    bitplane_buf_id::Uint32
+-    slice_buf_ids::Ptr{Uint32}
+-    n_slice_buf_ids::Uint32
+-    slice_buf_ids_alloc::Uint32
+-    slice_params::Ptr{Void}
+-    slice_param_size::Uint32
+-    slice_params_alloc::Uint32
+-    slice_count::Uint32
+-    slice_data::Ptr{Uint8}
+-    slice_data_size::Uint32
+-end
+-
+-const FF_VDPAU_STATE_USED_FOR_RENDER = 1
+-const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+-
+-immutable vdpau_render_state
+-    surface::VdpVideoSurface
+-    state::Cint
+-    info::VdpPictureInfo
+-    bitstream_buffers_allocated::Cint
+-    bitstream_buffers_used::Cint
+-    bitstream_buffers::Ptr{VdpBitstreamBuffer}
+-end
+-
+-const AV_XVMC_ID = 0x1dc711c0
+-
+-immutable xvmc_pix_fmt
+-    xvmc_id::Cint
+-    data_blocks::Ptr{Int16}
+-    mv_blocks::Ptr{XvMCMacroBlock}
+-    allocated_mv_blocks::Cint
+-    allocated_data_blocks::Cint
+-    idct::Cint
+-    unsigned_intra::Cint
+-    p_surface::Ptr{XvMCSurface}
+-    p_past_surface::Ptr{XvMCSurface}
+-    p_future_surface::Ptr{XvMCSurface}
+-    picture_structure::Uint32
+-    flags::Uint32
+-    start_mv_blocks_num::Cint
+-    filled_mv_blocks_num::Cint
+-    next_free_data_block_num::Cint
+-end
++# immutable vaapi_context
++#     display::Ptr{Void}
++#     config_id::Uint32
++#     context_id::Uint32
++#     pic_param_buf_id::Uint32
++#     iq_matrix_buf_id::Uint32
++#     bitplane_buf_id::Uint32
++#     slice_buf_ids::Ptr{Uint32}
++#     n_slice_buf_ids::Uint32
++#     slice_buf_ids_alloc::Uint32
++#     slice_params::Ptr{Void}
++#     slice_param_size::Uint32
++#     slice_params_alloc::Uint32
++#     slice_count::Uint32
++#     slice_data::Ptr{Uint8}
++#     slice_data_size::Uint32
++# end
++
++# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
++# const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
++
++# immutable vdpau_render_state
++#     surface::VdpVideoSurface
++#     state::Cint
++#     info::VdpPictureInfo
++#     bitstream_buffers_allocated::Cint
++#     bitstream_buffers_used::Cint
++#     bitstream_buffers::Ptr{VdpBitstreamBuffer}
++# end
++
++# const AV_XVMC_ID = 0x1dc711c0
++
++# immutable xvmc_pix_fmt
++#     xvmc_id::Cint
++#     data_blocks::Ptr{Int16}
++#     mv_blocks::Ptr{XvMCMacroBlock}
++#     allocated_mv_blocks::Cint
++#     allocated_data_blocks::Cint
++#     idct::Cint
++#     unsigned_intra::Cint
++#     p_surface::Ptr{XvMCSurface}
++#     p_past_surface::Ptr{XvMCSurface}
++#     p_future_surface::Ptr{XvMCSurface}
++#     picture_structure::Uint32
++#     flags::Uint32
++#     start_mv_blocks_num::Cint
++#     filled_mv_blocks_num::Cint
++#     next_free_data_block_num::Cint
++# end
+Only in v54: libavcodec_h.jl.orig
+Only in v54: libavcodec_h.jl.rej
+diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/LIBAVCODEC.jl v54/LIBAVCODEC.jl
+--- ../../../util/libav-0.9/AVCodecs/v54/LIBAVCODEC.jl	2014-07-22 00:47:48.694270821 -0700
++++ v54/LIBAVCODEC.jl	2014-07-22 02:46:09.238143664 -0700
+@@ -1,3 +1,3 @@
+ include("libavcodec_h.jl")
+ 
+-#include("avcodec.jl")
++include("avcodec.jl")
+Only in v54: LIBAVCODEC.jl.orig

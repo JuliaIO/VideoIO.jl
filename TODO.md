@@ -1,24 +1,29 @@
 TODO
-----
+====
 
 Interface
 ---------
-* Create minimal interface for libAV 0.8 / ffmpeg
-  * Iterator interface
-  * OpenCV-like grab() interface
+* Video iterator interface 
 * Audio
 * Seeking
 
 Backend
 -------
-* Generalize interface to handle other libAV / ffmpeg versions
-* BinDeps support
+* Generalize interface to more libAV / ffmpeg versions
 * Support for Julia IO streams
 
-Example
--------
+Examples
+--------
 * ffmpeg tutorial (parts 1-8)
 
 
+Needs testing
+=============
+* Tentative support for libav 0.8, 9, 10, ffmpeg 2.2, 2.3
+* Non-iterator video-only interface
+* BinDeps support
 
 
+Done
+====
+Tutorial part 1, under examples

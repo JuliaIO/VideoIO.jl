@@ -1,30 +1,8 @@
 # AVCapture
 
-import Base: read, read!, show, close
+import Base: read, read!, show, close, eof
 
 export grab, retrieve, read, read!, AVCapture
-
-import AV.Format: 
-    av_register_all, 
-    avformat_open_input, 
-    avformat_find_stream_info, 
-    av_dump_format, 
-    av_read_frame,
-    avformat_close_input
-
-import AV.Codec: 
-    avcodec_find_decoder, 
-    avcodec_open2, 
-    avpicture_get_size,
-    avpicture_fill,
-    avcodec_decode_video2, 
-    av_free_packet,
-    avcodec_close
-
-import AV.SWScale: 
-    sws_getContext, 
-    sws_scale
-
 
 type AVCapture
     source::ASCIIString
@@ -49,6 +27,8 @@ type AVCapture
     target_bits_per_pixel::Int
     target_buf::Array{Uint8}
     aTargetVideoFrame::Vector{AVFrame}
+    apTargetDataBuffers::Vector{Ptr{Uint8}}
+    apTargetLineSizes::Vector{Cint}
     
     aFrameFinished::Vector{Int32}
     
@@ -69,16 +49,16 @@ bufsize_check(c::AVCapture, buf::Array{Uint8}) = (length(buf) == avpicture_get_s
 check_isopen(c::AVCapture) = !c.isopen && error("AVCapture $(c.source) not open")
 
 
-function open(source::String; 
-              transcode::Bool=true, 
-              transcode_interp=AV.SWS_BILINEAR,
+function open(source::String;
+              transcode::Bool=true,
+              transcode_interpolation=AV.SWS_BILINEAR,
               target_pix_fmt=AV.PIX_FMT_RGB24
               )
     av_register_all();
 
     apFormatContext = Ptr{AVFormatContext}[C_NULL]
 
-    if avformat_open_input(pointer(apFormatContext),
+    if avformat_open_input(apFormatContext,
                            source,
                            C_NULL,
                            C_NULL)    != 0
@@ -136,7 +116,7 @@ function open(source::String;
     aVideoFrame = [AVFrame()]
     aTargetVideoFrame = [AVFrame()]
 
-    pFmtDesc = get_pix_fmt_descriptor_ptr(target_pix_fmt)
+    pFmtDesc = av_pix_fmt_desc_get(target_pix_fmt)
     bits_per_pixel = av_get_bits_per_pixel(pFmtDesc)
 
     if bits_per_pixel % 8 != 0
@@ -147,38 +127,42 @@ function open(source::String;
     target_buf = Array(Uint8, bits_per_pixel>>3, width, height)
 
     sws_context = sws_getContext(width, height, pix_fmt, 
-                             width, height, target_pix_fmt,
-                             AV.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
+                                 width, height, target_pix_fmt,
+                                 transcode_interpolation, C_NULL, C_NULL, C_NULL)
 
-    avpicture_fill(pointer(aTargetVideoFrame), pointer(target_buf), int32(target_pix_fmt), width, height)
+    avpicture_fill(pointer(aTargetVideoFrame), target_buf, target_pix_fmt, width, height)
+    apTargetDataBuffers = reinterpret(Ptr{Uint8}, [aTargetVideoFrame[1].data])
+    apTargetLineSizes   = reinterpret(Cint,       [aTargetVideoFrame[1].linesize])
 
     aPacket = [AVPacket()]
 
     aFrameFinished = Int32[0]
 
     AVCapture(source,
-                 apFormatContext,
-                 streams,
-                 aPacket,
-                 jVideoStreamIdx-1, # Store the C video stream index
-                 pVideoCodecContext,
-                 pVideoCodec,
-                 aVideoFrame,
-                 width,
-                 height,
-                 pix_fmt,
-                 transcode,
-                 int32(transcode_interp),
-                 sws_context,
-                 target_pix_fmt,
-                 bits_per_pixel,
-                 target_buf,
-                 aTargetVideoFrame,
-                 aFrameFinished,
-                 true)
+              apFormatContext,
+              streams,
+              aPacket,
+              jVideoStreamIdx-1, # Store the C video stream index
+              pVideoCodecContext,
+              pVideoCodec,
+              aVideoFrame,
+              width,
+              height,
+              pix_fmt,
+              transcode,
+              int32(transcode_interpolation),
+              sws_context,
+              target_pix_fmt,
+              bits_per_pixel,
+              target_buf,
+              aTargetVideoFrame,
+              apTargetDataBuffers,
+              apTargetLineSizes,
+              aFrameFinished,
+              true)
 end
 
-show(io::IO, c::AVCapture) = c.isopen ? show(io, "AVCapture(\"$(c.source)\", ...") : show(io, "AVCapture(...) (closed)")
+show(io::IO, c::AVCapture) = c.isopen ? print(io, "AVCapture(\"$(c.source)\", ...)") : print(io, "AVCapture(...) (closed)")
 
 # Grabs and decodes a frame
 function grab(c::AVCapture)
@@ -191,10 +175,10 @@ function grab(c::AVCapture)
     while (got_frame = (av_read_frame(pFormatContext, pointer(c.aPacket)) >= 0))
         packet = c.aPacket[1]
         if packet.stream_index == c.videoStreamIdx
-            avcodec_decode_video2(c.pVideoCodecContext, 
-                                  pointer(c.aVideoFrame), 
-                                  pointer(c.aFrameFinished), 
-                                  pointer(c.aPacket))
+            avcodec_decode_video2(c.pVideoCodecContext,
+                                  c.aVideoFrame,
+                                  c.aFrameFinished,
+                                  c.aPacket)
 
             have_frame(c) && (av_free_packet(pointer(c.aPacket)); break)
         end
@@ -212,7 +196,7 @@ function retrieve(c::AVCapture)
         error("No frame available for retrieval")
     end
 
-    pFmtDesc = get_pix_fmt_descriptor_ptr(c.target_pix_fmt)
+    pFmtDesc = av_pix_fmt_desc_get(c.target_pix_fmt)
     bits_per_pixel = av_get_bits_per_pixel(pFmtDesc)
 
     if bits_per_pixel % 8 != 0
@@ -241,20 +225,26 @@ function retrieve!(c::AVCapture, buf::Array{Uint8})
         error("No frame available for retrieval")
     end
 
-    if pointer(buf) != c.aTargetVideoFrame[1].data.d1
-        avpicture_fill(pointer(c.aTargetVideoFrame), 
-                       pointer(buf), 
-                       int32(c.target_pix_fmt), 
+    if pointer(buf) != c.apTargetDataBuffers[1]
+        avpicture_fill(pointer(c.aTargetVideoFrame),
+                       buf,
+                       c.target_pix_fmt,
                        c.width, c.height)
+        c.apTargetDataBuffers = reinterpret(Ptr{Uint8}, [c.aTargetVideoFrame[1].data])
+        c.apTargetLineSizes   = reinterpret(Cint,       [c.aTargetVideoFrame[1].linesize])
+
     end
 
+    apSourceDataBuffers = reinterpret(Ptr{Uint8}, [c.aVideoFrame[1].data])
+    apSourceLineSizes   = reinterpret(Cint,       [c.aVideoFrame[1].linesize])
+
     sws_scale(c.transcode_context,
-              pointer(c.aVideoFrame),
-              pointer(c.aVideoFrame) + 4*sizeof(Ptr),
+              apSourceDataBuffers,
+              apSourceLineSizes,
               zero(Int32),
               c.height,
-              pointer(c.aTargetVideoFrame),
-              pointer(c.aTargetVideoFrame) + 4*sizeof(Ptr))
+              c.apTargetDataBuffers,
+              c.apTargetLineSizes)
 
     reset_frame_flag!(c)
 

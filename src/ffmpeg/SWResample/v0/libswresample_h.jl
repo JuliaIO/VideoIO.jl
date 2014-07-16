@@ -1,0 +1,64 @@
+
+export
+    SWR_CH_MAX,
+    SWR_FLAG_RESAMPLE,
+    SwrDitherType,
+    SWR_DITHER_NONE,
+    SWR_DITHER_RECTANGULAR,
+    SWR_DITHER_TRIANGULAR,
+    SWR_DITHER_TRIANGULAR_HIGHPASS,
+    SWR_DITHER_NS,
+    SWR_DITHER_NS_LIPSHITZ,
+    SWR_DITHER_NS_F_WEIGHTED,
+    SWR_DITHER_NS_MODIFIED_E_WEIGHTED,
+    SWR_DITHER_NS_IMPROVED_E_WEIGHTED,
+    SWR_DITHER_NS_SHIBATA,
+    SWR_DITHER_NS_LOW_SHIBATA,
+    SWR_DITHER_NS_HIGH_SHIBATA,
+    SWR_DITHER_NB,
+    SwrEngine,
+    SWR_ENGINE_SWR,
+    SWR_ENGINE_SOXR,
+    SWR_ENGINE_NB,
+    SwrFilterType,
+    SWR_FILTER_TYPE_CUBIC,
+    SWR_FILTER_TYPE_BLACKMAN_NUTTALL,
+    SWR_FILTER_TYPE_KAISER,
+    SwrContext
+
+
+const SWR_CH_MAX = 32
+const SWR_FLAG_RESAMPLE = 1
+
+# begin enum SwrDitherType
+typealias SwrDitherType Uint32
+const SWR_DITHER_NONE = uint32(0)
+const SWR_DITHER_RECTANGULAR = uint32(1)
+const SWR_DITHER_TRIANGULAR = uint32(2)
+const SWR_DITHER_TRIANGULAR_HIGHPASS = uint32(3)
+const SWR_DITHER_NS = uint32(64)
+const SWR_DITHER_NS_LIPSHITZ = uint32(65)
+const SWR_DITHER_NS_F_WEIGHTED = uint32(66)
+const SWR_DITHER_NS_MODIFIED_E_WEIGHTED = uint32(67)
+const SWR_DITHER_NS_IMPROVED_E_WEIGHTED = uint32(68)
+const SWR_DITHER_NS_SHIBATA = uint32(69)
+const SWR_DITHER_NS_LOW_SHIBATA = uint32(70)
+const SWR_DITHER_NS_HIGH_SHIBATA = uint32(71)
+const SWR_DITHER_NB = uint32(72)
+# end enum SwrDitherType
+
+# begin enum SwrEngine
+typealias SwrEngine Uint32
+const SWR_ENGINE_SWR = uint32(0)
+const SWR_ENGINE_SOXR = uint32(1)
+const SWR_ENGINE_NB = uint32(2)
+# end enum SwrEngine
+
+# begin enum SwrFilterType
+typealias SwrFilterType Uint32
+const SWR_FILTER_TYPE_CUBIC = uint32(0)
+const SWR_FILTER_TYPE_BLACKMAN_NUTTALL = uint32(1)
+const SWR_FILTER_TYPE_KAISER = uint32(2)
+# end enum SwrFilterType
+
+typealias SwrContext Void
