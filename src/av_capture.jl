@@ -238,6 +238,7 @@ function retrieve!(c::AVCapture, buf::Array{Uint8})
     apSourceDataBuffers = reinterpret(Ptr{Uint8}, [c.aVideoFrame[1].data])
     apSourceLineSizes   = reinterpret(Cint,       [c.aVideoFrame[1].linesize])
 
+    Base.sigatomic_begin()
     sws_scale(c.transcode_context,
               apSourceDataBuffers,
               apSourceLineSizes,
@@ -245,6 +246,7 @@ function retrieve!(c::AVCapture, buf::Array{Uint8})
               c.height,
               c.apTargetDataBuffers,
               c.apTargetLineSizes)
+    Base.sigatomic_end()
 
     reset_frame_flag!(c)
 
