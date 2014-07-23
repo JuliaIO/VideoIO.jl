@@ -10,7 +10,7 @@ function show_vid(video_file)
     while !eof(f)
         read!(f, img)
         ImageView.view(canvas, img)
-        #sleep(1/30)
+        sleep(1/f.videoFramerate)
     end
 end
 

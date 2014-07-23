@@ -18,8 +18,9 @@ type AVCapture
     width::Cint
     height::Cint
     pix_fmt::Cint
+    videoFramerate::Float64
 
-    # TODO: may belong elsewhere
+    # TODO: may belong elsewhere?
     transcode::Bool
     transcode_interp::Cint
     transcode_context::Ptr{SwsContext}
@@ -78,6 +79,7 @@ function open(source::String;
     codecContexts = AVCodecContext[]
 
     jVideoStreamIdx = -1
+    videoFramerate = 30.0
 
     # Load streams, codec_contexts
     for i = 1:formatContext.nb_streams
@@ -88,6 +90,7 @@ function open(source::String;
         push!(codecContexts, codec)
         if jVideoStreamIdx == -1 && codec.codec_type == AV.AVMEDIA_TYPE_VIDEO
             jVideoStreamIdx = i
+            videoFramerate = codec.time_base.den / codec.time_base.num
         end
     end
 
@@ -149,6 +152,7 @@ function open(source::String;
               width,
               height,
               pix_fmt,
+              videoFramerate,
               transcode,
               int32(transcode_interpolation),
               sws_context,
@@ -284,9 +288,9 @@ end
 function close(c::AVCapture)
     !c.isopen && return
 
-    avcodec_close(c.pCodecContext)
-    avformat_close_input(pointer(c.apFormatContext))
-    c.isopen = False
+    avcodec_close(c.pVideoCodecContext)
+    avformat_close_input(c.apFormatContext)
+    c.isopen = false
     return
 end
 
