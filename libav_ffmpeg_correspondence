@@ -1,0 +1,5 @@
+FFmpeg 0.7 is backward compatible with FFmpeg 0.6 and 0.5, as well as Libav 0.6 and 0.5; 
+FFmpeg 0.10 is backward compatible with FFmpeg 0.8 and 0.9, as well as Libav 0.7 and 0.8; 
+FFmpeg 1.2 is backwards compatible with FFmpeg 1.1, as well as Libav 9; 
+FFmpeg 2.1 is backwards compatible with FFmpeg 2.0; 
+FFmpeg 2.2 is backwards compatible with Libav 10.

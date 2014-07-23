@@ -1,0 +1,229 @@
+diff -r -U3 ../../../util/libav-0.8/AVUtil/v51/libavutil_h.jl v51/libavutil_h.jl
+--- ../../../util/libav-0.8/AVUtil/v51/libavutil_h.jl	2014-07-22 00:31:03.290288826 -0700
++++ v51/libavutil_h.jl	2014-07-22 02:24:11.150167268 -0700
+@@ -261,11 +261,16 @@
+ const FF_LAMBDA_MAX = 256 * 128 - 1
+ const FF_QUALITY_SCALE = FF_LAMBDA_SCALE
+ 
+-# Skipping MacroDefinition: AV_NOPTS_VALUE INT64_C ( 0x8000000000000000 )
++const AV_NOPTS_VALUE = int64 ( 0x8000000000000000 )
+ 
+ const AV_TIME_BASE = 1000000
+ 
+-# Skipping MacroDefinition: AV_TIME_BASE_Q ( AVRational ) { 1 , AV_TIME_BASE }
++immutable AVRational
++    num::Cint
++    den::Cint
++end
++
++const AV_TIME_BASE_Q = AVRational( 1 , AV_TIME_BASE )
+ 
+ # begin enum AVMediaType
+ typealias AVMediaType Cint
+@@ -399,33 +404,6 @@
+     comp::Array_4_AVComponentDescriptor
+ end
+ 
+-# Skipping MacroDefinition: PIX_FMT_NE ( be , le ) PIX_FMT_ ## le
+-# Skipping MacroDefinition: PIX_FMT_RGB32 PIX_FMT_NE ( ARGB , BGRA )
+-# Skipping MacroDefinition: PIX_FMT_RGB32_1 PIX_FMT_NE ( RGBA , ABGR )
+-# Skipping MacroDefinition: PIX_FMT_BGR32 PIX_FMT_NE ( ABGR , RGBA )
+-# Skipping MacroDefinition: PIX_FMT_BGR32_1 PIX_FMT_NE ( BGRA , ARGB )
+-# Skipping MacroDefinition: PIX_FMT_GRAY16 PIX_FMT_NE ( GRAY16BE , GRAY16LE )
+-# Skipping MacroDefinition: PIX_FMT_RGB48 PIX_FMT_NE ( RGB48BE , RGB48LE )
+-# Skipping MacroDefinition: PIX_FMT_RGB565 PIX_FMT_NE ( RGB565BE , RGB565LE )
+-# Skipping MacroDefinition: PIX_FMT_RGB555 PIX_FMT_NE ( RGB555BE , RGB555LE )
+-# Skipping MacroDefinition: PIX_FMT_RGB444 PIX_FMT_NE ( RGB444BE , RGB444LE )
+-# Skipping MacroDefinition: PIX_FMT_BGR48 PIX_FMT_NE ( BGR48BE , BGR48LE )
+-# Skipping MacroDefinition: PIX_FMT_BGR565 PIX_FMT_NE ( BGR565BE , BGR565LE )
+-# Skipping MacroDefinition: PIX_FMT_BGR555 PIX_FMT_NE ( BGR555BE , BGR555LE )
+-# Skipping MacroDefinition: PIX_FMT_BGR444 PIX_FMT_NE ( BGR444BE , BGR444LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV420P9 PIX_FMT_NE ( YUV420P9BE , YUV420P9LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV422P9 PIX_FMT_NE ( YUV422P9BE , YUV422P9LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV444P9 PIX_FMT_NE ( YUV444P9BE , YUV444P9LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV420P10 PIX_FMT_NE ( YUV420P10BE , YUV420P10LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV422P10 PIX_FMT_NE ( YUV422P10BE , YUV422P10LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV444P10 PIX_FMT_NE ( YUV444P10BE , YUV444P10LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV420P16 PIX_FMT_NE ( YUV420P16BE , YUV420P16LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV422P16 PIX_FMT_NE ( YUV422P16BE , YUV422P16LE )
+-# Skipping MacroDefinition: PIX_FMT_YUV444P16 PIX_FMT_NE ( YUV444P16BE , YUV444P16LE )
+-# Skipping MacroDefinition: PIX_FMT_GBRP9 PIX_FMT_NE ( GBRP9BE , GBRP9LE )
+-# Skipping MacroDefinition: PIX_FMT_GBRP10 PIX_FMT_NE ( GBRP10BE , GBRP10LE )
+-# Skipping MacroDefinition: PIX_FMT_GBRP16 PIX_FMT_NE ( GBRP16BE , GBRP16LE )
+-
+ # begin enum PixelFormat
+ typealias PixelFormat Cint
+ const PIX_FMT_NONE = int32(-1)
+@@ -519,13 +497,158 @@
+ const PIX_FMT_GBRP16BE = int32(87)
+ const PIX_FMT_GBRP16LE = int32(88)
+ const PIX_FMT_NB = int32(89)
++
++const AV_PIX_FMT_NONE = int32(-1)
++const AV_PIX_FMT_YUV420P = int32(0)
++const AV_PIX_FMT_YUYV422 = int32(1)
++const AV_PIX_FMT_RGB24 = int32(2)
++const AV_PIX_FMT_BGR24 = int32(3)
++const AV_PIX_FMT_YUV422P = int32(4)
++const AV_PIX_FMT_YUV444P = int32(5)
++const AV_PIX_FMT_YUV410P = int32(6)
++const AV_PIX_FMT_YUV411P = int32(7)
++const AV_PIX_FMT_GRAY8 = int32(8)
++const AV_PIX_FMT_MONOWHITE = int32(9)
++const AV_PIX_FMT_MONOBLACK = int32(10)
++const AV_PIX_FMT_PAL8 = int32(11)
++const AV_PIX_FMT_YUVJ420P = int32(12)
++const AV_PIX_FMT_YUVJ422P = int32(13)
++const AV_PIX_FMT_YUVJ444P = int32(14)
++const AV_PIX_FMT_XVMC_MPEG2_MC = int32(15)
++const AV_PIX_FMT_XVMC_MPEG2_IDCT = int32(16)
++const AV_PIX_FMT_UYVY422 = int32(17)
++const AV_PIX_FMT_UYYVYY411 = int32(18)
++const AV_PIX_FMT_BGR8 = int32(19)
++const AV_PIX_FMT_BGR4 = int32(20)
++const AV_PIX_FMT_BGR4_BYTE = int32(21)
++const AV_PIX_FMT_RGB8 = int32(22)
++const AV_PIX_FMT_RGB4 = int32(23)
++const AV_PIX_FMT_RGB4_BYTE = int32(24)
++const AV_PIX_FMT_NV12 = int32(25)
++const AV_PIX_FMT_NV21 = int32(26)
++const AV_PIX_FMT_ARGB = int32(27)
++const AV_PIX_FMT_RGBA = int32(28)
++const AV_PIX_FMT_ABGR = int32(29)
++const AV_PIX_FMT_BGRA = int32(30)
++const AV_PIX_FMT_GRAY16BE = int32(31)
++const AV_PIX_FMT_GRAY16LE = int32(32)
++const AV_PIX_FMT_YUV440P = int32(33)
++const AV_PIX_FMT_YUVJ440P = int32(34)
++const AV_PIX_FMT_YUVA420P = int32(35)
++const AV_PIX_FMT_VDPAU_H264 = int32(36)
++const AV_PIX_FMT_VDPAU_MPEG1 = int32(37)
++const AV_PIX_FMT_VDPAU_MPEG2 = int32(38)
++const AV_PIX_FMT_VDPAU_WMV3 = int32(39)
++const AV_PIX_FMT_VDPAU_VC1 = int32(40)
++const AV_PIX_FMT_RGB48BE = int32(41)
++const AV_PIX_FMT_RGB48LE = int32(42)
++const AV_PIX_FMT_RGB565BE = int32(43)
++const AV_PIX_FMT_RGB565LE = int32(44)
++const AV_PIX_FMT_RGB555BE = int32(45)
++const AV_PIX_FMT_RGB555LE = int32(46)
++const AV_PIX_FMT_BGR565BE = int32(47)
++const AV_PIX_FMT_BGR565LE = int32(48)
++const AV_PIX_FMT_BGR555BE = int32(49)
++const AV_PIX_FMT_BGR555LE = int32(50)
++const AV_PIX_FMT_VAAPI_MOCO = int32(51)
++const AV_PIX_FMT_VAAPI_IDCT = int32(52)
++const AV_PIX_FMT_VAAPI_VLD = int32(53)
++const AV_PIX_FMT_YUV420P16LE = int32(54)
++const AV_PIX_FMT_YUV420P16BE = int32(55)
++const AV_PIX_FMT_YUV422P16LE = int32(56)
++const AV_PIX_FMT_YUV422P16BE = int32(57)
++const AV_PIX_FMT_YUV444P16LE = int32(58)
++const AV_PIX_FMT_YUV444P16BE = int32(59)
++const AV_PIX_FMT_VDPAU_MPEG4 = int32(60)
++const AV_PIX_FMT_DXVA2_VLD = int32(61)
++const AV_PIX_FMT_RGB444LE = int32(62)
++const AV_PIX_FMT_RGB444BE = int32(63)
++const AV_PIX_FMT_BGR444LE = int32(64)
++const AV_PIX_FMT_BGR444BE = int32(65)
++const AV_PIX_FMT_Y400A = int32(66)
++const AV_PIX_FMT_BGR48BE = int32(67)
++const AV_PIX_FMT_BGR48LE = int32(68)
++const AV_PIX_FMT_YUV420P9BE = int32(69)
++const AV_PIX_FMT_YUV420P9LE = int32(70)
++const AV_PIX_FMT_YUV420P10BE = int32(71)
++const AV_PIX_FMT_YUV420P10LE = int32(72)
++const AV_PIX_FMT_YUV422P10BE = int32(73)
++const AV_PIX_FMT_YUV422P10LE = int32(74)
++const AV_PIX_FMT_YUV444P9BE = int32(75)
++const AV_PIX_FMT_YUV444P9LE = int32(76)
++const AV_PIX_FMT_YUV444P10BE = int32(77)
++const AV_PIX_FMT_YUV444P10LE = int32(78)
++const AV_PIX_FMT_YUV422P9BE = int32(79)
++const AV_PIX_FMT_YUV422P9LE = int32(80)
++const AV_PIX_FMT_VDA_VLD = int32(81)
++const AV_PIX_FMT_GBRP = int32(82)
++const AV_PIX_FMT_GBRP9BE = int32(83)
++const AV_PIX_FMT_GBRP9LE = int32(84)
++const AV_PIX_FMT_GBRP10BE = int32(85)
++const AV_PIX_FMT_GBRP10LE = int32(86)
++const AV_PIX_FMT_GBRP16BE = int32(87)
++const AV_PIX_FMT_GBRP16LE = int32(88)
++const AV_PIX_FMT_NB = int32(89)
+ # end enum PixelFormat
+ 
+-immutable AVRational
+-    num::Cint
+-    den::Cint
++
++macro PIX_FMT_NE(be,le)
++    symbol("PIX_FMT_",le)
+ end
+ 
++const PIX_FMT_RGB32 = @PIX_FMT_NE(ARGB,BGRA)
++const PIX_FMT_RGB32_1 = @PIX_FMT_NE(RGBA,ABGR)
++const PIX_FMT_BGR32 = @PIX_FMT_NE(ABGR,RGBA)
++const PIX_FMT_BGR32_1 = @PIX_FMT_NE(BGRA,ARGB)
++const PIX_FMT_GRAY16 = @PIX_FMT_NE(GRAY16BE,GRAY16LE)
++const PIX_FMT_RGB48 = @PIX_FMT_NE(RGB48BE,RGB48LE)
++const PIX_FMT_RGB565 = @PIX_FMT_NE(RGB565BE,RGB565LE)
++const PIX_FMT_RGB555 = @PIX_FMT_NE(RGB555BE,RGB555LE)
++const PIX_FMT_RGB444 = @PIX_FMT_NE(RGB444BE,RGB444LE)
++const PIX_FMT_BGR48 = @PIX_FMT_NE(BGR48BE,BGR48LE)
++const PIX_FMT_BGR565 = @PIX_FMT_NE(BGR565BE,BGR565LE)
++const PIX_FMT_BGR555 = @PIX_FMT_NE(BGR555BE,BGR555LE)
++const PIX_FMT_BGR444 = @PIX_FMT_NE(BGR444BE,BGR444LE)
++const PIX_FMT_YUV420P9 = @PIX_FMT_NE(YUV420P9BE,YUV420P9LE)
++const PIX_FMT_YUV422P9 = @PIX_FMT_NE(YUV422P9BE,YUV422P9LE)
++const PIX_FMT_YUV444P9 = @PIX_FMT_NE(YUV444P9BE,YUV444P9LE)
++const PIX_FMT_YUV420P10 = @PIX_FMT_NE(YUV420P10BE,YUV420P10LE)
++const PIX_FMT_YUV422P10 = @PIX_FMT_NE(YUV422P10BE,YUV422P10LE)
++const PIX_FMT_YUV444P10 = @PIX_FMT_NE(YUV444P10BE,YUV444P10LE)
++const PIX_FMT_YUV420P16 = @PIX_FMT_NE(YUV420P16BE,YUV420P16LE)
++const PIX_FMT_YUV422P16 = @PIX_FMT_NE(YUV422P16BE,YUV422P16LE)
++const PIX_FMT_YUV444P16 = @PIX_FMT_NE(YUV444P16BE,YUV444P16LE)
++const PIX_FMT_GBRP9 = @PIX_FMT_NE(GBRP9BE,GBRP9LE)
++const PIX_FMT_GBRP10 = @PIX_FMT_NE(GBRP10BE,GBRP10LE)
++const PIX_FMT_GBRP16 = @PIX_FMT_NE(GBRP16BE,GBRP16LE)
++
++const AV_PIX_FMT_RGB32 = PIX_FMT_RGB32
++const AV_PIX_FMT_RGB32_1 = PIX_FMT_RGB32_1
++const AV_PIX_FMT_BGR32 = PIX_FMT_BGR32
++const AV_PIX_FMT_BGR32_1 = PIX_FMT_BGR32_1
++const AV_PIX_FMT_GRAY16 = PIX_FMT_GRAY16
++const AV_PIX_FMT_RGB48 = PIX_FMT_RGB48
++const AV_PIX_FMT_RGB565 = PIX_FMT_RGB565
++const AV_PIX_FMT_RGB555 = PIX_FMT_RGB555
++const AV_PIX_FMT_RGB444 = PIX_FMT_RGB444
++const AV_PIX_FMT_BGR48 = PIX_FMT_BGR48
++const AV_PIX_FMT_BGR565 = PIX_FMT_BGR565
++const AV_PIX_FMT_BGR555 = PIX_FMT_BGR555
++const AV_PIX_FMT_BGR444 = PIX_FMT_BGR444
++const AV_PIX_FMT_YUV420P9 = PIX_FMT_YUV420P9
++const AV_PIX_FMT_YUV422P9 = PIX_FMT_YUV422P9
++const AV_PIX_FMT_YUV444P9 = PIX_FMT_YUV444P9
++const AV_PIX_FMT_YUV420P10 = PIX_FMT_YUV420P10
++const AV_PIX_FMT_YUV422P10 = PIX_FMT_YUV422P10
++const AV_PIX_FMT_YUV444P10 = PIX_FMT_YUV444P10
++const AV_PIX_FMT_YUV420P16 = PIX_FMT_YUV420P16
++const AV_PIX_FMT_YUV422P16 = PIX_FMT_YUV422P16
++const AV_PIX_FMT_YUV444P16 = PIX_FMT_YUV444P16
++const AV_PIX_FMT_GBRP9 = PIX_FMT_GBRP9
++const AV_PIX_FMT_GBRP10 = PIX_FMT_GBRP10
++const AV_PIX_FMT_GBRP16 = PIX_FMT_GBRP16
++
++
+ const AV_CH_FRONT_LEFT = 0x00000001
+ const AV_CH_FRONT_RIGHT = 0x00000002
+ const AV_CH_FRONT_CENTER = 0x00000004
+diff -r -U3 ../../../util/libav-0.8/AVUtil/v51/LIBAVUTIL.jl v51/LIBAVUTIL.jl
+--- ../../../util/libav-0.8/AVUtil/v51/LIBAVUTIL.jl	2014-07-22 00:31:03.290288826 -0700
++++ v51/LIBAVUTIL.jl	2014-07-22 02:14:23.470177793 -0700
+@@ -9,6 +9,6 @@
+ #include("log.jl")
+ #include("mem.jl")
+ #include("opt.jl")
+-#include("pixdesc.jl")
++include("pixdesc.jl")
+ #include("rational.jl")
+ #include("samplefmt.jl")

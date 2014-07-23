@@ -1,0 +1,9 @@
+diff -rU 3 ../util/ffmpeg/AVFormat/v55/LIBAVFORMAT.jl AVFormat/v55/LIBAVFORMAT.jl
+--- ../util/ffmpeg/AVFormat/v55/LIBAVFORMAT.jl	2014-07-20 20:02:13.512361132 -0700
++++ AVFormat/v55/LIBAVFORMAT.jl	2014-07-20 19:28:11.606853840 -0700
+@@ -1,4 +1,4 @@
+ include("libavformat_h.jl")
+ 
+-#include("avformat.jl")
++include("avformat.jl")
+ #include("avio.jl")
