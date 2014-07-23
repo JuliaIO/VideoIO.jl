@@ -13,7 +13,9 @@ include("pixdesc.jl")
 #include("rational.jl")
 #include("samplefmt.jl")
 
-### Manually define these to match later versions
+### Manually define av_pix_fmt_desc_get to match later versions
+export av_pix_fmt_desc_get
+
 const p_av_pix_fmt_descriptors = cglobal((:av_pix_fmt_descriptors, :libavutil), AVPixFmtDescriptor)
 av_pix_fmt_desc_get(n::Integer) = p_av_pix_fmt_descriptors + n*sizeof(AVPixFmtDescriptor)
 

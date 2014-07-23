@@ -473,13 +473,15 @@ const PIX_FMT_HWACCEL = 8
 const PIX_FMT_PLANAR = 16
 const PIX_FMT_RGB = 32
 
-immutable AVComponentDescriptor
-    plane::Uint16
-    step_minus1::Uint16
-    offset_plus1::Uint16
-    shift::Uint16
-    depth_minus1::Uint16
-end
+# immutable AVComponentDescriptor
+#     plane::Uint16
+#     step_minus1::Uint16
+#     offset_plus1::Uint16
+#     shift::Uint16
+#     depth_minus1::Uint16
+# end
+
+typealias AVComponentDescriptor Uint16
 
 immutable Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
