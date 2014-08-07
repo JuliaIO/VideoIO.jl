@@ -1,22 +1,22 @@
 using Images
-using AV
 using ImageView
+import AV
 
-function show_vid(video_file)
-    f = AV.open(video_file)
+function playvid(video_file)
+    f = AV.openvideo(video_file)
     img = read(f, Image)
     canvas, _ = ImageView.view(img)
     
     while !eof(f)
         read!(f, img)
         ImageView.view(canvas, img)
-        sleep(1/f.videoFramerate)
+        sleep(1/f.framerate)
     end
 end
 
 function main(args)
     for arg in args
-        show_vid(arg)
+        playvid(arg)
     end
 end
 

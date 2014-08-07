@@ -282,7 +282,8 @@ function av_probe_input_buffer(pb,fmt,filename,logctx,offset::Integer,max_probe_
 end
 
 function avformat_open_input(ps,filename,fmt,options)
-    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{Uint8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)
+    #ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{Uint8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)
+    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Void},Ptr{Void},Ptr{Void},Ptr{Void}),ps,filename,fmt,options)
 end
 
 function av_demuxer_open(ic)
