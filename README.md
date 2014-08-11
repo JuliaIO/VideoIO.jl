@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kmsquire/AV.jl.svg)](https://travis-ci.org/kmsquire/AV.jl) [![Coverage Status](https://coveralls.io/repos/kmsquire/AV.jl/badge.png)](https://coveralls.io/r/kmsquire/AV.jl)
+
 libAV.jl
 ========
 
@@ -9,17 +11,33 @@ library versions:
 * libav 0.8, 9, 10
 * ffmpeg 2.2, 2.3
 
+Feel free to request support for additional libav/ffmpeg 
+versions, although earlier versions may be too challenging to
+support.
+
+Simple Interface
+----------------
+A trivial video player interface exists (no audio):
+
+    using Images
+    import ImageView
+    import AV
+
+    f = AV.testfile("annie_oakley")  # downloaded if not available
+    AV.playvideo(f)  # no sound
+
+
 High Level Interface
 --------------------
 
-A simple high-level interface exists which allows reading of 
+AV contains a simple high-level interface which allows reading of 
 video frames from a supported video file:
 
     using Images
-    import AV
     import ImageView
+    import AV
 
-    f = AV.open(video_file)
+    f = AV.openvideo(video_file)
     img = read(f, Image)
     canvas, _ = ImageView.view(img)
     
@@ -29,8 +47,8 @@ video frames from a supported video file:
         #sleep(1/30)
     end
 
-This code will read and (without the sleep) play a movie
-file as fast as possible.
+This code is essentially the code in `playvideo`, and will read and 
+(without the `sleep`) play a movie file as fast as possible.
 
 
 Low Level Interface
@@ -65,7 +83,20 @@ change some from version to version.
 
 Note that, in general, the low-level functions are not very fun to use,
 so it is good to focus initially on enabling a nice, higher-level 
-function for these interfaces.  Pull requests welcome!
+function for these interfaces. 
+
+Test Videos
+-----------
+
+A small number of test videos are available through AV.TestVideos.
+These are short videos in a variety of formats with non-restrictive
+(public domain or Creative Commons) licenses.
+
+* `AV.TestVideos.available()` prints a list of all available test videos.
+* `AV.testvideo("annie_oakley")` returns an AVInput object for the 
+  `"annie_oakley"` video.  The video will be downloaded if it isn't available.
+* `AV.TestVideos.download_all()` downloads all test videos
+* `AV.TestVideos.remove_all()` removes all test videos
 
 
 Status

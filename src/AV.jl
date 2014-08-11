@@ -7,6 +7,9 @@ using AVCodecs
 using AVFormat
 using SWScale
 
-include("av_capture.jl")
+include("util.jl")
+include("avio.jl")
+include("testvideos.jl")
+using .TestVideos
 
 end # AV

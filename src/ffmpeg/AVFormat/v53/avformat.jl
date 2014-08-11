@@ -32,8 +32,8 @@ export
     av_probe_input_format,
     av_probe_input_format2,
     av_probe_input_buffer,
-    av_open_input_stream,
-    av_open_input_file,
+    #av_open_input_stream,
+    #av_open_input_file,
     avformat_open_input,
     av_find_stream_info,
     avformat_find_stream_info,
@@ -202,13 +202,13 @@ function av_probe_input_buffer(pb,fmt,filename,logctx,offset::Integer,max_probe_
     ccall((:av_probe_input_buffer,libavformat),Cint,(Ptr{AVIOContext},Ptr{Ptr{AVInputFormat}},Ptr{Uint8},Ptr{Void},Uint32,Uint32),pb,fmt,filename,logctx,offset,max_probe_size)
 end
 
-function av_open_input_stream(ic_ptr,pb,filename,fmt,ap)
-    ccall((:av_open_input_stream,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{AVIOContext},Ptr{Uint8},Ptr{AVInputFormat},Ptr{AVFormatParameters}),ic_ptr,pb,filename,fmt,ap)
-end
+# function av_open_input_stream(ic_ptr,pb,filename,fmt,ap)
+#     ccall((:av_open_input_stream,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{AVIOContext},Ptr{Uint8},Ptr{AVInputFormat},Ptr{AVFormatParameters}),ic_ptr,pb,filename,fmt,ap)
+# end
 
-function av_open_input_file(ic_ptr,filename,fmt,buf_size::Integer,ap)
-    ccall((:av_open_input_file,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{Uint8},Ptr{AVInputFormat},Cint,Ptr{AVFormatParameters}),ic_ptr,filename,fmt,buf_size,ap)
-end
+# function av_open_input_file(ic_ptr,filename,fmt,buf_size::Integer,ap)
+#     ccall((:av_open_input_file,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{Uint8},Ptr{AVInputFormat},Cint,Ptr{AVFormatParameters}),ic_ptr,filename,fmt,buf_size,ap)
+# end
 
 function avformat_open_input(ps,filename,fmt,options)
     ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{Uint8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)

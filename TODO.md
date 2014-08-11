@@ -10,7 +10,6 @@ Interface
 Backend
 -------
 * Generalize interface to more libAV / ffmpeg versions
-* Support for Julia IO streams
 
 Examples
 --------
@@ -26,4 +25,6 @@ Needs testing
 
 Done
 ====
-Tutorial part 1, under examples
+* Tutorial part 1, under examples
+* Support for Julia IO streams
+* Test video download
