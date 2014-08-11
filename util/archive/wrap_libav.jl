@@ -152,7 +152,7 @@ function rewrite(e::Expr)
 end
 
 context = wrap_c.init(
-    #output_file = "libAV.jl",
+    #output_file = "VideoIO.jl",
     common_file = "libav_h.jl",
     clang_includes = clang_includes,
     header_wrapped = check_use_header, 

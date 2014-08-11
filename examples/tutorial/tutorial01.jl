@@ -3,16 +3,16 @@ if !isinteractive() && length(ARGS) < 1
     error("Please provide an input video.")
 end
 
-import AV
 import Images
 import ImageView
+import VideoIO
 
 function show_vid(sample_file)
-    AV.av_register_all();
+    VideoIO.av_register_all();
 
-    apFormatCtx = Ptr{AV.AVFormatContext}[C_NULL]
+    apFormatCtx = Ptr{VideoIO.AVFormatContext}[C_NULL]
 
-    if AV.avformat_open_input(apFormatCtx,
+    if VideoIO.avformat_open_input(apFormatCtx,
                               sample_file,
                               C_NULL,
                               C_NULL)    != 0
@@ -20,16 +20,16 @@ function show_vid(sample_file)
     end
     pFormatCtx = apFormatCtx[1]
 
-    if AV.avformat_find_stream_info(pFormatCtx, C_NULL) < 0
+    if VideoIO.avformat_find_stream_info(pFormatCtx, C_NULL) < 0
         error("Couldn't find stream information")
     end
 
-    AV.av_dump_format(pFormatCtx, 0, sample_file, 0);
+    VideoIO.av_dump_format(pFormatCtx, 0, sample_file, 0);
 
     formatCtx = unsafe_load(pFormatCtx);
 
-    streams = AV.AVStream[]
-    codecCtxs = AV.AVCodecContext[]
+    streams = VideoIO.AVStream[]
+    codecCtxs = VideoIO.AVCodecContext[]
 
     videoStream = -1
     cVideoStream = -1
@@ -42,7 +42,7 @@ function show_vid(sample_file)
         push!(streams, stream)
         codec = unsafe_load(stream.codec)
         push!(codecCtxs, codec)
-        if videoStream == -1 && codec.codec_type == AV.AVMEDIA_TYPE_VIDEO
+        if videoStream == -1 && codec.codec_type == VideoIO.AVMEDIA_TYPE_VIDEO
             videoStream = i
             cVideoStream = i-1  # C index, for later comparison
             framerate = codec.time_base.den / codec.time_base.num
@@ -61,44 +61,44 @@ function show_vid(sample_file)
     pix_fmt = codecCtx.pix_fmt
 
     # Find the decoder for the video stream
-    pCodec=AV.avcodec_find_decoder(codecCtx.codec_id)
+    pCodec=VideoIO.avcodec_find_decoder(codecCtx.codec_id)
 
     if pCodec == C_NULL
         error("Unsupported Video Codec")
     end
 
-    if AV.avcodec_open2(pCodecCtx, pCodec, C_NULL) < 0
+    if VideoIO.avcodec_open2(pCodecCtx, pCodec, C_NULL) < 0
         error("Could not open codec")
     end
 
-    aFrame = [AV.AVFrame()]
-    aFrameRGB = [AV.AVFrame()]
+    aFrame = [VideoIO.AVFrame()]
+    aFrameRGB = [VideoIO.AVFrame()]
 
-    # pFmtDesc = get_pix_fmt_descriptor_ptr(AV.PIX_FMT_RGB24)
-    # bits_per_pixel = AV.av_get_bits_per_pixel(pFmtDesc)
+    # pFmtDesc = get_pix_fmt_descriptor_ptr(VideoIO.PIX_FMT_RGB24)
+    # bits_per_pixel = VideoIO.av_get_bits_per_pixel(pFmtDesc)
     # buffer = Array(Uint8, bits_per_pixel>>3, codecCtx.width, codecCtx.height)
 
-    numBytes = AV.avpicture_get_size(AV.PIX_FMT_RGB24, width, height);
+    numBytes = VideoIO.avpicture_get_size(VideoIO.PIX_FMT_RGB24, width, height);
     rgb_buffer = Array(Uint8, 3, width, height)
 
-    sws_ctx = AV.sws_getContext(width, height, pix_fmt, 
-                                width, height, AV.PIX_FMT_RGB24,
-                                AV.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
+    sws_ctx = VideoIO.sws_getContext(width, height, pix_fmt, 
+                                width, height, VideoIO.PIX_FMT_RGB24,
+                                VideoIO.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
 
-    AV.avpicture_fill(aFrameRGB, rgb_buffer, AV.PIX_FMT_RGB24, width, height)
+    VideoIO.avpicture_fill(aFrameRGB, rgb_buffer, VideoIO.PIX_FMT_RGB24, width, height)
     apRGBData     = reinterpret(Ptr{Uint8}, [aFrameRGB[1].data])
     apRGBLinesize = reinterpret(Cint,       [aFrameRGB[1].linesize])
 
-    aPacket = [AV.AVPacket()]
+    aPacket = [VideoIO.AVPacket()]
 
     aFrameFinished = Int32[0]
     
     i = 0
     first = true
-    while AV.av_read_frame(pFormatCtx, aPacket) >= 0
+    while VideoIO.av_read_frame(pFormatCtx, aPacket) >= 0
         packet = aPacket[1]
         if packet.stream_index == cVideoStream
-            AV.avcodec_decode_video2(pCodecCtx, aFrame, aFrameFinished, aPacket)
+            VideoIO.avcodec_decode_video2(pCodecCtx, aFrame, aFrameFinished, aPacket)
 
             frameFinished = aFrameFinished[1]
             if frameFinished > 0
@@ -114,7 +114,7 @@ function show_vid(sample_file)
                 # println(pointer(rgb_buffer))
                 # println()
 
-                AV.sws_scale(sws_ctx, 
+                VideoIO.sws_scale(sws_ctx, 
                              apData,
                              apLinesize,
                              zero(Int32),
@@ -137,12 +137,12 @@ function show_vid(sample_file)
                 i += 1
             end
         end
-        AV.av_free_packet(aPacket)
+        VideoIO.av_free_packet(aPacket)
     end
 
-    AV.av_free_packet(aPacket)
-    AV.avcodec_close(pCodecCtx)
-    AV.avformat_close_input(apFormatCtx)
+    VideoIO.av_free_packet(aPacket)
+    VideoIO.avcodec_close(pCodecCtx)
+    VideoIO.avformat_close_input(apFormatCtx)
 end
 
 function main(args)

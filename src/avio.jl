@@ -561,7 +561,7 @@ try
         global playvideo
         export playvideo
         function playvideo(video)
-            f = AV.openvideo(video)
+            f = VideoIO.openvideo(video)
             img = read(f, Main.Images.Image)
             canvas, _ = Main.ImageView.view(img)
 

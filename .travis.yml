@@ -17,7 +17,7 @@ before_install:
     - git config --global user.email "travis@example.net"
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-    - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("AV"))`); Pkg.pin("AV"); Pkg.resolve(); Pkg.add("Images"); Pkg.add("ZipFile"); Pkg.checkout("ZipFile")'
+    - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("VideoIO"))`); Pkg.pin("VideoIO"); Pkg.resolve(); Pkg.add("Images"); Pkg.add("ZipFile"); Pkg.checkout("ZipFile")'
     - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage test/runtests.jl; fi
     - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
 

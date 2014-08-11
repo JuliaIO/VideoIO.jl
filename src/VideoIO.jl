@@ -1,4 +1,4 @@
-module AV
+module VideoIO
 
 include("init.jl")
 
@@ -12,4 +12,4 @@ include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
 
-end # AV
+end # VideoIO

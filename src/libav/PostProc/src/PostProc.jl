@@ -1,5 +1,5 @@
 module PostProc
-  include(joinpath(Pkg.dir("AV"),"src","init.jl"))
+  include(joinpath(Pkg.dir("VideoIO"),"src","init.jl"))
 
   if have_postproc()
       w(f) = joinpath(postproc_dir, f)

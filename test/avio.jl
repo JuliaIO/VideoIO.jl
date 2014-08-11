@@ -1,24 +1,24 @@
 using Base.Test
 using Images
-import AV
+import VideoIO
 
-testdir = joinpath(Pkg.dir("AV"), "test")
-videodir = joinpath(Pkg.dir("AV"), "videos")
+testdir = joinpath(Pkg.dir("VideoIO"), "test")
+videodir = joinpath(Pkg.dir("VideoIO"), "videos")
 
-AV.TestVideos.available()
-AV.TestVideos.download_all()
+VideoIO.TestVideos.available()
+VideoIO.TestVideos.download_all()
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 println(STDERR, "Testing file reading...")
-for name in AV.TestVideos.names()
+for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
     first_frame = imread(first_frame_file) # comment line when creating png files
 
-    f = AV.testvideo(name)
-    v = AV.openvideo(f)
+    f = VideoIO.testvideo(name)
+    v = VideoIO.openvideo(f)
 
     img = read(v, Image)
 
@@ -37,7 +37,7 @@ for name in AV.TestVideos.names()
 end
 
 println(STDERR, "Testing IO reading...")
-for name in AV.TestVideos.names()
+for name in VideoIO.TestVideos.names()
     # TODO: fix me?
     (beginswith(name, "ladybird") || beginswith(name, "NPS")) && continue
 
@@ -46,7 +46,7 @@ for name in AV.TestVideos.names()
     first_frame = imread(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
-    v = AV.openvideo(open(filename))
+    v = VideoIO.openvideo(open(filename))
 
     img = read(v, Image)
 
@@ -64,9 +64,9 @@ for name in AV.TestVideos.names()
     end
 end
 
-AV.testvideo("ladybird") # coverage testing
-@test_throws ErrorException AV.testvideo("rickroll")
-@test_throws ErrorException AV.testvideo("")
+VideoIO.testvideo("ladybird") # coverage testing
+@test_throws ErrorException VideoIO.testvideo("rickroll")
+@test_throws ErrorException VideoIO.testvideo("")
 
 
-#AV.TestVideos.remove_all()
+#VideoIO.TestVideos.remove_all()

@@ -2,12 +2,12 @@
 
 module TestVideos
 
-import AV
+import VideoIO
 import ZipFile
 import Base: download, show
 export testvideo
 
-videodir = joinpath(Pkg.dir("AV", "videos"))
+videodir = joinpath(Pkg.dir("VideoIO", "videos"))
 
 type VideoFile{compression}
     name::String
@@ -89,7 +89,7 @@ function testvideo(name, ops...)
             throw(ErrorException("$name matches more than one test videofile"))
         end
     end
-    AV.open(videofile, ops...) # Returns an AVInput, which in turn must be opened with openvideo, openaudio, etc.
+    VideoIO.open(videofile, ops...) # Returns an AVInput, which in turn must be opened with openvideo, openaudio, etc.
 end
 
 

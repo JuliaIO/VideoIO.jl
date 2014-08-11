@@ -1,9 +1,9 @@
 using Images
 using ImageView
-import AV
+import VideoIO
 
 function playvid(video_file)
-    f = AV.openvideo(video_file)
+    f = VideoIO.openvideo(video_file)
     img = read(f, Image)
     canvas, _ = ImageView.view(img)
     

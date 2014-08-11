@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/kmsquire/AV.jl.svg)](https://travis-ci.org/kmsquire/AV.jl) [![Coverage Status](https://coveralls.io/repos/kmsquire/AV.jl/badge.png)](https://coveralls.io/r/kmsquire/AV.jl)
+[![Build Status](https://travis-ci.org/kmsquire/VideoIO.jl.svg)](https://travis-ci.org/kmsquire/VideoIO.jl) [![Coverage Status](https://coveralls.io/repos/kmsquire/VideoIO.jl/badge.png)](https://coveralls.io/r/kmsquire/VideoIO.jl)
 
-libAV.jl
+VideoIO.jl
 ========
 
 Julia bindings for libav/ffmpeg.  
@@ -21,23 +21,29 @@ A trivial video player interface exists (no audio):
 
     using Images
     import ImageView
-    import AV
+    import VideoIO
 
-    f = AV.testfile("annie_oakley")  # downloaded if not available
-    AV.playvideo(f)  # no sound
+    f = VideoIO.testfile("annie_oakley")  # downloaded if not available
+    VideoIO.playvideo(f)  # no sound
 
 
 High Level Interface
 --------------------
 
-AV contains a simple high-level interface which allows reading of 
+VideoIO contains a simple high-level interface which allows reading of 
 video frames from a supported video file:
 
     using Images
     import ImageView
-    import AV
+    import VideoIO
 
-    f = AV.openvideo(video_file)
+    io = VideoIO.open(video_file)
+    f = VideoIO.openvideo(io)
+
+    # As a shortcut for just video, you can upen the file directly
+    # with openvideo
+    #f = VideoIO.openvideo(video_file)
+
     img = read(f, Image)
     canvas, _ = ImageView.view(img)
     
@@ -53,7 +59,7 @@ This code is essentially the code in `playvideo`, and will read and
 
 Low Level Interface
 -------------------
-Each libav and ffmpeg library has its own AV subpackage:
+Each libav and ffmpeg library has its own VideoIO subpackage:
 
     libavcodec    -> AVCodecs
     libavdevice   -> AVDevice
@@ -65,16 +71,16 @@ Each libav and ffmpeg library has its own AV subpackage:
     libswscale    -> SWScale
     libpostproc   -> PostProc
 
-After importing AV, you can import and use any of the subpackages directly
+After importing VideoIO, you can import and use any of the subpackages directly
 
-    import AV
+    import VideoIO
     import SWResample  # SWResample functions are now available
 
 Note that much of the functionality of these subpackages is not enabled
 by default, to avoid long compilation times as they load.  To control
 what is loaded, each library version has a file which imports that's
 modules files.  For example, ffmpeg's libswscale-v2 files are loaded by 
-$(AV_PKG_DIR)/src/ffmpeg/SWScale/v2/LIBSWSCALE.jl.
+$(VideoIO_PKG_DIR)/src/ffmpeg/SWScale/v2/LIBSWSCALE.jl.
 
 Check these files to enable any needed functionality that isn't already
 enabled.  Note that you'll probably need to do this for each version 
@@ -88,15 +94,15 @@ function for these interfaces.
 Test Videos
 -----------
 
-A small number of test videos are available through AV.TestVideos.
+A small number of test videos are available through VideoIO.TestVideos.
 These are short videos in a variety of formats with non-restrictive
 (public domain or Creative Commons) licenses.
 
-* `AV.TestVideos.available()` prints a list of all available test videos.
-* `AV.testvideo("annie_oakley")` returns an AVInput object for the 
+* `VideoIO.TestVideos.available()` prints a list of all available test videos.
+* `VideoIO.testvideo("annie_oakley")` returns an AVInput object for the 
   `"annie_oakley"` video.  The video will be downloaded if it isn't available.
-* `AV.TestVideos.download_all()` downloads all test videos
-* `AV.TestVideos.remove_all()` removes all test videos
+* `VideoIO.TestVideos.download_all()` downloads all test videos
+* `VideoIO.TestVideos.remove_all()` removes all test videos
 
 
 Status

@@ -64,5 +64,5 @@ and fix what doesn't apply, if necessary.
 
 
 
-If you wrap a version of the library not already included in AV.jl, please
+If you wrap a version of the library not already included in VideoIO.jl, please
 submit it as a pull request!

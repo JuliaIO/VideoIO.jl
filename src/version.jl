@@ -23,13 +23,13 @@ postproc_version()   = have_postproc()   ? av_version(ccall((:postproc_version, 
 
 ffmpeg_or_libav = avutil_version().patch >= 100 ? "ffmpeg" : "libav"
 
-avcodec_dir    = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "AVCodecs",   "v$(avcodec_version().major)")
-avformat_dir   = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "AVFormat",   "v$(avformat_version().major)")
-avutil_dir     = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "AVUtil",     "v$(avutil_version().major)")
-swscale_dir    = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "SWScale",    "v$(swscale_version().major)")
-avdevice_dir   = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "AVDevice",   "v$(avdevice_version().major)")
-avfilter_dir   = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "AVFilters",  "v$(avfilter_version().major)")
-avresample_dir = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "AVResample", "v$(avresample_version().major)")
-swresample_dir = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "SWResample", "v$(swresample_version().major)")
-postproc_dir   = joinpath(Pkg.dir("AV"), "src", ffmpeg_or_libav, "PostProc",   "v$(postproc_version().major)")
+avcodec_dir    = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVCodecs",   "v$(avcodec_version().major)")
+avformat_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVFormat",   "v$(avformat_version().major)")
+avutil_dir     = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVUtil",     "v$(avutil_version().major)")
+swscale_dir    = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "SWScale",    "v$(swscale_version().major)")
+avdevice_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVDevice",   "v$(avdevice_version().major)")
+avfilter_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVFilters",  "v$(avfilter_version().major)")
+avresample_dir = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVResample", "v$(avresample_version().major)")
+swresample_dir = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "SWResample", "v$(swresample_version().major)")
+postproc_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "PostProc",   "v$(postproc_version().major)")
 

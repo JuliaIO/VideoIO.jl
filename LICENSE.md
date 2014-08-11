@@ -1,4 +1,4 @@
-The libAV.jl package is licensed under the MIT Expat License:
+The VideoIO.jl package is licensed under the MIT Expat License:
 
 > Copyright (c) 2013: Isaiah Norton, Kevin Squire, and others.
 >

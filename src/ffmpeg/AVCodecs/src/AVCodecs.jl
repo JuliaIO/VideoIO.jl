@@ -1,5 +1,5 @@
 module AVCodecs
-  include(joinpath(Pkg.dir("AV"),"src","init.jl"))
+  include(joinpath(Pkg.dir("VideoIO"),"src","init.jl"))
   w(f) = joinpath(avcodec_dir, f)
 
   using AVUtil
