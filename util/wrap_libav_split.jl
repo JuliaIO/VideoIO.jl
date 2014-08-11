@@ -4,8 +4,7 @@ import DataStructures: DefaultDict
 import Base.Meta.isexpr
 using Match
 
-include("../src/AVLibs.jl")
-using AVLibs
+include("../src/init.jl")
 
 indexh         = joinpath(JULIA_HOME, "../include/clang-c/Index.h")
 clang_includes = [joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
@@ -33,7 +32,7 @@ av_lib_ver = {}
 for lib in av_libs
     try
         name = lib[4:end]
-        ver = eval(symbol(name*"_ver"))()
+        ver = eval(symbol(name*"_version"))()
         dir = eval(symbol(name*"_dir"))
         push!(av_lib_ver, (lib,ver,dir))
     end
