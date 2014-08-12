@@ -119,37 +119,6 @@ show(io::IO, vr::VideoReader) = print(io, "VideoReader(...)")
 #     codec_ctx::AVCodecContext
 # end
 
-# Utility functions
-
-isopen{I<:IO}(avin::AVInput{I}) = isopen(avin.io)
-isopen(avin::AVInput) = avin.isopen
-isopen(r::VideoReader) = isopen(r.avin)
-
-function eof(avin::AVInput)
-    !isopen(avin) && return true
-    have_frame(avin) && return false
-    got_frame = (pump(avin) != -1)
-    return !got_frame
-end
-
-function eof{I<:IO}(avin::AVInput{I})
-    !isopen(avin) && return true
-    have_frame(avin) && return false
-    return eof(avin.io)
-end
-
-eof(r::VideoReader) = eof(r.avin)
-
-have_decoded_frame(r) = r.aFrameFinished[1] > 0  # TODO: make sure the last frame was made available
-have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
-have_frame(avin::AVInput) = any([have_frame(avin.stream_contexts[i+1]) for i in avin.listening])
-
-reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
-
-bufsize_check(r::VideoReader{NO_TRANSCODE}, buf::Array{Uint8}) = (length(buf) == avpicture_get_size(r.format, r.width, r.height))
-bufsize_check(r::VideoReader{TRANSCODE}, buf::Array{Uint8}) = bufsize_check(r.transcodeContext, buf)
-bufsize_check(t::VideoTranscodeContext, buf::Array{Uint8}) = (length(buf) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
-
 # Pump input for data
 function pump(c::AVInput)
     pFormatContext = c.apFormatContext[1]
@@ -296,31 +265,6 @@ function AVInput{T<:Union(IO, String)}(source::T, avio_ctx_buffer_size=65536)
     avin
 end
 
-# Free AVIOContext object when done
-function close(avin::AVInput)
-    avin.isopen = false
-
-    for i in avin.listening
-        _close(avin.stream_contexts[i+1])
-    end
-
-    Base.sigatomic_begin()
-    if avin.apFormatContext[1] != C_NULL
-        avformat_close_input(avin.apFormatContext)
-    end
-    Base.sigatomic_end()
-
-    Base.sigatomic_begin()
-    if avin.apAVIOContext[1] != C_NULL
-        p = av_pointer_to_field(avin.apAVIOContext[1], :buffer)
-        p != C_NULL && av_freep(p)
-        av_freep(avin.apAVIOContext)
-    end
-    Base.sigatomic_end()
-end
-
-# Not exported
-open(filename::String) = AVInput(filename)
 
 function VideoReader(avin::AVInput, video_stream=1;
                      transcode::Bool=true,
@@ -411,7 +355,6 @@ function VideoReader(avin::AVInput, video_stream=1;
 end
 
 VideoReader{T<:Union(IO, String)}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
-openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
 function decode_packet(r::VideoReader, aPacket)
     # Do we already have a complete frame that hasn't been consumed?
@@ -525,11 +468,69 @@ function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{Uint8})
     end
 end
 
+# Utility functions
+
+# Not exported
+open(filename::String) = AVInput(filename)
+openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
+
 read(r::VideoReader) = retrieve(r)
 read!(r::VideoReader, buf::Array{Uint8}) = retrieve!(r, buf)
 
+isopen{I<:IO}(avin::AVInput{I}) = isopen(avin.io)
+isopen(avin::AVInput) = avin.isopen
+isopen(r::VideoReader) = isopen(r.avin)
+
+bufsize_check(r::VideoReader{NO_TRANSCODE}, buf::Array{Uint8}) = (length(buf) == avpicture_get_size(r.format, r.width, r.height))
+bufsize_check(r::VideoReader{TRANSCODE}, buf::Array{Uint8}) = bufsize_check(r.transcodeContext, buf)
+bufsize_check(t::VideoTranscodeContext, buf::Array{Uint8}) = (length(buf) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
+
+have_decoded_frame(r) = r.aFrameFinished[1] > 0  # TODO: make sure the last frame was made available
+have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
+have_frame(avin::AVInput) = any([have_frame(avin.stream_contexts[i+1]) for i in avin.listening])
+
+reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
+
+function eof(avin::AVInput)
+    !isopen(avin) && return true
+    have_frame(avin) && return false
+    got_frame = (pump(avin) != -1)
+    return !got_frame
+end
+
+function eof{I<:IO}(avin::AVInput{I})
+    !isopen(avin) && return true
+    have_frame(avin) && return false
+    return eof(avin.io)
+end
+
+eof(r::VideoReader) = eof(r.avin)
+
 close(r::VideoReader) = close(r.avin)
 _close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
+
+# Free AVIOContext object when done
+function close(avin::AVInput)
+    avin.isopen = false
+
+    for i in avin.listening
+        _close(avin.stream_contexts[i+1])
+    end
+
+    Base.sigatomic_begin()
+    if avin.apFormatContext[1] != C_NULL
+        avformat_close_input(avin.apFormatContext)
+    end
+    Base.sigatomic_end()
+
+    Base.sigatomic_begin()
+    if avin.apAVIOContext[1] != C_NULL
+        p = av_pointer_to_field(avin.apAVIOContext[1], :buffer)
+        p != C_NULL && av_freep(p)
+        av_freep(avin.apAVIOContext)
+    end
+    Base.sigatomic_end()
+end
 
 try
     if isa(Main.Images, Module)
@@ -560,6 +561,7 @@ try
         # Define read and retrieve for Images
         global playvideo
         export playvideo
+
         function playvideo(video)
             f = VideoIO.openvideo(video)
             img = read(f, Main.Images.Image)
