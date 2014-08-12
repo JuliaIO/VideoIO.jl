@@ -2,6 +2,8 @@ module VideoIO
 
 include("init.jl")
 
+abstract _AVClass # used to set options on AVClass-enabled types
+
 using AVUtil
 using AVCodecs
 using AVFormat

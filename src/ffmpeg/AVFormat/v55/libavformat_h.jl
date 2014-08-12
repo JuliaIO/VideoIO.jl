@@ -1,6 +1,6 @@
 
 import Base.zero
-
+import VideoIO._AVClass
 
 export
     AVIO_SEEKABLE_NORMAL,
@@ -124,7 +124,7 @@ immutable AVIOInterruptCB
     opaque::Ptr{Void}
 end
 
-immutable AVIOContext
+immutable AVIOContext <: _AVClass
     av_class::Ptr{AVClass}
     buffer::Ptr{Cuchar}
     buffer_size::Cint
@@ -1471,7 +1471,7 @@ const AVFMT_DURATION_FROM_BITRATE = uint32(2)
 typealias AVFormatInternal Void
 typealias av_format_control_message Ptr{Void}
 
-immutable AVFormatContext
+immutable AVFormatContext <: _AVClass
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}
