@@ -22,7 +22,7 @@ A trivial video player interface exists (no audio):
     import ImageView
     import VideoIO
 
-    f = VideoIO.testfile("annie_oakley")  # downloaded if not available
+    f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
     VideoIO.playvideo(f)  # no sound
 
 Note that `ImageView` must be imported before `VideoIO` for the `playvideo`
