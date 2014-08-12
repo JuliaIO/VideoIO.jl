@@ -19,13 +19,14 @@ Simple Interface
 ----------------
 A trivial video player interface exists (no audio):
 
-    using Images
     import ImageView
     import VideoIO
 
     f = VideoIO.testfile("annie_oakley")  # downloaded if not available
     VideoIO.playvideo(f)  # no sound
 
+Note that `ImageView` must be imported before `VideoIO` for the `playvideo`
+function to be available.
 
 High Level Interface
 --------------------
@@ -55,6 +56,10 @@ video frames from a supported video file:
 
 This code is essentially the code in `playvideo`, and will read and 
 (without the `sleep`) play a movie file as fast as possible.
+
+As with the `playvideo` function, the `Images` and `ImageView` packages
+must be loaded before `VideoIO` for the appropriate functions to be
+available.
 
 
 Low Level Interface

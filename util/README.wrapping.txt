@@ -2,11 +2,11 @@ Wrapping libav/ffmpeg libraries
 -------------------------------
 
 Wrapping libav and ffmpeg is currently achieved using the wrap_libav_split.jl
-script, which uses (a modified) Clang.jl.
+script, which uses (a slightly modified) Clang.jl.
 
-At this instant, the modifications to Clang.jl require
+At this instant, Clang.jl requires
 
-* applying PR #98 (https://github.com/ihnorton/Clang.jl/pull/98)
+* the master branch of Clang ( Pkg.checkout("Clang") )
 * changing Clang to output immutable types for all structs, by applying the
   following patch (on top of #98):
 

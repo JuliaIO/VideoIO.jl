@@ -32,7 +32,7 @@ src/libav/AVDevice/v54
 ...
 ```
 
-At the top level, `VideoIO.jl` is loaded.  It detects the library versions for each library (e.g., 'v53'), which are made available to the submodules.  The submodule can then loads the appropriate set of wrappers by including a top level file in the version subdirectory
+At the top level, `VideoIO.jl` is loaded.  It detects the library versions for each library (e.g., 'v53'), which are made available to the submodules.  The submodule can then load the appropriate set of wrappers by including the appropriate file in the version subdirectory.
 
 Right now, `AVUtil`, `AVFormat`, `AVCodecs`, and `SWScale` are loaded by `VideoIO.jl`, which enables basic video functionality.
 
@@ -49,6 +49,4 @@ This can also be done independently without loading VideoIO if `init.jl` is incl
 include(joinpath(Pkg.dir("VideoIO"),"src","init.jl"))
 import AVDevice
 ```
-
-`av_capture.jl` provides a minimal video interface, which is used by `examples/playvid.jl`.
 
