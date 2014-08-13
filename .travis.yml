@@ -20,6 +20,7 @@ script:
     - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("VideoIO"))`); Pkg.pin("VideoIO"); Pkg.resolve(); Pkg.add("Images"); Pkg.add("ZipFile"); Pkg.checkout("ZipFile"); Pkg.checkout("BinDeps")'
     - dpkg -l libavcodec53
     - dpkg -L libavcodec53
+    - apt-cache show libavcodec53
     - sudo ldconfig
     - julia -e 'Pkg.build("VideoIO")'
     - julia -e '@show dlopen("libavcodec.so.53")'
