@@ -4,5 +4,6 @@ module AVDevice
 
   using AVUtil
   using AVFormat
+  using AVCodecs
   include(w("LIBAVDEVICE.jl"))
 end

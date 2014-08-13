@@ -540,7 +540,7 @@ if have_avdevice()
     end
 
     @linux_only begin
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("v4l2")
+        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
         DEFAULT_CAMERA_DEVICE = "/dev/video0"
     end
 
