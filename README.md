@@ -71,10 +71,14 @@ Each libav and ffmpeg library has its own VideoIO subpackage:
     libavfilter   -> AVFilters
     libavformat   -> AVFormat
     libavutil     -> AVUtil
+    libswscale    -> SWScale
+
+The following three files are related to ffmpeg/libav, but currently not
+exposed:
+
     libavresample -> AVResample (libav only)
     libswresample -> SWResample (ffmpeg only)
-    libswscale    -> SWScale
-    libpostproc   -> PostProc
+    libpostproc   -> PostProc   (not wrapped)
 
 After importing VideoIO, you can import and use any of the subpackages directly
 
