@@ -2,7 +2,7 @@
 
 import Base: read, read!, show, close, eof, isopen
 
-export read, read!, pump, openvideo
+export read, read!, pump, openvideo, opencamera
 
 type StreamInfo
     stream_index0::Int             # zero-based
@@ -156,14 +156,9 @@ end
 const read_packet = cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{Uint8}, Cint))
 
 
-function open_avinput(avin::AVInput, io::IO)
+function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
 
     !isreadable(io) && error("IO not readable")
-
-    # Allocate AVFormatContext
-    if (avin.apFormatContext[1] = avformat_alloc_context()) == C_NULL
-        error("Unable to allocate AVFormatContext (out of memory)")
-    end
 
     # These allow control over how much of the stream to consume when
     # determining the stream type
@@ -190,17 +185,17 @@ function open_avinput(avin::AVInput, io::IO)
     av_setfield(avin.apFormatContext[1], :pb, avin.apAVIOContext[1])
 
     # "Open" the input
-    if avformat_open_input(avin.apFormatContext, C_NULL, C_NULL, C_NULL) != 0
+    if avformat_open_input(avin.apFormatContext, C_NULL, input_format, C_NULL) != 0
         error("Unable to open input")
     end
 
     nothing
 end
 
-function open_avinput(avin::AVInput, source::String)
+function open_avinput(avin::AVInput, source::String, input_format=C_NULL)
     if avformat_open_input(avin.apFormatContext,
                            source,
-                           C_NULL,
+                           input_format,
                            C_NULL)    != 0
         error("Could not open file $source")
     end
@@ -208,14 +203,14 @@ function open_avinput(avin::AVInput, source::String)
     nothing
 end
 
-function AVInput{T<:Union(IO, String)}(source::T, avio_ctx_buffer_size=65536)
+function AVInput{T<:Union(IO, String)}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
 
     # Register all codecs and formats
     av_register_all()
     av_log_set_level(AVUtil.AV_LOG_ERROR)
 
     aPacket = [AVPacket()]
-    apFormatContext = Ptr{AVFormatContext}[C_NULL]
+    apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
     apAVIOContext = Ptr{AVIOContext}[C_NULL]
 
     # Allocate this object (needed to pass into AVIOContext in open_avinput)
@@ -226,7 +221,7 @@ function AVInput{T<:Union(IO, String)}(source::T, avio_ctx_buffer_size=65536)
     finalizer(avin, close)
 
     # Set up the format context and open the input, based on the type of source
-    open_avinput(avin, source)
+    open_avinput(avin, source, input_format)
     avin.isopen = true
 
     # Get the stream information
@@ -532,6 +527,34 @@ function close(avin::AVInput)
     Base.sigatomic_end()
 end
 
+
+### Camera Functions
+
+if have_avdevice()
+    import AVDevice
+    AVDevice.avdevice_register_all()
+
+    @windows_only begin
+        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
+        DEFAULT_CAMERA_DEVICE = "0"
+    end
+
+    @linux_only begin
+        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
+        DEFAULT_CAMERA_DEVICE = "/dev/video0"
+    end
+
+    @osx_only begin
+        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
+        DEFAULT_CAMERA_DEVICE = "Integrated"
+    end
+
+    function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)
+        camera = AVInput(device, format)
+        VideoReader(camera, args...; kwargs...)
+    end
+end
+
 try
     if isa(Main.Images, Module)
         # Define read and retrieve for Images
@@ -559,11 +582,10 @@ end
 try
     if isa(Main.ImageView, Module)
         # Define read and retrieve for Images
-        global playvideo
-        export playvideo
+        global playvideo, viewcam, play
+        export playvideo, viewcam, play
 
-        function playvideo(video)
-            f = VideoIO.openvideo(video)
+        function play(f)
             img = read(f, Main.Images.Image)
             canvas, _ = Main.ImageView.view(img)
 
@@ -571,6 +593,22 @@ try
                 read!(f, img)
                 Main.ImageView.view(canvas, img)
                 sleep(1/f.framerate)
+            end
+        end
+
+        function playvideo(video)
+            f = VideoIO.openvideo(video)
+            play(f)
+        end
+
+        if have_avdevice()
+            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
+                camera = opencamera(device, format)
+                play(camera)
+            end
+        else
+            function viewcam()
+                error("libavdevice not present")
             end
         end
     end
