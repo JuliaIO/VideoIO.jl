@@ -22,6 +22,8 @@ script:
     - dpkg -L libavcodec53
     - sudo ldconfig
     - julia -e 'Pkg.build("VideoIO")'
+    - julia -e '@show dlopen("libavcodec.so.53")'
+    - julia -e '@show dlopen("/usr/lib/x86_64-linux-gnu/libavcodec.so.53")'
     - julia -e 'using BinDeps; BinDeps.debug("VideoIO")'
     - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage test/runtests.jl; fi
     - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
