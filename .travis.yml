@@ -18,10 +18,11 @@ before_install:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
     - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("VideoIO"))`); Pkg.pin("VideoIO"); Pkg.resolve(); Pkg.add("Images"); Pkg.add("ZipFile"); Pkg.checkout("ZipFile"); Pkg.checkout("BinDeps")'
-    - julia -e 'Pkg.build("VideoIO")'
-    - julia -e 'using BinDeps; BinDeps.debug("VideoIO")'
     - dpkg -l libavcodec53
     - dpkg -L libavcodec53
+    - sudo ldconfig
+    - julia -e 'Pkg.build("VideoIO")'
+    - julia -e 'using BinDeps; BinDeps.debug("VideoIO")'
     - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage test/runtests.jl; fi
     - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
 
