@@ -13,7 +13,8 @@ library versions:
 
 Feel free to request support for additional libav/ffmpeg 
 versions, although earlier versions may be too challenging to
-support.
+support. If you encounter any problems, please add the output
+of `VideoIO.versioninfo()` to your report.
 
 Simple Interface
 ----------------
