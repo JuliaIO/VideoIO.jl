@@ -33,3 +33,15 @@ avresample_dir = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVResampl
 swresample_dir = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "SWResample", "v$(swresample_version().major)")
 postproc_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "PostProc",   "v$(postproc_version().major)")
 
+function versioninfo()
+    println("Using $ffmpeg_or_libav")
+    println("AVCodecs version $(avcodec_version())")
+    println("AVFormat version $(avformat_version())")
+    println("AVUtil version $(avutil_version())")
+    println("SWScale version $(swscale_version())")
+    println("AVDevice version $(avdevice_version())")
+    println("AVFilters version $(avfilter_version())")
+    println("AVResample version $(avresample_version())")
+    println("SWResample version $(swresample_version())")
+    println("PostProc version $(postproc_version())")
+end
