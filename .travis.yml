@@ -5,13 +5,11 @@ notifications:
     email: false
 env:
     matrix:
-        #- JULIAVERSION="juliareleases"
         - JULIAVERSION="julianightlies"
 before_install:
     - sudo add-apt-repository ppa:staticfloat/julia-deps -y
     - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
     - sudo apt-get update -qq -y
-#    - sudo apt-get install git julia libavcodec54 libavformat54 libavutil52 libavfilter3 libavdevice53 libpostproc52 libswscale2 libavresample1 -y
     - sudo apt-get install git julia libavcodec53 libavformat53 libavutil51 libavfilter2 libavdevice53 libpostproc52 libswscale2 -y
     - git config --global user.name "Travis User"
     - git config --global user.email "travis@example.net"
