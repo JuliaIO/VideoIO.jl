@@ -15,11 +15,13 @@ before_install:
     - git config --global user.email "travis@example.net"
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-    - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.add("Images"); Pkg.checkout("ZipFile")'
+    - julia -e 'Pkg.init(); Pkg.clone(pwd());'
     - dpkg -l libavcodec53
     - dpkg -L libavcodec53
     - apt-cache show libavcodec53
+    - julia -e 'Pkg.build("VideoIO")'
     - sudo ldconfig
+    - julia -e 'Pkg.build("VideoIO")'
     - julia -e 'using BinDeps; BinDeps.debug("VideoIO")'
     - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage test/runtests.jl; fi
     - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
