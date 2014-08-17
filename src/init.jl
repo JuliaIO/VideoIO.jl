@@ -7,7 +7,7 @@ using BinDeps
 
 if !isdefined(:libavcodec)
     include("../deps/deps.jl")
-    #@BinDeps.load_dependencies
+    @show libavutil
 end
 
 if !isdefined(:ffmpeg_or_libav)
