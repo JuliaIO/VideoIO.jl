@@ -5,19 +5,17 @@ notifications:
     email: false
 env:
     matrix:
-        #- JULIAVERSION="juliareleases"
         - JULIAVERSION="julianightlies"
 before_install:
     - sudo add-apt-repository ppa:staticfloat/julia-deps -y
     - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
     - sudo apt-get update -qq -y
-#    - sudo apt-get install git julia libavcodec54 libavformat54 libavutil52 libavfilter3 libavdevice53 libpostproc52 libswscale2 libavresample1 -y
     - sudo apt-get install git julia libavcodec53 libavformat53 libavutil51 libavfilter2 libavdevice53 libpostproc52 libswscale2 -y
     - git config --global user.name "Travis User"
     - git config --global user.email "travis@example.net"
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-    - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("VideoIO"))`); Pkg.pin("VideoIO"); Pkg.resolve(); Pkg.add("Images"); Pkg.add("ZipFile"); Pkg.checkout("ZipFile")'
-    - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage test/runtests.jl; fi
+    - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("VideoIO")'
+    - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage -e 'Pkg.test("VideoIO")'; fi
     - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
 
