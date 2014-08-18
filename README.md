@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/kmsquire/VideoIO.jl.svg)](https://travis-ci.org/kmsquire/VideoIO.jl) [![Coverage Status](https://coveralls.io/repos/kmsquire/VideoIO.jl/badge.png)](https://coveralls.io/r/kmsquire/VideoIO.jl)
 
 VideoIO.jl
-========
+==========
 
 Julia bindings for libav/ffmpeg.  
 
@@ -11,9 +11,14 @@ library versions:
 * libav 0.8, 9, 10
 * ffmpeg 2.2, 2.3
 
+Video images may be read as raw arrays, or optionally, `Image`
+objects (if `Images.jl` is installed and loaded first).
+
 Feel free to request support for additional libav/ffmpeg 
 versions, although earlier versions may be too challenging to
-support. If you encounter any problems, please add the output
+support. 
+
+If you encounter any problems, please add the output
 of `VideoIO.versioninfo()` to your report.
 
 Simple Interface
