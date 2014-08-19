@@ -546,7 +546,8 @@ if have_avdevice()
 
     @osx_only begin
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
-        DEFAULT_CAMERA_DEVICE = "Integrated"
+        DEFAULT_CAMERA_DEVICE = "FaceTime"
+        #DEFAULT_CAMERA_DEVICE = "Integrated"
     end
 
     function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)
