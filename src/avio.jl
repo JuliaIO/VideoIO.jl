@@ -585,12 +585,14 @@ try
         global playvideo, viewcam, play
         export playvideo, viewcam, play
 
-        function play(f)
+        function play(f, flip=false)
             img = read(f, Main.Images.Image)
+            flip && (img = fliplr(img))
             canvas, _ = Main.ImageView.view(img)
 
             while !eof(f)
                 read!(f, img)
+                flip && (img = fliplr(img))
                 Main.ImageView.view(canvas, img)
                 sleep(1/f.framerate)
             end
@@ -604,7 +606,7 @@ try
         if have_avdevice()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
                 camera = opencamera(device, format)
-                play(camera)
+                play(camera, true)
             end
         else
             function viewcam()

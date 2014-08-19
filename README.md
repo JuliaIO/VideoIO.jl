@@ -31,6 +31,9 @@ A trivial video player interface exists (no audio):
     f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
     VideoIO.playvideo(f)  # no sound
 
+    # Aternatively, you can just open the camera
+    #VideoIO.viewcam()
+
 Note that `ImageView` must be imported before `VideoIO` for the `playvideo`
 function to be available.
 
