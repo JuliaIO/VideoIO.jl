@@ -38,7 +38,7 @@ High Level Interface
 --------------------
 
 VideoIO contains a simple high-level interface which allows reading of 
-video frames from a supported video file:
+video frames from a supported video file, or from a camera device:
 
     using Images
     import ImageView
@@ -50,6 +50,12 @@ video frames from a supported video file:
     # As a shortcut for just video, you can upen the file directly
     # with openvideo
     #f = VideoIO.openvideo(video_file)
+
+    # Alternatively, you can open the camera with opencamera().
+    # The default device is "0" on Windows, "/dev/video0" on Linux,
+    # and "Integrated Camera" on OSX.  If using something other
+    # than the default, pass it in as the first parameter (as a string).
+    #f = VideoIO.opencamera()
 
     img = read(f, Image)
     canvas, _ = ImageView.view(img)
