@@ -21,6 +21,13 @@ support.
 If you encounter any problems, please add the output
 of `VideoIO.versioninfo()` to your report.
 
+Installation
+------------
+Use the Julia package manager.  Within Julia, do:
+```julia
+Pkg.add("VideoIO")
+```
+
 Simple Interface
 ----------------
 A trivial video player interface exists (no audio):
