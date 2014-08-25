@@ -83,6 +83,9 @@ provides(AptGet,
 provides(Yum,
          {"ffmpeg" => libav_libs})
 
+provides(Pacman,
+         {"ffmpeg" => libav_libs})
+
 provides(Sources,
          URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"), 
          libav_libs)
