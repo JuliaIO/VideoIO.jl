@@ -1,5 +1,5 @@
 using Base.Test
-using Images
+using Images, FixedPointNumbers
 import VideoIO
 
 testdir = joinpath(Pkg.dir("VideoIO"), "test")
@@ -11,6 +11,11 @@ VideoIO.TestVideos.download_all()
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 println(STDERR, "Testing file reading...")
+
+function notblank(img)
+    all(green(img) .== 0x00uf8) || all(blue(img) .== 0x00uf8) || all(red(img) .== 0x00uf8) || maximum(reinterpret(Ufixed8, img)) < 0xcfuf8
+end
+
 for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
@@ -23,7 +28,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v, Image)
 
     # Find the first non-trivial image
-    while all(green(img) .== 0x00) || all(blue(img) .== 0x00) || all(red(img) .== 0x00) || maximum(img) < 0xcf
+    while notblank(img)
         read!(v, img)
     end
 
@@ -51,7 +56,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v, Image)
 
     # Find the first non-trivial image
-    while all(green(img) .== 0x00) || all(blue(img) .== 0x00) || all(red(img) .== 0x00) || maximum(img) < 0xcf
+    while notblank(img)
         read!(v, img)
     end
 

@@ -12,6 +12,14 @@ end
 
 abstract StreamContext
 
+if isdefined(Main, :Color)
+    typealias EightBitTypes Union(Uint8, Main.FixedPointNumbers.Ufixed8, Main.Color.RGB{Main.FixedPointNumbers.Ufixed8})
+elseif isdefined(Main, :FixedPointNumbers)
+    typealias EightBitTypes Union(Uint8, Main.FixedPointNumbers.Ufixed8)
+else
+    typealias EightBitTypes Uint8
+end
+
 # An audio-visual input stream/file
 type AVInput{I}
     io::I
@@ -408,7 +416,7 @@ function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
 end
 
 # Converts a grabbed frame to the correct format (RGB by default)
-function retrieve!(r::VideoReader{TRANSCODE}, buf::Array{Uint8})
+function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::Array{T})
     while !have_frame(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
@@ -451,7 +459,7 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::Array{Uint8})
     return buf
 end
 
-function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{Uint8})
+function retrieve!{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::Array{T})
     while !have_frame(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
@@ -470,15 +478,15 @@ open(filename::String) = AVInput(filename)
 openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
 read(r::VideoReader) = retrieve(r)
-read!(r::VideoReader, buf::Array{Uint8}) = retrieve!(r, buf)
+read!{T<:EightBitTypes}(r::VideoReader, buf::AbstractArray{T}) = retrieve!(r, buf)
 
 isopen{I<:IO}(avin::AVInput{I}) = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
 isopen(r::VideoReader) = isopen(r.avin)
 
-bufsize_check(r::VideoReader{NO_TRANSCODE}, buf::Array{Uint8}) = (length(buf) == avpicture_get_size(r.format, r.width, r.height))
-bufsize_check(r::VideoReader{TRANSCODE}, buf::Array{Uint8}) = bufsize_check(r.transcodeContext, buf)
-bufsize_check(t::VideoTranscodeContext, buf::Array{Uint8}) = (length(buf) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
+bufsize_check{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::Array{T}) = (length(buf)*sizeof(T) == avpicture_get_size(r.format, r.width, r.height))
+bufsize_check{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::Array{T}) = bufsize_check(r.transcodeContext, buf)
+bufsize_check{T<:EightBitTypes}(t::VideoTranscodeContext, buf::Array{T}) = (length(buf)*sizeof(T) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
 
 have_decoded_frame(r) = r.aFrameFinished[1] > 0  # TODO: make sure the last frame was made available
 have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
@@ -569,11 +577,7 @@ try
 
                 # read, retrieve
                 function $r(c::VideoReader, ::Type{Main.Images.Image}, colorspace="RGB", colordim=1, spatialorder=["x","y"])
-                    img = $r(c::VideoReader)
-                    Main.Images.Image(img, 
-                                      colorspace=colorspace, 
-                                      colordim=colordim, 
-                                      spatialorder=spatialorder)
+                    img = Main.Images.colorim($r(c::VideoReader))
                 end
             end
         end
@@ -588,13 +592,12 @@ try
 
         function play(f, flip=false)
             img = read(f, Main.Images.Image)
-            flip && (img = fliplr(img))
-            canvas, _ = Main.ImageView.view(img)
+            canvas, _ = Main.ImageView.view(img, flipy=flip)
+            buf = Main.Images.data(img)
 
             while !eof(f)
-                read!(f, img)
-                flip && (img = fliplr(img))
-                Main.ImageView.view(canvas, img)
+                read!(f, buf)
+                Main.ImageView.view(canvas, img, flipy=flip)
                 sleep(1/f.framerate)
             end
         end
