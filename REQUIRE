@@ -2,3 +2,4 @@ julia v0.3-
 ZipFile
 BinDeps 0.3.4
 @osx Homebrew
+@linux Glob
