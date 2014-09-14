@@ -2,7 +2,7 @@
 
 import Base: read, read!, show, close, eof, isopen
 
-export read, read!, pump, openvideo, opencamera
+export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
 type StreamInfo
     stream_index0::Int             # zero-based
@@ -633,7 +633,6 @@ try
     if isa(Main.ImageView, Module)
         # Define read and retrieve for Images
         global playvideo, viewcam, play
-        export playvideo, viewcam, play
 
         function play(f, flip=false)
             img = read(f, Main.Images.Image)
@@ -663,5 +662,11 @@ try
             end
         end
     end
+catch
+    global playvideo, viewcam, play
+    no_imageview() = error("Please load ImageView before VideoIO to enable play(...), playvideo(...) and viewcam()")
+    play() = no_imageview()
+    playvideo() = no_imageview()
+    viewcam() = no_imageview()
 end
 
