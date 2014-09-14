@@ -4,8 +4,8 @@ compiler:
 notifications:
     email: false
 env:
-    matrix:
-        - JULIAVERSION="julianightlies"
+    - JULIAVERSION="juliareleases"
+    - JULIAVERSION="julianightlies"
 before_install:
     - sudo add-apt-repository ppa:staticfloat/julia-deps -y
     - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
@@ -15,7 +15,8 @@ before_install:
     - git config --global user.email "travis@example.net"
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-    - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("VideoIO")'
-    - if [ $JULIAVERSION = "julianightlies" ]; then julia --code-coverage -e 'Pkg.test("VideoIO")'; fi
-    - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
+    - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO", coverage=true)'
+after_success:
+    - julia -e 'cd(Pkg.dir("VideoIO")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+
 
