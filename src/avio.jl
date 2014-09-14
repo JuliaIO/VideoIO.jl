@@ -637,12 +637,12 @@ try
 
         function play(f, flip=false)
             img = read(f, Main.Images.Image)
-            canvas, _ = Main.ImageView.view(img, flipy=flip)
+            canvas, _ = Main.ImageView.view(img, flipy=flip, interactive=false)
             buf = Main.Images.data(img)
 
             while !eof(f)
                 read!(f, buf)
-                Main.ImageView.view(canvas, img, flipy=flip)
+                Main.ImageView.view(canvas, img, flipy=flip, interactive=false)
                 sleep(1/f.framerate)
             end
         end
