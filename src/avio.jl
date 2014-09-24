@@ -132,7 +132,11 @@ function pump(c::AVInput)
     pFormatContext = c.apFormatContext[1]
 
     while true
+        !c.isopen && break
+
+        Base.sigatomic_begin()
         av_read_frame(pFormatContext, pointer(c.aPacket)) < 0 && break
+        Base.sigatomic_end()
 
         packet = c.aPacket[1]
         stream_index = packet.stream_index
