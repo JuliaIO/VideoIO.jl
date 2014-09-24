@@ -185,7 +185,8 @@ function av_opt_child_class_next(parent,prev)
 end
 
 function av_opt_set(obj,name,val,search_flags::Integer)
-    ccall((:av_opt_set,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Cint),obj,name,val,search_flags)
+   # ccall((:av_opt_set,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Cint),obj,name,val,search_flags)
+     ccall((:av_opt_set,libavutil),Cint,(Ptr{Void},Ptr{Void},Ptr{Void},Cint),obj,name,val,search_flags)
 end
 
 function av_opt_set_int(obj,name,val::Int64,search_flags::Integer)
