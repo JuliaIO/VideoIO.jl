@@ -520,8 +520,11 @@ _close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
 function close(avin::AVInput)
     avin.isopen = false
 
-    for i in avin.listening
-        _close(avin.stream_contexts[i+1])
+    ## Fixed segmentation fault issue #44 (length > 1)
+    if length(avin.listening) > 1
+      for i in avin.listening
+         _close(avin.stream_contexts[i+1])
+      end
     end
 
     # Fix for segmentation fault issue #44
