@@ -7,7 +7,7 @@ function av_setfield{T}(s::Ptr{T}, name::Symbol, value)
     field = findfirst(names(T), name)
     byteoffset = fieldoffsets(T)[field]
     S = T.types[field]
-    
+
     p = convert(Ptr{S}, s+byteoffset)
     a = pointer_to_array(p,1)
     a[1] = convert(S, value)

@@ -1,6 +1,74 @@
 **************************************************************************************************
 # List of AVOptions
-**************************************************************************************************
+************************************************************************************************
+
+Fixed segmentation fault issue #44
+Fixed #25, #31
+
+
+1. Select device
+    get_camera_devices()
+    avdevice_list_devices()
+
+2. Select pixel format
+Use Regex, search and match to identify AVPixelFormat constant
+PIXFMT = Regex(_PIX_FMT_)
+search("PIX_FMT_VAAPI_IDCT", "_FMT_")
+
+3. Select frame rate
+
+4. Select color format
+
+5. Set recording time
+
+    # Set codecs (Ptr{AVCodecContext})
+       for i = 1:FormatContext.nb_streams
+        pStream = unsafe_load(FormatContext.streams,i)
+        stream = unsafe_load(pStream)
+        pCodecContext = stream.codec
+        if (av_opt_set_dict2(pCodecContext, pDictionary, search_flags)==0)
+         println("Codec option was set!")
+        end
+       end
+     end
+    end
+
+
+function testdict(key::String, val::String)
+
+  dictionary = Ptr{Ptr{AVDictionary}}[C_NULL]  #(Void)
+  dict = dictionary[1]
+
+  flags = convert(Cint, AV_DICT_DONT_OVERWRITE)
+
+  if(av_dict_set(dict, pointer(key), pointer(val),flags)< 0) #AV_DICT_DONT_OVERWRITE
+      #returns Cint = 0 on success, AVERROR <0 on failure
+      error("Can not create a dictionary")
+  else
+      println("Yes, it worked!")
+    end
+end
+
+# Check that user entries exist!
+  fflag = cflag = dflag = false
+  keyFormats = collect(names(AVFormatContext))
+  keyCodecs = collect(names(AVCodecContext))
+  keyDevices = collect(names(AVDeviceCapabilitiesQuery))
+  UserKeys = collect(keys(user_options))
+  for k= 1:length(UserKeys)
+    if any(o-> symbol(UserKeys[k])==keyFormats[o], 1:length(keyFormats))
+        fflag = true
+    elseif any(o-> symbol(UserKeys[k])==keyCodecs[o], 1:length(keyCodecs))
+        cflag = true
+    elseif any(o-> symbol(UserKeys[k])==keyDevices[o], 1:length(keyDevices))
+        dflag = true
+     end
+  end
+
+  if fflag == false && cflag == false && dflag == false
+    error("None of the key, value pairs are compatible with the AVOptions API")
+  end
+
 
 AVOption-enabled objects (i.e., AVClass is the first element of the object)
 Selected fields that can be set with av_opt_set_from_string
@@ -297,8 +365,6 @@ immutable AVDeviceInfoList
 end
 
 
-
-
 Metadata API
 =================================================================================
 https://www.ffmpeg.org/doxygen/2.4/group__metadata__api.html
@@ -331,6 +397,66 @@ title        -- name of the work.
 track        -- number of this work in the set, can be in form current/total.
 variant_bitrate -- the total bitrate of the bitrate variant that the current stream is part of
 
+
+# VideoIO.av_opt_get_metadata(f.avin)
+
+
+## Other AVDictionary functions
+
+# Set format of input/output file
+# function open_input
+#   createAVDictionary(user_options::Dict{String,String})
+#   pFormatContext = avin.apFormatContext[1]
+#   if (avformat_open_input(pFormatContext, C_NULL, C_NULL, dictionary[1]) != 0)
+#     av_dict_free(dictionary)
+#     error("Unable to open input")
+#   else
+#    av_dict_free(dictionary)
+# end
+
+# Not working!
+# To use a list of multiple key, value pairs, use the following function
+#optdict = Dict{String, String}()
+
+# function av_set_options_using_stringdict(I::AVInput, optdict::Dict{String, String})
+#   if !I.isopen
+#     error("No input file/device open!")
+#   end
+
+#   # Set default formats (Ptr{AVFormatContext})
+#   pFormatContext = I.apFormatContext[1]
+
+#   # key, value and pair separators
+#   key_val_sep = ","
+#   pairs_sep = "//"
+
+#   # Unpack the dictionary to a single string of key,val pairs
+#   optdict = Dict{String, String}()
+#   key_list = collect(keys(optdict))
+#   list = ""
+#   for i=1:length(key_list)
+#    list = list*string(key_list[i],key_val_sep,optdict[key_list[i]], pairs_sep)
+#   end
+#   list = list[1:end-1]
+
+#   res = av_set_options_string(pFormatContext, pointer(list), pointer(key_val_sep), pointer(pairs_sep))
+#   if res < 0
+#     error("Could not set any/all options.")
+#   else
+#    ok = convert(Int64, res)
+#    ok < length(key_list)? println("$(ok) of $(length(key_list)) options were recognized."):
+#       println("All options were set!")
+#   end
+
+# end
+
+
+# deallocate keys, values and AVOption structures
+
+# av_free(outval)
+# av_opt_free(pFormatContext)
+# ffmpeg -f avfoundation -list_devices true -i ""
+# ffmpeg -f qtkit -list_devices true -i ""
 
 
  **************************************************************************************************************

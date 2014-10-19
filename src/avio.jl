@@ -550,6 +550,7 @@ end
 
 if have_avdevice()
     import AVDevice
+
     AVDevice.avdevice_register_all()
 
     function get_camera_devices(ffmpeg, idev, idev_name)
@@ -579,6 +580,48 @@ if have_avdevice()
         return CAMERA_DEVICES
     end
 
+
+    # List all pixel formats available (works at least on OSX) for the device
+    # http://www.ffmpeg.org/ffprobe-all.html#avfoundation
+    # Test in Windows and Linux?
+    #     Pixel formats:
+    #     I.... = Supported Input  format for conversion
+    #     .O... = Supported Output format for conversion
+    #     ..H.. = Hardware accelerated format
+    #     ...P. = Paletted format
+    #     ....B = Bitstream format
+
+   function get_pixel_formats(ffmpeg, idev, idev_name)
+        PIXEL_FORMATS = Dict{UTF8String, Vector{Union(UTF8String, Int)}}()
+        read_vid_fmts = false
+        idev_name = "default"
+        try
+            open(`$ffmpeg -f $idev -pix_fmts all -i $idev_name`) do io
+                for line in eachline(io)
+                # select only those formats available for both I/O
+                    if contains(line, "IO...")
+                        read_vid_fmts = true
+                        continue
+                    else
+                        read_vid_fmts = false
+                        continue
+                    end
+                    if read_vid_fmts
+                      each_pixel_format = split(line)
+                      PIXEL_FORMATS[:FLAGS_NAME] = each_pixel_format[2] # yuv420p
+                      PIXEL_FORMATS[:NB_COMPONENTS] = each_pixel_format[3] # 3
+                      PIXEL_FORMATS[:BITS_PER_PIXEL] = each_pixel_format[4] # 12
+                    end
+                end
+             end
+          end
+        if read_vid_fmts
+          return PIXEL_FORMATS
+        else
+        println("Warning: Can not read pixel formats!")
+        end
+      end
+
     @windows_only begin
         ffmpeg = joinpath(Pkg.dir("VideoIO"), "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
@@ -598,6 +641,7 @@ if have_avdevice()
     @osx_only begin
         ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
 
+
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
         global CAMERA_DEVICES = UTF8String[]
         try
@@ -608,8 +652,7 @@ if have_avdevice()
             end
         end
 
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "FaceTime"
-        #DEFAULT_CAMERA_DEVICE = "Integrated"
+        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "Built-in iSight"
     end
 
     function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)

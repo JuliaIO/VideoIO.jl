@@ -227,6 +227,7 @@ end
 
 function av_opt_get(obj,name,search_flags::Integer,out_val)
     ccall((:av_opt_get,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cint,Ptr{Ptr{Uint8}}),obj,name,search_flags,out_val)
+    #ccall((:av_opt_get,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cint,Ptr{Ptr{Void}}),obj,name,search_flags,out_val)
 end
 
 function av_opt_get_int(obj,name,search_flags::Integer,out_val)

@@ -789,7 +789,11 @@ immutable AVDictionaryEntry
     value::Ptr{Uint8}
 end
 
-typealias AVDictionary Void
+#typealias AVDictionary Void
+immutable AVDictionary
+  count::Cint
+  elems::Ptr{AVDictionaryEntry}
+end
 
 immutable AVFifoBuffer
     buffer::Ptr{Uint8}
@@ -1480,7 +1484,7 @@ const AV_PIX_FMT_XVMC = AV_PIX_FMT_XVMC_MPEG2_IDCT
 const AV_PIX_FMT_Y400A = AV_PIX_FMT_GRAY8A
 const AV_PIX_FMT_GBR24P = AV_PIX_FMT_GBRP
 
-macro AV_PIX_FMT_NE (be, le) 
+macro AV_PIX_FMT_NE (be, le)
     symbol("AV_PIX_FMT_$le")
 end
 
