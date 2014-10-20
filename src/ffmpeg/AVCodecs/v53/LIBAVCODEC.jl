@@ -2,7 +2,7 @@ include("libavcodec_h.jl")
 
 include("avcodec.jl")
 
-const AV_NOPTS_VALUE = int64( 0x8000000000000000 )
+const AV_NOPTS_VALUE = reinterpret(Int64, 0x8000000000000000)
 
 function AVFrame()
     ns = names(AVFrame)
