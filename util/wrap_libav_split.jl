@@ -75,7 +75,8 @@ function wrap_library(library, path, outdir = ".")
                           header_wrapped = check_use_header, 
                           header_library = library,
                           header_outputfile = x->get_header_outfile(outdir,x),
-                          rewriter = rewrite, )
+                          rewriter = rewrite, 
+                          options = wrap_c.InternalOptions(true, true))
     wrap_c.run(context)
 
     if outdir != "."
