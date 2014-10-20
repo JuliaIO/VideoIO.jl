@@ -1,0 +1,5 @@
+diff -r ../util/ffmpeg2.4/SWScale/v3/LIBSWSCALE.jl ffmpeg/SWScale/v3/LIBSWSCALE.jl
+3c3
+< #include("swscale.jl")
+---
+> include("swscale.jl")

@@ -1,0 +1,13 @@
+diff -r ../util/ffmpeg2.4/AVFilters/v5/libavfilter_h.jl ffmpeg/AVFilters/v5/libavfilter_h.jl
+33c33
+<     AVFilter,
+---
+>     AVFilter_,
+148c148
+< immutable AVFilter
+---
+> immutable AVFilter_
+160c160
+<     next::Ptr{AVFilter}
+---
+>     next::Ptr{AVFilter_}

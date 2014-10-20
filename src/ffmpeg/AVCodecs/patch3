@@ -1,0 +1,242 @@
+diff -r ../util/ffmpeg2.4/AVCodecs/v56/libavcodec_h.jl ffmpeg/AVCodecs/v56/libavcodec_h.jl
+956,967c956,967
+<     AV_LOCK_DESTROY,
+<     DV_PROFILE_BYTES,
+<     Array_2_AVRational,
+<     Array_3_Cint,
+<     AVDVProfile,
+<     vaapi_context,
+<     AVVDPAUPictureInfo,
+<     AVVDPAU_Render2,
+<     AVVDPAUContext,
+<     vdpau_render_state,
+<     AV_XVMC_ID,
+<     xvmc_pix_fmt
+---
+>     AV_LOCK_DESTROY #,
+>     # DV_PROFILE_BYTES,
+>     # Array_2_AVRational,
+>     # Array_3_Cint,
+>     # AVDVProfile,
+>     # vaapi_context,
+>     # AVVDPAUPictureInfo,
+>     # AVVDPAU_Render2,
+>     # AVVDPAUContext,
+>     # vdpau_render_state,
+>     # AV_XVMC_ID,
+>     # xvmc_pix_fmt
+2260c2260
+< typealias AVFrame Void
+---
+> # typealias AVFrame Void
+2628c2628
+< const DV_PROFILE_BYTES = 6 * 80
+---
+> # const DV_PROFILE_BYTES = 6 * 80
+2630,2729c2630,2729
+< immutable Array_2_AVRational
+<     d1::AVRational
+<     d2::AVRational
+< end
+< 
+< zero(::Type{Array_2_AVRational}) = Array_2_AVRational(fill(zero(AVRational),2)...)
+< 
+< immutable Array_3_Cint
+<     d1::Cint
+<     d2::Cint
+<     d3::Cint
+< end
+< 
+< zero(::Type{Array_3_Cint}) = Array_3_Cint(fill(zero(Cint),3)...)
+< 
+< immutable AVDVProfile
+<     dsf::Cint
+<     video_stype::Cint
+<     frame_size::Cint
+<     difseg_size::Cint
+<     n_difchan::Cint
+<     time_base::AVRational
+<     ltc_divisor::Cint
+<     height::Cint
+<     width::Cint
+<     sar::Array_2_AVRational
+<     pix_fmt::AVPixelFormat
+<     bpm::Cint
+<     block_sizes::Ptr{Uint8}
+<     audio_stride::Cint
+<     audio_min_samples::Array_3_Cint
+<     audio_samples_dist::Array_5_Cint
+<     audio_shuffle::Ptr{Void}
+< end
+< 
+< immutable vaapi_context
+<     display::Ptr{Void}
+<     config_id::Uint32
+<     context_id::Uint32
+<     pic_param_buf_id::Uint32
+<     iq_matrix_buf_id::Uint32
+<     bitplane_buf_id::Uint32
+<     slice_buf_ids::Ptr{Uint32}
+<     n_slice_buf_ids::Uint32
+<     slice_buf_ids_alloc::Uint32
+<     slice_params::Ptr{Void}
+<     slice_param_size::Uint32
+<     slice_params_alloc::Uint32
+<     slice_count::Uint32
+<     slice_data::Ptr{Uint8}
+<     slice_data_size::Uint32
+< end
+< 
+< const FF_VDPAU_STATE_USED_FOR_RENDER = 1
+< const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+< 
+< immutable AVVDPAUPictureInfo
+<     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
+< end
+< 
+< typealias AVVDPAU_Render2 Ptr{Void}
+< 
+< immutable AVVDPAUContext
+<     decoder::VdpDecoder
+<     render::Ptr{VdpDecoderRender}
+<     info::AVVDPAUPictureInfo
+<     bitstream_buffers_allocated::Cint
+<     bitstream_buffers_used::Cint
+<     bitstream_buffers::Ptr{VdpBitstreamBuffer}
+<     render2::AVVDPAU_Render2
+< end
+< 
+< immutable vdpau_render_state
+<     surface::VdpVideoSurface
+<     state::Cint
+<     bitstream_buffers_allocated::Cint
+<     bitstream_buffers_used::Cint
+<     bitstream_buffers::Ptr{VdpBitstreamBuffer}
+<     info::AVVDPAUPictureInfo
+< end
+< 
+< const AV_XVMC_ID = 0x1dc711c0
+< 
+< immutable xvmc_pix_fmt
+<     xvmc_id::Cint
+<     data_blocks::Ptr{Int16}
+<     mv_blocks::Ptr{Cint}
+<     allocated_mv_blocks::Cint
+<     allocated_data_blocks::Cint
+<     idct::Cint
+<     unsigned_intra::Cint
+<     p_surface::Ptr{Cint}
+<     p_past_surface::Ptr{Cint}
+<     p_future_surface::Ptr{Cint}
+<     picture_structure::Uint32
+<     flags::Uint32
+<     start_mv_blocks_num::Cint
+<     filled_mv_blocks_num::Cint
+<     next_free_data_block_num::Cint
+< end
+---
+> # immutable Array_2_AVRational
+> #     d1::AVRational
+> #     d2::AVRational
+> # end
+> 
+> # zero(::Type{Array_2_AVRational}) = Array_2_AVRational(fill(zero(AVRational),2)...)
+> 
+> # immutable Array_3_Cint
+> #     d1::Cint
+> #     d2::Cint
+> #     d3::Cint
+> # end
+> 
+> # zero(::Type{Array_3_Cint}) = Array_3_Cint(fill(zero(Cint),3)...)
+> 
+> # immutable AVDVProfile
+> #     dsf::Cint
+> #     video_stype::Cint
+> #     frame_size::Cint
+> #     difseg_size::Cint
+> #     n_difchan::Cint
+> #     time_base::AVRational
+> #     ltc_divisor::Cint
+> #     height::Cint
+> #     width::Cint
+> #     sar::Array_2_AVRational
+> #     pix_fmt::AVPixelFormat
+> #     bpm::Cint
+> #     block_sizes::Ptr{Uint8}
+> #     audio_stride::Cint
+> #     audio_min_samples::Array_3_Cint
+> #     audio_samples_dist::Array_5_Cint
+> #     audio_shuffle::Ptr{Void}
+> # end
+> 
+> # immutable vaapi_context
+> #     display::Ptr{Void}
+> #     config_id::Uint32
+> #     context_id::Uint32
+> #     pic_param_buf_id::Uint32
+> #     iq_matrix_buf_id::Uint32
+> #     bitplane_buf_id::Uint32
+> #     slice_buf_ids::Ptr{Uint32}
+> #     n_slice_buf_ids::Uint32
+> #     slice_buf_ids_alloc::Uint32
+> #     slice_params::Ptr{Void}
+> #     slice_param_size::Uint32
+> #     slice_params_alloc::Uint32
+> #     slice_count::Uint32
+> #     slice_data::Ptr{Uint8}
+> #     slice_data_size::Uint32
+> # end
+> 
+> # const FF_VDPAU_STATE_USED_FOR_RENDER = 1
+> # const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+> 
+> # immutable AVVDPAUPictureInfo
+> #     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
+> # end
+> 
+> # typealias AVVDPAU_Render2 Ptr{Void}
+> 
+> # immutable AVVDPAUContext
+> #     decoder::VdpDecoder
+> #     render::Ptr{VdpDecoderRender}
+> #     info::AVVDPAUPictureInfo
+> #     bitstream_buffers_allocated::Cint
+> #     bitstream_buffers_used::Cint
+> #     bitstream_buffers::Ptr{VdpBitstreamBuffer}
+> #     render2::AVVDPAU_Render2
+> # end
+> 
+> # immutable vdpau_render_state
+> #     surface::VdpVideoSurface
+> #     state::Cint
+> #     bitstream_buffers_allocated::Cint
+> #     bitstream_buffers_used::Cint
+> #     bitstream_buffers::Ptr{VdpBitstreamBuffer}
+> #     info::AVVDPAUPictureInfo
+> # end
+> 
+> # const AV_XVMC_ID = 0x1dc711c0
+> 
+> # immutable xvmc_pix_fmt
+> #     xvmc_id::Cint
+> #     data_blocks::Ptr{Int16}
+> #     mv_blocks::Ptr{Cint}
+> #     allocated_mv_blocks::Cint
+> #     allocated_data_blocks::Cint
+> #     idct::Cint
+> #     unsigned_intra::Cint
+> #     p_surface::Ptr{Cint}
+> #     p_past_surface::Ptr{Cint}
+> #     p_future_surface::Ptr{Cint}
+> #     picture_structure::Uint32
+> #     flags::Uint32
+> #     start_mv_blocks_num::Cint
+> #     filled_mv_blocks_num::Cint
+> #     next_free_data_block_num::Cint
+> # end
+diff -r ../util/ffmpeg2.4/AVCodecs/v56/LIBAVCODEC.jl ffmpeg/AVCodecs/v56/LIBAVCODEC.jl
+3c3
+< #include("avcodec.jl")
+---
+> include("avcodec.jl")

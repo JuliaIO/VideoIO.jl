@@ -1,0 +1,5 @@
+diff -r ../util/ffmpeg2.4/AVFormat/v56/LIBAVFORMAT.jl ffmpeg/AVFormat/v56/LIBAVFORMAT.jl
+3c3
+< #include("avformat.jl")
+---
+> include("avformat.jl")
