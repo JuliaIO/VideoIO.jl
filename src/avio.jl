@@ -172,12 +172,6 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
 
     !isreadable(io) && error("IO not readable")
 
-    # These allow control over how much of the stream to consume when
-    # determining the stream type
-    # TODO: Change these defaults if necessary, or allow user to set
-    #av_opt_set(avin.apFormatContext[1], "probesize", "100000000", 0)
-    #av_opt_set(avin.apFormatContext[1], "analyzeduration", "1000000", 0)
-
     # Allocate the io buffer used by AVIOContext
     # Must be done with av_malloc, because it could be reallocated
     if (avio_ctx_buffer = av_malloc(avin.avio_ctx_buffer_size)) == C_NULL
@@ -516,15 +510,13 @@ eof(r::VideoReader) = eof(r.avin)
 close(r::VideoReader) = close(r.avin)
 _close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
 
+
 # Free AVIOContext object when done
 function close(avin::AVInput)
     avin.isopen = false
 
-    ## Fixed segmentation fault issue #44 (length > 1)
-    if length(avin.listening) > 1
-      for i in avin.listening
-         _close(avin.stream_contexts[i+1])
-      end
+    for i in avin.listening
+      _close(avin.stream_contexts[i+1])
     end
 
     # Fix for segmentation fault issue #44
@@ -581,47 +573,6 @@ if have_avdevice()
     end
 
 
-    # List all pixel formats available (works at least on OSX) for the device
-    # http://www.ffmpeg.org/ffprobe-all.html#avfoundation
-    # Test in Windows and Linux?
-    #     Pixel formats:
-    #     I.... = Supported Input  format for conversion
-    #     .O... = Supported Output format for conversion
-    #     ..H.. = Hardware accelerated format
-    #     ...P. = Paletted format
-    #     ....B = Bitstream format
-
-   function get_pixel_formats(ffmpeg, idev, idev_name)
-        PIXEL_FORMATS = Dict{UTF8String, Vector{Union(UTF8String, Int)}}()
-        read_vid_fmts = false
-        idev_name = "default"
-        try
-            open(`$ffmpeg -f $idev -pix_fmts all -i $idev_name`) do io
-                for line in eachline(io)
-                # select only those formats available for both I/O
-                    if contains(line, "IO...")
-                        read_vid_fmts = true
-                        continue
-                    else
-                        read_vid_fmts = false
-                        continue
-                    end
-                    if read_vid_fmts
-                      each_pixel_format = split(line)
-                      PIXEL_FORMATS[:FLAGS_NAME] = each_pixel_format[2] # yuv420p
-                      PIXEL_FORMATS[:NB_COMPONENTS] = each_pixel_format[3] # 3
-                      PIXEL_FORMATS[:BITS_PER_PIXEL] = each_pixel_format[4] # 12
-                    end
-                end
-             end
-          end
-        if read_vid_fmts
-          return PIXEL_FORMATS
-        else
-        println("Warning: Can not read pixel formats!")
-        end
-      end
-
     @windows_only begin
         ffmpeg = joinpath(Pkg.dir("VideoIO"), "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
@@ -640,7 +591,6 @@ if have_avdevice()
 
     @osx_only begin
         ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
-
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
         global CAMERA_DEVICES = UTF8String[]

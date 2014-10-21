@@ -82,11 +82,11 @@ export document_all_options,
        create_device_query,
        query_device_ranges,
        set_device_with_query,
-       list_devices,
-       get_metadata
+       list_devices
+       # get_metadata -> requires AVUtil >= v53
 
 
-# Generic support functions
+# Support functions
 cint(n) = convert(Cint,n)
 
 # **************************************************************************************************************
@@ -98,64 +98,64 @@ cint(n) = convert(Cint,n)
 # **************************************************************************************************************
 
 function document_all_options(I::AVInput, view=false)
-  if !I.isopen
-    error("No input file/device open!")
-  end
+    if !I.isopen
+        error("No input file/device open!")
+    end
 
-  # Set default formats on Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
-  prevs = Ptr{AVOption}[C_NULL]
-  prev = prevs[1]
+    # Set default formats on Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
+    prevs = Ptr{AVOption}[C_NULL]
+    prev = prevs[1]
 
-  # Initialize the search of AVOption with Ptr{AVFormatContext}
-  obj = pFormatContext
-  # Create a dictionary of {option => [minvalue, maxvalue]}
-  options = Dict{String,Vector{Cdouble}}()
+    # Initialize the search of AVOption with Ptr{AVFormatContext}
+    obj = pFormatContext
+    # Create a dictionary of {option => [minvalue, maxvalue]}
+    options = Dict{String,Vector{Cdouble}}()
 
-  # Run through all AVOptions and store them in options
-  while(true)
-    while (true)
-       prev = av_opt_next(obj, prev)
-       if prev ==C_NULL
-         break
+    # Run through all AVOptions and store them in options
+    while(true)
+       while (true)
+          prev = av_opt_next(obj, prev)
+          if prev ==C_NULL
+              break
+          end
+          avoption = unsafe_load(prev)
+          name = bytestring(avoption.name)
+          options[name] = [avoption.min, avoption.max]
        end
-       avoption = unsafe_load(prev)
-       name = bytestring(avoption.name)
-       options[name] = [avoption.min, avoption.max]
+
+       obj = av_opt_child_next(obj, prev)
+       if obj == C_NULL
+           break
+       end
     end
 
-    obj = av_opt_child_next(obj, prev)
-    if obj == C_NULL
-      break
+    if view
+        print_options (options)
     end
-  end
 
-  if view
-    print_options (options)
-  end
-
-  options
+    options
 end
 
 function print_options (options::Dict{String,Vector{Cdouble}})
+    if isempty(options)
+        error("Options dictionary is empty!")
+    end
 
- if isempty(options)
-   error("Options dictionary is empty!")
- end
+    # Display options
+    # Sort keys alphabetically for easier viewing
+    optionKeys = collect(keys(options))
+    longest = maximum(map(i -> length(optionKeys[i]), 1:length(optionKeys)))
+    sort!(vec(optionKeys))
 
- # Display options
-   # Sort keys alphabetically for easier viewing
-   optionKeys = collect(keys(options))
-   longest = maximum(map(i -> length(optionKeys[i]), 1:length(optionKeys)))
-   sort!(vec(optionKeys))
-
-   # Print options
-   println("-"^75,"\n ", " "^10, "LIST OF ALL OPTIONS FOR FORMAT, CODEC AND DEVICES\n","-"^75)
-   for i=1:length(optionKeys)
-     name = optionKeys[i]
-     println(name, " "^(longest-length(optionKeys[i]) +1), "=>  min: ", options[optionKeys[i]][1], " , max: " , options[optionKeys[i]][2])
-   end
-   println("\n\n")
+    # Print options
+    println("-"^75,"\n ", " "^10, "LIST OF ALL OPTIONS FOR FORMAT, CODEC AND DEVICES\n","-"^75)
+    for i=1:length(optionKeys)
+        name = optionKeys[i]
+        println(name, " "^(longest-length(optionKeys[i]) +1), "=>  min: ",
+                options[optionKeys[i]][1], " , max: " , options[optionKeys[i]][2])
+     end
+     println("\n\n")
 end
 
 # Examples:
@@ -171,25 +171,25 @@ end
 # **************************************************************************************************************
 
 function set_default_options(I::AVInput)
-  if  !I.isopen
-    error("No input file/device open!")
-  end
+    if !I.isopen
+        error("No input file/device open!")
+    end
 
-  # Set default formats on Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
-  # av_opt_set_defaults2 (mask = 0, flags = 0)
-  av_opt_set_defaults(pFormatContext) # input is Ptr{Void}
+    # Set default formats on Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
+    # av_opt_set_defaults2 (mask = 0, flags = 0)
+    av_opt_set_defaults(pFormatContext) # input is Ptr{Void}
 
-  # Set default codecs on Ptr{AVCodecContext}
-  FormatContext = unsafe_load(pFormatContext)
-  for i = 1:FormatContext.nb_streams
-    pStream = unsafe_load(FormatContext.streams,i)
-    stream = unsafe_load(pStream)
-    av_opt_set_defaults(stream.codec)
-  end
+    # Set default codecs on Ptr{AVCodecContext}
+    FormatContext = unsafe_load(pFormatContext)
+    for i = 1:FormatContext.nb_streams
+        pStream = unsafe_load(FormatContext.streams,i)
+        stream = unsafe_load(pStream)
+        av_opt_set_defaults(stream.codec)
+    end
 
-  println("Set default format and codec options")
-  av_opt_free(pFormatContext)
+    println("Set default format and codec options")
+    av_opt_free(pFormatContext)
 end
 
 #  Example:
@@ -199,31 +199,31 @@ end
 # **************************************************************************************************************
 
 function set_option(I::AVInput, key::String, val::String)
-  if !I.isopen
-    error("No input file/device open!")
-  end
+    if !I.isopen
+        error("No input file/device open!")
+    end
 
-  # Select Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
+    # Select Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
 
-  # key, value and pair separators
-  key_val_sep = ","
-  pairs_sep = ";"
-  opts = string(key, "," , val)
+    # key, value and pair separators
+    key_val_sep = ","
+    pairs_sep = ";"
+    opts = string(key, "," , val)
 
-  res = av_set_options_string(pFormatContext, pointer(opts), pointer(key_val_sep), pointer(pairs_sep))
-  if res < 0
-    error("Could not set '$key' option.")
-  else
-   println("$key set to $val.")
-  end
-
+    res = av_set_options_string(pFormatContext, pointer(opts),
+                                pointer(key_val_sep), pointer(pairs_sep))
+    if res < 0
+        error("Could not set '$key' option.")
+    else
+       println("$key set to $val.")
+    end
 end
 
 ## Examples:
 #  using VideoIO
 #  f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
-#  print_options (options)
+#  print_options (OptionsDictionary)
 #  set probing size
 #     set_option(f.avin, "probesize", "100000000")
 #  set how many microseconds
@@ -247,40 +247,40 @@ end
 # **************************************************************************************************************
 
 function is_option(I::AVInput, key::String)
-  pFormatContext = I.apFormatContext[1]
-  #AVOptionType named constants (Ptr{Uint8})
-  unit =  C_NULL  # "AVOptionType"?, but not clear from docs
-  opt_flag = cint(0)
+    pFormatContext = I.apFormatContext[1]
+    #AVOptionType named constants (Ptr{Uint8})
+    unit =  C_NULL  # "AVOptionType"?, but not clear from docs
+    opt_flag = cint(0)
 
-  # AV_OPT_INT
-  # AV_OPT_INT64
-  # AV_OPT_DOUBLE
-  # AV_OPT_FLOAT
-  # AV_OPT_STRING
-  # AV_OPT_RATIONAL
-  # AV_OPT_BINARY
-  # AV_OPT_DICT
-  # AV_OPT_IMAGE_SIZE
-  # AV_OPT_PIXEL_FMT
-  # AV_OPT_SAMPLE_FMT
-  # AV_OPT_VIDEO_RATE
-  # AV_OPT_DURATION
-  # AV_OPT_COLOR
-  # AV_OPT_CHANNEL_LAYOUT
+    # AV_OPT_INT
+    # AV_OPT_INT64
+    # AV_OPT_DOUBLE
+    # AV_OPT_FLOAT
+    # AV_OPT_STRING
+    # AV_OPT_RATIONAL
+    # AV_OPT_BINARY
+    # AV_OPT_DICT
+    # AV_OPT_IMAGE_SIZE
+    # AV_OPT_PIXEL_FMT
+    # AV_OPT_SAMPLE_FMT
+    # AV_OPT_VIDEO_RATE
+    # AV_OPT_DURATION
+    # AV_OPT_COLOR
+    # AV_OPT_CHANNEL_LAYOUT
 
-  # Search in nested objects (e.g., AVCodecContext)
-  search_flags = cint(AV_OPT_SEARCH_CHILDREN)
+    # Search in nested objects (e.g., AVCodecContext)
+    search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
-  # Initialize a Ptr{AVOption}
-  prevs = Ptr{AVOption}[C_NULL]
-  prev = prevs[1]
+    # Initialize a Ptr{AVOption}
+    prevs = Ptr{AVOption}[C_NULL]
+    prev = prevs[1]
 
-  prev = av_opt_find(pFormatContext,pointer(key),unit, opt_flag, search_flags)
-  if prev == C_NULL
-    error("$key not found!")
-  else
-    println("$key found!")
-  end
+    prev = av_opt_find(pFormatContext,pointer(key),unit, opt_flag, search_flags)
+    if prev == C_NULL
+        error("$key not found!")
+    else
+        println("$key found!")
+    end
 end
 
 # Examples:
@@ -301,58 +301,62 @@ end
 
 # Check the type of option to search for e.g., image_size, pixel_fmt
 macro assert_type(ex)
-  option =""
+    option =""
     return :($ex=="" ? option = :default:
              $ex=="image_size" ? option = :image_size:
              $ex=="pixel_fmt" ? option = :pixel_fmt :
              $ex=="video_rate" ? option = :video_rate :
               error("option", $(string(ex)), " does not exist!"))
-   return option
+    return option
 end
 
 function get_option (I::AVInput, key::String, OPTION_TYPE="")
-  option = @assert_type(OPTION_TYPE)
-  pFormatContext = I.apFormatContext[1]
+    option = @assert_type(OPTION_TYPE)
+    pFormatContext = I.apFormatContext[1]
 
-  # Get value from children of FormatContext -> AVCodecContext
-  search_flags = cint(AV_OPT_SEARCH_CHILDREN)
+    # Get value from children of FormatContext -> AVCodecContext
+    search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
-  if option==:default
+    if option==:default
     # Passing a double pointer
-    outval = Array(Ptr{Uint8},1)
-    if (av_opt_get(pFormatContext,pointer(key),search_flags, outval)<0)
-      error("Cannot get value for $key")
-    else
-      val = bytestring(outval[1])
-      println("$key = ", val)
+        outval = Array(Ptr{Uint8},1)
+        if (av_opt_get(pFormatContext,pointer(key),search_flags, outval)<0)
+            error("Cannot get value for $key")
+        else
+            val = bytestring(outval[1])
+            println("$key = ", val)
+            return val
+        end
+    elseif option ==:image_size
+        out1 = Array(Ptr{Cint},1); pwidth = out1[1]
+        out2 = Array(Ptr{Cint},1); pheight = out2[1]
+        if (av_opt_get_image_size(pFormatContext,pointer(key),search_flags, pwidth, pheight)<0)
+            error("Cannot get value for $key")
+        else
+            fval1 = convert(Int64, unsafe_load(pwidth))
+            fval2 = convert(Int64, unsafe_load(pheight))
+            println("Width: $fval1, Height: $fval2")
+            return val1, val2
+        end
+    elseif option ==:pixel_fmt
+        out = Array(Ptr{AVPixelFormat},1); ppix_fmt = out[1]
+        if (av_opt_get_pixel_fmt(pFormatContext,pointer(key),search_flags, ppix_fmt)<0)
+            error("Cannot get value for $key")
+        else
+            pix_fmt = convert(Int64, unsafe_load(ppix_fmt))
+            println("Pixel format is: $pix_fmt")
+            return pix_fmt
+        end
+    elseif option ==:video_rate
+        out = Array(Ptr{AVRational},1); pvideorate = out[1]
+        if (av_opt_get_video_rate(pFormatContext,pointer(key),search_flags, pvideorate)<0)
+            error("Cannot get value for $key")
+        else
+            frame_rate = unsafe_load(pvideorate)
+            println("Frame rate is: $(frame_rate.num/frame_rate.den) fps")
+            return fps
+        end
     end
-  elseif option ==:image_size
-    out1 = Array(Ptr{Cint},1); pwidth = out1[1]
-    out2 = Array(Ptr{Cint},1); pheight = out2[1]
-    if (av_opt_get_image_size(pFormatContext,pointer(key),search_flags, pwidth, pheight)<0)
-      error("Cannot get value for $key")
-    else
-      fval1 = convert(Int64, unsafe_load(pwidth))
-      fval2 = convert(Int64, unsafe_load(pheight))
-      println("Width: $fval1, Height: $fval2")
-    end
-  elseif option ==:pixel_fmt
-     out = Array(Ptr{AVPixelFormat},1); ppix_fmt = out[1]
-    if (av_opt_get_pixel_fmt(pFormatContext,pointer(key),search_flags, ppix_fmt)<0)
-      error("Cannot get value for $key")
-    else
-      pix_fmt = convert(Int64, unsafe_load(ppix_fmt))
-      println("Pixel format is: $pix_fmt")
-    end
-  elseif option ==:video_rate
-     out = Array(Ptr{AVRational},1); pvideorate = out[1]
-    if (av_opt_get_video_rate(pFormatContext,pointer(key),search_flags, pvideorate)<0)
-      error("Cannot get value for $key")
-    else
-      frame_rate = unsafe_load(pvideorate)
-      println("Frame rate is: $(frame_rate.num/frame_rate.den) fps")
-    end
-  end
 end
 
 # Examples:
@@ -362,9 +366,9 @@ end
 # get_option(f.avin, "list_devices")
 # get_option(f.avin, "max_delay")
 # get_option(f.avin, "analyzeduration")
-# get_option (f.avin, "avfoundation", "image_size")
-# get_option (f.avin, " ", "pixel_fmt")
-# get_option (f.avin, " ", "video_rate")
+# get_option (f.avin, "?", "image_size")
+# get_option (f.avin, "?", "pixel_fmt")
+# get_option (f.avin, "?", "video_rate")
 # **************************************************************************************************************
 
 
@@ -378,58 +382,58 @@ end
 
 function create_dictionary(entries)
 
-  # Get all the keys from the user entries
-  entries_keys = collect(keys(entries))
+    # Get all the keys from the user entries
+    entries_keys = collect(keys(entries))
 
-  # Initialize a dictionary with the first entry
-  entry = AVDictionaryEntry(pointer(entries_keys[1]),pointer(entries[entries_keys[1]]))
-  dictionary = AVDictionary(cint(1), pointer_from_objref(entry))
-  pDictionary = Ptr{AVDictionary}[pointer_from_objref(dictionary)]
-  pDictionary[1] = C_NULL
+    # Initialize a dictionary with the first entry
+    entry = AVDictionaryEntry(pointer(entries_keys[1]),pointer(entries[entries_keys[1]]))
+    dictionary = AVDictionary(cint(1), pointer_from_objref(entry))
+    pDictionary = Ptr{AVDictionary}[pointer_from_objref(dictionary)]
+    pDictionary[1] = C_NULL
 
-  flags = cint(AV_DICT_DONT_OVERWRITE)
-  #AV_DICT_MATCH_CASE
-  #AV_DICT_IGNORE_SUFFIX
-  # to avoid clearing val from memory
-  #AV_DICT_DONT_STRDUP_KEY | AV_DICT_DONT_STRDUP_VAL
-  #AV_DICT_DONT_OVERWRITE
-  #AV_DICT_APPEND
+    flags = cint(AV_DICT_DONT_OVERWRITE)
+    #AV_DICT_MATCH_CASE
+    #AV_DICT_IGNORE_SUFFIX
+    # to avoid clearing val from memory
+    #AV_DICT_DONT_STRDUP_KEY | AV_DICT_DONT_STRDUP_VAL
+    #AV_DICT_DONT_OVERWRITE
+    #AV_DICT_APPEND
 
-   for k = 1:length(entries_keys)
-     # Call av_dict_set() function
-     if(av_dict_set(pDictionary, pointer(entries_keys[k]), pointer(entries[entries_keys[k]]),flags)< 0)
-       #Cint = 0 on success, AVERROR <0 on failure
-       error("Can not create $(user_options[option_keys[k]]) a dictionary")
-     end
+    for k = 1:length(entries_keys)
+        # Call av_dict_set() function
+        if(av_dict_set(pDictionary, pointer(entries_keys[k]), pointer(entries[entries_keys[k]]),flags)< 0)
+        #Cint = 0 on success, AVERROR <0 on failure
+           error("Can not create $(user_options[option_keys[k]]) a dictionary")
+        end
     end
 
-  count = av_dict_count(pDictionary[1])
-  println("The dictionary has $count entries.")
+    count = av_dict_count(pDictionary[1])
+    println("The dictionary has $count entries.")
 
-  return pDictionary
+    return pDictionary
 end
 
 
 function set_options_with_dictionary (I::AVInput, pDictionary::Array{Ptr{AVDictionary}})
 
-  pDictionary[1]==C_NULL ? error("Dictionary is empty!") : nothing
+    pDictionary[1]==C_NULL ? error("Dictionary is empty!") : nothing
 
-  # Retrieve Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
+    # Retrieve Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
 
-  # Set value in children of FormatContext -> AVCodecContext
-  search_flags = cint(AV_OPT_SEARCH_CHILDREN)
+    # Set value in children of FormatContext -> AVCodecContext
+    search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
-  # Set options with dictionary
-  # 0 on success, < 0 (AVERROR) if found in obj, but could not be set
-   if (av_opt_set_dict2(pFormatContext, pDictionary, search_flags) !=0)
-     error("Cannot set options with this dictionary. Check your dictionary!")
-   else
-     println("$Added all entries to dictionary")
-   end
+    # Set options with dictionary
+    # 0 on success, < 0 (AVERROR) if found in obj, but could not be set
+    if (av_opt_set_dict2(pFormatContext, pDictionary, search_flags) !=0)
+        error("Cannot set options with this dictionary. Check your dictionary!")
+    else
+        println("Set all options in dictionary")
+    end
 
-  #av_dict_free(pDictionary)
-  #av_opt_free(pFormatContext)
+    #av_dict_free(pDictionary)
+    #av_opt_free(pFormatContext)
 end
 
 # Examples:
@@ -438,8 +442,9 @@ end
 # Initialize the dictionary:
 # entries = Dict{String,String}()
 # entries["probesize"] = "1000000"
-# entries["iformat"] = "mpeg4"
+# entries["iformat"] = "avfoundation"
 # entries["duration"] = "3000"
+# pDictionary = create_dictionary(entries)
 # set_options_with_dictionary(f.avin, pDictionary)
 # **************************************************************************************************************
 
@@ -452,93 +457,79 @@ end
 # **************************************************************************************************************
 
 # Create a new device query structure
-function create_device_query(I::AVInput, pDictionary=C_NULL)
+function create_device_query(I::AVInput, pDictionary)
 
-  # Retrieve Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
-  FormatContext = unsafe_load(pFormatContext)
+    # Retrieve Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
+    FormatContext = unsafe_load(pFormatContext)
 
-  pStream = unsafe_load(FormatContext.streams[1])
-  stream = unsafe_load(pStream)
-  codecContext = unsafe_load(stream.codec) #Ptr{AVCodecContext}
-  frame_width, frame_height = codecContext.width, codecContext.height
-  fps = AVRational(codecContext.time_base.den, codecContext.time_base.num)
+    pStream = unsafe_load(FormatContext.streams)
+    stream = unsafe_load(pStream)
+    codecContext = unsafe_load(stream.codec) #Ptr{AVCodecContext}
+    frame_width, frame_height = codecContext.width, codecContext.height
+    fps = AVRational(codecContext.time_base.den, codecContext.time_base.num)
 
-  # Initialize a device query structure
-  DeviceQuery = AVDeviceCapabilitiesQuery (FormatContext.av_class, #Ptr{AVClass}
-                                           pFormatContext,      #device_context::Ptr{AVFormatContext}
-                                           AV_CODEC_ID_MPEG4,   #codec::AVCodecID
-                                           AV_SAMPLE_FMT_NONE,  #sample_format::AVSampleFormat
-                                           AV_PIX_FMT_YUYV422,  #pixel_format::AVPixelFormat
-                                           cint(0),            #sample_rate::Cint
-                                           cint(0),            #channels::Cint
-                                           cint(0),            #channel_layout::Int64
-                                           cint(1920),         #window_width::Cint
-                                           cint(1200),         #window_height::Cint
-                                           frame_width,
-                                           frame_height,
-                                           fps)
+    # Initialize a device query structure
+    DeviceQuery = AVDeviceCapabilitiesQuery (FormatContext.av_class,
+                                             pFormatContext,
+                                             AV_CODEC_ID_MPEG4,
+                                             AV_SAMPLE_FMT_NONE,
+                                             AV_PIX_FMT_YUYV422,
+                                             cint(0),
+                                             cint(0),
+                                             convert(Culonglong,0),
+                                             cint(640),
+                                             cint(480),
+                                             frame_width,
+                                             frame_height,
+                                             fps)
 
-   queries = Ptr{AVDeviceCapabilitiesQuery}[pointer_from_objref(DeviceQuery)]
-   #queries[1] = C_NULL #Array(Ptr{AVDeviceCapabilitiesQuery},1)[C_NULL] #(Void)
 
-   # Can also set pDictionary => C_NULL
-   if (avdevice_capabilities_create(queries,pFormatContext,pDictionary) < 0)
-       error("Can not create a device query. Try again")
-   end
+    queries = avdevice_capabilities_create[pointer_from_objref(DeviceQuery)]
+    #queries = Array(Ptr{AVDeviceCapabilitiesQuery},1)
+    queries[1] = C_NULL
+    #pDictionary[1] = C_NULL
 
-   #avdevice_capabilities_free(queries, pFormatContext)
-   return queries
+    # Can also set pDictionary => C_NULL
+    if (avdevice_capabilities_create(queries[1],pFormatContext,pDictionary) < 0)
+        error("Can not create a device query. Try again")
+    end
+
+    #avdevice_capabilities_free(queries, pFormatContext)
+    return queries
 end
-
 
 # Probe and set device capabilities
 function query_device_ranges (I::AVInput, key::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
-  # Select Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
+    # Select Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
 
-#   immutable AVOptionRanges
-#     range::Ptr{Ptr{AVOptionRange}}
-#     nb_ranges::Cint
-#     nb_components::Cint
-#  end
+    # Initialize AVOptionRanges
+    ranges = Array(Ptr{AVOptionRanges},1)
+    search_flags = cint(AV_OPT_MULTI_COMPONENT_RANGE)
 
-#   immutable AVOptionRange
-#     str::Ptr{Uint8}
-#     value_min::Cdouble
-#     value_max::Cdouble
-#     component_min::Cdouble
-#     component_max::Cdouble
-#     is_range::Cint
-#  end
-#
+    # Query ranges
+    if (av_opt_query_ranges(ranges,queries, pointer(key),search_flags)<0)
+        # av_free(key)
+        # avdevice_capabilities_free(queries, pFormatContext)
+        # av_opt_free_ranges(ranges): av_opt_freep_ranges(ranges) #deallocate
+        error("Invalid input, failed to access device data.")
 
-  # Initialize AVOptionRanges
-  ranges = Array(Ptr{AVOptionRanges},1)
-  search_flags = cint(AV_OPT_MULTI_COMPONENT_RANGE)
+    else
+        ranges = unsafe_load(ranges[1])         #Ptr{AVOptionRanges}}
+        prange = unsafe_load(ranges.range)      #Ptr{AVOptionRange}
+        range = unsafe_load(prange)             #AVOptionRange
 
-  # Query ranges
-  if (av_opt_query_ranges(ranges,queries, pointer(key),search_flags)<0)
-   # av_free(key)
-   # avdevice_capabilities_free(queries, pFormatContext)
-   # av_opt_free_ranges(ranges): av_opt_freep_ranges(ranges) #deallocate
-    error("Invalid input, failed to access device data.")
+        minVal = range.value_min  #Cdouble => Float64
+        maxVal = range.value_max  #Cdouble => Float64
 
-  else
-    ranges = unsafe_load(ranges[1])         #Ptr{AVOptionRanges}}
-    prange = unsafe_load(ranges.range)      #Ptr{AVOptionRange}
-    range = unsafe_load(prange)             #AVOptionRange
+        println("$key, mininum = $minVal, maximum = $maxVal")
 
-    minVal = range.value_min  #Cdouble => Float64
-    maxVal = range.value_max  #Cdouble => Float64
-
-    println("$key, mininum = $minVal, maximum = $maxVal")
-
-    #deallocate
-    #av_opt_free_ranges(ranges)
-    #av_free(key)
-    #avdevice_capabilities_free(query, pFormatContext)
-  end
+        #deallocate
+        #av_opt_free_ranges(ranges)
+        #av_free(key)
+        #avdevice_capabilities_free(query, pFormatContext)
+    end
 end
 
 # Examples:
@@ -556,25 +547,25 @@ end
 
 function set_device_with_query (key::String, val::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
 
-  # key, value and pair separators
-  key_val_sep = ","
-  pairs_sep = ";"
-  opts = string(key, "," , val)
+    # key, value and pair separators
+    key_val_sep = ","
+    pairs_sep = ";"
+    opts = string(key, "," , val)
 
-  #Ptr{AVDeviceCapabilitiesQuery}
-  query = queries[1]
+    #Ptr{AVDeviceCapabilitiesQuery}
+    query = queries[1]
 
-  res = av_set_options_string(query, pointer(opts), pointer(key_val_sep), pointer(pairs_sep))
-  if res < 0
-    error("Could not set '$key' option.")
-  else
-   println("$key set to $val.")
-  end
+    res = av_set_options_string(query, pointer(opts), pointer(key_val_sep), pointer(pairs_sep))
+    if res < 0
+        error("Could not set '$key' option.")
+    else
+        println("$key set to $val.")
+    end
 
-#deallocate
-#    av_free(key)
-#    av_free(pval)
-#    avdevice_capabilities_free(query, pFormatContext)
+    # deallocate
+    # av_free(key)
+    # av_free(pval)
+    # avdevice_capabilities_free(query, pFormatContext)
 end
 
 # Examples:
@@ -592,48 +583,48 @@ end
 # list_devices
 # **************************************************************************************************************
 
-# apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
-
 function list_devices(I::AVInput)
 
-  # AVDeviceCapabilitiesQuery
-  # AVDeviceCapabilitiesQuery.device_context::Ptr{AVFormatContext}
+    # AVDeviceCapabilitiesQuery
+    # AVDeviceCapabilitiesQuery.device_context::Ptr{AVFormatContext}
 
-  # Select Ptr{AVFormatContext}
-  pFormatContext = I.apFormatContext[1]
-  #ctx = [AVFormat.avformat_alloc_context()]
+    # Select Ptr{AVFormatContext}
+    # pFormatContext = I.apFormatContext[1]
+    # apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
+    pFormatContext = apFormatContext[1]
 
-  # Initialize Ptr{AVDeviceInfoList} array
-  device_info0 = AVDeviceInfo(pointer("avfoundation"), pointer("avfoundation input device"))
-  apdevice_list0 = Ptr{AVDeviceInfo}[pointer_from_objref(device_info0)]
-  device_list0 = AVDeviceInfoList(pointer_from_objref(apdevice_list0[1]), cint(1), cint(0))
-  pdevice_list = Ptr{AVDeviceInfoList}[pointer_from_objref(device_list0)]
+    # Initialize Ptr{AVDeviceInfoList} array
+    device_info0 = AVDeviceInfo(pointer("avfoundation"), pointer("avfoundation input device"))
+    apdevice_list0 = Ptr{AVDeviceInfo}[pointer_from_objref(device_info0)]
+    device_list0 = AVDeviceInfoList(pointer_from_objref(apdevice_list0[1]), cint(1), cint(0))
+    pdevice_list = Ptr{AVDeviceInfoList}[pointer_from_objref(device_list0)]
+    pdevice_list[1] = C_NULL
 
-  if (avdevice_list_devices(pFormatContext, pdevice_list)<0)
-    #avdevice_free_list_devices(device_list)
-    error("Cannot list devices")
-  else
-    #get AVDeviceInfoList
-    device_list = unsafe_load(pdevice_list)
-    #number of autodetected devices
-    nb_devices = device_list.nb_devices
-    #index of default device or -1 if no default
-    default_device =  device_list.default_device
+    if (avdevice_list_devices(pFormatContext, pdevice_list)<0)
+        #avdevice_free_list_devices(device_list)
+        error("Cannot list devices")
+    else
+        #get AVDeviceInfoList
+        device_list = unsafe_load(pdevice_list)
+        #number of autodetected devices
+        nb_devices = device_list.nb_devices
+        #index of default device or -1 if no default
+        default_device =  device_list.default_device
 
-    # get AVDeviceInfo
-    pdevice_info = unsafe_load(device_list.devices)
-    device_info = unsafe_load(pdevice_info)
-    # get device_name and description
-    device_name = bytestring(device_info.device_name)
-    device_description = bytestring(device_info.device_description)
+        # get AVDeviceInfo
+        pdevice_info = unsafe_load(device_list.devices)
+        device_info = unsafe_load(pdevice_info)
+        # get device_name and description
+        device_name = bytestring(device_info.device_name)
+        device_description = bytestring(device_info.device_description)
 
-    println("Number of detected devices: $nb_devices")
-    println("Default device index: $default_device")
-    println(device_name,": ", device_description)
+        println("Number of detected devices: $nb_devices")
+        println("Default device index: $default_device")
+        println(device_name,": ", device_description)
 
-    #deallocate
-    #avdevice_free_list_devices(device_list)
-   end
+        #deallocate
+        #avdevice_free_list_devices(device_list)
+    end
 end
 
 
@@ -651,27 +642,29 @@ end
 # get_metadata(f.avin)
 # **************************************************************************************************************
 
-function get_metadata (I::AVInput)
-  # Select Ptr{AVFormatContext}
-   pFormatContext = I.apFormatContext[1]
-   fmt_ctx = unsafe_load(pFormatContext)
-   tags = Ptr{AVDictionaryEntry}[C_NULL]
-   tag = tags[1]
+function get_metadata (I::AVInput, key::String)
+    # Select Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
+    fmt_ctx = unsafe_load(pFormatContext)
+    tags = Ptr{AVDictionaryEntry}[C_NULL]
+    tag = tags[1]
+
 
     while (true)
-      tag = av_dict_get(fmt_ctx.metadata, " ", tag, cint(AV_DICT_IGNORE_SUFFIX))
-      if tag !=C_NULL
-        entry = unsafe_load(tag)
-        metakey = bytestring(entry.key)
-        metaentry = bytestring(entry.val)
-        println(metakey, metaentry, "\n")
-      else
-        println("No entry!")
-        break
-      end
+        tag = av_dict_get(fmt_ctx.metadata, pointer(key), tag, cint(AV_DICT_IGNORE_SUFFIX))
+        if tag !=C_NULL
+            entry = unsafe_load(tag)
+            metakey = bytestring(entry.key)
+            metaentry = bytestring(entry.val)
+            println(metakey, metaentry, "\n")
+        else
+            println("No entry!")
+            break
+        end
     end
 end
 
 # **************************************************************************************************************
+
 
 
