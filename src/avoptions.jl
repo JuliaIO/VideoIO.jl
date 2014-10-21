@@ -79,10 +79,10 @@ export document_all_options,
        get_option,
        create_dictionary,
        set_options_with_dictionary,
-       create_device_query,
-       query_device_ranges,
-       set_device_with_query,
-       list_devices
+       create_device_query
+#        query_device_ranges,
+#        set_device_with_query,
+#        list_devices
        # get_metadata -> requires AVUtil >= v53
 
 
