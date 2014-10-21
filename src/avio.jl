@@ -192,7 +192,7 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
         av_freep(abuffer)
         error("Unable to allocate AVIOContext (out of memory)")
     end
-    
+
     # pFormatContext->pb = pAVIOContext
     av_setfield(avin.apFormatContext[1], :pb, avin.apAVIOContext[1])
 
@@ -279,7 +279,7 @@ function VideoReader(avin::AVInput, video_stream=1;
                      target_format=PIX_FMT_RGB24)
 
     1 <= video_stream <= length(avin.video_info) || error("video stream $video_stream not found")
-    
+
     stream_info = avin.video_info[video_stream]
 
     # Get basic stream info
@@ -317,7 +317,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     N = int64(bits_per_pixel >> 3)
     target_buf = Array(Uint8, bits_per_pixel>>3, width, height)
 
-    sws_context = sws_getContext(width, height, pix_fmt, 
+    sws_context = sws_getContext(width, height, pix_fmt,
                                  width, height, target_format,
                                  transcode_interpolation, C_NULL, C_NULL, C_NULL)
 
@@ -357,7 +357,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     idx0 = stream_info.stream_index0
     push!(avin.listening, idx0)
     avin.stream_contexts[idx0+1] = vr
-   
+
     vr
 end
 
@@ -520,8 +520,11 @@ _close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
 function close(avin::AVInput)
     avin.isopen = false
 
-    for i in avin.listening
-        _close(avin.stream_contexts[i+1])
+    ## Fixed segmentation fault issue #44 (length > 1)
+    if length(avin.listening) > 1
+      for i in avin.listening
+         _close(avin.stream_contexts[i+1])
+      end
     end
 
     Base.sigatomic_begin()
