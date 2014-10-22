@@ -1544,5 +1544,5 @@ immutable AVFormatContext
     max_analyze_duration2::Int64
 end
 
- typealias AVDeviceInfoList Void
- typealias AVDeviceCapabilitiesQuery Void
+typealias AVDeviceInfoList Void
+typealias AVDeviceCapabilitiesQuery Void

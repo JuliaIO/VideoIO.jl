@@ -516,7 +516,7 @@ function close(avin::AVInput)
     avin.isopen = false
 
     for i in avin.listening
-      _close(avin.stream_contexts[i+1])
+        _close(avin.stream_contexts[i+1])
     end
 
     # Fix for segmentation fault issue #44

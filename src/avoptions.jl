@@ -131,13 +131,13 @@ function document_all_options(I::AVInput, view=false)
     end
 
     if view
-        print_options (options)
+        print_options(options)
     end
 
     options
 end
 
-function print_options (options::Dict{String,Vector{Cdouble}})
+function print_options(options::Dict{String,Vector{Cdouble}})
     if isempty(options)
         error("Options dictionary is empty!")
     end
@@ -310,7 +310,7 @@ macro assert_type(ex)
     return option
 end
 
-function get_option (I::AVInput, key::String, OPTION_TYPE="")
+function get_option(I::AVInput, key::String, OPTION_TYPE="")
     option = @assert_type(OPTION_TYPE)
     pFormatContext = I.apFormatContext[1]
 
@@ -366,9 +366,9 @@ end
 # get_option(f.avin, "list_devices")
 # get_option(f.avin, "max_delay")
 # get_option(f.avin, "analyzeduration")
-# get_option (f.avin, "?", "image_size")
-# get_option (f.avin, "?", "pixel_fmt")
-# get_option (f.avin, "?", "video_rate")
+# get_option(f.avin, "?", "image_size")
+# get_option(f.avin, "?", "pixel_fmt")
+# get_option(f.avin, "?", "video_rate")
 # **************************************************************************************************************
 
 
@@ -385,11 +385,8 @@ function create_dictionary(entries)
     # Get all the keys from the user entries
     entries_keys = collect(keys(entries))
 
-    # Initialize a dictionary with the first entry
-    entry = AVDictionaryEntry(pointer(entries_keys[1]),pointer(entries[entries_keys[1]]))
-    dictionary = AVDictionary(cint(1), pointer_from_objref(entry))
-    pDictionary = Ptr{AVDictionary}[pointer_from_objref(dictionary)]
-    pDictionary[1] = C_NULL
+    # Initialize a dictionary
+    pDictionary = Ptr{AVDictionary}[C_NULL]
 
     flags = cint(AV_DICT_DONT_OVERWRITE)
     #AV_DICT_MATCH_CASE
@@ -414,7 +411,7 @@ function create_dictionary(entries)
 end
 
 
-function set_options_with_dictionary (I::AVInput, pDictionary::Array{Ptr{AVDictionary}})
+function set_options_with_dictionary(I::AVInput, pDictionary::Array{Ptr{AVDictionary}})
 
     pDictionary[1]==C_NULL ? error("Dictionary is empty!") : nothing
 
@@ -500,7 +497,7 @@ function create_device_query(I::AVInput, pDictionary)
 end
 
 # Probe and set device capabilities
-function query_device_ranges (I::AVInput, key::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
+function query_device_ranges(I::AVInput, key::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
     # Select Ptr{AVFormatContext}
     pFormatContext = I.apFormatContext[1]
 
@@ -545,7 +542,7 @@ end
 
 # **************************************************************************************************************
 
-function set_device_with_query (key::String, val::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
+function set_device_with_query(key::String, val::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
 
     # key, value and pair separators
     key_val_sep = ","
@@ -642,7 +639,7 @@ end
 # get_metadata(f.avin)
 # **************************************************************************************************************
 
-function get_metadata (I::AVInput, key::String)
+function get_metadata(I::AVInput,key::String)
     # Select Ptr{AVFormatContext}
     pFormatContext = I.apFormatContext[1]
     fmt_ctx = unsafe_load(pFormatContext)
@@ -650,7 +647,7 @@ function get_metadata (I::AVInput, key::String)
     tag = tags[1]
 
 
-    while (true)
+    while(true)
         tag = av_dict_get(fmt_ctx.metadata, pointer(key), tag, cint(AV_DICT_IGNORE_SUFFIX))
         if tag !=C_NULL
             entry = unsafe_load(tag)
