@@ -3,7 +3,7 @@
 
 
 export
-    avutil_version,
+    #avutil_version,
     avutil_configuration,
     avutil_license,
     av_get_media_type_string,

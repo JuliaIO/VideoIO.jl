@@ -24,7 +24,7 @@ export
     av_format_set_control_message_cb,
     av_format_inject_global_side_data,
     av_fmt_ctx_get_duration_estimation_method,
-    avformat_version,
+    #avformat_version,
     avformat_configuration,
     avformat_license,
     av_register_all,

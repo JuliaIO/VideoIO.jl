@@ -15,7 +15,7 @@ export
     av_codec_set_chroma_intra_matrix,
     av_codec_get_max_lowres,
     av_codec_next,
-    avcodec_version,
+    #avcodec_version,
     avcodec_configuration,
     avcodec_license,
     avcodec_register,

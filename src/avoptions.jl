@@ -5,6 +5,8 @@
 # October 2014
 ###############################################################################################################
 
+# upwards compatible with ffmpeg version 2.4.2
+
 # AVOptions provides a generic system to get/set options for Devices, formats and Codecs.
 # It relies on AVOptions, AVDictionary and AVDeviceCapabilitiesQuery APIs.
 
@@ -69,9 +71,14 @@
 # 2. Documentation
 # 3. Testing
 
+# Instructions:
+#
+# julia> Pkg.build("VideoIO")
+#
 # **************************************************************************************************************
 
-export document_all_options,
+export discover_devices,
+       document_all_options,
        print_options,
        is_option,
        set_default_options,
@@ -79,18 +86,100 @@ export document_all_options,
        get_option,
        create_dictionary,
        set_options_with_dictionary,
-       create_device_query
-#        query_device_ranges,
-#        set_device_with_query,
-#        list_devices
-       # get_metadata -> requires AVUtil >= v53
+       create_device_query,
+       query_device_ranges,
+       set_device_with_query,
+       list_devices,
+       get_metadata
 
 
 # Support functions
 cint(n) = convert(Cint,n)
 
 # **************************************************************************************************************
-# Document and view (optional) all accessible options
+# Accessing devices for input and output
+# av_input_video_device_next
+# av_output_video_device_next
+#**************************************************************************************************************
+
+# Structure to store input and output devices
+type devices
+    idevice_name::Vector{String}
+    odevice_name::Vector{String}
+    vpiformat::Vector{Ptr{AVInputFormat}}
+    vpoformat::Vector{Ptr{AVOutputFormat}}
+end
+
+function discover_devices()
+
+    # Initialize empty pointers
+    piformat = C_NULL # Input format
+    poformat = C_NULL # Output format
+
+    devices_list = devices([],[], Ptr{AVInputFormat}[], Ptr{AVOutputFormat}[])
+
+    while (true)
+        piformat = av_input_video_device_next(piformat)
+        if piformat==C_NULL
+            break
+        end
+        push!(devices_list.vpiformat, piformat)
+
+        #unload iformat::Ptr{AVInputFormat}
+        iformat = unsafe_load(piformat)
+        idevice_name = bytestring(iformat.long_name)
+        push!(devices_list.idevice_name, string(idevice_name))
+
+        #extensions = bytestring(iformat.extensions)
+        #flags = iformat.flags
+        #mime_type = bytestring(iformat.mime_type)
+        #raw_codec_id = iformat.raw_codec_id
+        #priv_data_size = iformat.priv_data_size
+        #avclass = unsafe_load(iformat.priv_class)
+    end
+
+    while (poformat = av_output_video_device_next(poformat) !=C_NULL)
+        poformat = av_output_video_device_next(poformat)
+        if poformat==C_NULL
+            println("No output format detected!")
+            break
+        end
+        push!(devices_list.vpoformat, poformat)
+        #unload oformat::Ptr{AVOutputFormat}
+        oformat = unsafe_load(poformat)
+        odevice_name = bytestring(oformat.long_name)
+        push!(devices_list.odevice_name, string(odevice_name))
+        #extensions = bytestring(oformat.extensions)
+        #mime_type = bytestring(oformat.mime_type)
+        #flags = oformat.flags
+        #priv_data_size = oformat.priv_data_size
+        #video_codec::AVCodecID
+        #subtitle_codec::AVCodecID
+    end
+
+    println("Input devices: \n")
+    if length(devices_list.idevice_name) > 0
+        for i=1:length(devices_list.idevice_name)
+            println("[$i] : ", devices_list.idevice_name[i], "\n")
+        end
+    else
+        println("No devices detected!")
+    end
+
+    println("Output devices: \n")
+    if length(devices_list.odevice_name) > 0
+        for i=1:length(devices_list.odevice_name)
+            println("[$i] : ", devices_list.odevice_name[i])
+        end
+    else
+        println("No output format detected!", "\n")
+    end
+
+  return devices_list
+end
+
+# **************************************************************************************************************
+# Document and view (optional) all enabled options
 # document_all_options
 # Input: AVInput
 #   1. Create a dictionary to hold all accessible options (from AVOption-enabled structures) with option to print
@@ -239,6 +328,8 @@ end
 #     set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_BGR0))
 #  set frame rate
 #     set_option(f.avin, "frame_rate", "15")
+
+
 
 # **************************************************************************************************************
 # Find whether an option exists
@@ -439,8 +530,8 @@ end
 # Initialize the dictionary:
 # entries = Dict{String,String}()
 # entries["probesize"] = "1000000"
-# entries["iformat"] = "avfoundation"
 # entries["duration"] = "3000"
+# entries["video_size"] = "640x480"
 # pDictionary = create_dictionary(entries)
 # set_options_with_dictionary(f.avin, pDictionary)
 # **************************************************************************************************************
@@ -460,35 +551,35 @@ function create_device_query(I::AVInput, pDictionary)
     pFormatContext = I.apFormatContext[1]
     FormatContext = unsafe_load(pFormatContext)
 
-    pStream = unsafe_load(FormatContext.streams)
-    stream = unsafe_load(pStream)
-    codecContext = unsafe_load(stream.codec) #Ptr{AVCodecContext}
-    frame_width, frame_height = codecContext.width, codecContext.height
-    fps = AVRational(codecContext.time_base.den, codecContext.time_base.num)
+#     pStream = unsafe_load(FormatContext.streams)
+#     stream = unsafe_load(pStream)
+#     codecContext = unsafe_load(stream.codec) #Ptr{AVCodecContext}
+#     frame_width, frame_height = codecContext.width, codecContext.height
+#     fps = AVRational(codecContext.time_base.den, codecContext.time_base.num)
 
     # Initialize a device query structure
-    DeviceQuery = AVDeviceCapabilitiesQuery (FormatContext.av_class,
-                                             pFormatContext,
-                                             AV_CODEC_ID_MPEG4,
-                                             AV_SAMPLE_FMT_NONE,
-                                             AV_PIX_FMT_YUYV422,
-                                             cint(0),
-                                             cint(0),
-                                             convert(Culonglong,0),
-                                             cint(640),
-                                             cint(480),
-                                             frame_width,
-                                             frame_height,
-                                             fps)
+#     DeviceQuery = AVDeviceCapabilitiesQuery (FormatContext.av_class,
+#                                              pFormatContext,
+#                                              AV_CODEC_ID_MPEG4,
+#                                              AV_SAMPLE_FMT_NONE,
+#                                              AV_PIX_FMT_YUYV422,
+#                                              cint(0),
+#                                              cint(0),
+#                                              convert(Culonglong,0),
+#                                              cint(640),
+#                                              cint(480),
+#                                              frame_width,
+#                                              frame_height,
+#                                              fps)
 
 
-    queries = avdevice_capabilities_create[pointer_from_objref(DeviceQuery)]
-    #queries = Array(Ptr{AVDeviceCapabilitiesQuery},1)
-    queries[1] = C_NULL
+    queries= Ptr{AVDeviceCapabilitiesQuery}[C_NULL]
+    pDictionary = Ptr{AVDictionary}[C_NULL]
+
     #pDictionary[1] = C_NULL
 
     # Can also set pDictionary => C_NULL
-    if (avdevice_capabilities_create(queries[1],pFormatContext,pDictionary) < 0)
+    if (avdevice_capabilities_create(queries,pFormatContext,pDictionary) < 0)
         error("Can not create a device query. Try again")
     end
 
@@ -497,16 +588,18 @@ function create_device_query(I::AVInput, pDictionary)
 end
 
 # Probe and set device capabilities
-function query_device_ranges(I::AVInput, key::String, queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
+function query_device_ranges(I::AVInput, key::String)
+    # queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
     # Select Ptr{AVFormatContext}
     pFormatContext = I.apFormatContext[1]
 
     # Initialize AVOptionRanges
     ranges = Array(Ptr{AVOptionRanges},1)
-    search_flags = cint(AV_OPT_MULTI_COMPONENT_RANGE)
+    #search_flags = cint(AV_OPT_MULTI_COMPONENT_RANGE)
+    search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
     # Query ranges
-    if (av_opt_query_ranges(ranges,queries, pointer(key),search_flags)<0)
+    if (av_opt_query_ranges(ranges,pFormatContext, pointer(key),search_flags)<0) #queries
         # av_free(key)
         # avdevice_capabilities_free(queries, pFormatContext)
         # av_opt_free_ranges(ranges): av_opt_freep_ranges(ranges) #deallocate
@@ -588,14 +681,14 @@ function list_devices(I::AVInput)
     # Select Ptr{AVFormatContext}
     # pFormatContext = I.apFormatContext[1]
     # apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
-    pFormatContext = apFormatContext[1]
+    pFormatContext = I.apFormatContext[1]
 
     # Initialize Ptr{AVDeviceInfoList} array
-    device_info0 = AVDeviceInfo(pointer("avfoundation"), pointer("avfoundation input device"))
-    apdevice_list0 = Ptr{AVDeviceInfo}[pointer_from_objref(device_info0)]
-    device_list0 = AVDeviceInfoList(pointer_from_objref(apdevice_list0[1]), cint(1), cint(0))
-    pdevice_list = Ptr{AVDeviceInfoList}[pointer_from_objref(device_list0)]
-    pdevice_list[1] = C_NULL
+#     device_info0 = AVDeviceInfo(pointer("avfoundation"), pointer("avfoundation input device"))
+#     apdevice_list0 = Ptr{AVDeviceInfo}[pointer_from_objref(device_info0)]
+#     device_list0 = AVDeviceInfoList(pointer_from_objref(apdevice_list0[1]), cint(1), cint(0))
+#     pdevice_list = Ptr{AVDeviceInfoList}[pointer_from_objref(device_list0)]
+    pdevice_list = Ptr{AVDeviceInfoList}[C_NULL]
 
     if (avdevice_list_devices(pFormatContext, pdevice_list)<0)
         #avdevice_free_list_devices(device_list)

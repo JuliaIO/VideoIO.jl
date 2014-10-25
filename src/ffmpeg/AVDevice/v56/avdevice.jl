@@ -3,7 +3,7 @@
 
 
 export
-    avdevice_version,
+    #avdevice_version,
     avdevice_configuration,
     avdevice_license,
     avdevice_register_all,
