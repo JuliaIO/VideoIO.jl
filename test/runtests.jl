@@ -1,1 +1,2 @@
-include("avio.jl")
+#include("avio.jl")
+include("avoptions_tests.jl")

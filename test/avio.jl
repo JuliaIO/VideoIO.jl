@@ -1,3 +1,5 @@
+# Test is broken at line 19, see https://github.com/kmsquire/VideoIO.jl/pull/47
+
 using Base.Test
 using Images, FixedPointNumbers
 import VideoIO
@@ -20,21 +22,27 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
+
     first_frame = imread(first_frame_file) # comment line when creating png files
 
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
 
-    img = read(v, Image)
+    #img = read(v, Image)
+    img = read(v)
+    img = colorim(img)
+    fframe_arr = data(first_frame)        #RGB4
+    fframe_rgb = share(img2, fframe_arr)  #RGB
 
     # Find the first non-trivial image
-    while notblank(img)
-        read!(v, img)
+    while notblank(img2)  #img2 =>img
+        read!(v, img2)
     end
 
     #imwrite(img, first_frame_file)        # uncomment line when creating png files
 
     @test img == first_frame               # comment line when creating png files
+
 
     while !eof(v)
         read!(v, img)
@@ -53,7 +61,9 @@ for name in VideoIO.TestVideos.names()
     filename = joinpath(videodir, name)
     v = VideoIO.openvideo(open(filename))
 
-    img = read(v, Image)
+    #img = read(v, Image)
+    img = read(v)
+    img = colorimg(img)
 
     # Find the first non-trivial image
     while notblank(img)

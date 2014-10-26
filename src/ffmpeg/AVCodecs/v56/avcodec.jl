@@ -502,7 +502,8 @@ function avpicture_free(picture)
 end
 
 function avpicture_fill(picture,ptr,pix_fmt::AVPixelFormat,width::Integer,height::Integer)
-    ccall((:avpicture_fill,libavcodec),Cint,(Ptr{AVPicture},Ptr{Uint8},AVPixelFormat,Cint,Cint),picture,ptr,pix_fmt,width,height)
+    #ccall((:avpicture_fill,libavcodec),Cint,(Ptr{AVPicture},Ptr{Uint8},AVPixelFormat,Cint,Cint),picture,ptr,pix_fmt,width,height)
+    ccall((:avpicture_fill,libavcodec),Cint,(Ptr{Void},Ptr{Uint8},AVPixelFormat,Cint,Cint),picture,ptr,pix_fmt,width,height)
 end
 
 function avpicture_layout(src,pix_fmt::AVPixelFormat,width::Integer,height::Integer,dest,dest_size::Integer)

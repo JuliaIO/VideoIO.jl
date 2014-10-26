@@ -160,19 +160,19 @@ function discover_devices()
     println("Input devices: \n")
     if length(devices_list.idevice_name) > 0
         for i=1:length(devices_list.idevice_name)
-            println("[$i] : ", devices_list.idevice_name[i], "\n")
+            println("[$i] : ", devices_list.idevice_name[i])
         end
     else
         println("No devices detected!")
     end
 
-    println("Output devices: \n")
+    println("Output devices:")
     if length(devices_list.odevice_name) > 0
         for i=1:length(devices_list.odevice_name)
             println("[$i] : ", devices_list.odevice_name[i])
         end
     else
-        println("No output format detected!", "\n")
+        println("No output format detected! \n")
     end
 
   return devices_list
@@ -249,7 +249,7 @@ end
 
 # Examples:
 # using VideoIO
-# f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # OptionsDictionary = document_all_options(f.avin, true)
 
 # **************************************************************************************************************
@@ -311,7 +311,7 @@ end
 
 ## Examples:
 #  using VideoIO
-#  f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+#  f = opencamera()
 #  print_options (OptionsDictionary)
 #  set probing size
 #     set_option(f.avin, "probesize", "100000000")
@@ -376,7 +376,7 @@ end
 
 # Examples:
 # using VideoIO
-# f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # is_option(f.avin, "probesize")
 # is_option(f.avin, "list_devices")
 # is_option(f.avin, "max_delay")
@@ -452,7 +452,7 @@ end
 
 # Examples:
 # using VideoIO
-# f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # get_option(f.avin, "probesize")
 # get_option(f.avin, "list_devices")
 # get_option(f.avin, "max_delay")
@@ -526,7 +526,7 @@ end
 
 # Examples:
 # using VideoIO
-# f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # Initialize the dictionary:
 # entries = Dict{String,String}()
 # entries["probesize"] = "1000000"
@@ -624,7 +624,7 @@ end
 
 # Examples:
 # using VideoIO
-# f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # query_device_ranges(f.avin, "codec", queries)
 # query_device_ranges(f.avin, "pixel_format", queries)
 # query_device_ranges(f.avin, "window_width", queries)
@@ -660,7 +660,7 @@ end
 
 # Examples:
 # using VideoIO
-# f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # set_device_with_query(f.avin, "codec", AV_CODEC_ID_RAWVIDEO, 0)
 # set_device_with_query(f.avin, "codec", AV_CODEC_ID_MPEG4, 0)
 # set_device_with_query(f.avin, "pixel_format", AV_PIX_FMT_YUV420P, 0)
@@ -719,7 +719,7 @@ end
 
 
 # Examples:
-# f = VideoIO.opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # list_devices(f.avin)
 # **************************************************************************************************************
 
@@ -728,7 +728,7 @@ end
 # Read metadata
 # AVFormatContext
 # -> metadata::Ptr{AVDictionary}
-# f = VideoIO.opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
+# f = opencamera()
 # get_metadata(f.avin)
 # **************************************************************************************************************
 

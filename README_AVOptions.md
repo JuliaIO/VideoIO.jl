@@ -60,8 +60,14 @@ Some of the functions in the AVOptions API require new versions of FFmpeg (> 2.3
 
 To install the updated VideoIO with AVOptions in Julia, type these commands at the terminal:
 
+<!-- julia>Pkg.release("Images") if branch is master -->
      julia>Pkg.update()
      julia>Pkg.build("Video")
+
+
+The package will be tested as part of the VideoIO package (see test/avoptions_tests.jl):
+
+     julia>Pkg.test("VideoIO")
 
 ## How to use the AVOptions API
 
@@ -108,7 +114,7 @@ Then open the "Built-in-iSight" webcam
     [avfoundation @ 0x7fac88e01c00]   bgr0
     VideoReader(...)
 
-#### <span style= "color:green">Document all options in the API and store them for later use<span>
+#### <span style= "color:green">Document all API options and store them for later use<span>
 
 We can now view (and store) all AVOptions associated with this device, and their range of values (min and max).
 
@@ -182,9 +188,9 @@ We can now view (and store) all AVOptions associated with this device, and their
 
 
 
-#### <span style= "color:green">Check whether an option exists and set defaults<span>
+#### <span style= "color:green">Check options and set default values <span>
 
-First check whether an option exists<br>
+Check whether an option exists<br>
 
     julia>is_option(f.avin, "probesize")
     probesize found!
@@ -198,7 +204,7 @@ You can set all options to default values
 
 1.Get **`pixel_format`** and then set it to **`0RGB`**
 
-    julia> get_option(f.avin, "pixel_format")
+    julia> pix_format = get_option(f.avin, "pixel_format")
     pixel_format = uyvy422
 
     julia> set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_0RGB))
@@ -206,7 +212,7 @@ You can set all options to default values
 
 2.Get **`frame_rate`** and then set it to **`15 fps`**
 
-    julia> get_option(f.avin, "frame_rate")
+    julia> frame_rate = get_option(f.avin, "frame_rate")
     frame_rate = 30.000000
 
     julia> set_option(f.avin, "frame_rate", "15")
@@ -214,7 +220,7 @@ You can set all options to default values
 
 3.Get **`list_devices`** and then set to **`true`**
 
-    julia> get_option(f.avin, "list_devices")
+    julia> list_devices = get_option(f.avin, "list_devices")
     list_devices = 0
 
     julia> set_option(f.avin, "list_devices", "1")
@@ -244,17 +250,20 @@ Set options with the dictionary
     julia> set_options_with_dictionary(f.avin, pDictionary)
     Set all options in dictionary
 
-### <span style= "color:green">Probe device capabilities with AVDeviceCapabilitiesQuery<span>
+### <span style= "color:green">Probe devices with AVDeviceCapabilitiesQuery<span>
 
 
-
-
-
+## History
+[#21 Default camera name wrong on OSX](https://github.com/kmsquire/VideoIO.jl/issues/21)<br>
+[#25 Windows Issues](https://github.com/kmsquire/VideoIO.jl/issues/25#issuecomment-53836419)<br>
+[#27 Implement AVOptions support](https://github.com/kmsquire/VideoIO.jl/issues/27)<br>
+[#31 Get available pixel formats for camera device](https://github.com/kmsquire/VideoIO.jl/issues/31)<br>
+[#47 PR: AVOptions API](https://github.com/kmsquire/VideoIO.jl/pull/47)
 
 ## To do
-* Testing in Linux, Windows OS
+* Test API in Windows and Linux
 * Use API to implement seeking in video stream
 
 
 ## Acknowledgements
-Thanks to Kevin Squire for guidance in putting this API together.
+Thanks to Kevin Squire for guidance.
