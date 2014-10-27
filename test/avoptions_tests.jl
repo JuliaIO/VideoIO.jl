@@ -2,6 +2,7 @@ using Base.Test
 # using Images, Color, FixedPointNumbers, ImageView
 using VideoIO
 
+
 println(STDERR, "Now testing the AVOptions API...")
 
 println(STDERR, "Test#1: Detect AVOptions-enabled devices...")
@@ -31,24 +32,25 @@ end
 
 
 if (f.avin.isopen)
+   println("-"^75)
    println(STDERR, "Test#3: Check whether API options are accessible...")
-   OptionsDictionary = document_all_options(f.avin, false)
-   if isempty(OptionsDictionary)
+   fmt_options, codec_options = document_all_options(f, true)
+   if isempty(fmt_options)
        error("Cannot access options")
    else
-       println("Detected $(length(OptionsDictionary)) options... \n")
-       options = collect(keys(OptionsDictionary))
+       options = collect(keys(fmt_options))
+       println("Detected $(length(options)) options... \n")
 
        # Select 2 options, test get and set with strings
        println(STDERR, "Test#4: Now testing get options with strings...")
-       !isempty(get_option(f.avin, options[1]))? println("get ", options[1],"... passed"): error("get failed")
-       !isempty(get_option(f.avin, options[3]))? println("get ", options[3],"... passed"): error("get failed")
+       !isempty(get_option(f, options[1]))? println("get ", options[1],"... passed"): error("get failed")
+       !isempty(get_option(f, options[3]))? println("get ", options[3],"... passed"): error("get failed")
 
        # Select 2 options, set with AVDictionary API
        println(STDERR, "\nTest#5: Now testing AVDictionary API...")
        entries = Dict{String,String}()
        for i=1:4
-           entries[options[i]] = string((OptionsDictionary[options[i]][1]+OptionsDictionary[options[i]][2])/2)
+           entries[options[i]] = string((fmt_options[options[i]][1]+fmt_options[options[i]][2])/2)
        end
        create_dictionary(entries) != C_NULL ? println("Built an AVDictionary... passed \n"): error("Failed")
    end

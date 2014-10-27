@@ -223,7 +223,7 @@ function AVInput{T<:Union(IO, String)}(source::T, input_format=C_NULL; avio_ctx_
                       aPacket, [StreamInfo[] for i=1:6]..., IntSet(), StreamContext[], false)
 
     # Make sure we deallocate everything on exit
-    #  finalizer(avin, close)
+    finalizer(avin, close)
 
     # Set up the format context and open the input, based on the type of source
     open_avinput(avin, source, input_format)

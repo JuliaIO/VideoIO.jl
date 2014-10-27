@@ -86,8 +86,10 @@ export discover_devices,
        get_option,
        create_dictionary,
        set_options_with_dictionary,
+       get_videodevice_settings,
+       # below: not all working yet
        create_device_query,
-       query_device_ranges,
+       query_device_ranges,  # works
        set_device_with_query,
        list_devices,
        get_metadata
@@ -111,6 +113,9 @@ type devices
 end
 
 function discover_devices()
+
+    # Check the device version
+    println("AVDevice v", string(VideoIO.avdevice_version()))
 
     # Initialize empty pointers
     piformat = C_NULL # Input format
@@ -178,6 +183,15 @@ function discover_devices()
   return devices_list
 end
 
+# Examples
+# devices_list = discover_devices()
+# name = devices_list.idevice_name
+# format = devices_list.vpiformat[1]
+
+# Find AVInputFormat based on short name, e.g., "AVFoundation"
+# iformat = VideoIO.av_find_input_format(pointer("AVFoundation"))
+# iformat = Ptr{AVInputFormat}
+
 # **************************************************************************************************************
 # Document and view (optional) all enabled options
 # document_all_options
@@ -186,44 +200,60 @@ end
 #   2. Print a list of all options
 # **************************************************************************************************************
 
-function document_all_options(I::AVInput, view=false)
-    if !I.isopen
+function document_all_options(I::VideoReader, view=false)
+    if !I.avin.isopen
         error("No input file/device open!")
     end
 
-    # Set default formats on Ptr{AVFormatContext}
-    pFormatContext = I.apFormatContext[1]
-    prevs = Ptr{AVOption}[C_NULL]
-    prev = prevs[1]
+    # Retrieve Ptr{AVFormatContext}
+    pFormatContext = I.avin.apFormatContext[1]
 
-    # Initialize the search of AVOption with Ptr{AVFormatContext}
-    obj = pFormatContext
-    # Create a dictionary of {option => [minvalue, maxvalue]}
-    options = Dict{String,Vector{Cdouble}}()
+    # Retrieve Ptr{AVCodecContext}
+    pCodecContext = I.pVideoCodecContext
 
-    # Run through all AVOptions and store them in options
-    while(true)
-       while (true)
-          prev = av_opt_next(obj, prev)
-          if prev ==C_NULL
-              break
-          end
-          avoption = unsafe_load(prev)
-          name = bytestring(avoption.name)
-          options[name] = [avoption.min, avoption.max]
-       end
+   # Create a dictionary of {option => [minvalue, maxvalue]}
+    fmt_options = Dict{String,Vector{Cdouble}}()
+    codec_options = Dict{String,Vector{Cdouble}}()
 
-       obj = av_opt_child_next(obj, prev)
-       if obj == C_NULL
-           break
-       end
-    end
+    for i in [pFormatContext, obj=pCodecContext]
+        prevs = Ptr{AVOption}[C_NULL]
+        prev = prevs[1]
+
+        # Initialize the search of AVOption with Ptr{AVFormatContext}
+        obj= i
+
+        # Run through all AVOptions and store them in options
+        #while(true)
+           while (true)
+              prev = av_opt_next(obj, prev)
+              if prev ==C_NULL
+                  break
+              end
+              avoption = unsafe_load(prev)
+              name = bytestring(avoption.name)
+              if i == pFormatContext
+                  fmt_options[string(name)] = [avoption.min, avoption.max]
+              else
+                  codec_options[string(name)] = [avoption.min, avoption.max]
+              end
+           end
+
+#            obj = av_opt_child_next(obj, prev)
+#            if obj == C_NULL
+#                break
+#            end
+        #end
+     end
 
     if view
-        print_options(options)
-    end
+        # Print options
+        println("-"^75,"\n ", " "^10, "Format context options in AVOptions API \n","-"^75)
+        print_options(fmt_options)
+        println("-"^75,"\n ", " "^10, "Codec context options in AVOptions API \n","-"^75)
+        print_options(codec_options)
 
-    options
+        return fmt_options, codec_options
+    end
 end
 
 function print_options(options::Dict{String,Vector{Cdouble}})
@@ -237,8 +267,6 @@ function print_options(options::Dict{String,Vector{Cdouble}})
     longest = maximum(map(i -> length(optionKeys[i]), 1:length(optionKeys)))
     sort!(vec(optionKeys))
 
-    # Print options
-    println("-"^75,"\n ", " "^10, "LIST OF ALL OPTIONS FOR FORMAT, CODEC AND DEVICES\n","-"^75)
     for i=1:length(optionKeys)
         name = optionKeys[i]
         println(name, " "^(longest-length(optionKeys[i]) +1), "=>  min: ",
@@ -250,7 +278,7 @@ end
 # Examples:
 # using VideoIO
 # f = opencamera()
-# OptionsDictionary = document_all_options(f.avin, true)
+# fmt_options, codec_options = document_all_options(f, true)
 
 # **************************************************************************************************************
 # Setting options
@@ -259,41 +287,40 @@ end
 # 2. set_option           => Set using "key", "value" pairs
 # **************************************************************************************************************
 
-function set_default_options(I::AVInput)
-    if !I.isopen
+function set_default_options(I::VideoReader)
+    if !I.avin.isopen
         error("No input file/device open!")
     end
 
     # Set default formats on Ptr{AVFormatContext}
-    pFormatContext = I.apFormatContext[1]
+    pFormatContext = I.avin.apFormatContext[1]
     # av_opt_set_defaults2 (mask = 0, flags = 0)
     av_opt_set_defaults(pFormatContext) # input is Ptr{Void}
 
     # Set default codecs on Ptr{AVCodecContext}
-    FormatContext = unsafe_load(pFormatContext)
-    for i = 1:FormatContext.nb_streams
-        pStream = unsafe_load(FormatContext.streams,i)
-        stream = unsafe_load(pStream)
-        av_opt_set_defaults(stream.codec)
-    end
+    # Retrieve Ptr{AVCodecContext}
+    pCodecContext = I.pVideoCodecContext
+    av_opt_set_defaults(pCodecContext)
 
-    println("Set default format and codec options")
+    println("Set default Format and Codec options.")
     av_opt_free(pFormatContext)
 end
 
 #  Example:
 #  using VideoIO
-#  f = opencamera(VideoIO.DEFAULT_CAMERA_DEVICE, VideoIO.DEFAULT_CAMERA_FORMAT)
-#  set_default_options(f.avin)
+#  f = opencamera()
+#  set_default_options(f)
 # **************************************************************************************************************
 
-function set_option(I::AVInput, key::String, val::String)
-    if !I.isopen
+function set_option(I::VideoReader, key::String, val::String)
+    if !I.avin.isopen
         error("No input file/device open!")
     end
 
     # Select Ptr{AVFormatContext}
-    pFormatContext = I.apFormatContext[1]
+    pFormatContext = I.avin.apFormatContext[1]
+    # Retrieve Ptr{AVCodecContext}
+    pCodecContext = I.pVideoCodecContext
 
     # key, value and pair separators
     key_val_sep = ","
@@ -303,7 +330,13 @@ function set_option(I::AVInput, key::String, val::String)
     res = av_set_options_string(pFormatContext, pointer(opts),
                                 pointer(key_val_sep), pointer(pairs_sep))
     if res < 0
-        error("Could not set '$key' option.")
+        res = av_set_options_string(pCodecContext, pointer(opts),
+                                pointer(key_val_sep), pointer(pairs_sep))
+        if res < 0
+            error("Could not set '$key' option.")
+        else
+            println("$key set to $val.")
+        end
     else
        println("$key set to $val.")
     end
@@ -314,20 +347,20 @@ end
 #  f = opencamera()
 #  print_options (OptionsDictionary)
 #  set probing size
-#     set_option(f.avin, "probesize", "100000000")
+#     set_option(f, "probesize", "100000000")
 #  set how many microseconds
-#     set_option(f.avin, "analyzeduration", "10000000")
+#     set_option(f, "analyzeduration", "10000000")
 #  set number of frames used to probe -> fps (from -1 to 2.14748e+09)
-#     set_option(f.avin, "fpsprobesize", "10")
-#     set_option(f.avin, "formatprobesize", "50000000")
+#     set_option(f, "fpsprobesize", "10")
+#     set_option(f, "formatprobesize", "50000000")
 #  set pixel format
-#     set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_UYVY422))
-#     set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_YUYV422))
-#     set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_NV12))
-#     set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_0RGB))
-#     set_option(f.avin, "pixel_format", string(VideoIO.AV_PIX_FMT_BGR0))
+#     set_option(f, "pixel_format", string(VideoIO.AV_PIX_FMT_UYVY422))
+#     set_option(f, "pixel_format", string(VideoIO.AV_PIX_FMT_YUYV422))
+#     set_option(f, "pixel_format", string(VideoIO.AV_PIX_FMT_NV12))
+#     set_option(f, "pixel_format", string(VideoIO.AV_PIX_FMT_0RGB))
+#     set_option(f, "pixel_format", string(VideoIO.AV_PIX_FMT_BGR0))
 #  set frame rate
-#     set_option(f.avin, "frame_rate", "15")
+#     set_option(f, "frame_rate", "15")
 
 
 
@@ -337,9 +370,12 @@ end
 # is_option => Checks if an option exists
 # **************************************************************************************************************
 
-function is_option(I::AVInput, key::String)
-    pFormatContext = I.apFormatContext[1]
+function is_option(I::VideoReader, key::String)
+    pFormatContext = I.avin.apFormatContext[1]
     #AVOptionType named constants (Ptr{Uint8})
+    # Retrieve Ptr{AVCodecContext}
+    pCodecContext = I.pVideoCodecContext
+
     unit =  C_NULL  # "AVOptionType"?, but not clear from docs
     opt_flag = cint(0)
 
@@ -368,7 +404,12 @@ function is_option(I::AVInput, key::String)
 
     prev = av_opt_find(pFormatContext,pointer(key),unit, opt_flag, search_flags)
     if prev == C_NULL
-        error("$key not found!")
+        prev = av_opt_find(pCodecContext,pointer(key),unit, opt_flag, search_flags)
+        if prev == C_NULL
+            error("$key not found!")
+        else
+            println("$key found!")
+        end
     else
         println("$key found!")
     end
@@ -377,10 +418,10 @@ end
 # Examples:
 # using VideoIO
 # f = opencamera()
-# is_option(f.avin, "probesize")
-# is_option(f.avin, "list_devices")
-# is_option(f.avin, "max_delay")
-# is_option(f.avin, "analyzeduration")
+# is_option(f, "probesize")
+# is_option(f, "list_devices")
+# is_option(f, "max_delay")
+# is_option(f, "analyzeduration")
 # **************************************************************************************************************
 
 
@@ -401,9 +442,12 @@ macro assert_type(ex)
     return option
 end
 
-function get_option(I::AVInput, key::String, OPTION_TYPE="")
+function get_option(I::VideoReader, key::String, OPTION_TYPE="")
     option = @assert_type(OPTION_TYPE)
-    pFormatContext = I.apFormatContext[1]
+    pFormatContext = I.avin.apFormatContext[1]
+
+     # Retrieve Ptr{AVCodecContext}
+    pCodecContext = I.pVideoCodecContext
 
     # Get value from children of FormatContext -> AVCodecContext
     search_flags = cint(AV_OPT_SEARCH_CHILDREN)
@@ -412,7 +456,13 @@ function get_option(I::AVInput, key::String, OPTION_TYPE="")
     # Passing a double pointer
         outval = Array(Ptr{Uint8},1)
         if (av_opt_get(pFormatContext,pointer(key),search_flags, outval)<0)
-            error("Cannot get value for $key")
+            if (av_opt_get(pCodecContext,pointer(key),search_flags, outval)<0)
+                error("Cannot get value for $key")
+            else
+                val = bytestring(outval[1])
+                println("$key = ", val)
+                return val
+            end
         else
             val = bytestring(outval[1])
             println("$key = ", val)
@@ -453,16 +503,11 @@ end
 # Examples:
 # using VideoIO
 # f = opencamera()
-# get_option(f.avin, "probesize")
-# get_option(f.avin, "list_devices")
-# get_option(f.avin, "max_delay")
-# get_option(f.avin, "analyzeduration")
-# get_option(f.avin, "?", "image_size")
-# get_option(f.avin, "?", "pixel_fmt")
-# get_option(f.avin, "?", "video_rate")
+# get_option(f, "probesize")
+# get_option(f, "list_devices")
+# get_option(f, "max_delay")
+# get_option(f, "analyzeduration")
 # **************************************************************************************************************
-
-
 
 
 # **************************************************************************************************************
@@ -502,12 +547,15 @@ function create_dictionary(entries)
 end
 
 
-function set_options_with_dictionary(I::AVInput, pDictionary::Array{Ptr{AVDictionary}})
+function set_options_with_dictionary(I::VideoReader, pDictionary::Array{Ptr{AVDictionary}})
 
     pDictionary[1]==C_NULL ? error("Dictionary is empty!") : nothing
 
     # Retrieve Ptr{AVFormatContext}
-    pFormatContext = I.apFormatContext[1]
+    pFormatContext = I.avin.apFormatContext[1]
+
+    # Retrieve Ptr{AVCodecContext}
+    pCodecContext = I.pVideoCodecContext
 
     # Set value in children of FormatContext -> AVCodecContext
     search_flags = cint(AV_OPT_SEARCH_CHILDREN)
@@ -515,7 +563,11 @@ function set_options_with_dictionary(I::AVInput, pDictionary::Array{Ptr{AVDictio
     # Set options with dictionary
     # 0 on success, < 0 (AVERROR) if found in obj, but could not be set
     if (av_opt_set_dict2(pFormatContext, pDictionary, search_flags) !=0)
-        error("Cannot set options with this dictionary. Check your dictionary!")
+        if (av_opt_set_dict2(pCodecContext, pDictionary, search_flags) !=0)
+            error("Cannot set options with this dictionary. Check your dictionary!")
+        else
+            println("Set all options in dictionary")
+        end
     else
         println("Set all options in dictionary")
     end
@@ -533,9 +585,8 @@ end
 # entries["duration"] = "3000"
 # entries["video_size"] = "640x480"
 # pDictionary = create_dictionary(entries)
-# set_options_with_dictionary(f.avin, pDictionary)
+# set_options_with_dictionary(f, pDictionary)
 # **************************************************************************************************************
-
 
 # **************************************************************************************************************
 # AVDeviceCapabilitiesQuery API
@@ -545,10 +596,10 @@ end
 # **************************************************************************************************************
 
 # Create a new device query structure
-function create_device_query(I::AVInput, pDictionary)
+function create_device_query(I::VideoReader, pDictionary)
 
     # Retrieve Ptr{AVFormatContext}
-    pFormatContext = I.apFormatContext[1]
+    pFormatContext = I.avin.apFormatContext[1]
     FormatContext = unsafe_load(pFormatContext)
 
 #     pStream = unsafe_load(FormatContext.streams)
@@ -572,7 +623,6 @@ function create_device_query(I::AVInput, pDictionary)
 #                                              frame_height,
 #                                              fps)
 
-
     queries= Ptr{AVDeviceCapabilitiesQuery}[C_NULL]
     pDictionary = Ptr{AVDictionary}[C_NULL]
 
@@ -587,14 +637,17 @@ function create_device_query(I::AVInput, pDictionary)
     return queries
 end
 
+
+
 # Probe and set device capabilities
-function query_device_ranges(I::AVInput, key::String)
-    # queries::Array{Ptr{AVDeviceCapabilitiesQuery}})
+# => works with pFormatContext/pCodecContext but not AVDeviceCapabilitiesQuery
+function query_device_ranges(I::VideoReader, key::String)
+
     # Select Ptr{AVFormatContext}
-    pFormatContext = I.apFormatContext[1]
+    pFormatContext = I.avin.apFormatContext[1]
 
     # Initialize AVOptionRanges
-    ranges = Array(Ptr{AVOptionRanges},1)
+    ranges = Array(Ptr{AVOptionRanges},1)[C_NULL]
     #search_flags = cint(AV_OPT_MULTI_COMPONENT_RANGE)
     search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
@@ -675,6 +728,8 @@ end
 
 function list_devices(I::AVInput)
 
+  #VideoIO.av_setfield(f.avin.apFormatContext[1],:iformat,iformat)
+  #pdevice_list = Ptr{VideoIO.AVDeviceInfoList}[C_NULL]
     # AVDeviceCapabilitiesQuery
     # AVDeviceCapabilitiesQuery.device_context::Ptr{AVFormatContext}
 
@@ -757,4 +812,77 @@ end
 # **************************************************************************************************************
 
 
+# Custom function for retrieving options not covered by AVOptions API
+# Dependent on fields in structure declarations
 
+function get_videodevice_settings (I::VideoReader)
+    #Current video device settings
+
+    # Image input format
+    format = I.format
+    window_width = I.width
+    window_height = I.height
+    framerate = I.framerate
+    #aspect_ratio = I.aspect_ratio
+
+    println("\nProperties of enabled video device: ")
+    println("window_width: ", "$(window_width)")
+    println("window_height: ", "$(window_height)")
+    println("framerate: ", "$(framerate)")
+    #println("aspect_ratio: ", "$(aspect_ratio)", "\n")
+
+    # AVCodec
+    codec_ctx = unsafe_load(I.pVideoCodecContext)
+    pixel_format = codec_ctx.pix_fmt                            # AVPixelFormat (Cint)
+    codec_id = convert(Int64,codec_ctx.codec_id)                # AVCodecID
+    #frame_size = codec_ctx.frame_size
+
+    println("pixel_format: ", "$(pixel_format)")
+    println("codec_id: ", "$(codec_id)")
+
+    video_codec = unsafe_load(I.pVideoCodec)
+    scodec_name = bytestring(video_codec.name)                    #::Ptr{Uint8}
+    lcodec_name = bytestring(video_codec.long_name)               #::Ptr{Uint8}
+    video_codec_capabilities = video_codec.capabilities           #::Cint
+
+    println("codec_name: ", "$(scodec_name)")
+    println("mininum buffer size: ", "$(video_codec_capabilities)")
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# IGNORE! only for testing in REPL (will be deleted)
+# using VideoIO
+# f = opencamera()
+# cint(n) = convert(Cint,n)
+# pFormatContext = f.avin.apFormatContext[1]
+# ranges = Ptr{VideoIO.AVOptionRanges}[C_NULL]
+# search_flags = convert(Cint, VideoIO.AV_OPT_SEARCH_CHILDREN)
+# FormatContext = unsafe_load(pFormatContext)
+# frame_width = cint(640)
+# frame_height = cint(480)
+# fps = VideoIO.AVRational(30,1)
+# DeviceQuery = VideoIO.AVDeviceCapabilitiesQuery (FormatContext.av_class, pFormatContext, VideoIO.AV_CODEC_ID_MPEG4, VideoIO.AV_SAMPLE_FMT_NONE, VideoIO.AV_PIX_FMT_YUYV422,cint(0),cint(0),convert(Clonglong,0),cint(640),cint(480),frame_width,frame_height,fps)
+# queries = Ptr{VideoIO.AVDeviceCapabilitiesQuery}[pointer_from_objref(DeviceQuery)]
+# key = "frame_width"
+# VideoIO.av_opt_query_ranges(ranges,queries[1], pointer(key),search_flags)
+
+# apFormatContext = Ptr{VideoIO.AVFormatContext}[VideoIO.avformat_alloc_context()]
+# VideoIO.av_register_all()
+# VideoIO.avformat_alloc_output_context2(apFormatContext,C_NULL,pointer("mpeg2video"),C_NULL)
