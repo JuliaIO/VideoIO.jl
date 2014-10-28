@@ -577,7 +577,7 @@ if have_avdevice()
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
         CAMERA_DEVICES = get_camera_devices(ffmpeg, "dshow", "dummy")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
+        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : string("video=", "Integrated Camera")
 
     end
 
@@ -585,7 +585,7 @@ if have_avdevice()
         import Glob
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
         CAMERA_DEVICES = Glob.glob("video*", "/dev")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
+        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "/dev/video0"
     end
 
     @osx_only begin
