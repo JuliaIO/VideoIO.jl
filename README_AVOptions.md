@@ -70,7 +70,8 @@ The package will be tested as part of the VideoIO package (see test/avoptions_te
      julia>Pkg.test("VideoIO")
 
 ## How to use the AVOptions API
-
+***Note***: Current versions of [Libav libraries] (https://libav.org/) in VideoIO.jl lack essential functions for accessing video devices and their format (illustrated in the first 2 sections below). This affects Debian Linux users.  
+ 
 #### <span style= "color:green">List recognized input devices and formats<span>
 
     julia> using VideoIO
@@ -103,7 +104,7 @@ Next we get the name of the AVFoundation camera device using FFmpeg from Julia
     
 Then open the selected built-in webcam
 
-    julia> f = opencamera("Built-in-iSight", format)
+    julia> f = opencamera("Built-in iSight", format)
     [avfoundation @ 0x7fac88e01c00] Selected pixel format (yuv420p)
     is not supported by the input device.
     [avfoundation @ 0x7fac88e01c00] Supported pixel formats:
@@ -537,7 +538,11 @@ We can now view (and store) most (but not all) AVOptions associated with this de
 
 Given changes in the option names accross library versions, the most reliable way to list all the available pixel formats is by calling FFmpeg from Julia. You can select a device from the **idevice_name** array above (e.g., "avfoundation"):
 
-    julia> open(`ffmpeg -f avfoundation -pix_fmts` all)
+    In the Julia prompt, 
+    julia> open(`ffmpeg -f avfoundation -i ""`)
+    
+    In the shell prompt,
+    $ ffmpeg -f avfoundation -pix_fmts all
     -> Pixel formats:
     I.... = Supported Input  format for conversion
     .O... = Supported Output format for conversion
@@ -625,13 +630,13 @@ Set options with the dictionary
 
 Using AVOptionRange, you can also probe the range of values for a particular option with `query_device_ranges`:
 
-    julia> query_device_ranges(f.avin, "frame_rate")
+    julia> query_device_ranges(f, "frame_rate")
     frame_rate, mininum = 0.1, maximum = 30.0
 
-    julia> query_device_ranges(f.avin, "pixel_format")
+    julia> query_device_ranges(f, "pixel_format")
     pixel_format, mininum = 0.0, maximum = 2.147483647e9
     
-    julia> query_device_ranges(f.avin, "probesize")
+    julia> query_device_ranges(f, "probesize")
     probesize, mininum = 32.0, maximum = 9.223372036854776e18
 
 

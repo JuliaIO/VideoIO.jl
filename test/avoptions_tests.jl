@@ -2,15 +2,30 @@ using Base.Test
 # using Images, Color, FixedPointNumbers, ImageView
 using VideoIO
 
-
 println(STDERR, "Now testing the AVOptions API...")
 
-println(STDERR, "Test#1: Detect AVOptions-enabled devices...")
-devices_list = discover_devices()
-if length(devices_list.idevice_name)<1
-    error("Cannot detect any FFmpeg-enabled input video devices!")
-else
-    println("Detected $(length(devices_list.idevice_name)) input video devices... Passed \n")
+@linux_only begin
+   println(STDERR, "Test#1: Not possible to detect AVOptions-enabled devices in Linux... skipping")
+end
+
+@osx_only begin
+    println(STDERR, "Test#1: Detect AVOptions-enabled devices in OSX ...")
+    devices_list = discover_devices()
+    if length(devices_list.idevice_name)<1
+        error("Cannot detect any FFmpeg-enabled input video devices!")
+    else
+        println("Detected $(length(devices_list.idevice_name)) input video devices... Passed \n")
+    end
+end
+
+@windows_only begin
+    println(STDERR, "Test#1: Detect AVOptions-enabled devices in Windows ...")
+    devices_list = discover_devices()
+    if length(devices_list.idevice_name)<1
+        error("Cannot detect any FFmpeg-enabled input video devices!")
+    else
+        println("Detected $(length(devices_list.idevice_name)) input video devices... Passed \n")
+    end
 end
 
 println(STDERR, "Test#2: Open default camera device and format...")

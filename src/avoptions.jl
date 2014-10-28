@@ -83,11 +83,12 @@ export discover_devices,
        is_option,
        set_default_options,
        set_option,
-       get_option,
+       get_option_basic,
        create_dictionary,
        set_options_with_dictionary,
        get_videodevice_settings,
-       query_device_ranges
+       query_device_ranges,
+       get_metadata
 
 @osx_only begin
     include("avdevicecapabilities.jl")
@@ -99,101 +100,6 @@ end
 
 # Support functions
 cint(n) = convert(Cint,n)
-
-# **************************************************************************************************************
-# Accessing devices for input and output
-# av_input_video_device_next
-# av_output_video_device_next
-#**************************************************************************************************************
-
-
-# Structure to store input and output devices
-type devices
-    idevice_name::Vector{String}
-    odevice_name::Vector{String}
-    vpiformat::Vector{Ptr{AVInputFormat}}
-    vpoformat::Vector{Ptr{AVOutputFormat}}
-end
-
-function discover_devices()
-
-    # Check the device version
-    println("AVDevice v", string(VideoIO.avdevice_version()))
-
-    # Initialize empty pointers
-    piformat = C_NULL # Input format
-    poformat = C_NULL # Output format
-
-    devices_list = devices([],[], Ptr{AVInputFormat}[], Ptr{AVOutputFormat}[])
-
-    while (true)
-        piformat = av_input_video_device_next(piformat)
-        if piformat==C_NULL
-            break
-        end
-        push!(devices_list.vpiformat, piformat)
-
-        #unload iformat::Ptr{AVInputFormat}
-        iformat = unsafe_load(piformat)
-        idevice_name = bytestring(iformat.long_name)
-        push!(devices_list.idevice_name, string(idevice_name))
-
-        #extensions = bytestring(iformat.extensions)
-        #flags = iformat.flags
-        #mime_type = bytestring(iformat.mime_type)
-        #raw_codec_id = iformat.raw_codec_id
-        #priv_data_size = iformat.priv_data_size
-        #avclass = unsafe_load(iformat.priv_class)
-    end
-
-    while (poformat = av_output_video_device_next(poformat) !=C_NULL)
-        poformat = av_output_video_device_next(poformat)
-        if poformat==C_NULL
-            println("No output format detected!")
-            break
-        end
-        push!(devices_list.vpoformat, poformat)
-        #unload oformat::Ptr{AVOutputFormat}
-        oformat = unsafe_load(poformat)
-        odevice_name = bytestring(oformat.long_name)
-        push!(devices_list.odevice_name, string(odevice_name))
-        #extensions = bytestring(oformat.extensions)
-        #mime_type = bytestring(oformat.mime_type)
-        #flags = oformat.flags
-        #priv_data_size = oformat.priv_data_size
-        #video_codec::AVCodecID
-        #subtitle_codec::AVCodecID
-    end
-
-    println("Input devices: \n")
-    if length(devices_list.idevice_name) > 0
-        for i=1:length(devices_list.idevice_name)
-            println("[$i] : ", devices_list.idevice_name[i])
-        end
-    else
-        println("No devices detected!")
-    end
-
-    println("Output devices:")
-    if length(devices_list.odevice_name) > 0
-        for i=1:length(devices_list.odevice_name)
-            println("[$i] : ", devices_list.odevice_name[i])
-        end
-    else
-        println("No output format detected! \n")
-    end
-
-  return devices_list
-end
-
-# Examples
-# devices_list = discover_devices()
-# name = devices_list.idevice_name
-# format = devices_list.vpiformat[1]
-
-# Find AVInputFormat based on short name, e.g., "AVFoundation"
-# iformat = VideoIO.av_find_input_format(pointer("AVFoundation"))
-# iformat = Ptr{AVInputFormat}
 
 # **************************************************************************************************************
 # Document and view (optional) all enabled options
@@ -275,7 +181,7 @@ function print_options(options::Dict{String,Vector{Cdouble}})
         println(name, " "^(longest-length(optionKeys[i]) +1), "=>  min: ",
                 options[optionKeys[i]][1], " , max: " , options[optionKeys[i]][2])
      end
-     println("\n\n")
+     println("\n")
 end
 
 # Examples:
@@ -435,71 +341,30 @@ end
 # **************************************************************************************************************
 
 # Check the type of option to search for e.g., image_size, pixel_fmt
-macro assert_type(ex)
-    option =""
-    return :($ex=="" ? option = :default:
-             $ex=="image_size" ? option = :image_size:
-             $ex=="pixel_fmt" ? option = :pixel_fmt :
-             $ex=="video_rate" ? option = :video_rate :
-              error("option", $(string(ex)), " does not exist!"))
-    return option
-end
 
-function get_option(I::VideoReader, key::String, OPTION_TYPE="")
-    option = @assert_type(OPTION_TYPE)
+function get_option_basic(I::VideoReader, key::String)
     pFormatContext = I.avin.apFormatContext[1]
 
-     # Retrieve Ptr{AVCodecContext}
+    # Retrieve Ptr{AVCodecContext}
     pCodecContext = I.pVideoCodecContext
 
     # Get value from children of FormatContext -> AVCodecContext
     search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
-    if option==:default
     # Passing a double pointer
-        outval = Array(Ptr{Uint8},1)
-        if (av_opt_get(pFormatContext,pointer(key),search_flags, outval)<0)
-            if (av_opt_get(pCodecContext,pointer(key),search_flags, outval)<0)
-                error("Cannot get value for $key")
-            else
-                val = bytestring(outval[1])
-                println("$key = ", val)
-                return val
-            end
+    outval = Array(Ptr{Uint8},1)
+    if (av_opt_get(pFormatContext,pointer(key),search_flags, outval)<0)
+        if (av_opt_get(pCodecContext,pointer(key),search_flags, outval)<0)
+            error("Cannot get value for $key")
         else
             val = bytestring(outval[1])
             println("$key = ", val)
             return val
         end
-    elseif option ==:image_size
-        out1 = Array(Ptr{Cint},1); pwidth = out1[1]
-        out2 = Array(Ptr{Cint},1); pheight = out2[1]
-        if (av_opt_get_image_size(pFormatContext,pointer(key),search_flags, pwidth, pheight)<0)
-            error("Cannot get value for $key")
-        else
-            fval1 = convert(Int64, unsafe_load(pwidth))
-            fval2 = convert(Int64, unsafe_load(pheight))
-            println("Width: $fval1, Height: $fval2")
-            return val1, val2
-        end
-    elseif option ==:pixel_fmt
-        out = Array(Ptr{AVPixelFormat},1); ppix_fmt = out[1]
-        if (av_opt_get_pixel_fmt(pFormatContext,pointer(key),search_flags, ppix_fmt)<0)
-            error("Cannot get value for $key")
-        else
-            pix_fmt = convert(Int64, unsafe_load(ppix_fmt))
-            println("Pixel format is: $pix_fmt")
-            return pix_fmt
-        end
-    elseif option ==:video_rate
-        out = Array(Ptr{AVRational},1); pvideorate = out[1]
-        if (av_opt_get_video_rate(pFormatContext,pointer(key),search_flags, pvideorate)<0)
-            error("Cannot get value for $key")
-        else
-            frame_rate = unsafe_load(pvideorate)
-            println("Frame rate is: $(frame_rate.num/frame_rate.den) fps")
-            return fps
-        end
+    else
+        val = bytestring(outval[1])
+        println("$key = ", val)
+        return val
     end
 end
 
@@ -600,7 +465,7 @@ function query_device_ranges(I::VideoReader, key::String)
     pFormatContext = I.avin.apFormatContext[1]
 
     # Initialize AVOptionRanges
-    ranges = Array(Ptr{AVOptionRanges},1)[C_NULL]
+    ranges = Ptr{AVOptionRanges}[C_NULL]
     #search_flags = cint(AV_OPT_MULTI_COMPONENT_RANGE)
     search_flags = cint(AV_OPT_SEARCH_CHILDREN)
 
@@ -680,7 +545,37 @@ function get_videodevice_settings (I::VideoReader)
 end
 
 
+# **************************************************************************************************************
+# Read metadata
+# AVFormatContext
+# -> metadata::Ptr{AVDictionary}
+# f = opencamera()
+# get_metadata(f.avin)
+# **************************************************************************************************************
 
+function get_metadata(I::AVInput,key::String)
+    # Select Ptr{AVFormatContext}
+    pFormatContext = I.apFormatContext[1]
+    fmt_ctx = unsafe_load(pFormatContext)
+    tags = Ptr{AVDictionaryEntry}[C_NULL]
+    tag = tags[1]
+
+
+    while(true)
+        tag = av_dict_get(fmt_ctx.metadata, pointer(key), tag, cint(AV_DICT_IGNORE_SUFFIX))
+        if tag !=C_NULL
+            entry = unsafe_load(tag)
+            metakey = bytestring(entry.key)
+            metaentry = bytestring(entry.val)
+            println(metakey, metaentry, "\n")
+        else
+            println("No entry!")
+            break
+        end
+    end
+end
+
+# **************************************************************************************************************
 
 
 
