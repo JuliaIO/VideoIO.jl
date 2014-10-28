@@ -3,6 +3,7 @@
 
 
 VideoIO/src/avoptions.jl<br>
+VideoIO/src/avdevicecapabilities.jl<br>
 updated for FFmpeg 2.4.2
 
 2014, Maximiliano Suster
