@@ -564,7 +564,7 @@ You can set all options to default values
     julia> set_default_options(f)
     Set default format and codec options
 
-#### <span style= "color:green">Set and get options with (name, value) strings<span>
+#### <span style= "color:green">Get and set options with (name, value) strings<span>
 1.Get **`video_device_index`**  (default = -1)
 
     julia> get_option(f, "video_device_index")
@@ -591,8 +591,8 @@ You can set all options to default values
     julia> get_option(f, "probesize")
     probesize = 5000000
 
-    julia> set_option(f, "probesize", "11554333")
-    probesize set to 11554333.
+    julia> set_option(f, "probesize", "1500000")
+    probesize set to 1500000.
 
 #### <span style= "color:green">Set options with AVDictionary<span>
 

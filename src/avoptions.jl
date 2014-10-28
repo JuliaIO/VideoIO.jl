@@ -104,6 +104,7 @@ cint(n) = convert(Cint,n)
 # av_output_video_device_next
 #**************************************************************************************************************
 
+
 # Structure to store input and output devices
 type devices
     idevice_name::Vector{String}
@@ -636,8 +637,6 @@ function create_device_query(I::VideoReader, pDictionary)
     #avdevice_capabilities_free(queries, pFormatContext)
     return queries
 end
-
-
 
 # Probe and set device capabilities
 # => works with pFormatContext/pCodecContext but not AVDeviceCapabilitiesQuery

@@ -60,7 +60,8 @@ function avdevice_dev_to_app_control_message(s,_type::AVDevToAppMessageType,data
 end
 
 function avdevice_capabilities_create(caps,s,device_options)
-    ccall((:avdevice_capabilities_create,libavdevice),Cint,(Ptr{Ptr{AVDeviceCapabilitiesQuery}},Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),caps,s,device_options)
+    #ccall((:avdevice_capabilities_create,libavdevice),Cint,(Ptr{Ptr{AVDeviceCapabilitiesQuery}},Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),caps,s,device_options)
+    ccall((:avdevice_capabilities_create,libavdevice),Cint,(Ptr{Ptr{Void}},Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),caps,s,device_options)
 end
 
 function avdevice_capabilities_free(caps,s)
