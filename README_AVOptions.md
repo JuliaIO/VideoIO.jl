@@ -563,42 +563,37 @@ To set a pixel format with the AVOptions API (see example below), you need to pr
 Check whether an option exists<br>
 
     julia>is_option(f, "probesize")
-    probesize found!
 
 You can set all options to default values
 
     julia> set_default_options(f)
-    Set default format and codec options
 
 #### <span style= "color:green">Get and set options with (name, value) strings<span>
 1.Get **`video_device_index`**  (default = -1)
 
     julia> get_option(f, "video_device_index")
-    video_device_index = -1
+    "-1"
 
 2.Get **`pixel_format`** and then set it to **`0RGB`**
 
     julia> pix_format = get_option(f, "pixel_format")
-    pixel_format = uyvy422
+    "uyvy422"
 
     julia> set_option(f, "pixel_format", string(VideoIO.AV_PIX_FMT_0RGB))
-    pixel_format set to 295.
 
 3.Get **`frame_rate`** and then set it to **`15 fps`**
 
     julia> frame_rate = get_option(f, "frame_rate")
-    frame_rate = 30.000000
+    "30.000000"
 
     julia> set_option(f, "frame_rate", "15")
-    frame_rate set to 15.
 
 4.Get **`probesize`** and then set to **`1500000`**
 
     julia> get_option(f, "probesize")
-    probesize = 5000000
+    "5000000"
 
     julia> set_option(f, "probesize", "1500000")
-    probesize set to 1500000.
 
 #### <span style= "color:green">Set options with AVDictionary<span>
 
@@ -617,30 +612,28 @@ Intialize the dictionary with entries as shown below:
     julia> entries["list_devices"] = "0";
 
     julia> pDictionary = create_dictionary(entries)
-    The dictionary has 6 entries.
     1-element Array{Ptr{None},1}:
     Ptr{Void} @0x00007fac81ceaec0
 
 Set options with the dictionary
 
     julia> set_options_with_dictionary(f, pDictionary)
-    Set all options in dictionary
 
-#### <span style= "color:green">Probe device options with Device Capabilities API <span>
+#### <span style= "color:green">List input device properties <span>
+Currently, this is not working with the AVDeviceCapabilitiesQuery structure. Instead, two basic functions are used to access input device properties.
 
-Using AVOptionRange, you can also probe the range of values for a particular option with `query_device_ranges`:
+You can probe the range of values for a particular option with `query_device_ranges`:
 
-    julia> query_device_ranges(f, "frame_rate")
-    frame_rate, mininum = 0.1, maximum = 30.0
+     julia> query_device_ranges(f, "frame_rate")
+     (0.1,30.0)
 
-    julia> query_device_ranges(f, "pixel_format")
-    pixel_format, mininum = 0.0, maximum = 2.147483647e9
-    
-    julia> query_device_ranges(f, "probesize")
-    probesize, mininum = 32.0, maximum = 9.223372036854776e18
+     julia> query_device_ranges(f, "pixel_format")
+     (0.0, 2.147483647e9)
 
+     julia> query_device_ranges(f, "probesize")
+     (32.0, 9.223372036854776e18)
 
-Get and set video device properties (***further work needed***):
+Get and set video device properties:
 
     julia> get_videodevice_settings (f)
 
