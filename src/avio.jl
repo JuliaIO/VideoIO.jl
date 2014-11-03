@@ -597,7 +597,7 @@ if have_avdevice()
         ffmpeg = joinpath(Homebrew.prefix(), "bin", "ffmpeg")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
-        global CAMERA_DEVICES = {}
+        global CAMERA_DEVICES = UTF8String[]
         try
             CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
         catch
