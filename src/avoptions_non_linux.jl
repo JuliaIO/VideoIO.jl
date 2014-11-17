@@ -8,16 +8,14 @@ export get_option,
 # get_option => return value (string) for a given key (string)
 # **************************************************************************************************************
 
-macro assert_type(ex)
-    return :($ex=="" ? option = :default:
-             $ex=="image_size" ? option = :image_size:
-             $ex=="pixel_fmt"  ? option = :pixel_fmt :
-             $ex=="video_rate" ? option = :video_rate :
-             throw(ArgumentError("option does not exist!")))
+function assert_type(ex::String)
+    if !(ex=="" || ex=="image_size" || ex=="pixel_fmt" || ex=="video_rate")
+     throw(ArgumentError("option does not exist!"))
+   end
 end
 
 function get_option(I::VideoReader, key::String, OPTION_TYPE="")
-    option = @assert_type(OPTION_TYPE)
+    assert_type(OPTION_TYPE)
     pFormatContext = I.avin.apFormatContext[1]
 
     # Retrieve Ptr{AVCodecContext}
