@@ -123,6 +123,7 @@ export
     Array_8_Cint,
     Array_2_Ptr,
     Array_8_Uint64,
+    AV_NOPTS_VALUE,
     AVRational,
     AVColorRange,
     AVCOL_RANGE_UNSPECIFIED,

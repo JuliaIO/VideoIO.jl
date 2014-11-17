@@ -953,14 +953,14 @@ export
     DV_PROFILE_BYTES,
     Array_2_AVRational,
     Array_3_Cint,
-    AVDVProfile,
-    vaapi_context,
-    AVVDPAUPictureInfo,
-    AVVDPAU_Render2,
-    AVVDPAUContext,
-    vdpau_render_state,
-    AV_XVMC_ID,
-    xvmc_pix_fmt
+    AVDVProfile #,
+    # vaapi_context,
+    # AVVDPAUPictureInfo,
+    # AVVDPAU_Render2,
+    # AVVDPAUContext,
+    # vdpau_render_state,
+    # AV_XVMC_ID,
+    # xvmc_pix_fmt
 
 
 
@@ -2217,7 +2217,7 @@ immutable AVCodec
     priv_class::Ptr{AVClass}
     profiles::Ptr{AVProfile}
     priv_data_size::Cint
-    next::Ptr{AVCodec}
+    next::Ptr{AVCodec_}
     init_thread_copy::Ptr{Void}
     update_thread_context::Ptr{Void}
     defaults::Ptr{AVCodecDefault}
@@ -2248,13 +2248,13 @@ immutable AVHWAccel
     priv_data_size::Cint
 end
 
-typealias AVFrame Void
+# typealias AVFrame Void
 
 immutable AVCodecContext
     av_class::Ptr{AVClass}
     log_level_offset::Cint
     codec_type::AVMediaType
-    codec::Ptr{AVCodec}
+    codec::Ptr{AVCodec_}
     codec_name::Array_32_Uint8
     codec_id::AVCodecID
     codec_tag::Uint32
@@ -2651,68 +2651,68 @@ immutable AVDVProfile
     audio_shuffle::Ptr{Void}
 end
 
-immutable vaapi_context
-    display::Ptr{Void}
-    config_id::Uint32
-    context_id::Uint32
-    pic_param_buf_id::Uint32
-    iq_matrix_buf_id::Uint32
-    bitplane_buf_id::Uint32
-    slice_buf_ids::Ptr{Uint32}
-    n_slice_buf_ids::Uint32
-    slice_buf_ids_alloc::Uint32
-    slice_params::Ptr{Void}
-    slice_param_size::Uint32
-    slice_params_alloc::Uint32
-    slice_count::Uint32
-    slice_data::Ptr{Uint8}
-    slice_data_size::Uint32
-end
+# immutable vaapi_context
+#     display::Ptr{Void}
+#     config_id::Uint32
+#     context_id::Uint32
+#     pic_param_buf_id::Uint32
+#     iq_matrix_buf_id::Uint32
+#     bitplane_buf_id::Uint32
+#     slice_buf_ids::Ptr{Uint32}
+#     n_slice_buf_ids::Uint32
+#     slice_buf_ids_alloc::Uint32
+#     slice_params::Ptr{Void}
+#     slice_param_size::Uint32
+#     slice_params_alloc::Uint32
+#     slice_count::Uint32
+#     slice_data::Ptr{Uint8}
+#     slice_data_size::Uint32
+# end
 
-const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
+# const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
 
-immutable AVVDPAUPictureInfo
-    _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
-end
+# immutable AVVDPAUPictureInfo
+#     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
+# end
 
-typealias AVVDPAU_Render2 Ptr{Void}
+# typealias AVVDPAU_Render2 Ptr{Void}
 
-immutable AVVDPAUContext
-    decoder::VdpDecoder
-    render::Ptr{VdpDecoderRender}
-    info::AVVDPAUPictureInfo
-    bitstream_buffers_allocated::Cint
-    bitstream_buffers_used::Cint
-    bitstream_buffers::Ptr{VdpBitstreamBuffer}
-    render2::AVVDPAU_Render2
-end
+# immutable AVVDPAUContext
+#     decoder::VdpDecoder
+#     render::Ptr{VdpDecoderRender}
+#     info::AVVDPAUPictureInfo
+#     bitstream_buffers_allocated::Cint
+#     bitstream_buffers_used::Cint
+#     bitstream_buffers::Ptr{VdpBitstreamBuffer}
+#     render2::AVVDPAU_Render2
+# end
 
-immutable vdpau_render_state
-    surface::VdpVideoSurface
-    state::Cint
-    bitstream_buffers_allocated::Cint
-    bitstream_buffers_used::Cint
-    bitstream_buffers::Ptr{VdpBitstreamBuffer}
-    info::AVVDPAUPictureInfo
-end
+# immutable vdpau_render_state
+#     surface::VdpVideoSurface
+#     state::Cint
+#     bitstream_buffers_allocated::Cint
+#     bitstream_buffers_used::Cint
+#     bitstream_buffers::Ptr{VdpBitstreamBuffer}
+#     info::AVVDPAUPictureInfo
+# end
 
-const AV_XVMC_ID = 0x1dc711c0
+# const AV_XVMC_ID = 0x1dc711c0
 
-immutable xvmc_pix_fmt
-    xvmc_id::Cint
-    data_blocks::Ptr{Int16}
-    mv_blocks::Ptr{XvMCMacroBlock}
-    allocated_mv_blocks::Cint
-    allocated_data_blocks::Cint
-    idct::Cint
-    unsigned_intra::Cint
-    p_surface::Ptr{XvMCSurface}
-    p_past_surface::Ptr{XvMCSurface}
-    p_future_surface::Ptr{XvMCSurface}
-    picture_structure::Uint32
-    flags::Uint32
-    start_mv_blocks_num::Cint
-    filled_mv_blocks_num::Cint
-    next_free_data_block_num::Cint
-end
+# immutable xvmc_pix_fmt
+#     xvmc_id::Cint
+#     data_blocks::Ptr{Int16}
+#     mv_blocks::Ptr{XvMCMacroBlock}
+#     allocated_mv_blocks::Cint
+#     allocated_data_blocks::Cint
+#     idct::Cint
+#     unsigned_intra::Cint
+#     p_surface::Ptr{XvMCSurface}
+#     p_past_surface::Ptr{XvMCSurface}
+#     p_future_surface::Ptr{XvMCSurface}
+#     picture_structure::Uint32
+#     flags::Uint32
+#     start_mv_blocks_num::Cint
+#     filled_mv_blocks_num::Cint
+#     next_free_data_block_num::Cint
+# end

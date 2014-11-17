@@ -13,8 +13,8 @@ include("libavutil_h.jl")
 #include("frame.jl")
 #include("hash.jl")
 #include("imgutils.jl")
-#include("log.jl")
-#include("mem.jl")
+include("log.jl")
+include("mem.jl")
 #include("motion_vector.jl")
 #include("opt.jl")
 include("pixdesc.jl")
@@ -28,3 +28,17 @@ include("pixdesc.jl")
 #include("timecode.jl")
 #include("version.jl")
 #include("xtea.jl")
+
+function AVFrame()
+    ns = names(AVFrame)
+    ts = AVFrame.types
+    parms = [zero(T) for T in ts]
+
+    fmt_pos = findfirst(ns, :format)
+    parms[fmt_pos] = -one(ts[fmt_pos])
+
+    pts_pos = findfirst(ns, :pts)
+    parms[pts_pos] = AV_NOPTS_VALUE
+
+    AVFrame(parms...)
+end

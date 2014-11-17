@@ -9,6 +9,8 @@ if !isdefined(:libavcodec)
     include("../deps/deps.jl")
 end
 
+INSTALL_ROOT = realpath(joinpath(splitdir(libavcodec)[1], ".."))
+
 if !isdefined(:ffmpeg_or_libav)
     include("version.jl")
 end

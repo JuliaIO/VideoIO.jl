@@ -593,8 +593,7 @@ if have_avdevice()
     end
 
     @osx_only begin
-        import Homebrew
-        ffmpeg = joinpath(Homebrew.prefix(), "bin", "ffmpeg")
+        ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
         global CAMERA_DEVICES = UTF8String[]
