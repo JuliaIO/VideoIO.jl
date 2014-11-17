@@ -2,7 +2,7 @@
 include("libavutil_h.jl")
 
 #include("audio_fifo.jl")
-#include("avutil.jl")
+include("avutil.jl")
 include("buffer.jl")
 include("channel_layout.jl")
 include("dict.jl")
