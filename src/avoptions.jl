@@ -5,8 +5,7 @@
 # See README_AVOptions.md
 ###############################################################################################################
 
-export discover_devices,
-       document_all_options,
+export document_all_options,
        print_options,
        is_option,
        set_default_options,
@@ -17,13 +16,7 @@ export discover_devices,
        query_device_ranges,
        get_videodevice_settings
 
-@osx_only begin
-    include("avoptions_non_linux.jl")
-end
-
-@windows_only begin
-    include("avoptions_non_linux.jl")
-end
+@osx? include("avoptions_non_linux.jl") : @windows? include("avoptions_non_linux.jl") : nothing
 
 # Support functions
 cint(n) = convert(Cint,n)
@@ -218,7 +211,6 @@ end
 # **************************************************************************************************************
 
 function create_dictionary(entries)
-
     # Get all the keys from the user entries
     entries_keys = collect(keys(entries))
 
@@ -275,7 +267,6 @@ end
 # **************************************************************************************************************
 
 function query_device_ranges(I::VideoReader, key::String)
-
     # Select Ptr{AVFormatContext}
     pFormatContext = I.avin.apFormatContext[1]
 
@@ -343,6 +334,5 @@ function get_videodevice_settings (I::VideoReader)
 
     println("codec_name: ", "$(scodec_name)")
     println("mininum buffer size: ", "$(video_codec_capabilities)")
-
 end
 
