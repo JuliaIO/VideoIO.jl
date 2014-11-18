@@ -1,9 +1,5 @@
 include("avio.jl")
 
-@osx_only begin
-    include("avoptions_tests.jl")
-end
+# Tests are performed on OSX and Windows
+@osx? include("avoptions_tests.jl") : @windows? include("avoptions_tests.jl") : nothing
 
-@windows_only begin
-    include("avoptions_tests.jl")
-end
