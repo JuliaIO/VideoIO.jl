@@ -21,6 +21,15 @@ avfilter_version()   = have_avfilter()   ? av_version(ccall((:avfilter_version, 
 
 ffmpeg_or_libav = avutil_version().patch >= 100 ? "ffmpeg" : "libav"
 
+macro ffmpeg_only(ex)
+    ffmpeg_or_libav == "ffmpeg" ? esc(ex) : nothing
+end
+
+macro libav_only(ex)
+    ffmpeg_or_libav == "libav" ? esc(ex) : nothing
+end
+
+
 avcodec_dir    = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVCodecs",   "v$(avcodec_version().major)")
 avformat_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVFormat",   "v$(avformat_version().major)")
 avutil_dir     = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVUtil",     "v$(avutil_version().major)")
