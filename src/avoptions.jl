@@ -22,6 +22,30 @@ export document_all_options,
 cint(n) = convert(Cint,n)
 
 # **************************************************************************************************************
+# Get all options available for obj
+# **************************************************************************************************************
+
+function get_avoptions(obj)
+    options = Dict{String, Vector{Cdouble}}()
+    opt = convert(Ptr{VideoIO.AVOption}, C_NULL)
+
+    # Run through all AVOptions and store them
+    while (true)
+        opt = av_opt_next(obj, opt)
+        if opt == C_NULL
+            break
+        end
+
+        avoption = unsafe_load(opt)
+        name = bytestring(avoption.name)
+
+        options[name] = [avoption.min, avoption.max]
+    end
+
+    return options
+end
+
+# **************************************************************************************************************
 # Document and view (optional) options
 # 1. document_all_options => create a dictionary (from AVOption-enabled structures)
 # 2. print_options
@@ -39,31 +63,8 @@ function document_all_options(I::VideoReader, view=false)
     pCodecContext = I.pVideoCodecContext
 
    # Create a dictionary of {option => [minvalue, maxvalue]}
-    fmt_options = Dict{String,Vector{Cdouble}}()
-    codec_options = Dict{String,Vector{Cdouble}}()
-
-    for i in [pFormatContext, obj=pCodecContext]
-        prevs = Ptr{AVOption}[C_NULL]
-        prev = prevs[1]
-
-        # Initialize the search of AVOption with Ptr{AVFormatContext}
-        obj= i
-
-        # Run through all AVOptions and store them in options
-        while (true)
-            prev = av_opt_next(obj, prev)
-            if prev ==C_NULL
-                break
-            end
-            avoption = unsafe_load(prev)
-            name = bytestring(avoption.name)
-            if i == pFormatContext
-                fmt_options[string(name)] = [avoption.min, avoption.max]
-            else
-                codec_options[string(name)] = [avoption.min, avoption.max]
-            end
-        end
-    end
+    fmt_options = get_avoptions(pFormatContext)
+    codec_options = get_avoptions(pCodecContext)
 
     if view
         # Print options
