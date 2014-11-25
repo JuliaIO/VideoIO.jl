@@ -16,7 +16,7 @@ export document_all_options,
        query_device_ranges,
        get_videodevice_settings
 
-@osx? include("avoptions_non_linux.jl") : @windows? include("avoptions_non_linux.jl") : nothing
+@ffmpeg_only include("avoptions_ffmpeg.jl")
 
 # Support functions
 cint(n) = convert(Cint,n)
