@@ -20,3 +20,27 @@ function av_pointer_to_field{T}(s::Ptr{T}, name::Symbol)
 end
 
 av_pointer_to_field(s::Array, name::Symbol) = av_pointer_to_field(pointer(s), name)
+
+function open_stdout_stderr(cmd::Cmd)
+    out = Base.Pipe(C_NULL)
+    err = Base.Pipe(C_NULL)
+    cmd_out = Base.Pipe(C_NULL)
+    cmd_err = Base.Pipe(C_NULL)
+    Base.link_pipe(out, true, cmd_out, false)
+    Base.link_pipe(err, true, cmd_err, false)
+
+    r = spawn(false, ignorestatus(cmd), (DevNull, cmd_out, cmd_err))
+
+    Base.close_pipe_sync(cmd_out)
+    Base.close_pipe_sync(cmd_err)
+
+    start_reading(out)
+    start_reading(err)
+
+    return (out, err, r)
+end
+    
+function readall_stdout_stderr(cmd::Cmd)
+    (out, err, proc) = open_stdout_stderr(cmd)
+    return (readall(out), readall(err))
+end
