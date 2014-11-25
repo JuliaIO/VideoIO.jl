@@ -7,6 +7,6 @@ module AVCodecs
   include(w("LIBAVCODEC.jl"))
 
   AVPacket() = AVPacket([zero(T) for T in AVPacket.types]...)
-  
+
 end
 

@@ -3,7 +3,7 @@
 
 
 export
-    avfilter_version,
+    #avfilter_version,
     avfilter_configuration,
     avfilter_license,
     avfilter_copy_buffer_ref_props,

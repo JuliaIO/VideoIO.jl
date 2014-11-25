@@ -3,7 +3,7 @@
 
 
 export
-    swscale_version,
+    #swscale_version,
     swscale_configuration,
     swscale_license,
     sws_getCoefficients,

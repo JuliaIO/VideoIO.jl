@@ -1,16 +1,16 @@
 include("libavutil_h.jl")
 
 #include("audioconvert.jl")
-#include("avutil.jl")
-#include("dict.jl")
+include("avutil.jl")
+include("dict.jl")
 #include("fifo.jl")
-#include("file.jl")
-#include("imgutils.jl")
+include("file.jl")
+include("imgutils.jl")
 include("log.jl")
 include("mem.jl")
 include("opt.jl")
 include("pixdesc.jl")
-#include("rational.jl")
+include("rational.jl")
 #include("samplefmt.jl")
 
 ### Manually define av_pix_fmt_desc_get to match later versions

@@ -41,7 +41,6 @@ type AVInput{I}
     isopen::Bool
 end
 
-
 function show(io::IO, avin::AVInput)
     println(io, "AVInput(", avin.io, ", ...), with")
     (len = length(avin.video_info))      > 0 && println(io, "  $len video stream(s)")
@@ -171,12 +170,6 @@ const read_packet = cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{Uint8}, Cin
 function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
 
     !isreadable(io) && error("IO not readable")
-
-    # These allow control over how much of the stream to consume when
-    # determining the stream type
-    # TODO: Change these defaults if necessary, or allow user to set
-    #av_opt_set(avin.apFormatContext[1], "probesize", "100000000", 0)
-    #av_opt_set(avin.apFormatContext[1], "analyzeduration", "1000000", 0)
 
     # Allocate the io buffer used by AVIOContext
     # Must be done with av_malloc, because it could be reallocated
@@ -516,6 +509,7 @@ eof(r::VideoReader) = eof(r.avin)
 close(r::VideoReader) = close(r.avin)
 _close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
 
+
 # Free AVIOContext object when done
 function close(avin::AVInput)
     avin.isopen = false
@@ -547,6 +541,7 @@ end
 
 if have_avdevice()
     import AVDevice
+
     AVDevice.avdevice_register_all()
 
     function get_camera_devices(ffmpeg, idev, idev_name)
@@ -581,12 +576,13 @@ if have_avdevice()
         return CAMERA_DEVICES
     end
 
+
     @windows_only begin
         ffmpeg = joinpath(Pkg.dir("VideoIO"), "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
         CAMERA_DEVICES = get_camera_devices(ffmpeg, "dshow", "dummy")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
+        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : string("video=", "Integrated Camera")
 
     end
 
@@ -594,7 +590,7 @@ if have_avdevice()
         import Glob
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
         CAMERA_DEVICES = Glob.glob("video*", "/dev")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
+        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "/dev/video0"
     end
 
     @osx_only begin
@@ -610,8 +606,7 @@ if have_avdevice()
             end
         end
 
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "FaceTime"
-        #DEFAULT_CAMERA_DEVICE = "Integrated"
+        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "Built-in iSight"
     end
 
     function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)
