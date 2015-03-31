@@ -1,14 +1,15 @@
+using Compat
 
 av_version(v) = VersionNumber(v>>16,(v>>8)&0xff,v&0xff)
 
-have_avcodec()    = dlopen_e(libavcodec)    != C_NULL
-have_avformat()   = dlopen_e(libavformat)   != C_NULL
-have_avutil()     = dlopen_e(libavutil)     != C_NULL
-have_swscale()    = dlopen_e(libswscale)    != C_NULL
-have_avdevice()   = dlopen_e(libavdevice)   != C_NULL
-have_avfilter()   = dlopen_e(libavfilter)   != C_NULL
-#have_avresample() = isdefined(:libavresample) && dlopen_e(libavresample) != C_NULL
-#have_swresample() = isdefined(:libswresample) && dlopen_e(libswresample) != C_NULL
+have_avcodec()    = Libdl.dlopen_e(libavcodec)    != C_NULL
+have_avformat()   = Libdl.dlopen_e(libavformat)   != C_NULL
+have_avutil()     = Libdl.dlopen_e(libavutil)     != C_NULL
+have_swscale()    = Libdl.dlopen_e(libswscale)    != C_NULL
+have_avdevice()   = Libdl.dlopen_e(libavdevice)   != C_NULL
+have_avfilter()   = Libdl.dlopen_e(libavfilter)   != C_NULL
+#have_avresample() = isdefined(:libavresample) && Libdl.dlopen_e(libavresample) != C_NULL
+#have_swresample() = isdefined(:libswresample) && Libdl.dlopen_e(libswresample) != C_NULL
 
 _avcodec_version()    = have_avcodec()    ? av_version(ccall((:avcodec_version,    libavcodec),    Uint32, ())) : v"0"
 _avformat_version()   = have_avformat()   ? av_version(ccall((:avformat_version,   libavformat),   Uint32, ())) : v"0"

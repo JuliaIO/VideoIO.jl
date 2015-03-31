@@ -7,7 +7,8 @@ using Match
 include("../src/init.jl")
 
 indexh         = joinpath(JULIA_HOME, "../include/clang-c/Index.h")
-clang_includes = [joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
+#clang_includes = ASCIIString[joinpath(JULIA_HOME, "../lib/clang/3.7.0/include"), joinpath(dirname(indexh), "..")]
+clang_includes = ASCIIString[joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
 
 strpack_structs = Set{Symbol}()
 
@@ -18,29 +19,29 @@ else
     root = ARGS[1]
 end
 
-av_libs = ["libavutil"
-           "libavcodec"
-           "libavdevice"
-           "libavfilter"
-           "libavformat"
-           "libavresample"
-           "libpostproc"
-           "libswresample"
-           "libswscale"]
+const av_libs = ["libavutil"
+                 "libavcodec"
+                 "libavdevice"
+                 "libavfilter"
+                 "libavformat"
+                 "libavresample"
+                 "libpostproc"
+                 "libswresample"
+                 "libswscale"]
 
-av_lib_ver = {}
+const av_lib_ver = []
 for lib in av_libs
     try
         name = lib[4:end]
-        ver = eval(symbol(name*"_version"))()
+        ver = eval(symbol("_"*name*"_version"))()
         dir = eval(symbol(name*"_dir"))
         push!(av_lib_ver, (lib,ver,dir))
     end
 end
 
-av_hpath = [joinpath(root, lib) for (lib,ver,dir) in av_lib_ver]
+const av_hpath = [joinpath(root, lib) for (lib,ver,dir) in av_lib_ver]
 
-ignore_header = DefaultDict(ASCIIString, Bool, false)
+const ignore_header = DefaultDict(ASCIIString, Bool, false)
 
 for i in ["lzo.h", "md5.h", "parse.h", "sha.h", "vda.h", "bprint.h", "attributes.h", "crc.h", "adler32.h", "aes.h", "avassert.h", "avconfig.h", "avstring.h", "base64.h", "blowfish.h", "common.h", "cpu.h", "crc.h", "eval.h", "ffversion.h", "hmac.h", "intfloat.h", "intreadwrite.h", "intfloat_readwrite.h", "lfg.h", "macros.h", "mathematics.h", "murmur3.h", "parseutils.h", "random_seed.h", "ripemd.h", "sha512.h", "time.h", "timestamp.h", "bswap.h", "error.h", "old_codec_ids.h", "old_pix_fmts.h", "dxva2.h", "avfft.h"]
     ignore_header[i] = true
@@ -51,13 +52,12 @@ function wrap_library(library, path, outdir = ".")
         return
     end
 
-    av_headers = ASCIIString[]
-    for file in split(readall(`ls $path` |> `sort`))
+    av_headers = []
+    for file in sort(readdir(path))
         if !ignore_header[file]
             push!(av_headers, joinpath(path, file))
         end
     end
-    #av_headers = map(x->joinpath(path, x),split(readall(`ls $path` |> `sort`)) )
 
     println("\nWrapping $library")
     println("==============")
@@ -69,15 +69,15 @@ function wrap_library(library, path, outdir = ".")
         mkpath(outdir)
     end
 
-    context = wrap_c.init(headers = av_headers,
-                          common_file = joinpath(outdir, "$(library)_h.jl"),
-                          clang_includes = clang_includes,
-                          header_wrapped = check_use_header, 
-                          header_library = library,
-                          header_outputfile = x->get_header_outfile(outdir,x),
-                          rewriter = rewrite, 
-                          options = wrap_c.InternalOptions(true, true))
-    wrap_c.run(context)
+    wc = wrap_c.init(headers = av_headers,
+                     common_file = joinpath(outdir, "$(library)_h.jl"),
+                     clang_includes = clang_includes,
+                     header_wrapped = check_use_header,
+                     header_library = library,
+                     header_outputfile = x->get_header_outfile(outdir,x),
+                     rewriter = rewrite,
+                     options = wrap_c.InternalOptions(true, true))
+    wrap_c.run(wc)
 
     if outdir != "."
         jl_files = sort(readdir(outdir))
@@ -99,7 +99,7 @@ end
 function check_use_header(top_h, hpath)
   b = basename(top_h)
   ignore_header[b] && return false
-  ignore_header[b] = true
+  #ignore_header[b] = true
   hbase = av_hpath
   for d in hbase
       beginswith(hpath, d) && return true
@@ -123,16 +123,16 @@ function get_header_outfile(dir, hpath)
 end
 
 # Rewrite function signatures to be more friendly
-function rewrite_fn(e, call, body, use_strpack=false)
+function rewrite_fn(e, fncall, body, use_strpack=false)
     parms = Any[]
     content = Any[]
 
-    push!(parms, call.args[1])  # function name
+    push!(parms, fncall.args[1])  # function name
 
     global strpack_structs
 
     # Add explicit conversions for Ptr & Uint32/Int32
-    for call_arg in call.args[2:end]
+    for call_arg in fncall.args[2:end]
         @match call_arg begin
             # Don't type Ptr{x} types
             Expr(:(::), [sym, Expr(:curly, [:Ptr, _], _)], _) => push!(parms, sym)
@@ -152,10 +152,10 @@ function rewrite_fn(e, call, body, use_strpack=false)
         append!(content, body.args)
     end
 
-    call = Expr(:call, parms...)
+    fncall = Expr(:call, parms...)
     body = Expr(:block, content...)
 
-    new = Expr(e.head, call, body)
+    new = Expr(e.head, fncall, body)
 
     return new
 end
@@ -168,7 +168,7 @@ function rewrite_struct(e::Expr)
     global strpack_structs
     push!(strpack_structs, name)
 
-    new_vars = {}
+    new_vars = []
     for arg in vars.args
         @match arg begin
             Expr(:(::), [varname, vartype], _), if beginswith(string(vartype), "Array") end => 
@@ -192,7 +192,7 @@ function rewrite_type(e::Expr)
             #Expr(:type,     [false, _...], _)                      =>  return ""
 
             # Change empty types to type aliases
-            Expr(:type,     [_, name, Expr(:block, {}, _)], _)      =>  return Expr(:typealias, name, :Void)
+            Expr(:type,     [_, name, Expr(:block, [], _)], _)      =>  return Expr(:typealias, name, :Void)
 
             #Expr(:type,     _, _)                                  =>  return rewrite_struct(e)
             _                                                      =>  e
@@ -205,10 +205,9 @@ rewrite_type(s) = s
 
 function rewrite_fn(e::Expr)
     @match e begin
-        Expr(:function, [call, body], _)  =>  return rewrite_fn(e, call, body)
+        Expr(:function, [fncall, body], _)  =>  rewrite_fn(e, fncall, body)
         _                                 =>  e
     end
-    return e
 end
 
 rewrite_fn(s) = s
@@ -229,8 +228,8 @@ end
 # Main rewrite function
 function rewrite(buf::Array)
     # Rewrite empty types as typealiases, and collect all typealiases
-    buf = {rewrite_type(e) for e in buf}
-    buf = {rewrite_fn(e) for e in buf}
+    buf = Any[rewrite_type(e) for e in buf]
+    buf = Any[rewrite_fn(e) for e in buf]
     exports = [string(extract_name(e)) for e in filter(x->isa(x, Expr), buf)]
     have_zero = "zero" in exports
     filter!(x -> x!="" && x!="zero" && !beginswith(x,"FF_"), exports)
@@ -244,9 +243,12 @@ end
 ###############################################################
 # Do it!
 
-for ((lib,ver,dir),path) in zip(av_lib_ver, av_hpath)
-    dir = basename(dirname(dir))
-    outdir = joinpath("$dir","v$(ver.major)")
-    wrap_library(lib, path, outdir)
+function doit()
+    for ((lib,ver,dir),path) in zip(av_lib_ver, av_hpath)
+        dir = basename(dirname(dir))
+        outdir = joinpath("$dir","v$(ver.major)")
+        wrap_library(lib, path, outdir)
+    end
 end
 
+doit()
