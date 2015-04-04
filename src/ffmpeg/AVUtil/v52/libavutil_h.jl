@@ -687,14 +687,14 @@ const AVMEDIA_TYPE_NB = int32(5)
 
 # begin enum AVPictureType
 typealias AVPictureType Uint32
-const AV_PICTURE_TYPE_NONE = uint32(0)
-const AV_PICTURE_TYPE_I = uint32(1)
-const AV_PICTURE_TYPE_P = uint32(2)
-const AV_PICTURE_TYPE_B = uint32(3)
-const AV_PICTURE_TYPE_S = uint32(4)
-const AV_PICTURE_TYPE_SI = uint32(5)
-const AV_PICTURE_TYPE_SP = uint32(6)
-const AV_PICTURE_TYPE_BI = uint32(7)
+const AV_PICTURE_TYPE_NONE = @compat UInt32(0)
+const AV_PICTURE_TYPE_I = @compat UInt32(1)
+const AV_PICTURE_TYPE_P = @compat UInt32(2)
+const AV_PICTURE_TYPE_B = @compat UInt32(3)
+const AV_PICTURE_TYPE_S = @compat UInt32(4)
+const AV_PICTURE_TYPE_SI = @compat UInt32(5)
+const AV_PICTURE_TYPE_SP = @compat UInt32(6)
+const AV_PICTURE_TYPE_BI = @compat UInt32(7)
 # end enum AVPictureType
 
 const AV_BUFFER_FLAG_READONLY = 1 << 0
@@ -765,14 +765,14 @@ const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
 
 # begin enum AVMatrixEncoding
 typealias AVMatrixEncoding Uint32
-const AV_MATRIX_ENCODING_NONE = uint32(0)
-const AV_MATRIX_ENCODING_DOLBY = uint32(1)
-const AV_MATRIX_ENCODING_DPLII = uint32(2)
-const AV_MATRIX_ENCODING_DPLIIX = uint32(3)
-const AV_MATRIX_ENCODING_DPLIIZ = uint32(4)
-const AV_MATRIX_ENCODING_DOLBYEX = uint32(5)
-const AV_MATRIX_ENCODING_DOLBYHEADPHONE = uint32(6)
-const AV_MATRIX_ENCODING_NB = uint32(7)
+const AV_MATRIX_ENCODING_NONE = @compat UInt32(0)
+const AV_MATRIX_ENCODING_DOLBY = @compat UInt32(1)
+const AV_MATRIX_ENCODING_DPLII = @compat UInt32(2)
+const AV_MATRIX_ENCODING_DPLIIX = @compat UInt32(3)
+const AV_MATRIX_ENCODING_DPLIIZ = @compat UInt32(4)
+const AV_MATRIX_ENCODING_DOLBYEX = @compat UInt32(5)
+const AV_MATRIX_ENCODING_DOLBYHEADPHONE = @compat UInt32(6)
+const AV_MATRIX_ENCODING_NB = @compat UInt32(7)
 # end enum AVMatrixEncoding
 
 typealias AVBPrint Void
@@ -807,13 +807,13 @@ const FF_DECODE_ERROR_MISSING_REFERENCE = 2
 
 # begin enum AVFrameSideDataType
 typealias AVFrameSideDataType Uint32
-const AV_FRAME_DATA_PANSCAN = uint32(0)
-const AV_FRAME_DATA_A53_CC = uint32(1)
-const AV_FRAME_DATA_STEREO3D = uint32(2)
-const AV_FRAME_DATA_MATRIXENCODING = uint32(3)
-const AV_FRAME_DATA_DOWNMIX_INFO = uint32(4)
-const AV_FRAME_DATA_REPLAYGAIN = uint32(5)
-const AV_FRAME_DATA_DISPLAYMATRIX = uint32(6)
+const AV_FRAME_DATA_PANSCAN = @compat UInt32(0)
+const AV_FRAME_DATA_A53_CC = @compat UInt32(1)
+const AV_FRAME_DATA_STEREO3D = @compat UInt32(2)
+const AV_FRAME_DATA_MATRIXENCODING = @compat UInt32(3)
+const AV_FRAME_DATA_DOWNMIX_INFO = @compat UInt32(4)
+const AV_FRAME_DATA_REPLAYGAIN = @compat UInt32(5)
+const AV_FRAME_DATA_DISPLAYMATRIX = @compat UInt32(6)
 # end enum AVFrameSideDataType
 
 immutable AVFrameSideData
@@ -871,72 +871,72 @@ zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(Uint64),8)...)
 
 # begin enum AVColorRange
 typealias AVColorRange Uint32
-const AVCOL_RANGE_UNSPECIFIED = uint32(0)
-const AVCOL_RANGE_MPEG = uint32(1)
-const AVCOL_RANGE_JPEG = uint32(2)
-const AVCOL_RANGE_NB = uint32(3)
+const AVCOL_RANGE_UNSPECIFIED = @compat UInt32(0)
+const AVCOL_RANGE_MPEG = @compat UInt32(1)
+const AVCOL_RANGE_JPEG = @compat UInt32(2)
+const AVCOL_RANGE_NB = @compat UInt32(3)
 # end enum AVColorRange
 
 # begin enum AVColorPrimaries
 typealias AVColorPrimaries Uint32
-const AVCOL_PRI_BT709 = uint32(1)
-const AVCOL_PRI_UNSPECIFIED = uint32(2)
-const AVCOL_PRI_RESERVED = uint32(3)
-const AVCOL_PRI_BT470M = uint32(4)
-const AVCOL_PRI_BT470BG = uint32(5)
-const AVCOL_PRI_SMPTE170M = uint32(6)
-const AVCOL_PRI_SMPTE240M = uint32(7)
-const AVCOL_PRI_FILM = uint32(8)
-const AVCOL_PRI_BT2020 = uint32(9)
-const AVCOL_PRI_NB = uint32(10)
+const AVCOL_PRI_BT709 = @compat UInt32(1)
+const AVCOL_PRI_UNSPECIFIED = @compat UInt32(2)
+const AVCOL_PRI_RESERVED = @compat UInt32(3)
+const AVCOL_PRI_BT470M = @compat UInt32(4)
+const AVCOL_PRI_BT470BG = @compat UInt32(5)
+const AVCOL_PRI_SMPTE170M = @compat UInt32(6)
+const AVCOL_PRI_SMPTE240M = @compat UInt32(7)
+const AVCOL_PRI_FILM = @compat UInt32(8)
+const AVCOL_PRI_BT2020 = @compat UInt32(9)
+const AVCOL_PRI_NB = @compat UInt32(10)
 # end enum AVColorPrimaries
 
 # begin enum AVColorTransferCharacteristic
 typealias AVColorTransferCharacteristic Uint32
-const AVCOL_TRC_BT709 = uint32(1)
-const AVCOL_TRC_UNSPECIFIED = uint32(2)
-const AVCOL_TRC_RESERVED = uint32(3)
-const AVCOL_TRC_GAMMA22 = uint32(4)
-const AVCOL_TRC_GAMMA28 = uint32(5)
-const AVCOL_TRC_SMPTE170M = uint32(6)
-const AVCOL_TRC_SMPTE240M = uint32(7)
-const AVCOL_TRC_LINEAR = uint32(8)
-const AVCOL_TRC_LOG = uint32(9)
-const AVCOL_TRC_LOG_SQRT = uint32(10)
-const AVCOL_TRC_IEC61966_2_4 = uint32(11)
-const AVCOL_TRC_BT1361_ECG = uint32(12)
-const AVCOL_TRC_IEC61966_2_1 = uint32(13)
-const AVCOL_TRC_BT2020_10 = uint32(14)
-const AVCOL_TRC_BT2020_12 = uint32(15)
-const AVCOL_TRC_NB = uint32(16)
+const AVCOL_TRC_BT709 = @compat UInt32(1)
+const AVCOL_TRC_UNSPECIFIED = @compat UInt32(2)
+const AVCOL_TRC_RESERVED = @compat UInt32(3)
+const AVCOL_TRC_GAMMA22 = @compat UInt32(4)
+const AVCOL_TRC_GAMMA28 = @compat UInt32(5)
+const AVCOL_TRC_SMPTE170M = @compat UInt32(6)
+const AVCOL_TRC_SMPTE240M = @compat UInt32(7)
+const AVCOL_TRC_LINEAR = @compat UInt32(8)
+const AVCOL_TRC_LOG = @compat UInt32(9)
+const AVCOL_TRC_LOG_SQRT = @compat UInt32(10)
+const AVCOL_TRC_IEC61966_2_4 = @compat UInt32(11)
+const AVCOL_TRC_BT1361_ECG = @compat UInt32(12)
+const AVCOL_TRC_IEC61966_2_1 = @compat UInt32(13)
+const AVCOL_TRC_BT2020_10 = @compat UInt32(14)
+const AVCOL_TRC_BT2020_12 = @compat UInt32(15)
+const AVCOL_TRC_NB = @compat UInt32(16)
 # end enum AVColorTransferCharacteristic
 
 # begin enum AVColorSpace
 typealias AVColorSpace Uint32
-const AVCOL_SPC_RGB = uint32(0)
-const AVCOL_SPC_BT709 = uint32(1)
-const AVCOL_SPC_UNSPECIFIED = uint32(2)
-const AVCOL_SPC_RESERVED = uint32(3)
-const AVCOL_SPC_FCC = uint32(4)
-const AVCOL_SPC_BT470BG = uint32(5)
-const AVCOL_SPC_SMPTE170M = uint32(6)
-const AVCOL_SPC_SMPTE240M = uint32(7)
-const AVCOL_SPC_YCOCG = uint32(8)
-const AVCOL_SPC_BT2020_NCL = uint32(9)
-const AVCOL_SPC_BT2020_CL = uint32(10)
-const AVCOL_SPC_NB = uint32(11)
+const AVCOL_SPC_RGB = @compat UInt32(0)
+const AVCOL_SPC_BT709 = @compat UInt32(1)
+const AVCOL_SPC_UNSPECIFIED = @compat UInt32(2)
+const AVCOL_SPC_RESERVED = @compat UInt32(3)
+const AVCOL_SPC_FCC = @compat UInt32(4)
+const AVCOL_SPC_BT470BG = @compat UInt32(5)
+const AVCOL_SPC_SMPTE170M = @compat UInt32(6)
+const AVCOL_SPC_SMPTE240M = @compat UInt32(7)
+const AVCOL_SPC_YCOCG = @compat UInt32(8)
+const AVCOL_SPC_BT2020_NCL = @compat UInt32(9)
+const AVCOL_SPC_BT2020_CL = @compat UInt32(10)
+const AVCOL_SPC_NB = @compat UInt32(11)
 # end enum AVColorSpace
 
 # begin enum AVChromaLocation
 typealias AVChromaLocation Uint32
-const AVCHROMA_LOC_UNSPECIFIED = uint32(0)
-const AVCHROMA_LOC_LEFT = uint32(1)
-const AVCHROMA_LOC_CENTER = uint32(2)
-const AVCHROMA_LOC_TOPLEFT = uint32(3)
-const AVCHROMA_LOC_TOP = uint32(4)
-const AVCHROMA_LOC_BOTTOMLEFT = uint32(5)
-const AVCHROMA_LOC_BOTTOM = uint32(6)
-const AVCHROMA_LOC_NB = uint32(7)
+const AVCHROMA_LOC_UNSPECIFIED = @compat UInt32(0)
+const AVCHROMA_LOC_LEFT = @compat UInt32(1)
+const AVCHROMA_LOC_CENTER = @compat UInt32(2)
+const AVCHROMA_LOC_TOPLEFT = @compat UInt32(3)
+const AVCHROMA_LOC_TOP = @compat UInt32(4)
+const AVCHROMA_LOC_BOTTOMLEFT = @compat UInt32(5)
+const AVCHROMA_LOC_BOTTOM = @compat UInt32(6)
+const AVCHROMA_LOC_NB = @compat UInt32(7)
 # end enum AVChromaLocation
 
 immutable AVFrame
@@ -1021,46 +1021,46 @@ const AV_LOG_PRINT_LEVEL = 2
 
 # begin enum ANONYMOUS_1
 typealias ANONYMOUS_1 Uint32
-const AV_CLASS_CATEGORY_NA = uint32(0)
-const AV_CLASS_CATEGORY_INPUT = uint32(1)
-const AV_CLASS_CATEGORY_OUTPUT = uint32(2)
-const AV_CLASS_CATEGORY_MUXER = uint32(3)
-const AV_CLASS_CATEGORY_DEMUXER = uint32(4)
-const AV_CLASS_CATEGORY_ENCODER = uint32(5)
-const AV_CLASS_CATEGORY_DECODER = uint32(6)
-const AV_CLASS_CATEGORY_FILTER = uint32(7)
-const AV_CLASS_CATEGORY_BITSTREAM_FILTER = uint32(8)
-const AV_CLASS_CATEGORY_SWSCALER = uint32(9)
-const AV_CLASS_CATEGORY_SWRESAMPLER = uint32(10)
-const AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT = uint32(40)
-const AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT = uint32(41)
-const AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT = uint32(42)
-const AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT = uint32(43)
-const AV_CLASS_CATEGORY_DEVICE_OUTPUT = uint32(44)
-const AV_CLASS_CATEGORY_DEVICE_INPUT = uint32(45)
-const AV_CLASS_CATEGORY_NB = uint32(46)
+const AV_CLASS_CATEGORY_NA = @compat UInt32(0)
+const AV_CLASS_CATEGORY_INPUT = @compat UInt32(1)
+const AV_CLASS_CATEGORY_OUTPUT = @compat UInt32(2)
+const AV_CLASS_CATEGORY_MUXER = @compat UInt32(3)
+const AV_CLASS_CATEGORY_DEMUXER = @compat UInt32(4)
+const AV_CLASS_CATEGORY_ENCODER = @compat UInt32(5)
+const AV_CLASS_CATEGORY_DECODER = @compat UInt32(6)
+const AV_CLASS_CATEGORY_FILTER = @compat UInt32(7)
+const AV_CLASS_CATEGORY_BITSTREAM_FILTER = @compat UInt32(8)
+const AV_CLASS_CATEGORY_SWSCALER = @compat UInt32(9)
+const AV_CLASS_CATEGORY_SWRESAMPLER = @compat UInt32(10)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT = @compat UInt32(40)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT = @compat UInt32(41)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT = @compat UInt32(42)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT = @compat UInt32(43)
+const AV_CLASS_CATEGORY_DEVICE_OUTPUT = @compat UInt32(44)
+const AV_CLASS_CATEGORY_DEVICE_INPUT = @compat UInt32(45)
+const AV_CLASS_CATEGORY_NB = @compat UInt32(46)
 # end enum ANONYMOUS_1
 
 # begin enum AVClassCategory
 typealias AVClassCategory Uint32
-const AV_CLASS_CATEGORY_NA = uint32(0)
-const AV_CLASS_CATEGORY_INPUT = uint32(1)
-const AV_CLASS_CATEGORY_OUTPUT = uint32(2)
-const AV_CLASS_CATEGORY_MUXER = uint32(3)
-const AV_CLASS_CATEGORY_DEMUXER = uint32(4)
-const AV_CLASS_CATEGORY_ENCODER = uint32(5)
-const AV_CLASS_CATEGORY_DECODER = uint32(6)
-const AV_CLASS_CATEGORY_FILTER = uint32(7)
-const AV_CLASS_CATEGORY_BITSTREAM_FILTER = uint32(8)
-const AV_CLASS_CATEGORY_SWSCALER = uint32(9)
-const AV_CLASS_CATEGORY_SWRESAMPLER = uint32(10)
-const AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT = uint32(40)
-const AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT = uint32(41)
-const AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT = uint32(42)
-const AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT = uint32(43)
-const AV_CLASS_CATEGORY_DEVICE_OUTPUT = uint32(44)
-const AV_CLASS_CATEGORY_DEVICE_INPUT = uint32(45)
-const AV_CLASS_CATEGORY_NB = uint32(46)
+const AV_CLASS_CATEGORY_NA = @compat UInt32(0)
+const AV_CLASS_CATEGORY_INPUT = @compat UInt32(1)
+const AV_CLASS_CATEGORY_OUTPUT = @compat UInt32(2)
+const AV_CLASS_CATEGORY_MUXER = @compat UInt32(3)
+const AV_CLASS_CATEGORY_DEMUXER = @compat UInt32(4)
+const AV_CLASS_CATEGORY_ENCODER = @compat UInt32(5)
+const AV_CLASS_CATEGORY_DECODER = @compat UInt32(6)
+const AV_CLASS_CATEGORY_FILTER = @compat UInt32(7)
+const AV_CLASS_CATEGORY_BITSTREAM_FILTER = @compat UInt32(8)
+const AV_CLASS_CATEGORY_SWSCALER = @compat UInt32(9)
+const AV_CLASS_CATEGORY_SWRESAMPLER = @compat UInt32(10)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT = @compat UInt32(40)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT = @compat UInt32(41)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT = @compat UInt32(42)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT = @compat UInt32(43)
+const AV_CLASS_CATEGORY_DEVICE_OUTPUT = @compat UInt32(44)
+const AV_CLASS_CATEGORY_DEVICE_INPUT = @compat UInt32(45)
+const AV_CLASS_CATEGORY_NB = @compat UInt32(46)
 # end enum AVClassCategory
 
 immutable AVOptionRange
@@ -1080,31 +1080,31 @@ end
 
 # begin enum AVOptionType
 typealias AVOptionType Uint32
-const AV_OPT_TYPE_FLAGS = uint32(0)
-const AV_OPT_TYPE_INT = uint32(1)
-const AV_OPT_TYPE_INT64 = uint32(2)
-const AV_OPT_TYPE_DOUBLE = uint32(3)
-const AV_OPT_TYPE_FLOAT = uint32(4)
-const AV_OPT_TYPE_STRING = uint32(5)
-const AV_OPT_TYPE_RATIONAL = uint32(6)
-const AV_OPT_TYPE_BINARY = uint32(7)
-const AV_OPT_TYPE_CONST = uint32(128)
-const AV_OPT_TYPE_IMAGE_SIZE = uint32(1397316165)
-const AV_OPT_TYPE_PIXEL_FMT = uint32(1346784596)
-const AV_OPT_TYPE_SAMPLE_FMT = uint32(1397116244)
-const AV_OPT_TYPE_VIDEO_RATE = uint32(1448231252)
-const AV_OPT_TYPE_DURATION = uint32(1146442272)
-const AV_OPT_TYPE_COLOR = uint32(1129270354)
-const AV_OPT_TYPE_CHANNEL_LAYOUT = uint32(1128811585)
-const FF_OPT_TYPE_FLAGS = uint32(0)
-const FF_OPT_TYPE_INT = uint32(1)
-const FF_OPT_TYPE_INT64 = uint32(2)
-const FF_OPT_TYPE_DOUBLE = uint32(3)
-const FF_OPT_TYPE_FLOAT = uint32(4)
-const FF_OPT_TYPE_STRING = uint32(5)
-const FF_OPT_TYPE_RATIONAL = uint32(6)
-const FF_OPT_TYPE_BINARY = uint32(7)
-const FF_OPT_TYPE_CONST = uint32(128)
+const AV_OPT_TYPE_FLAGS = @compat UInt32(0)
+const AV_OPT_TYPE_INT = @compat UInt32(1)
+const AV_OPT_TYPE_INT64 = @compat UInt32(2)
+const AV_OPT_TYPE_DOUBLE = @compat UInt32(3)
+const AV_OPT_TYPE_FLOAT = @compat UInt32(4)
+const AV_OPT_TYPE_STRING = @compat UInt32(5)
+const AV_OPT_TYPE_RATIONAL = @compat UInt32(6)
+const AV_OPT_TYPE_BINARY = @compat UInt32(7)
+const AV_OPT_TYPE_CONST = @compat UInt32(128)
+const AV_OPT_TYPE_IMAGE_SIZE = @compat UInt32(1397316165)
+const AV_OPT_TYPE_PIXEL_FMT = @compat UInt32(1346784596)
+const AV_OPT_TYPE_SAMPLE_FMT = @compat UInt32(1397116244)
+const AV_OPT_TYPE_VIDEO_RATE = @compat UInt32(1448231252)
+const AV_OPT_TYPE_DURATION = @compat UInt32(1146442272)
+const AV_OPT_TYPE_COLOR = @compat UInt32(1129270354)
+const AV_OPT_TYPE_CHANNEL_LAYOUT = @compat UInt32(1128811585)
+const FF_OPT_TYPE_FLAGS = @compat UInt32(0)
+const FF_OPT_TYPE_INT = @compat UInt32(1)
+const FF_OPT_TYPE_INT64 = @compat UInt32(2)
+const FF_OPT_TYPE_DOUBLE = @compat UInt32(3)
+const FF_OPT_TYPE_FLOAT = @compat UInt32(4)
+const FF_OPT_TYPE_STRING = @compat UInt32(5)
+const FF_OPT_TYPE_RATIONAL = @compat UInt32(6)
+const FF_OPT_TYPE_BINARY = @compat UInt32(7)
+const FF_OPT_TYPE_CONST = @compat UInt32(128)
 # end enum AVOptionType
 
 immutable AVOption
@@ -1638,11 +1638,11 @@ typealias AVAudioFifo Void
 
 # begin enum AVDownmixType
 typealias AVDownmixType Uint32
-const AV_DOWNMIX_TYPE_UNKNOWN = uint32(0)
-const AV_DOWNMIX_TYPE_LORO = uint32(1)
-const AV_DOWNMIX_TYPE_LTRT = uint32(2)
-const AV_DOWNMIX_TYPE_DPLII = uint32(3)
-const AV_DOWNMIX_TYPE_NB = uint32(4)
+const AV_DOWNMIX_TYPE_UNKNOWN = @compat UInt32(0)
+const AV_DOWNMIX_TYPE_LORO = @compat UInt32(1)
+const AV_DOWNMIX_TYPE_LTRT = @compat UInt32(2)
+const AV_DOWNMIX_TYPE_DPLII = @compat UInt32(3)
+const AV_DOWNMIX_TYPE_NB = @compat UInt32(4)
 # end enum AVDownmixType
 
 immutable AVDownmixInfo
@@ -1675,7 +1675,7 @@ const AV_OPT_MULTI_COMPONENT_RANGE = 0x1000
 
 # begin enum ANONYMOUS_2
 typealias ANONYMOUS_2 Uint32
-const AV_OPT_FLAG_IMPLICIT_KEY = uint32(1)
+const AV_OPT_FLAG_IMPLICIT_KEY = @compat UInt32(1)
 # end enum ANONYMOUS_2
 
 immutable AVReplayGain
@@ -1689,14 +1689,14 @@ const AV_STEREO3D_FLAG_INVERT = 1 << 0
 
 # begin enum AVStereo3DType
 typealias AVStereo3DType Uint32
-const AV_STEREO3D_2D = uint32(0)
-const AV_STEREO3D_SIDEBYSIDE = uint32(1)
-const AV_STEREO3D_TOPBOTTOM = uint32(2)
-const AV_STEREO3D_FRAMESEQUENCE = uint32(3)
-const AV_STEREO3D_CHECKERBOARD = uint32(4)
-const AV_STEREO3D_SIDEBYSIDE_QUINCUNX = uint32(5)
-const AV_STEREO3D_LINES = uint32(6)
-const AV_STEREO3D_COLUMNS = uint32(7)
+const AV_STEREO3D_2D = @compat UInt32(0)
+const AV_STEREO3D_SIDEBYSIDE = @compat UInt32(1)
+const AV_STEREO3D_TOPBOTTOM = @compat UInt32(2)
+const AV_STEREO3D_FRAMESEQUENCE = @compat UInt32(3)
+const AV_STEREO3D_CHECKERBOARD = @compat UInt32(4)
+const AV_STEREO3D_SIDEBYSIDE_QUINCUNX = @compat UInt32(5)
+const AV_STEREO3D_LINES = @compat UInt32(6)
+const AV_STEREO3D_COLUMNS = @compat UInt32(7)
 # end enum AVStereo3DType
 
 immutable AVStereo3D
@@ -1708,16 +1708,16 @@ typealias AVThreadMessageQueue Void
 
 # begin enum AVThreadMessageFlags
 typealias AVThreadMessageFlags Uint32
-const AV_THREAD_MESSAGE_NONBLOCK = uint32(1)
+const AV_THREAD_MESSAGE_NONBLOCK = @compat UInt32(1)
 # end enum AVThreadMessageFlags
 
 const AV_TIMECODE_STR_SIZE = 16
 
 # begin enum AVTimecodeFlag
 typealias AVTimecodeFlag Uint32
-const AV_TIMECODE_FLAG_DROPFRAME = uint32(1)
-const AV_TIMECODE_FLAG_24HOURSMAX = uint32(2)
-const AV_TIMECODE_FLAG_ALLOWNEGATIVE = uint32(4)
+const AV_TIMECODE_FLAG_DROPFRAME = @compat UInt32(1)
+const AV_TIMECODE_FLAG_24HOURSMAX = @compat UInt32(2)
+const AV_TIMECODE_FLAG_ALLOWNEGATIVE = @compat UInt32(4)
 # end enum AVTimecodeFlag
 
 immutable AVTimecode

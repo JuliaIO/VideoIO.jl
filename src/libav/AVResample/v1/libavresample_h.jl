@@ -26,25 +26,25 @@ typealias AVAudioResampleContext Void
 
 # begin enum AVMixCoeffType
 typealias AVMixCoeffType Uint32
-const AV_MIX_COEFF_TYPE_Q8 = uint32(0)
-const AV_MIX_COEFF_TYPE_Q15 = uint32(1)
-const AV_MIX_COEFF_TYPE_FLT = uint32(2)
-const AV_MIX_COEFF_TYPE_NB = uint32(3)
+const AV_MIX_COEFF_TYPE_Q8 = @compat UInt32(0)
+const AV_MIX_COEFF_TYPE_Q15 = @compat UInt32(1)
+const AV_MIX_COEFF_TYPE_FLT = @compat UInt32(2)
+const AV_MIX_COEFF_TYPE_NB = @compat UInt32(3)
 # end enum AVMixCoeffType
 
 # begin enum AVResampleFilterType
 typealias AVResampleFilterType Uint32
-const AV_RESAMPLE_FILTER_TYPE_CUBIC = uint32(0)
-const AV_RESAMPLE_FILTER_TYPE_BLACKMAN_NUTTALL = uint32(1)
-const AV_RESAMPLE_FILTER_TYPE_KAISER = uint32(2)
+const AV_RESAMPLE_FILTER_TYPE_CUBIC = @compat UInt32(0)
+const AV_RESAMPLE_FILTER_TYPE_BLACKMAN_NUTTALL = @compat UInt32(1)
+const AV_RESAMPLE_FILTER_TYPE_KAISER = @compat UInt32(2)
 # end enum AVResampleFilterType
 
 # begin enum AVResampleDitherMethod
 typealias AVResampleDitherMethod Uint32
-const AV_RESAMPLE_DITHER_NONE = uint32(0)
-const AV_RESAMPLE_DITHER_RECTANGULAR = uint32(1)
-const AV_RESAMPLE_DITHER_TRIANGULAR = uint32(2)
-const AV_RESAMPLE_DITHER_TRIANGULAR_HP = uint32(3)
-const AV_RESAMPLE_DITHER_TRIANGULAR_NS = uint32(4)
-const AV_RESAMPLE_DITHER_NB = uint32(5)
+const AV_RESAMPLE_DITHER_NONE = @compat UInt32(0)
+const AV_RESAMPLE_DITHER_RECTANGULAR = @compat UInt32(1)
+const AV_RESAMPLE_DITHER_TRIANGULAR = @compat UInt32(2)
+const AV_RESAMPLE_DITHER_TRIANGULAR_HP = @compat UInt32(3)
+const AV_RESAMPLE_DITHER_TRIANGULAR_NS = @compat UInt32(4)
+const AV_RESAMPLE_DITHER_NB = @compat UInt32(5)
 # end enum AVResampleDitherMethod

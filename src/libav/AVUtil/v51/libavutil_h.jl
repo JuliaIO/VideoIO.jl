@@ -380,13 +380,13 @@ const AVMEDIA_TYPE_NB = int32(5)
 
 # begin enum AVPictureType
 typealias AVPictureType Uint32
-const AV_PICTURE_TYPE_I = uint32(1)
-const AV_PICTURE_TYPE_P = uint32(2)
-const AV_PICTURE_TYPE_B = uint32(3)
-const AV_PICTURE_TYPE_S = uint32(4)
-const AV_PICTURE_TYPE_SI = uint32(5)
-const AV_PICTURE_TYPE_SP = uint32(6)
-const AV_PICTURE_TYPE_BI = uint32(7)
+const AV_PICTURE_TYPE_I = @compat UInt32(1)
+const AV_PICTURE_TYPE_P = @compat UInt32(2)
+const AV_PICTURE_TYPE_B = @compat UInt32(3)
+const AV_PICTURE_TYPE_S = @compat UInt32(4)
+const AV_PICTURE_TYPE_SI = @compat UInt32(5)
+const AV_PICTURE_TYPE_SP = @compat UInt32(6)
+const AV_PICTURE_TYPE_BI = @compat UInt32(7)
 # end enum AVPictureType
 
 const AV_DICT_MATCH_CASE = 1
@@ -418,24 +418,24 @@ const AV_LOG_SKIP_REPEATED = 1
 
 # begin enum AVOptionType
 typealias AVOptionType Uint32
-const AV_OPT_TYPE_FLAGS = uint32(0)
-const AV_OPT_TYPE_INT = uint32(1)
-const AV_OPT_TYPE_INT64 = uint32(2)
-const AV_OPT_TYPE_DOUBLE = uint32(3)
-const AV_OPT_TYPE_FLOAT = uint32(4)
-const AV_OPT_TYPE_STRING = uint32(5)
-const AV_OPT_TYPE_RATIONAL = uint32(6)
-const AV_OPT_TYPE_BINARY = uint32(7)
-const AV_OPT_TYPE_CONST = uint32(128)
-const FF_OPT_TYPE_FLAGS = uint32(0)
-const FF_OPT_TYPE_INT = uint32(1)
-const FF_OPT_TYPE_INT64 = uint32(2)
-const FF_OPT_TYPE_DOUBLE = uint32(3)
-const FF_OPT_TYPE_FLOAT = uint32(4)
-const FF_OPT_TYPE_STRING = uint32(5)
-const FF_OPT_TYPE_RATIONAL = uint32(6)
-const FF_OPT_TYPE_BINARY = uint32(7)
-const FF_OPT_TYPE_CONST = uint32(128)
+const AV_OPT_TYPE_FLAGS = @compat UInt32(0)
+const AV_OPT_TYPE_INT = @compat UInt32(1)
+const AV_OPT_TYPE_INT64 = @compat UInt32(2)
+const AV_OPT_TYPE_DOUBLE = @compat UInt32(3)
+const AV_OPT_TYPE_FLOAT = @compat UInt32(4)
+const AV_OPT_TYPE_STRING = @compat UInt32(5)
+const AV_OPT_TYPE_RATIONAL = @compat UInt32(6)
+const AV_OPT_TYPE_BINARY = @compat UInt32(7)
+const AV_OPT_TYPE_CONST = @compat UInt32(128)
+const FF_OPT_TYPE_FLAGS = @compat UInt32(0)
+const FF_OPT_TYPE_INT = @compat UInt32(1)
+const FF_OPT_TYPE_INT64 = @compat UInt32(2)
+const FF_OPT_TYPE_DOUBLE = @compat UInt32(3)
+const FF_OPT_TYPE_FLOAT = @compat UInt32(4)
+const FF_OPT_TYPE_STRING = @compat UInt32(5)
+const FF_OPT_TYPE_RATIONAL = @compat UInt32(6)
+const FF_OPT_TYPE_BINARY = @compat UInt32(7)
+const FF_OPT_TYPE_CONST = @compat UInt32(128)
 # end enum AVOptionType
 
 immutable AVOption

@@ -213,8 +213,8 @@ end
 
 # begin enum ANONYMOUS_2
 typealias ANONYMOUS_2 Uint32
-const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = uint32(1)
-const AV_BUFFERSRC_FLAG_NO_COPY = uint32(2)
-const AV_BUFFERSRC_FLAG_PUSH = uint32(4)
-const AV_BUFFERSRC_FLAG_KEEP_REF = uint32(8)
+const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = @compat UInt32(1)
+const AV_BUFFERSRC_FLAG_NO_COPY = @compat UInt32(2)
+const AV_BUFFERSRC_FLAG_PUSH = @compat UInt32(4)
+const AV_BUFFERSRC_FLAG_KEEP_REF = @compat UInt32(8)
 # end enum ANONYMOUS_2

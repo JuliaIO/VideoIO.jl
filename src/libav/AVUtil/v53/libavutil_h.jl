@@ -463,13 +463,13 @@ const AVMEDIA_TYPE_NB = int32(5)
 
 # begin enum AVPictureType
 typealias AVPictureType Uint32
-const AV_PICTURE_TYPE_I = uint32(1)
-const AV_PICTURE_TYPE_P = uint32(2)
-const AV_PICTURE_TYPE_B = uint32(3)
-const AV_PICTURE_TYPE_S = uint32(4)
-const AV_PICTURE_TYPE_SI = uint32(5)
-const AV_PICTURE_TYPE_SP = uint32(6)
-const AV_PICTURE_TYPE_BI = uint32(7)
+const AV_PICTURE_TYPE_I = @compat UInt32(1)
+const AV_PICTURE_TYPE_P = @compat UInt32(2)
+const AV_PICTURE_TYPE_B = @compat UInt32(3)
+const AV_PICTURE_TYPE_S = @compat UInt32(4)
+const AV_PICTURE_TYPE_SI = @compat UInt32(5)
+const AV_PICTURE_TYPE_SP = @compat UInt32(6)
+const AV_PICTURE_TYPE_BI = @compat UInt32(7)
 # end enum AVPictureType
 
 const AV_BUFFER_FLAG_READONLY = 1 << 0
@@ -540,14 +540,14 @@ const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
 
 # begin enum AVMatrixEncoding
 typealias AVMatrixEncoding Uint32
-const AV_MATRIX_ENCODING_NONE = uint32(0)
-const AV_MATRIX_ENCODING_DOLBY = uint32(1)
-const AV_MATRIX_ENCODING_DPLII = uint32(2)
-const AV_MATRIX_ENCODING_DPLIIX = uint32(3)
-const AV_MATRIX_ENCODING_DPLIIZ = uint32(4)
-const AV_MATRIX_ENCODING_DOLBYEX = uint32(5)
-const AV_MATRIX_ENCODING_DOLBYHEADPHONE = uint32(6)
-const AV_MATRIX_ENCODING_NB = uint32(7)
+const AV_MATRIX_ENCODING_NONE = @compat UInt32(0)
+const AV_MATRIX_ENCODING_DOLBY = @compat UInt32(1)
+const AV_MATRIX_ENCODING_DPLII = @compat UInt32(2)
+const AV_MATRIX_ENCODING_DPLIIX = @compat UInt32(3)
+const AV_MATRIX_ENCODING_DPLIIZ = @compat UInt32(4)
+const AV_MATRIX_ENCODING_DOLBYEX = @compat UInt32(5)
+const AV_MATRIX_ENCODING_DOLBYHEADPHONE = @compat UInt32(6)
+const AV_MATRIX_ENCODING_NB = @compat UInt32(7)
 # end enum AVMatrixEncoding
 
 const AV_DICT_MATCH_CASE = 1
@@ -578,11 +578,11 @@ const AV_FRAME_FLAG_CORRUPT = 1 << 0
 
 # begin enum AVFrameSideDataType
 typealias AVFrameSideDataType Uint32
-const AV_FRAME_DATA_PANSCAN = uint32(0)
-const AV_FRAME_DATA_A53_CC = uint32(1)
-const AV_FRAME_DATA_STEREO3D = uint32(2)
-const AV_FRAME_DATA_MATRIXENCODING = uint32(3)
-const AV_FRAME_DATA_DOWNMIX_INFO = uint32(4)
+const AV_FRAME_DATA_PANSCAN = @compat UInt32(0)
+const AV_FRAME_DATA_A53_CC = @compat UInt32(1)
+const AV_FRAME_DATA_STEREO3D = @compat UInt32(2)
+const AV_FRAME_DATA_MATRIXENCODING = @compat UInt32(3)
+const AV_FRAME_DATA_DOWNMIX_INFO = @compat UInt32(4)
 # end enum AVFrameSideDataType
 
 immutable AVFrameSideData
@@ -704,15 +704,15 @@ const AV_LOG_SKIP_REPEATED = 1
 
 # begin enum AVOptionType
 typealias AVOptionType Uint32
-const AV_OPT_TYPE_FLAGS = uint32(0)
-const AV_OPT_TYPE_INT = uint32(1)
-const AV_OPT_TYPE_INT64 = uint32(2)
-const AV_OPT_TYPE_DOUBLE = uint32(3)
-const AV_OPT_TYPE_FLOAT = uint32(4)
-const AV_OPT_TYPE_STRING = uint32(5)
-const AV_OPT_TYPE_RATIONAL = uint32(6)
-const AV_OPT_TYPE_BINARY = uint32(7)
-const AV_OPT_TYPE_CONST = uint32(128)
+const AV_OPT_TYPE_FLAGS = @compat UInt32(0)
+const AV_OPT_TYPE_INT = @compat UInt32(1)
+const AV_OPT_TYPE_INT64 = @compat UInt32(2)
+const AV_OPT_TYPE_DOUBLE = @compat UInt32(3)
+const AV_OPT_TYPE_FLOAT = @compat UInt32(4)
+const AV_OPT_TYPE_STRING = @compat UInt32(5)
+const AV_OPT_TYPE_RATIONAL = @compat UInt32(6)
+const AV_OPT_TYPE_BINARY = @compat UInt32(7)
+const AV_OPT_TYPE_CONST = @compat UInt32(128)
 # end enum AVOptionType
 
 immutable AVOption
@@ -1098,11 +1098,11 @@ typealias AVAudioFifo Void
 
 # begin enum AVDownmixType
 typealias AVDownmixType Uint32
-const AV_DOWNMIX_TYPE_UNKNOWN = uint32(0)
-const AV_DOWNMIX_TYPE_LORO = uint32(1)
-const AV_DOWNMIX_TYPE_LTRT = uint32(2)
-const AV_DOWNMIX_TYPE_DPLII = uint32(3)
-const AV_DOWNMIX_TYPE_NB = uint32(4)
+const AV_DOWNMIX_TYPE_UNKNOWN = @compat UInt32(0)
+const AV_DOWNMIX_TYPE_LORO = @compat UInt32(1)
+const AV_DOWNMIX_TYPE_LTRT = @compat UInt32(2)
+const AV_DOWNMIX_TYPE_DPLII = @compat UInt32(3)
+const AV_DOWNMIX_TYPE_NB = @compat UInt32(4)
 # end enum AVDownmixType
 
 immutable AVDownmixInfo
@@ -1131,14 +1131,14 @@ const AV_STEREO3D_FLAG_INVERT = 1 << 0
 
 # begin enum AVStereo3DType
 typealias AVStereo3DType Uint32
-const AV_STEREO3D_2D = uint32(0)
-const AV_STEREO3D_SIDEBYSIDE = uint32(1)
-const AV_STEREO3D_TOPBOTTOM = uint32(2)
-const AV_STEREO3D_FRAMESEQUENCE = uint32(3)
-const AV_STEREO3D_CHECKERBOARD = uint32(4)
-const AV_STEREO3D_SIDEBYSIDE_QUINCUNX = uint32(5)
-const AV_STEREO3D_LINES = uint32(6)
-const AV_STEREO3D_COLUMNS = uint32(7)
+const AV_STEREO3D_2D = @compat UInt32(0)
+const AV_STEREO3D_SIDEBYSIDE = @compat UInt32(1)
+const AV_STEREO3D_TOPBOTTOM = @compat UInt32(2)
+const AV_STEREO3D_FRAMESEQUENCE = @compat UInt32(3)
+const AV_STEREO3D_CHECKERBOARD = @compat UInt32(4)
+const AV_STEREO3D_SIDEBYSIDE_QUINCUNX = @compat UInt32(5)
+const AV_STEREO3D_LINES = @compat UInt32(6)
+const AV_STEREO3D_COLUMNS = @compat UInt32(7)
 # end enum AVStereo3DType
 
 immutable AVStereo3D

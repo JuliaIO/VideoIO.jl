@@ -19,7 +19,7 @@ diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_
  
  
 @@ -2436,52 +2436,52 @@
- const AV_LOCK_DESTROY = uint32(3)
+ const AV_LOCK_DESTROY = @compat UInt32(3)
  # end enum AVLockOp
  
 -immutable vaapi_context

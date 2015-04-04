@@ -32,33 +32,33 @@ const SWR_FLAG_RESAMPLE = 1
 
 # begin enum SwrDitherType
 typealias SwrDitherType Uint32
-const SWR_DITHER_NONE = uint32(0)
-const SWR_DITHER_RECTANGULAR = uint32(1)
-const SWR_DITHER_TRIANGULAR = uint32(2)
-const SWR_DITHER_TRIANGULAR_HIGHPASS = uint32(3)
-const SWR_DITHER_NS = uint32(64)
-const SWR_DITHER_NS_LIPSHITZ = uint32(65)
-const SWR_DITHER_NS_F_WEIGHTED = uint32(66)
-const SWR_DITHER_NS_MODIFIED_E_WEIGHTED = uint32(67)
-const SWR_DITHER_NS_IMPROVED_E_WEIGHTED = uint32(68)
-const SWR_DITHER_NS_SHIBATA = uint32(69)
-const SWR_DITHER_NS_LOW_SHIBATA = uint32(70)
-const SWR_DITHER_NS_HIGH_SHIBATA = uint32(71)
-const SWR_DITHER_NB = uint32(72)
+const SWR_DITHER_NONE = @compat UInt32(0)
+const SWR_DITHER_RECTANGULAR = @compat UInt32(1)
+const SWR_DITHER_TRIANGULAR = @compat UInt32(2)
+const SWR_DITHER_TRIANGULAR_HIGHPASS = @compat UInt32(3)
+const SWR_DITHER_NS = @compat UInt32(64)
+const SWR_DITHER_NS_LIPSHITZ = @compat UInt32(65)
+const SWR_DITHER_NS_F_WEIGHTED = @compat UInt32(66)
+const SWR_DITHER_NS_MODIFIED_E_WEIGHTED = @compat UInt32(67)
+const SWR_DITHER_NS_IMPROVED_E_WEIGHTED = @compat UInt32(68)
+const SWR_DITHER_NS_SHIBATA = @compat UInt32(69)
+const SWR_DITHER_NS_LOW_SHIBATA = @compat UInt32(70)
+const SWR_DITHER_NS_HIGH_SHIBATA = @compat UInt32(71)
+const SWR_DITHER_NB = @compat UInt32(72)
 # end enum SwrDitherType
 
 # begin enum SwrEngine
 typealias SwrEngine Uint32
-const SWR_ENGINE_SWR = uint32(0)
-const SWR_ENGINE_SOXR = uint32(1)
-const SWR_ENGINE_NB = uint32(2)
+const SWR_ENGINE_SWR = @compat UInt32(0)
+const SWR_ENGINE_SOXR = @compat UInt32(1)
+const SWR_ENGINE_NB = @compat UInt32(2)
 # end enum SwrEngine
 
 # begin enum SwrFilterType
 typealias SwrFilterType Uint32
-const SWR_FILTER_TYPE_CUBIC = uint32(0)
-const SWR_FILTER_TYPE_BLACKMAN_NUTTALL = uint32(1)
-const SWR_FILTER_TYPE_KAISER = uint32(2)
+const SWR_FILTER_TYPE_CUBIC = @compat UInt32(0)
+const SWR_FILTER_TYPE_BLACKMAN_NUTTALL = @compat UInt32(1)
+const SWR_FILTER_TYPE_KAISER = @compat UInt32(2)
 # end enum SwrFilterType
 
 typealias SwrContext Void
