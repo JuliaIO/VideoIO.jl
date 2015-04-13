@@ -13,11 +13,11 @@ end
 abstract StreamContext
 
 if isdefined(Main, :Color)
-    typealias EightBitTypes Union(Uint8, Main.FixedPointNumbers.Ufixed8, Main.Color.RGB{Main.FixedPointNumbers.Ufixed8})
+    typealias EightBitTypes Union(UInt8, Main.FixedPointNumbers.Ufixed8, Main.Color.RGB{Main.FixedPointNumbers.Ufixed8})
 elseif isdefined(Main, :FixedPointNumbers)
-    typealias EightBitTypes Union(Uint8, Main.FixedPointNumbers.Ufixed8)
+    typealias EightBitTypes Union(UInt8, Main.FixedPointNumbers.Ufixed8)
 else
-    typealias EightBitTypes Uint8
+    typealias EightBitTypes UInt8
 end
 
 # An audio-visual input stream/file
@@ -61,9 +61,9 @@ type VideoTranscodeContext
     width::Int
     height::Int
 
-    target_buf::Array{Uint8,3}  # TODO: this needs to be more general
+    target_buf::Array{UInt8,3}  # TODO: this needs to be more general
     aTargetVideoFrame::Vector{AVFrame}
-    apTargetDataBuffers::Vector{Ptr{Uint8}}
+    apTargetDataBuffers::Vector{Ptr{UInt8}}
     apTargetLineSizes::Vector{Cint}
 end
 
@@ -86,7 +86,7 @@ type VideoReader{transcode} <: StreamContext
     framerate::Rational
     aspect_ratio::Rational
 
-    frame_queue::Vector{Vector{Uint8}}
+    frame_queue::Vector{Vector{UInt8}}
     transcodeContext::VideoTranscodeContext
 end
 
@@ -159,13 +159,13 @@ end
 
 pump(r::StreamContext) = pump(r.avin)
 
-function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{Uint8}, buf_size::Cint)
+function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{UInt8}, buf_size::Cint)
     avin = unsafe_pointer_to_objref(pavin)
     out = pointer_to_array(pbuf, (buf_size,))
     convert(Cint, readbytes!(avin.io, out))
 end
 
-const read_packet = cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{Uint8}, Cint))
+const read_packet = cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
 
 function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
@@ -314,15 +314,15 @@ function VideoReader(avin::AVInput, video_stream=1;
         error("Unsupported format (bits_per_pixel = $bits_per_pixel)")
     end
 
-    N = int64(bits_per_pixel >> 3)
-    target_buf = Array(Uint8, bits_per_pixel>>3, width, height)
+    N = @compat Int64(bits_per_pixel >> 3)
+    target_buf = Array(UInt8, bits_per_pixel>>3, width, height)
 
     sws_context = sws_getContext(width, height, pix_fmt,
                                  width, height, target_format,
                                  transcode_interpolation, C_NULL, C_NULL, C_NULL)
 
     avpicture_fill(pointer(aTargetVideoFrame), target_buf, target_format, width, height)
-    apTargetDataBuffers = reinterpret(Ptr{Uint8}, [aTargetVideoFrame[1].data])
+    apTargetDataBuffers = reinterpret(Ptr{UInt8}, [aTargetVideoFrame[1].data])
     apTargetLineSizes   = reinterpret(Cint,       [aTargetVideoFrame[1].linesize])
 
     transcodeContext = VideoTranscodeContext(sws_context,
@@ -351,7 +351,7 @@ function VideoReader(avin::AVInput, video_stream=1;
                                 framerate,
                                 aspect_ratio,
 
-                                Vector{Uint8}[],
+                                Vector{UInt8}[],
                                 transcodeContext)
 
     idx0 = stream_info.stream_index0
@@ -366,7 +366,7 @@ VideoReader{T<:Union(IO, String)}(s::T, args...; kwargs...) = VideoReader(AVInpu
 function decode_packet(r::VideoReader, aPacket)
     # Do we already have a complete frame that hasn't been consumed?
     if have_decoded_frame(r)
-        apSourceDataBuffers = reinterpret(Ptr{Uint8}, [r.aVideoFrame[1].data])
+        apSourceDataBuffers = reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data])
         sz = avpicture_get_size(r.format, r.width, r.height)
         push!(r.frame_queue, copy(pointer_to_array(apSourceDataBuffers[1], sz)))
         reset_frame_flag!(r)
@@ -397,9 +397,9 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     end
 
     if t.target_bits_per_pixel == 8
-        buf = Array(Uint8, r.width, r.height)
+        buf = Array(UInt8, r.width, r.height)
     else
-        buf = Array(Uint8, t.target_bits_per_pixel>>3, r.width, r.height)
+        buf = Array(UInt8, t.target_bits_per_pixel>>3, r.width, r.height)
     end
 
     retrieve!(r, buf)
@@ -414,7 +414,7 @@ function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
 
     # TODO: set actual dimensions ?
     buf_sz = avpicture_get_size(r.format, r.width, r.height)
-    buf = Array(Uint8, buf_sz)
+    buf = Array(UInt8, buf_sz)
 
     retrieve!(r, buf)
 end
@@ -439,13 +439,13 @@ function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::Array{T})
                        buf,
                        t.target_pix_fmt,
                        r.width, r.height)
-        t.apTargetDataBuffers = reinterpret(Ptr{Uint8}, [t.aTargetVideoFrame[1].data])
+        t.apTargetDataBuffers = reinterpret(Ptr{UInt8}, [t.aTargetVideoFrame[1].data])
         t.apTargetLineSizes   = reinterpret(Cint,       [t.aTargetVideoFrame[1].linesize])
 
     end
 
-    apSourceDataBuffers = isempty(r.frame_queue) ? reinterpret(Ptr{Uint8}, [r.aVideoFrame[1].data]) :
-                                                   reinterpret(Ptr{Uint8}, [shift!(r.frame_queue)])
+    apSourceDataBuffers = isempty(r.frame_queue) ? reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data]) :
+                                                   reinterpret(Ptr{UInt8}, [shift!(r.frame_queue)])
     apSourceLineSizes   = reinterpret(Cint, [r.aVideoFrame[1].linesize])
 
     Base.sigatomic_begin()
