@@ -1,5 +1,7 @@
 module VideoIO
 
+using Compat
+
 include("init.jl")
 
 using AVUtil

@@ -1444,7 +1444,7 @@ immutable Array_4_Ptr
     d4::Ptr{Uint8}
 end
 
-zero(::Type{Array_4_Ptr}) = Array_4_Ptr(fill(zero(Ptr{Uint8}),4)...)
+zero(::Type{Array_4_Ptr}) = Array_4_Ptr(fill(C_NULL,4)...)
 
 immutable Array_4_Cint
     d1::Cint
@@ -1460,7 +1460,7 @@ immutable Array_2_Ptr
     d2::Ptr{Void}
 end
 
-zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(zero(Ptr{Void}),2)...)
+zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
 
 immutable Array_4_Uint64
     d1::Uint64

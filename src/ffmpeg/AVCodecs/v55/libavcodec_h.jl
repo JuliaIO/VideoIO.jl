@@ -2465,7 +2465,7 @@ immutable Array_8_Ptr
     d8::Ptr{Uint8}
 end
 
-zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(zero(Ptr{Uint8}),8)...)
+zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
 
 immutable Array_8_Cint
     d1::Cint

@@ -2,6 +2,8 @@
 
 module TestVideos
 
+using Compat
+
 import VideoIO
 import ZipFile
 import Base: download, show
@@ -31,7 +33,7 @@ show(io::IO, v::VideoFile) = print(io, """\
 VideoFile(name, description, license, credit, source, download_url) = VideoFile{:raw}(name, description, license, credit, source, download_url)
 
 # Standard test videos 
-const videofiles = [
+const videofiles = @compat Dict(
                     "NPS_GENBR-01-H.264.mov" => VideoFile{:unzip}("NPS_GENBR-01-H.264.mov",
                                                                   "National Park Service - Generic B-roll Video",
                                                                   "public domain (USGov-NPS)",
@@ -69,7 +71,7 @@ const videofiles = [
                                                    "http://www.eso.org/public/videos/eso1004a/",
                                                    "http://upload.wikimedia.org/wikipedia/commons/1/13/Artist%E2%80%99s_impression_of_the_black_hole_inside_NGC_300_X-1_%28ESO_1004c%29.webm",
                                                    ),
-                     ]
+                     )
 
 function testvideo(name, ops...)
     videofile = joinpath(videodir, name)
