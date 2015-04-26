@@ -1,4 +1,5 @@
 using BinDeps
+using Compat
 
 @BinDeps.setup
 
@@ -40,7 +41,7 @@ end
 
 
 # System Package Managers         
-apt_packages = [
+apt_packages = @compat Dict(
     "libavcodec-extra-53"   => libavcodec,
     "libavcodec53"          => libavcodec,
     "libavcodec-extra-54"   => libavcodec,
@@ -67,7 +68,7 @@ apt_packages = [
     "libavutil52-ffmpeg"    => libavutil,
     #"libswresample0-ffmpeg" => libswresample,
     "libswscale2-ffmpeg"    => libswscale,
-]
+)
 
 #if have_swresample
 #    apt_packages["libswresample0-ffmpeg"] = libswresample
@@ -81,10 +82,11 @@ provides(AptGet,
          apt_packages)
 
 provides(Yum,
-         ["ffmpeg" => libav_libs])
+         @compat Dict("ffmpeg" => libav_libs))
 
 provides(Pacman,
-         ["ffmpeg" => libav_libs])
+         @compat Dict("ffmpeg" => libav_libs))
+
 
 provides(Sources,
          URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"), 
@@ -92,11 +94,11 @@ provides(Sources,
 
 provides(BuildProcess, Autotools(configure_options=["--enable-gpl"]), libav_libs, os = :Unix)
 
-@BinDeps.install [
+@BinDeps.install @compat Dict(
     :libavcodec => :libavcodec,
     :libavformat => :libavformat,
     :libavutil => :libavutil,
     :libswscale => :libswscale,
     :libavfilter => :libavfilter,
     :libavdevice => :libavdevice
-]
+)
