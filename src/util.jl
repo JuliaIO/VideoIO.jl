@@ -34,8 +34,10 @@ function open_stdout_stderr(cmd::Cmd)
     Base.close_pipe_sync(cmd_out)
     Base.close_pipe_sync(cmd_err)
 
-    start_reading(out)
-    start_reading(err)
+    # NOTE: these are not necessary on v0.4 (although they don't seem
+    #       to hurt). Remove when we drop support for v0.3.
+    Base.start_reading(out)
+    Base.start_reading(err)
 
     return (out, err, r)
 end
