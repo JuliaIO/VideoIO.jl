@@ -77,7 +77,7 @@ function testvideo(name, ops...)
     videofile = joinpath(videodir, name)
     if !isfile(videofile)
         files = collect(keys(videofiles))
-        ind = [beginswith(x, name) for x in files]
+        ind = [startswith(x, name) for x in files]
         count = sum(ind)
 
         if count == 1
