@@ -77,6 +77,7 @@ function testvideo(name, ops...)
     videofile = joinpath(videodir, name)
     if !isfile(videofile)
         files = collect(keys(videofiles))
+        # Bool is needed here for Julia v0.3
         ind = Bool[startswith(x, name) for x in files]
         count = sum(ind)
 
