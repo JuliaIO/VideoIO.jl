@@ -518,7 +518,12 @@ _close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
 
 # Free AVIOContext object when done
 function close(avin::AVInput)
+    Base.sigatomic_begin()
+    isopen = avin.isopen
     avin.isopen = false
+    Base.sigatomic_end()
+
+    !isopen && return
 
     for i in avin.listening
         _close(avin.stream_contexts[i+1])

@@ -1,4 +1,5 @@
 using Base.Test
+using Compat
 using Images, FixedPointNumbers
 import VideoIO
 
@@ -46,7 +47,7 @@ println(STDERR, "Testing IO reading...")
 for name in VideoIO.TestVideos.names()
     @osx_only startswith(name, "crescent") && continue
     # TODO: fix me?
-    (beginswith(name, "ladybird") || beginswith(name, "NPS")) && continue
+    (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 
     println(STDERR, "   Testing $name...")
     first_frame_file = joinpath(testdir, swapext(name, ".png"))

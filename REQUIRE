@@ -1,4 +1,5 @@
-julia v0.3-
+julia v0.3
+Compat
 ZipFile
 BinDeps v0.3.4
 Images v0.4.4
