@@ -1,6 +1,6 @@
 # AVIO
 
-import Base: read, read!, show, close, eof, isopen
+import Base: read, read!, show, close, eof, isopen, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
@@ -498,6 +498,40 @@ have_frame(avin::AVInput) = any([have_frame(avin.stream_contexts[i+1]) for i in 
 
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 
+function seekstart(s::VideoReader, video_stream=1)
+    !isopen(s) && throw(ErrorException("Video input stream is not open!"))
+
+    pCodecContext = s.pVideoCodecContext # AVCodecContext
+
+    seekstart(s.avin, video_stream)
+    avcodec_flush_buffers(pCodecContext)
+
+    return s
+end
+
+function seekstart{T<:String}(avin::AVInput{T}, video_stream = 1)
+    # AVFormatContext
+    fc = avin.apFormatContext[1]
+
+    # Get stream information
+    stream_info = avin.video_info[video_stream]
+    seek_stream_index = stream_info.stream_index0
+    stream = stream_info.stream
+    first_dts = stream.first_dts
+
+    # Seek
+    ret = avformat_seek_file(fc, seek_stream_index, first_dts, first_dts, first_dts, AVSEEK_FLAG_BACKWARD)
+
+    ret < 0 && throw(ErrorException("Could not seek to start of stream"))
+
+    return avin
+end
+
+## This doesn't work...
+#seekstart{T<:IO}(avin::AVInput{T}, video_stream = 1) = seekstart(avin.io)
+seekstart{T<:IO}(avin::AVInput{T}, video_stream = 1) = throw(ErrorException("Sorry, Seeking is not supported from IO streams"))
+
+
 function eof(avin::AVInput)
     !isopen(avin) && return true
     have_frame(avin) && return false
@@ -685,4 +719,3 @@ catch
     playvideo() = no_imageview()
     viewcam() = no_imageview()
 end
-
