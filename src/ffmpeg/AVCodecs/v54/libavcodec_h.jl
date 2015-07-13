@@ -2217,7 +2217,7 @@ immutable AVCodec
     priv_class::Ptr{AVClass}
     profiles::Ptr{AVProfile}
     priv_data_size::Cint
-    next::Ptr{AVCodec_}
+    next::Ptr{AVCodec}
     init_thread_copy::Ptr{Void}
     update_thread_context::Ptr{Void}
     defaults::Ptr{AVCodecDefault}
@@ -2254,7 +2254,7 @@ immutable AVCodecContext
     av_class::Ptr{AVClass}
     log_level_offset::Cint
     codec_type::AVMediaType
-    codec::Ptr{AVCodec_}
+    codec::Ptr{AVCodec}
     codec_name::Array_32_Uint8
     codec_id::AVCodecID
     codec_tag::Uint32
