@@ -291,7 +291,10 @@ function VideoReader(avin::AVInput, video_stream=1;
     pix_fmt < 0 && error("Unknown pixel format")
 
     framerate = codecContext.time_base.den // codecContext.time_base.num
-    aspect_ratio = codecContext.sample_aspect_ratio.num // codecContext.sample_aspect_ratio.den
+
+    aspect_num = codecContext.sample_aspect_ratio.num
+    aspect_den = codecContext.sample_aspect_ratio.den
+    aspect_ratio = (aspect_den == 0) ? 0 // 1 : aspect_num // aspect_den
 
     # Find the decoder for the video stream
     pVideoCodec = avcodec_find_decoder(codecContext.codec_id)
