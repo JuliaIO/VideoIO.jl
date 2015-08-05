@@ -12,7 +12,7 @@ end
 
 abstract StreamContext
 
-if isdefined(Main, :Color222)
+if isdefined(Main, :Color)
     typealias EightBitTypes Union(UInt8, Main.FixedPointNumbers.Ufixed8, Main.Color.RGB{Main.FixedPointNumbers.Ufixed8})
 elseif isdefined(Main, :FixedPointNumbers)
     typealias EightBitTypes Union(UInt8, Main.FixedPointNumbers.Ufixed8)
