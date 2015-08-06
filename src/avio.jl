@@ -35,7 +35,7 @@ type AVInput{I}
     subtitle_info::Vector{StreamInfo}
     attachment_info::Vector{StreamInfo}
 
-    listening::IntSet
+    listening::Set{Int}
     stream_contexts::Array{StreamContext}
 
     isopen::Bool
@@ -227,7 +227,7 @@ function AVInput{T<:Union(IO, String)}(source::T, input_format=C_NULL; avio_ctx_
 
     # Allocate this object (needed to pass into AVIOContext in open_avinput)
     avin = AVInput{T}(source, apFormatContext, apAVIOContext, avio_ctx_buffer_size,
-                      aPacket, [StreamInfo[] for i=1:6]..., IntSet(), StreamContext[], false)
+                      aPacket, [StreamInfo[] for i=1:6]..., Set(Int[]), StreamContext[], false)
 
     # Make sure we deallocate everything on exit
     finalizer(avin, close)
@@ -497,7 +497,7 @@ bufsize_check{T<:EightBitTypes}(t::VideoTranscodeContext, buf::Array{T}) = (leng
 
 have_decoded_frame(r) = r.aFrameFinished[1] > 0  # TODO: make sure the last frame was made available
 have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
-have_frame(avin::AVInput) = any([have_frame(avin.stream_contexts[i+1]) for i in avin.listening])
+have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i in avin.listening])
 
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 

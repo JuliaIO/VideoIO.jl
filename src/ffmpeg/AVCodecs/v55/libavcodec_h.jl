@@ -2032,13 +2032,13 @@ const ME_ITER = @compat UInt32(50)
 
 # begin enum AVDiscard
 typealias AVDiscard Cint
-const AVDISCARD_NONE = int32(-16)
-const AVDISCARD_DEFAULT = int32(0)
-const AVDISCARD_NONREF = int32(8)
-const AVDISCARD_BIDIR = int32(16)
-const AVDISCARD_NONINTRA = int32(24)
-const AVDISCARD_NONKEY = int32(32)
-const AVDISCARD_ALL = int32(48)
+const AVDISCARD_NONE = @compat Int32(-16)
+const AVDISCARD_DEFAULT = @compat Int32(0)
+const AVDISCARD_NONREF = @compat Int32(8)
+const AVDISCARD_BIDIR = @compat Int32(16)
+const AVDISCARD_NONINTRA = @compat Int32(24)
+const AVDISCARD_NONKEY = @compat Int32(32)
+const AVDISCARD_ALL = @compat Int32(48)
 # end enum AVDiscard
 
 # begin enum AVAudioServiceType
