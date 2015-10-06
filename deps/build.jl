@@ -28,7 +28,7 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 
 @windows_only begin
     provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-2.2.3-win$WORD_SIZE-shared.7z"),
-             libav_libs, 
+             libav_libs,
              os = :Windows,
              unpacked_dir="ffmpeg-2.2.3-win$WORD_SIZE-shared/bin")
 end
@@ -39,8 +39,8 @@ end
 end
 
 
-# System Package Managers         
-apt_packages = [
+# System Package Managers
+apt_packages = Dict(
     "libavcodec-extra-53"   => libavcodec,
     "libavcodec53"          => libavcodec,
     "libavcodec-extra-54"   => libavcodec,
@@ -67,7 +67,7 @@ apt_packages = [
     "libavutil52-ffmpeg"    => libavutil,
     #"libswresample0-ffmpeg" => libswresample,
     "libswscale2-ffmpeg"    => libswscale,
-]
+)
 
 #if have_swresample
 #    apt_packages["libswresample0-ffmpeg"] = libswresample
@@ -81,22 +81,22 @@ provides(AptGet,
          apt_packages)
 
 provides(Yum,
-         ["ffmpeg" => libav_libs])
+         Dict("ffmpeg" => libav_libs))
 
 provides(Pacman,
-         ["ffmpeg" => libav_libs])
+         Dict("ffmpeg" => libav_libs))
 
 provides(Sources,
-         URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"), 
+         URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"),
          libav_libs)
 
 provides(BuildProcess, Autotools(configure_options=["--enable-gpl"]), libav_libs, os = :Unix)
 
-@BinDeps.install [
+@BinDeps.install Dict(
     :libavcodec => :libavcodec,
     :libavformat => :libavformat,
     :libavutil => :libavutil,
     :libswscale => :libswscale,
     :libavfilter => :libavfilter,
     :libavdevice => :libavdevice
-]
+)
