@@ -690,7 +690,6 @@ try
 
         function play(f, flip=false)
             img = read(f)
-            @show size(img)
             colim = Images.colorim(img)
             canvas, _ = Main.ImageView.view(colim, flipx=flip, interactive=false)
             buf = colim.data
