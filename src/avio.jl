@@ -692,7 +692,6 @@ try
             img = read(f)
             colim = Images.colorim(img)
             canvas, _ = Main.ImageView.view(colim, flipx=flip, interactive=false)
-            buf = colim.data
 
             while !eof(f)
                 read!(f, img)
