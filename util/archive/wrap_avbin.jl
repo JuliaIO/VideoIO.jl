@@ -29,11 +29,11 @@ function rewrite_fn(e::Expr)
 
     for call_arg in call.args[2:end]
         @match call_arg begin
-            Expr(:(::), [sym, Expr(:curly, [:Ptr, :Uint8], _)], _) => 
+            Expr(:(::), [sym, Expr(:curly, [:Ptr, :UInt8], _)], _) => 
                 begin 
-                    orig_type = Expr(:curly, :Ptr, :Uint8)
+                    orig_type = Expr(:curly, :Ptr, :UInt8)
                     _sym = symbol(string("_", sym))
-                    push!(parms,   :($_sym::Union(Ptr,ByteString)))
+                    push!(parms,   :($_sym::Union{Ptr,ByteString}))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
             Expr(:(::), [sym, Expr(:curly, [:Ptr, target_type], _)], _) => 
@@ -43,7 +43,7 @@ function rewrite_fn(e::Expr)
                     push!(parms,   :($_sym::Ptr))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
-            Expr(:(::), [sym, (:Int32 || :Uint32 || :Int64 || :Uint64 || :Cuint || :Cint || :Csize_t)], _) => 
+            Expr(:(::), [sym, (:Int32 || :UInt32 || :Int64 || :UInt64 || :Cuint || :Cint || :Csize_t)], _) => 
                 begin
                     println(sym)
                     push!(parms, :($sym::Integer))

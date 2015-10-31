@@ -73,14 +73,14 @@ typealias AVFilterPad AVFilterPad
 typealias AVFilterFormats Void
 
 immutable Array_8_Ptr
-    d1::Ptr{Uint8}
-    d2::Ptr{Uint8}
-    d3::Ptr{Uint8}
-    d4::Ptr{Uint8}
-    d5::Ptr{Uint8}
-    d6::Ptr{Uint8}
-    d7::Ptr{Uint8}
-    d8::Ptr{Uint8}
+    d1::Ptr{UInt8}
+    d2::Ptr{UInt8}
+    d3::Ptr{UInt8}
+    d4::Ptr{UInt8}
+    d5::Ptr{UInt8}
+    d6::Ptr{UInt8}
+    d7::Ptr{UInt8}
+    d8::Ptr{UInt8}
 end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
@@ -100,18 +100,18 @@ zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
 immutable AVFilterBuffer
     data::Array_8_Ptr
-    extended_data::Ptr{Ptr{Uint8}}
+    extended_data::Ptr{Ptr{UInt8}}
     linesize::Array_8_Cint
     priv::Ptr{Void}
     free::Ptr{Void}
     format::Cint
     w::Cint
     h::Cint
-    refcount::Uint32
+    refcount::UInt32
 end
 
 immutable AVFilterBufferRefAudioProps
-    channel_layout::Uint64
+    channel_layout::UInt64
     nb_samples::Cint
     sample_rate::Cint
     channels::Cint
@@ -133,7 +133,7 @@ end
 immutable AVFilterBufferRef
     buf::Ptr{AVFilterBuffer}
     data::Array_8_Ptr
-    extended_data::Ptr{Ptr{Uint8}}
+    extended_data::Ptr{Ptr{UInt8}}
     linesize::Array_8_Cint
     video::Ptr{AVFilterBufferRefVideoProps}
     audio::Ptr{AVFilterBufferRefAudioProps}
@@ -146,8 +146,8 @@ immutable AVFilterBufferRef
 end
 
 immutable AVFilter_
-    name::Ptr{Uint8}
-    description::Ptr{Uint8}
+    name::Ptr{UInt8}
+    description::Ptr{UInt8}
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
     priv_class::Ptr{AVClass}
@@ -167,20 +167,20 @@ typealias AVFilterGraphInternal Void
 
 immutable AVFilterGraph
     av_class::Ptr{AVClass}
-    filter_count_unused::Uint32
+    filter_count_unused::UInt32
     filters::Ptr{Ptr{AVFilterContext}}
-    scale_sws_opts::Ptr{Uint8}
-    resample_lavr_opts::Ptr{Uint8}
-    nb_filters::Uint32
+    scale_sws_opts::Ptr{UInt8}
+    resample_lavr_opts::Ptr{UInt8}
+    nb_filters::UInt32
     thread_type::Cint
     nb_threads::Cint
     internal::Ptr{AVFilterGraphInternal}
     opaque::Ptr{Void}
     execute::Ptr{avfilter_execute_func}
-    aresample_swr_opts::Ptr{Uint8}
+    aresample_swr_opts::Ptr{UInt8}
     sink_links::Ptr{Ptr{AVFilterLink}}
     sink_links_count::Cint
-    disable_auto_convert::Uint32
+    disable_auto_convert::UInt32
 end
 
 # begin enum ANONYMOUS_1
@@ -190,7 +190,7 @@ const AVFILTER_AUTO_CONVERT_NONE = @compat Int32(-1)
 # end enum ANONYMOUS_1
 
 immutable AVFilterInOut
-    name::Ptr{Uint8}
+    name::Ptr{UInt8}
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint
     next::Ptr{AVFilterInOut}
@@ -212,7 +212,7 @@ immutable AVABufferSinkParams
 end
 
 # begin enum ANONYMOUS_2
-typealias ANONYMOUS_2 Uint32
+typealias ANONYMOUS_2 UInt32
 const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = @compat UInt32(1)
 const AV_BUFFERSRC_FLAG_NO_COPY = @compat UInt32(2)
 const AV_BUFFERSRC_FLAG_PUSH = @compat UInt32(4)

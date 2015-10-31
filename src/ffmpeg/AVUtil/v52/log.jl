@@ -16,7 +16,7 @@ export
 
 
 function av_vlog(avcl,level::Integer,fmt,vl)
-    ccall((:av_vlog,libavutil),Void,(Ptr{Void},Cint,Ptr{Uint8},Ptr{__va_list_tag}),avcl,level,fmt,vl)
+    ccall((:av_vlog,libavutil),Void,(Ptr{Void},Cint,Ptr{UInt8},Ptr{__va_list_tag}),avcl,level,fmt,vl)
 end
 
 function av_log_get_level()
@@ -32,11 +32,11 @@ function av_log_set_callback(callback)
 end
 
 function av_log_default_callback(avcl,level::Integer,fmt,vl)
-    ccall((:av_log_default_callback,libavutil),Void,(Ptr{Void},Cint,Ptr{Uint8},Ptr{__va_list_tag}),avcl,level,fmt,vl)
+    ccall((:av_log_default_callback,libavutil),Void,(Ptr{Void},Cint,Ptr{UInt8},Ptr{__va_list_tag}),avcl,level,fmt,vl)
 end
 
 function av_default_item_name(ctx)
-    ccall((:av_default_item_name,libavutil),Ptr{Uint8},(Ptr{Void},),ctx)
+    ccall((:av_default_item_name,libavutil),Ptr{UInt8},(Ptr{Void},),ctx)
 end
 
 function av_default_get_category(ptr)
@@ -44,7 +44,7 @@ function av_default_get_category(ptr)
 end
 
 function av_log_format_line(ptr,level::Integer,fmt,vl,line,line_size::Integer,print_prefix)
-    ccall((:av_log_format_line,libavutil),Void,(Ptr{Void},Cint,Ptr{Uint8},Ptr{__va_list_tag},Ptr{Uint8},Cint,Ptr{Cint}),ptr,level,fmt,vl,line,line_size,print_prefix)
+    ccall((:av_log_format_line,libavutil),Void,(Ptr{Void},Cint,Ptr{UInt8},Ptr{__va_list_tag},Ptr{UInt8},Cint,Ptr{Cint}),ptr,level,fmt,vl,line,line_size,print_prefix)
 end
 
 function av_log_set_flags(arg::Integer)

@@ -52,7 +52,7 @@ function swr_close(s)
 end
 
 function swr_convert(s,out,out_count::Integer,_in,in_count::Integer)
-    ccall((:swr_convert,libswresample),Cint,(Ptr{SwrContext},Ptr{Ptr{Uint8}},Cint,Ptr{Ptr{Uint8}},Cint),s,out,out_count,_in,in_count)
+    ccall((:swr_convert,libswresample),Cint,(Ptr{SwrContext},Ptr{Ptr{UInt8}},Cint,Ptr{Ptr{UInt8}},Cint),s,out,out_count,_in,in_count)
 end
 
 function swr_next_pts(s,pts::Int64)
@@ -84,13 +84,13 @@ function swr_get_delay(s,base::Int64)
 end
 
 function swresample_version()
-    ccall((:swresample_version,libswresample),Uint32,())
+    ccall((:swresample_version,libswresample),UInt32,())
 end
 
 function swresample_configuration()
-    ccall((:swresample_configuration,libswresample),Ptr{Uint8},())
+    ccall((:swresample_configuration,libswresample),Ptr{UInt8},())
 end
 
 function swresample_license()
-    ccall((:swresample_license,libswresample),Ptr{Uint8},())
+    ccall((:swresample_license,libswresample),Ptr{UInt8},())
 end

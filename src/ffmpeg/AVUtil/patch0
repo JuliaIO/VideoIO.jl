@@ -24,7 +24,7 @@ diff -rU 3 ../util/ffmpeg/AVUtil/v52/libavutil_h.jl AVUtil/v52/libavutil_h.jl
  # begin enum AVMediaType
 @@ -743,11 +750,6 @@
  
- zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(Uint64),8)...)
+ zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(UInt64),8)...)
  
 -type AVRational
 -    num::Cint
@@ -45,7 +45,7 @@ diff -rU 3 ../util/ffmpeg/AVUtil/v52/libavutil_h.jl AVUtil/v52/libavutil_h.jl
 -    owner::Ptr{AVCodecContext}
 +    owner::Ptr{Void}  #Ptr{AVCodecContext}
      thread_opaque::Ptr{Void}
-     motion_subsample_log2::Uint8
+     motion_subsample_log2::UInt8
      sample_rate::Cint
 @@ -1259,60 +1261,63 @@
  const AV_PIX_FMT_Y400A = AV_PIX_FMT_GRAY8A

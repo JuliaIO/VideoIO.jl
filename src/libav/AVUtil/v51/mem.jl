@@ -28,7 +28,7 @@ function av_mallocz(size::Csize_t)
 end
 
 function av_strdup(s)
-    ccall((:av_strdup,libavutil),Ptr{Uint8},(Ptr{Uint8},),s)
+    ccall((:av_strdup,libavutil),Ptr{UInt8},(Ptr{UInt8},),s)
 end
 
 function av_freep(ptr)

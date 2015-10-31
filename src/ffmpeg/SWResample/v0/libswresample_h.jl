@@ -31,7 +31,7 @@ const SWR_CH_MAX = 32
 const SWR_FLAG_RESAMPLE = 1
 
 # begin enum SwrDitherType
-typealias SwrDitherType Uint32
+typealias SwrDitherType UInt32
 const SWR_DITHER_NONE = @compat UInt32(0)
 const SWR_DITHER_RECTANGULAR = @compat UInt32(1)
 const SWR_DITHER_TRIANGULAR = @compat UInt32(2)
@@ -48,14 +48,14 @@ const SWR_DITHER_NB = @compat UInt32(72)
 # end enum SwrDitherType
 
 # begin enum SwrEngine
-typealias SwrEngine Uint32
+typealias SwrEngine UInt32
 const SWR_ENGINE_SWR = @compat UInt32(0)
 const SWR_ENGINE_SOXR = @compat UInt32(1)
 const SWR_ENGINE_NB = @compat UInt32(2)
 # end enum SwrEngine
 
 # begin enum SwrFilterType
-typealias SwrFilterType Uint32
+typealias SwrFilterType UInt32
 const SWR_FILTER_TYPE_CUBIC = @compat UInt32(0)
 const SWR_FILTER_TYPE_BLACKMAN_NUTTALL = @compat UInt32(1)
 const SWR_FILTER_TYPE_KAISER = @compat UInt32(2)
