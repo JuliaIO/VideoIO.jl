@@ -12,9 +12,11 @@ end
 
 abstract StreamContext
 
-if isdefined(Main, :Color)
+if isdefined(Main, :Color) && isa(Main.Color, Module)
     typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.Ufixed8, Main.Color.RGB{Main.FixedPointNumbers.Ufixed8}})
-elseif isdefined(Main, :FixedPointNumbers)
+elseif isdefined(Main, :Colors) && isa(Main.Colors, Module)
+    typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.Ufixed8, Main.Colors.RGB{Main.FixedPointNumbers.Ufixed8}})
+elseif isdefined(Main, :FixedPointNumbers) && isa(Main.FixedPointNumbers, Module)
     typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.Ufixed8})
 else
     typealias EightBitTypes UInt8
