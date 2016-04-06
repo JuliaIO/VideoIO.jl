@@ -92,11 +92,11 @@ function rewrite_fn(e, call, body)
 
     for call_arg in call.args[2:end]
         @match call_arg begin
-            Expr(:(::), [sym, Expr(:curly, [:Ptr, :Uint8], _)], _) => 
+            Expr(:(::), [sym, Expr(:curly, [:Ptr, :UInt8], _)], _) => 
                 begin 
-                    orig_type = Expr(:curly, :Ptr, :Uint8)
+                    orig_type = Expr(:curly, :Ptr, :UInt8)
                     _sym = symbol(string("_", sym))
-                    push!(parms,   :($_sym::Union(Ptr,ByteString)))
+                    push!(parms,   :($_sym::Union{Ptr,ByteString}))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
             Expr(:(::), [sym, Expr(:curly, [:Ptr, target_type], _)], _) => 
@@ -106,7 +106,7 @@ function rewrite_fn(e, call, body)
                     push!(parms,   :($_sym::Ptr))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
-            Expr(:(::), [sym, (:Uint32 || :Cuint)], _) => 
+            Expr(:(::), [sym, (:UInt32 || :Cuint)], _) => 
                 begin
                     _sym = symbol(string("_", sym))
                     push!(parms,   :($_sym::Integer))
@@ -116,7 +116,7 @@ function rewrite_fn(e, call, body)
                 begin
                     _sym = symbol(string("_", sym))
                     push!(parms,   :($_sym::Integer))
-                    push!(content, :($sym = int32($_sym)))
+                    push!(content, :($sym = Int32($_sym)))
                 end
             _ => push!(parms, call_arg)
         end
@@ -138,7 +138,7 @@ end
 
 rewrite(buf::Array) = {rewrite(e) for e in buf}
 
-rewrite(s::String) = s
+rewrite(s::AbstractString) = s
 
 function rewrite(e::Expr)
     try

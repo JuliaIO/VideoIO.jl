@@ -62,7 +62,7 @@ diff -r -U3 ../../../util/libav-0.9/AVUtil/v52/libavutil_h.jl v52/libavutil_h.jl
 -
  # begin enum AVPixelFormat
  typealias AVPixelFormat Cint
- const AV_PIX_FMT_NONE = int32(-1)
+ const AV_PIX_FMT_NONE = Int32(-1)
 @@ -835,7 +804,36 @@
  
  const PixelFormat = AVPixelFormat
@@ -112,7 +112,7 @@ diff -r -U3 ../../../util/libav-0.9/AVUtil/v52/libavutil_h.jl v52/libavutil_h.jl
 -
  # begin enum AVSampleFormat
  typealias AVSampleFormat Cint
- const AV_SAMPLE_FMT_NONE = int32(-1)
+ const AV_SAMPLE_FMT_NONE = Int32(-1)
 Only in v52: libavutil_h.jl.orig
 Only in v52: libavutil_h.jl.rej
 diff -r -U3 ../../../util/libav-0.9/AVUtil/v52/LIBAVUTIL.jl v52/LIBAVUTIL.jl

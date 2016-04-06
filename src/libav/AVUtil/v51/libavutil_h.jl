@@ -369,17 +369,17 @@ const AV_TIME_BASE_Q = AVRational( 1 , AV_TIME_BASE )
 
 # begin enum AVMediaType
 typealias AVMediaType Cint
-const AVMEDIA_TYPE_UNKNOWN = int32(-1)
-const AVMEDIA_TYPE_VIDEO = int32(0)
-const AVMEDIA_TYPE_AUDIO = int32(1)
-const AVMEDIA_TYPE_DATA = int32(2)
-const AVMEDIA_TYPE_SUBTITLE = int32(3)
-const AVMEDIA_TYPE_ATTACHMENT = int32(4)
-const AVMEDIA_TYPE_NB = int32(5)
+const AVMEDIA_TYPE_UNKNOWN = Int32(-1)
+const AVMEDIA_TYPE_VIDEO = Int32(0)
+const AVMEDIA_TYPE_AUDIO = Int32(1)
+const AVMEDIA_TYPE_DATA = Int32(2)
+const AVMEDIA_TYPE_SUBTITLE = Int32(3)
+const AVMEDIA_TYPE_ATTACHMENT = Int32(4)
+const AVMEDIA_TYPE_NB = Int32(5)
 # end enum AVMediaType
 
 # begin enum AVPictureType
-typealias AVPictureType Uint32
+typealias AVPictureType UInt32
 const AV_PICTURE_TYPE_I = @compat UInt32(1)
 const AV_PICTURE_TYPE_P = @compat UInt32(2)
 const AV_PICTURE_TYPE_B = @compat UInt32(3)
@@ -397,8 +397,8 @@ const AV_DICT_DONT_OVERWRITE = 16
 const AV_DICT_APPEND = 32
 
 immutable AVDictionaryEntry
-    key::Ptr{Uint8}
-    value::Ptr{Uint8}
+    key::Ptr{UInt8}
+    value::Ptr{UInt8}
 end
 
 typealias AVDictionary Void
@@ -417,7 +417,7 @@ const AV_LOG_DEBUG = 48
 const AV_LOG_SKIP_REPEATED = 1
 
 # begin enum AVOptionType
-typealias AVOptionType Uint32
+typealias AVOptionType UInt32
 const AV_OPT_TYPE_FLAGS = @compat UInt32(0)
 const AV_OPT_TYPE_INT = @compat UInt32(1)
 const AV_OPT_TYPE_INT64 = @compat UInt32(2)
@@ -439,19 +439,19 @@ const FF_OPT_TYPE_CONST = @compat UInt32(128)
 # end enum AVOptionType
 
 immutable AVOption
-    name::Ptr{Uint8}
-    help::Ptr{Uint8}
+    name::Ptr{UInt8}
+    help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
     default_val::Void
     min::Cdouble
     max::Cdouble
     flags::Cint
-    unit::Ptr{Uint8}
+    unit::Ptr{UInt8}
 end
 
 immutable AVClass
-    class_name::Ptr{Uint8}
+    class_name::Ptr{UInt8}
     item_name::Ptr{Void}
     option::Ptr{AVOption}
     version::Cint
@@ -474,14 +474,14 @@ const PIX_FMT_PLANAR = 16
 const PIX_FMT_RGB = 32
 
 # immutable AVComponentDescriptor
-#     plane::Uint16
-#     step_minus1::Uint16
-#     offset_plus1::Uint16
-#     shift::Uint16
-#     depth_minus1::Uint16
+#     plane::UInt16
+#     step_minus1::UInt16
+#     offset_plus1::UInt16
+#     shift::UInt16
+#     depth_minus1::UInt16
 # end
 
-typealias AVComponentDescriptor Uint16
+typealias AVComponentDescriptor UInt16
 
 immutable Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
@@ -493,200 +493,200 @@ end
 zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
 
 immutable AVPixFmtDescriptor
-    name::Ptr{Uint8}
-    nb_components::Uint8
-    log2_chroma_w::Uint8
-    log2_chroma_h::Uint8
-    flags::Uint8
+    name::Ptr{UInt8}
+    nb_components::UInt8
+    log2_chroma_w::UInt8
+    log2_chroma_h::UInt8
+    flags::UInt8
     comp::Array_4_AVComponentDescriptor
 end
 
 # begin enum PixelFormat
 typealias PixelFormat Cint
-const PIX_FMT_NONE = int32(-1)
-const PIX_FMT_YUV420P = int32(0)
-const PIX_FMT_YUYV422 = int32(1)
-const PIX_FMT_RGB24 = int32(2)
-const PIX_FMT_BGR24 = int32(3)
-const PIX_FMT_YUV422P = int32(4)
-const PIX_FMT_YUV444P = int32(5)
-const PIX_FMT_YUV410P = int32(6)
-const PIX_FMT_YUV411P = int32(7)
-const PIX_FMT_GRAY8 = int32(8)
-const PIX_FMT_MONOWHITE = int32(9)
-const PIX_FMT_MONOBLACK = int32(10)
-const PIX_FMT_PAL8 = int32(11)
-const PIX_FMT_YUVJ420P = int32(12)
-const PIX_FMT_YUVJ422P = int32(13)
-const PIX_FMT_YUVJ444P = int32(14)
-const PIX_FMT_XVMC_MPEG2_MC = int32(15)
-const PIX_FMT_XVMC_MPEG2_IDCT = int32(16)
-const PIX_FMT_UYVY422 = int32(17)
-const PIX_FMT_UYYVYY411 = int32(18)
-const PIX_FMT_BGR8 = int32(19)
-const PIX_FMT_BGR4 = int32(20)
-const PIX_FMT_BGR4_BYTE = int32(21)
-const PIX_FMT_RGB8 = int32(22)
-const PIX_FMT_RGB4 = int32(23)
-const PIX_FMT_RGB4_BYTE = int32(24)
-const PIX_FMT_NV12 = int32(25)
-const PIX_FMT_NV21 = int32(26)
-const PIX_FMT_ARGB = int32(27)
-const PIX_FMT_RGBA = int32(28)
-const PIX_FMT_ABGR = int32(29)
-const PIX_FMT_BGRA = int32(30)
-const PIX_FMT_GRAY16BE = int32(31)
-const PIX_FMT_GRAY16LE = int32(32)
-const PIX_FMT_YUV440P = int32(33)
-const PIX_FMT_YUVJ440P = int32(34)
-const PIX_FMT_YUVA420P = int32(35)
-const PIX_FMT_VDPAU_H264 = int32(36)
-const PIX_FMT_VDPAU_MPEG1 = int32(37)
-const PIX_FMT_VDPAU_MPEG2 = int32(38)
-const PIX_FMT_VDPAU_WMV3 = int32(39)
-const PIX_FMT_VDPAU_VC1 = int32(40)
-const PIX_FMT_RGB48BE = int32(41)
-const PIX_FMT_RGB48LE = int32(42)
-const PIX_FMT_RGB565BE = int32(43)
-const PIX_FMT_RGB565LE = int32(44)
-const PIX_FMT_RGB555BE = int32(45)
-const PIX_FMT_RGB555LE = int32(46)
-const PIX_FMT_BGR565BE = int32(47)
-const PIX_FMT_BGR565LE = int32(48)
-const PIX_FMT_BGR555BE = int32(49)
-const PIX_FMT_BGR555LE = int32(50)
-const PIX_FMT_VAAPI_MOCO = int32(51)
-const PIX_FMT_VAAPI_IDCT = int32(52)
-const PIX_FMT_VAAPI_VLD = int32(53)
-const PIX_FMT_YUV420P16LE = int32(54)
-const PIX_FMT_YUV420P16BE = int32(55)
-const PIX_FMT_YUV422P16LE = int32(56)
-const PIX_FMT_YUV422P16BE = int32(57)
-const PIX_FMT_YUV444P16LE = int32(58)
-const PIX_FMT_YUV444P16BE = int32(59)
-const PIX_FMT_VDPAU_MPEG4 = int32(60)
-const PIX_FMT_DXVA2_VLD = int32(61)
-const PIX_FMT_RGB444LE = int32(62)
-const PIX_FMT_RGB444BE = int32(63)
-const PIX_FMT_BGR444LE = int32(64)
-const PIX_FMT_BGR444BE = int32(65)
-const PIX_FMT_Y400A = int32(66)
-const PIX_FMT_BGR48BE = int32(67)
-const PIX_FMT_BGR48LE = int32(68)
-const PIX_FMT_YUV420P9BE = int32(69)
-const PIX_FMT_YUV420P9LE = int32(70)
-const PIX_FMT_YUV420P10BE = int32(71)
-const PIX_FMT_YUV420P10LE = int32(72)
-const PIX_FMT_YUV422P10BE = int32(73)
-const PIX_FMT_YUV422P10LE = int32(74)
-const PIX_FMT_YUV444P9BE = int32(75)
-const PIX_FMT_YUV444P9LE = int32(76)
-const PIX_FMT_YUV444P10BE = int32(77)
-const PIX_FMT_YUV444P10LE = int32(78)
-const PIX_FMT_YUV422P9BE = int32(79)
-const PIX_FMT_YUV422P9LE = int32(80)
-const PIX_FMT_VDA_VLD = int32(81)
-const PIX_FMT_GBRP = int32(82)
-const PIX_FMT_GBRP9BE = int32(83)
-const PIX_FMT_GBRP9LE = int32(84)
-const PIX_FMT_GBRP10BE = int32(85)
-const PIX_FMT_GBRP10LE = int32(86)
-const PIX_FMT_GBRP16BE = int32(87)
-const PIX_FMT_GBRP16LE = int32(88)
-const PIX_FMT_NB = int32(89)
+const PIX_FMT_NONE = Int32(-1)
+const PIX_FMT_YUV420P = Int32(0)
+const PIX_FMT_YUYV422 = Int32(1)
+const PIX_FMT_RGB24 = Int32(2)
+const PIX_FMT_BGR24 = Int32(3)
+const PIX_FMT_YUV422P = Int32(4)
+const PIX_FMT_YUV444P = Int32(5)
+const PIX_FMT_YUV410P = Int32(6)
+const PIX_FMT_YUV411P = Int32(7)
+const PIX_FMT_GRAY8 = Int32(8)
+const PIX_FMT_MONOWHITE = Int32(9)
+const PIX_FMT_MONOBLACK = Int32(10)
+const PIX_FMT_PAL8 = Int32(11)
+const PIX_FMT_YUVJ420P = Int32(12)
+const PIX_FMT_YUVJ422P = Int32(13)
+const PIX_FMT_YUVJ444P = Int32(14)
+const PIX_FMT_XVMC_MPEG2_MC = Int32(15)
+const PIX_FMT_XVMC_MPEG2_IDCT = Int32(16)
+const PIX_FMT_UYVY422 = Int32(17)
+const PIX_FMT_UYYVYY411 = Int32(18)
+const PIX_FMT_BGR8 = Int32(19)
+const PIX_FMT_BGR4 = Int32(20)
+const PIX_FMT_BGR4_BYTE = Int32(21)
+const PIX_FMT_RGB8 = Int32(22)
+const PIX_FMT_RGB4 = Int32(23)
+const PIX_FMT_RGB4_BYTE = Int32(24)
+const PIX_FMT_NV12 = Int32(25)
+const PIX_FMT_NV21 = Int32(26)
+const PIX_FMT_ARGB = Int32(27)
+const PIX_FMT_RGBA = Int32(28)
+const PIX_FMT_ABGR = Int32(29)
+const PIX_FMT_BGRA = Int32(30)
+const PIX_FMT_GRAY16BE = Int32(31)
+const PIX_FMT_GRAY16LE = Int32(32)
+const PIX_FMT_YUV440P = Int32(33)
+const PIX_FMT_YUVJ440P = Int32(34)
+const PIX_FMT_YUVA420P = Int32(35)
+const PIX_FMT_VDPAU_H264 = Int32(36)
+const PIX_FMT_VDPAU_MPEG1 = Int32(37)
+const PIX_FMT_VDPAU_MPEG2 = Int32(38)
+const PIX_FMT_VDPAU_WMV3 = Int32(39)
+const PIX_FMT_VDPAU_VC1 = Int32(40)
+const PIX_FMT_RGB48BE = Int32(41)
+const PIX_FMT_RGB48LE = Int32(42)
+const PIX_FMT_RGB565BE = Int32(43)
+const PIX_FMT_RGB565LE = Int32(44)
+const PIX_FMT_RGB555BE = Int32(45)
+const PIX_FMT_RGB555LE = Int32(46)
+const PIX_FMT_BGR565BE = Int32(47)
+const PIX_FMT_BGR565LE = Int32(48)
+const PIX_FMT_BGR555BE = Int32(49)
+const PIX_FMT_BGR555LE = Int32(50)
+const PIX_FMT_VAAPI_MOCO = Int32(51)
+const PIX_FMT_VAAPI_IDCT = Int32(52)
+const PIX_FMT_VAAPI_VLD = Int32(53)
+const PIX_FMT_YUV420P16LE = Int32(54)
+const PIX_FMT_YUV420P16BE = Int32(55)
+const PIX_FMT_YUV422P16LE = Int32(56)
+const PIX_FMT_YUV422P16BE = Int32(57)
+const PIX_FMT_YUV444P16LE = Int32(58)
+const PIX_FMT_YUV444P16BE = Int32(59)
+const PIX_FMT_VDPAU_MPEG4 = Int32(60)
+const PIX_FMT_DXVA2_VLD = Int32(61)
+const PIX_FMT_RGB444LE = Int32(62)
+const PIX_FMT_RGB444BE = Int32(63)
+const PIX_FMT_BGR444LE = Int32(64)
+const PIX_FMT_BGR444BE = Int32(65)
+const PIX_FMT_Y400A = Int32(66)
+const PIX_FMT_BGR48BE = Int32(67)
+const PIX_FMT_BGR48LE = Int32(68)
+const PIX_FMT_YUV420P9BE = Int32(69)
+const PIX_FMT_YUV420P9LE = Int32(70)
+const PIX_FMT_YUV420P10BE = Int32(71)
+const PIX_FMT_YUV420P10LE = Int32(72)
+const PIX_FMT_YUV422P10BE = Int32(73)
+const PIX_FMT_YUV422P10LE = Int32(74)
+const PIX_FMT_YUV444P9BE = Int32(75)
+const PIX_FMT_YUV444P9LE = Int32(76)
+const PIX_FMT_YUV444P10BE = Int32(77)
+const PIX_FMT_YUV444P10LE = Int32(78)
+const PIX_FMT_YUV422P9BE = Int32(79)
+const PIX_FMT_YUV422P9LE = Int32(80)
+const PIX_FMT_VDA_VLD = Int32(81)
+const PIX_FMT_GBRP = Int32(82)
+const PIX_FMT_GBRP9BE = Int32(83)
+const PIX_FMT_GBRP9LE = Int32(84)
+const PIX_FMT_GBRP10BE = Int32(85)
+const PIX_FMT_GBRP10LE = Int32(86)
+const PIX_FMT_GBRP16BE = Int32(87)
+const PIX_FMT_GBRP16LE = Int32(88)
+const PIX_FMT_NB = Int32(89)
 
 typealias AVPixelFormat Cint
-const AV_PIX_FMT_NONE = int32(-1)
-const AV_PIX_FMT_YUV420P = int32(0)
-const AV_PIX_FMT_YUYV422 = int32(1)
-const AV_PIX_FMT_RGB24 = int32(2)
-const AV_PIX_FMT_BGR24 = int32(3)
-const AV_PIX_FMT_YUV422P = int32(4)
-const AV_PIX_FMT_YUV444P = int32(5)
-const AV_PIX_FMT_YUV410P = int32(6)
-const AV_PIX_FMT_YUV411P = int32(7)
-const AV_PIX_FMT_GRAY8 = int32(8)
-const AV_PIX_FMT_MONOWHITE = int32(9)
-const AV_PIX_FMT_MONOBLACK = int32(10)
-const AV_PIX_FMT_PAL8 = int32(11)
-const AV_PIX_FMT_YUVJ420P = int32(12)
-const AV_PIX_FMT_YUVJ422P = int32(13)
-const AV_PIX_FMT_YUVJ444P = int32(14)
-const AV_PIX_FMT_XVMC_MPEG2_MC = int32(15)
-const AV_PIX_FMT_XVMC_MPEG2_IDCT = int32(16)
-const AV_PIX_FMT_UYVY422 = int32(17)
-const AV_PIX_FMT_UYYVYY411 = int32(18)
-const AV_PIX_FMT_BGR8 = int32(19)
-const AV_PIX_FMT_BGR4 = int32(20)
-const AV_PIX_FMT_BGR4_BYTE = int32(21)
-const AV_PIX_FMT_RGB8 = int32(22)
-const AV_PIX_FMT_RGB4 = int32(23)
-const AV_PIX_FMT_RGB4_BYTE = int32(24)
-const AV_PIX_FMT_NV12 = int32(25)
-const AV_PIX_FMT_NV21 = int32(26)
-const AV_PIX_FMT_ARGB = int32(27)
-const AV_PIX_FMT_RGBA = int32(28)
-const AV_PIX_FMT_ABGR = int32(29)
-const AV_PIX_FMT_BGRA = int32(30)
-const AV_PIX_FMT_GRAY16BE = int32(31)
-const AV_PIX_FMT_GRAY16LE = int32(32)
-const AV_PIX_FMT_YUV440P = int32(33)
-const AV_PIX_FMT_YUVJ440P = int32(34)
-const AV_PIX_FMT_YUVA420P = int32(35)
-const AV_PIX_FMT_VDPAU_H264 = int32(36)
-const AV_PIX_FMT_VDPAU_MPEG1 = int32(37)
-const AV_PIX_FMT_VDPAU_MPEG2 = int32(38)
-const AV_PIX_FMT_VDPAU_WMV3 = int32(39)
-const AV_PIX_FMT_VDPAU_VC1 = int32(40)
-const AV_PIX_FMT_RGB48BE = int32(41)
-const AV_PIX_FMT_RGB48LE = int32(42)
-const AV_PIX_FMT_RGB565BE = int32(43)
-const AV_PIX_FMT_RGB565LE = int32(44)
-const AV_PIX_FMT_RGB555BE = int32(45)
-const AV_PIX_FMT_RGB555LE = int32(46)
-const AV_PIX_FMT_BGR565BE = int32(47)
-const AV_PIX_FMT_BGR565LE = int32(48)
-const AV_PIX_FMT_BGR555BE = int32(49)
-const AV_PIX_FMT_BGR555LE = int32(50)
-const AV_PIX_FMT_VAAPI_MOCO = int32(51)
-const AV_PIX_FMT_VAAPI_IDCT = int32(52)
-const AV_PIX_FMT_VAAPI_VLD = int32(53)
-const AV_PIX_FMT_YUV420P16LE = int32(54)
-const AV_PIX_FMT_YUV420P16BE = int32(55)
-const AV_PIX_FMT_YUV422P16LE = int32(56)
-const AV_PIX_FMT_YUV422P16BE = int32(57)
-const AV_PIX_FMT_YUV444P16LE = int32(58)
-const AV_PIX_FMT_YUV444P16BE = int32(59)
-const AV_PIX_FMT_VDPAU_MPEG4 = int32(60)
-const AV_PIX_FMT_DXVA2_VLD = int32(61)
-const AV_PIX_FMT_RGB444LE = int32(62)
-const AV_PIX_FMT_RGB444BE = int32(63)
-const AV_PIX_FMT_BGR444LE = int32(64)
-const AV_PIX_FMT_BGR444BE = int32(65)
-const AV_PIX_FMT_Y400A = int32(66)
-const AV_PIX_FMT_BGR48BE = int32(67)
-const AV_PIX_FMT_BGR48LE = int32(68)
-const AV_PIX_FMT_YUV420P9BE = int32(69)
-const AV_PIX_FMT_YUV420P9LE = int32(70)
-const AV_PIX_FMT_YUV420P10BE = int32(71)
-const AV_PIX_FMT_YUV420P10LE = int32(72)
-const AV_PIX_FMT_YUV422P10BE = int32(73)
-const AV_PIX_FMT_YUV422P10LE = int32(74)
-const AV_PIX_FMT_YUV444P9BE = int32(75)
-const AV_PIX_FMT_YUV444P9LE = int32(76)
-const AV_PIX_FMT_YUV444P10BE = int32(77)
-const AV_PIX_FMT_YUV444P10LE = int32(78)
-const AV_PIX_FMT_YUV422P9BE = int32(79)
-const AV_PIX_FMT_YUV422P9LE = int32(80)
-const AV_PIX_FMT_VDA_VLD = int32(81)
-const AV_PIX_FMT_GBRP = int32(82)
-const AV_PIX_FMT_GBRP9BE = int32(83)
-const AV_PIX_FMT_GBRP9LE = int32(84)
-const AV_PIX_FMT_GBRP10BE = int32(85)
-const AV_PIX_FMT_GBRP10LE = int32(86)
-const AV_PIX_FMT_GBRP16BE = int32(87)
-const AV_PIX_FMT_GBRP16LE = int32(88)
-const AV_PIX_FMT_NB = int32(89)
+const AV_PIX_FMT_NONE = Int32(-1)
+const AV_PIX_FMT_YUV420P = Int32(0)
+const AV_PIX_FMT_YUYV422 = Int32(1)
+const AV_PIX_FMT_RGB24 = Int32(2)
+const AV_PIX_FMT_BGR24 = Int32(3)
+const AV_PIX_FMT_YUV422P = Int32(4)
+const AV_PIX_FMT_YUV444P = Int32(5)
+const AV_PIX_FMT_YUV410P = Int32(6)
+const AV_PIX_FMT_YUV411P = Int32(7)
+const AV_PIX_FMT_GRAY8 = Int32(8)
+const AV_PIX_FMT_MONOWHITE = Int32(9)
+const AV_PIX_FMT_MONOBLACK = Int32(10)
+const AV_PIX_FMT_PAL8 = Int32(11)
+const AV_PIX_FMT_YUVJ420P = Int32(12)
+const AV_PIX_FMT_YUVJ422P = Int32(13)
+const AV_PIX_FMT_YUVJ444P = Int32(14)
+const AV_PIX_FMT_XVMC_MPEG2_MC = Int32(15)
+const AV_PIX_FMT_XVMC_MPEG2_IDCT = Int32(16)
+const AV_PIX_FMT_UYVY422 = Int32(17)
+const AV_PIX_FMT_UYYVYY411 = Int32(18)
+const AV_PIX_FMT_BGR8 = Int32(19)
+const AV_PIX_FMT_BGR4 = Int32(20)
+const AV_PIX_FMT_BGR4_BYTE = Int32(21)
+const AV_PIX_FMT_RGB8 = Int32(22)
+const AV_PIX_FMT_RGB4 = Int32(23)
+const AV_PIX_FMT_RGB4_BYTE = Int32(24)
+const AV_PIX_FMT_NV12 = Int32(25)
+const AV_PIX_FMT_NV21 = Int32(26)
+const AV_PIX_FMT_ARGB = Int32(27)
+const AV_PIX_FMT_RGBA = Int32(28)
+const AV_PIX_FMT_ABGR = Int32(29)
+const AV_PIX_FMT_BGRA = Int32(30)
+const AV_PIX_FMT_GRAY16BE = Int32(31)
+const AV_PIX_FMT_GRAY16LE = Int32(32)
+const AV_PIX_FMT_YUV440P = Int32(33)
+const AV_PIX_FMT_YUVJ440P = Int32(34)
+const AV_PIX_FMT_YUVA420P = Int32(35)
+const AV_PIX_FMT_VDPAU_H264 = Int32(36)
+const AV_PIX_FMT_VDPAU_MPEG1 = Int32(37)
+const AV_PIX_FMT_VDPAU_MPEG2 = Int32(38)
+const AV_PIX_FMT_VDPAU_WMV3 = Int32(39)
+const AV_PIX_FMT_VDPAU_VC1 = Int32(40)
+const AV_PIX_FMT_RGB48BE = Int32(41)
+const AV_PIX_FMT_RGB48LE = Int32(42)
+const AV_PIX_FMT_RGB565BE = Int32(43)
+const AV_PIX_FMT_RGB565LE = Int32(44)
+const AV_PIX_FMT_RGB555BE = Int32(45)
+const AV_PIX_FMT_RGB555LE = Int32(46)
+const AV_PIX_FMT_BGR565BE = Int32(47)
+const AV_PIX_FMT_BGR565LE = Int32(48)
+const AV_PIX_FMT_BGR555BE = Int32(49)
+const AV_PIX_FMT_BGR555LE = Int32(50)
+const AV_PIX_FMT_VAAPI_MOCO = Int32(51)
+const AV_PIX_FMT_VAAPI_IDCT = Int32(52)
+const AV_PIX_FMT_VAAPI_VLD = Int32(53)
+const AV_PIX_FMT_YUV420P16LE = Int32(54)
+const AV_PIX_FMT_YUV420P16BE = Int32(55)
+const AV_PIX_FMT_YUV422P16LE = Int32(56)
+const AV_PIX_FMT_YUV422P16BE = Int32(57)
+const AV_PIX_FMT_YUV444P16LE = Int32(58)
+const AV_PIX_FMT_YUV444P16BE = Int32(59)
+const AV_PIX_FMT_VDPAU_MPEG4 = Int32(60)
+const AV_PIX_FMT_DXVA2_VLD = Int32(61)
+const AV_PIX_FMT_RGB444LE = Int32(62)
+const AV_PIX_FMT_RGB444BE = Int32(63)
+const AV_PIX_FMT_BGR444LE = Int32(64)
+const AV_PIX_FMT_BGR444BE = Int32(65)
+const AV_PIX_FMT_Y400A = Int32(66)
+const AV_PIX_FMT_BGR48BE = Int32(67)
+const AV_PIX_FMT_BGR48LE = Int32(68)
+const AV_PIX_FMT_YUV420P9BE = Int32(69)
+const AV_PIX_FMT_YUV420P9LE = Int32(70)
+const AV_PIX_FMT_YUV420P10BE = Int32(71)
+const AV_PIX_FMT_YUV420P10LE = Int32(72)
+const AV_PIX_FMT_YUV422P10BE = Int32(73)
+const AV_PIX_FMT_YUV422P10LE = Int32(74)
+const AV_PIX_FMT_YUV444P9BE = Int32(75)
+const AV_PIX_FMT_YUV444P9LE = Int32(76)
+const AV_PIX_FMT_YUV444P10BE = Int32(77)
+const AV_PIX_FMT_YUV444P10LE = Int32(78)
+const AV_PIX_FMT_YUV422P9BE = Int32(79)
+const AV_PIX_FMT_YUV422P9LE = Int32(80)
+const AV_PIX_FMT_VDA_VLD = Int32(81)
+const AV_PIX_FMT_GBRP = Int32(82)
+const AV_PIX_FMT_GBRP9BE = Int32(83)
+const AV_PIX_FMT_GBRP9LE = Int32(84)
+const AV_PIX_FMT_GBRP10BE = Int32(85)
+const AV_PIX_FMT_GBRP10LE = Int32(86)
+const AV_PIX_FMT_GBRP16BE = Int32(87)
+const AV_PIX_FMT_GBRP16LE = Int32(88)
+const AV_PIX_FMT_NB = Int32(89)
 # end enum PixelFormat
 
 
@@ -800,12 +800,12 @@ const AV_CH_LAYOUT_OCTAGONAL = ((AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_LEFT) | AV_CH
 const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
 
 immutable AVFifoBuffer
-    buffer::Ptr{Uint8}
-    rptr::Ptr{Uint8}
-    wptr::Ptr{Uint8}
-    _end::Ptr{Uint8}
-    rndx::Uint32
-    wndx::Uint32
+    buffer::Ptr{UInt8}
+    rptr::Ptr{UInt8}
+    wptr::Ptr{UInt8}
+    _end::Ptr{UInt8}
+    rndx::UInt32
+    wndx::UInt32
 end
 
 const AV_OPT_FLAG_ENCODING_PARAM = 1
@@ -819,16 +819,16 @@ const AV_OPT_SEARCH_FAKE_OBJ = 0x0002
 
 # begin enum AVSampleFormat
 typealias AVSampleFormat Cint
-const AV_SAMPLE_FMT_NONE = int32(-1)
-const AV_SAMPLE_FMT_U8 = int32(0)
-const AV_SAMPLE_FMT_S16 = int32(1)
-const AV_SAMPLE_FMT_S32 = int32(2)
-const AV_SAMPLE_FMT_FLT = int32(3)
-const AV_SAMPLE_FMT_DBL = int32(4)
-const AV_SAMPLE_FMT_U8P = int32(5)
-const AV_SAMPLE_FMT_S16P = int32(6)
-const AV_SAMPLE_FMT_S32P = int32(7)
-const AV_SAMPLE_FMT_FLTP = int32(8)
-const AV_SAMPLE_FMT_DBLP = int32(9)
-const AV_SAMPLE_FMT_NB = int32(10)
+const AV_SAMPLE_FMT_NONE = Int32(-1)
+const AV_SAMPLE_FMT_U8 = Int32(0)
+const AV_SAMPLE_FMT_S16 = Int32(1)
+const AV_SAMPLE_FMT_S32 = Int32(2)
+const AV_SAMPLE_FMT_FLT = Int32(3)
+const AV_SAMPLE_FMT_DBL = Int32(4)
+const AV_SAMPLE_FMT_U8P = Int32(5)
+const AV_SAMPLE_FMT_S16P = Int32(6)
+const AV_SAMPLE_FMT_S32P = Int32(7)
+const AV_SAMPLE_FMT_FLTP = Int32(8)
+const AV_SAMPLE_FMT_DBLP = Int32(9)
+const AV_SAMPLE_FMT_NB = Int32(10)
 # end enum AVSampleFormat

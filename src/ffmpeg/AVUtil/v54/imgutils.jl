@@ -30,23 +30,23 @@ function av_image_fill_linesizes(linesizes,pix_fmt::AVPixelFormat,width::Integer
 end
 
 function av_image_fill_pointers(data,pix_fmt::AVPixelFormat,height::Integer,ptr,linesizes)
-    ccall((:av_image_fill_pointers,libavutil),Cint,(Ptr{Ptr{Uint8}},AVPixelFormat,Cint,Ptr{Uint8},Ptr{Cint}),data,pix_fmt,height,ptr,linesizes)
+    ccall((:av_image_fill_pointers,libavutil),Cint,(Ptr{Ptr{UInt8}},AVPixelFormat,Cint,Ptr{UInt8},Ptr{Cint}),data,pix_fmt,height,ptr,linesizes)
 end
 
 function av_image_alloc(pointers,linesizes,w::Integer,h::Integer,pix_fmt::AVPixelFormat,align::Integer)
-    ccall((:av_image_alloc,libavutil),Cint,(Ptr{Ptr{Uint8}},Ptr{Cint},Cint,Cint,AVPixelFormat,Cint),pointers,linesizes,w,h,pix_fmt,align)
+    ccall((:av_image_alloc,libavutil),Cint,(Ptr{Ptr{UInt8}},Ptr{Cint},Cint,Cint,AVPixelFormat,Cint),pointers,linesizes,w,h,pix_fmt,align)
 end
 
 function av_image_copy_plane(dst,dst_linesize::Integer,src,src_linesize::Integer,bytewidth::Integer,height::Integer)
-    ccall((:av_image_copy_plane,libavutil),Void,(Ptr{Uint8},Cint,Ptr{Uint8},Cint,Cint,Cint),dst,dst_linesize,src,src_linesize,bytewidth,height)
+    ccall((:av_image_copy_plane,libavutil),Void,(Ptr{UInt8},Cint,Ptr{UInt8},Cint,Cint,Cint),dst,dst_linesize,src,src_linesize,bytewidth,height)
 end
 
 function av_image_copy(dst_data,dst_linesizes,src_data,src_linesizes,pix_fmt::AVPixelFormat,width::Integer,height::Integer)
-    ccall((:av_image_copy,libavutil),Void,(Ptr{Ptr{Uint8}},Ptr{Cint},Ptr{Ptr{Uint8}},Ptr{Cint},AVPixelFormat,Cint,Cint),dst_data,dst_linesizes,src_data,src_linesizes,pix_fmt,width,height)
+    ccall((:av_image_copy,libavutil),Void,(Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{Ptr{UInt8}},Ptr{Cint},AVPixelFormat,Cint,Cint),dst_data,dst_linesizes,src_data,src_linesizes,pix_fmt,width,height)
 end
 
 function av_image_fill_arrays(dst_data,dst_linesize,src,pix_fmt::AVPixelFormat,width::Integer,height::Integer,align::Integer)
-    ccall((:av_image_fill_arrays,libavutil),Cint,(Ptr{Ptr{Uint8}},Ptr{Cint},Ptr{Uint8},AVPixelFormat,Cint,Cint,Cint),dst_data,dst_linesize,src,pix_fmt,width,height,align)
+    ccall((:av_image_fill_arrays,libavutil),Cint,(Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{UInt8},AVPixelFormat,Cint,Cint,Cint),dst_data,dst_linesize,src,pix_fmt,width,height,align)
 end
 
 function av_image_get_buffer_size(pix_fmt::AVPixelFormat,width::Integer,height::Integer,align::Integer)
@@ -54,13 +54,13 @@ function av_image_get_buffer_size(pix_fmt::AVPixelFormat,width::Integer,height::
 end
 
 function av_image_copy_to_buffer(dst,dst_size::Integer,src_data,src_linesize,pix_fmt::AVPixelFormat,width::Integer,height::Integer,align::Integer)
-    ccall((:av_image_copy_to_buffer,libavutil),Cint,(Ptr{Uint8},Cint,Ptr{Ptr{Uint8}},Ptr{Cint},AVPixelFormat,Cint,Cint,Cint),dst,dst_size,src_data,src_linesize,pix_fmt,width,height,align)
+    ccall((:av_image_copy_to_buffer,libavutil),Cint,(Ptr{UInt8},Cint,Ptr{Ptr{UInt8}},Ptr{Cint},AVPixelFormat,Cint,Cint,Cint),dst,dst_size,src_data,src_linesize,pix_fmt,width,height,align)
 end
 
 function av_image_check_size(w::Integer,h::Integer,log_offset::Integer,log_ctx)
-    ccall((:av_image_check_size,libavutil),Cint,(Uint32,Uint32,Cint,Ptr{Void}),w,h,log_offset,log_ctx)
+    ccall((:av_image_check_size,libavutil),Cint,(UInt32,UInt32,Cint,Ptr{Void}),w,h,log_offset,log_ctx)
 end
 
 function av_image_check_sar(w::Integer,h::Integer,sar::AVRational)
-    ccall((:av_image_check_sar,libavutil),Cint,(Uint32,Uint32,AVRational),w,h,sar)
+    ccall((:av_image_check_sar,libavutil),Cint,(UInt32,UInt32,AVRational),w,h,sar)
 end

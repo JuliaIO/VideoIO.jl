@@ -8,9 +8,9 @@ export
 
 
 function av_xtea_init(ctx,key)
-    ccall((:av_xtea_init,libavutil),Void,(Ptr{AVXTEA},Ptr{Uint8}),ctx,key)
+    ccall((:av_xtea_init,libavutil),Void,(Ptr{AVXTEA},Ptr{UInt8}),ctx,key)
 end
 
 function av_xtea_crypt(ctx,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_xtea_crypt,libavutil),Void,(Ptr{AVXTEA},Ptr{Uint8},Ptr{Uint8},Cint,Ptr{Uint8},Cint),ctx,dst,src,count,iv,decrypt)
+    ccall((:av_xtea_crypt,libavutil),Void,(Ptr{AVXTEA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
 end

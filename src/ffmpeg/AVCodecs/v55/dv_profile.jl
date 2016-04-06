@@ -11,11 +11,11 @@ export
 
 
 function avpriv_dv_frame_profile2(codec,sys,frame,buf_size::Integer)
-    ccall((:avpriv_dv_frame_profile2,libavcodec),Ptr{AVDVProfile},(Ptr{AVCodecContext},Ptr{AVDVProfile},Ptr{Uint8},Uint32),codec,sys,frame,buf_size)
+    ccall((:avpriv_dv_frame_profile2,libavcodec),Ptr{AVDVProfile},(Ptr{AVCodecContext},Ptr{AVDVProfile},Ptr{UInt8},UInt32),codec,sys,frame,buf_size)
 end
 
 function avpriv_dv_frame_profile(sys,frame,buf_size::Integer)
-    ccall((:avpriv_dv_frame_profile,libavcodec),Ptr{AVDVProfile},(Ptr{AVDVProfile},Ptr{Uint8},Uint32),sys,frame,buf_size)
+    ccall((:avpriv_dv_frame_profile,libavcodec),Ptr{AVDVProfile},(Ptr{AVDVProfile},Ptr{UInt8},UInt32),sys,frame,buf_size)
 end
 
 function avpriv_dv_codec_profile(codec)
@@ -23,7 +23,7 @@ function avpriv_dv_codec_profile(codec)
 end
 
 function av_dv_frame_profile(sys,frame,buf_size::Integer)
-    ccall((:av_dv_frame_profile,libavcodec),Ptr{AVDVProfile},(Ptr{AVDVProfile},Ptr{Uint8},Uint32),sys,frame,buf_size)
+    ccall((:av_dv_frame_profile,libavcodec),Ptr{AVDVProfile},(Ptr{AVDVProfile},Ptr{UInt8},UInt32),sys,frame,buf_size)
 end
 
 function av_dv_codec_profile(width::Integer,height::Integer,pix_fmt::AVPixelFormat)

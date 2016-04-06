@@ -10,17 +10,17 @@ export
 
 
 function avutil_version()
-    ccall((:avutil_version,libavutil),Uint32,())
+    ccall((:avutil_version,libavutil),UInt32,())
 end
 
 function avutil_configuration()
-    ccall((:avutil_configuration,libavutil),Ptr{Uint8},())
+    ccall((:avutil_configuration,libavutil),Ptr{UInt8},())
 end
 
 function avutil_license()
-    ccall((:avutil_license,libavutil),Ptr{Uint8},())
+    ccall((:avutil_license,libavutil),Ptr{UInt8},())
 end
 
 function av_get_picture_type_char(pict_type::AVPictureType)
-    ccall((:av_get_picture_type_char,libavutil),Uint8,(AVPictureType,),pict_type)
+    ccall((:av_get_picture_type_char,libavutil),UInt8,(AVPictureType,),pict_type)
 end

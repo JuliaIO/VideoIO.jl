@@ -24,7 +24,7 @@ function av_vdpau_hwaccel_set_render2(arg1,arg2::AVVDPAU_Render2)
 end
 
 function av_vdpau_bind_context(avctx,device::VdpDevice,get_proc_address,flags::Integer)
-    ccall((:av_vdpau_bind_context,libavcodec),Cint,(Ptr{AVCodecContext},VdpDevice,Ptr{VdpGetProcAddress},Uint32),avctx,device,get_proc_address,flags)
+    ccall((:av_vdpau_bind_context,libavcodec),Cint,(Ptr{AVCodecContext},VdpDevice,Ptr{VdpGetProcAddress},UInt32),avctx,device,get_proc_address,flags)
 end
 
 function av_vdpau_alloc_context()

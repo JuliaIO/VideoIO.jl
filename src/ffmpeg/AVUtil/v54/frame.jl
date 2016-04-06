@@ -148,7 +148,7 @@ function av_frame_set_color_range(frame,val::AVColorRange)
 end
 
 function av_get_colorspace_name(val::AVColorSpace)
-    ccall((:av_get_colorspace_name,libavutil),Ptr{Uint8},(AVColorSpace,),val)
+    ccall((:av_get_colorspace_name,libavutil),Ptr{UInt8},(AVColorSpace,),val)
 end
 
 function av_frame_alloc()
@@ -212,5 +212,5 @@ function av_frame_remove_side_data(frame,_type::AVFrameSideDataType)
 end
 
 function av_frame_side_data_name(_type::AVFrameSideDataType)
-    ccall((:av_frame_side_data_name,libavutil),Ptr{Uint8},(AVFrameSideDataType,),_type)
+    ccall((:av_frame_side_data_name,libavutil),Ptr{UInt8},(AVFrameSideDataType,),_type)
 end

@@ -17,15 +17,15 @@ export
 
 
 function av_hash_alloc(ctx,name)
-    ccall((:av_hash_alloc,libavutil),Cint,(Ptr{Ptr{AVHashContext}},Ptr{Uint8}),ctx,name)
+    ccall((:av_hash_alloc,libavutil),Cint,(Ptr{Ptr{AVHashContext}},Ptr{UInt8}),ctx,name)
 end
 
 function av_hash_names(i::Integer)
-    ccall((:av_hash_names,libavutil),Ptr{Uint8},(Cint,),i)
+    ccall((:av_hash_names,libavutil),Ptr{UInt8},(Cint,),i)
 end
 
 function av_hash_get_name(ctx)
-    ccall((:av_hash_get_name,libavutil),Ptr{Uint8},(Ptr{AVHashContext},),ctx)
+    ccall((:av_hash_get_name,libavutil),Ptr{UInt8},(Ptr{AVHashContext},),ctx)
 end
 
 function av_hash_get_size(ctx)
@@ -37,23 +37,23 @@ function av_hash_init(ctx)
 end
 
 function av_hash_update(ctx,src,len::Integer)
-    ccall((:av_hash_update,libavutil),Void,(Ptr{AVHashContext},Ptr{Uint8},Cint),ctx,src,len)
+    ccall((:av_hash_update,libavutil),Void,(Ptr{AVHashContext},Ptr{UInt8},Cint),ctx,src,len)
 end
 
 function av_hash_final(ctx,dst)
-    ccall((:av_hash_final,libavutil),Void,(Ptr{AVHashContext},Ptr{Uint8}),ctx,dst)
+    ccall((:av_hash_final,libavutil),Void,(Ptr{AVHashContext},Ptr{UInt8}),ctx,dst)
 end
 
 function av_hash_final_bin(ctx,dst,size::Integer)
-    ccall((:av_hash_final_bin,libavutil),Void,(Ptr{AVHashContext},Ptr{Uint8},Cint),ctx,dst,size)
+    ccall((:av_hash_final_bin,libavutil),Void,(Ptr{AVHashContext},Ptr{UInt8},Cint),ctx,dst,size)
 end
 
 function av_hash_final_hex(ctx,dst,size::Integer)
-    ccall((:av_hash_final_hex,libavutil),Void,(Ptr{AVHashContext},Ptr{Uint8},Cint),ctx,dst,size)
+    ccall((:av_hash_final_hex,libavutil),Void,(Ptr{AVHashContext},Ptr{UInt8},Cint),ctx,dst,size)
 end
 
 function av_hash_final_b64(ctx,dst,size::Integer)
-    ccall((:av_hash_final_b64,libavutil),Void,(Ptr{AVHashContext},Ptr{Uint8},Cint),ctx,dst,size)
+    ccall((:av_hash_final_b64,libavutil),Void,(Ptr{AVHashContext},Ptr{UInt8},Cint),ctx,dst,size)
 end
 
 function av_hash_freep(ctx)

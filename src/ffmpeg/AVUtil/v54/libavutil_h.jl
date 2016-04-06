@@ -705,7 +705,7 @@ const AVMEDIA_TYPE_NB = @compat Int32(5)
 # end enum AVMediaType
 
 # begin enum AVPictureType
-typealias AVPictureType Uint32
+typealias AVPictureType UInt32
 const AV_PICTURE_TYPE_NONE = @compat UInt32(0)
 const AV_PICTURE_TYPE_I = @compat UInt32(1)
 const AV_PICTURE_TYPE_P = @compat UInt32(2)
@@ -722,7 +722,7 @@ typealias AVBuffer Void
 
 immutable AVBufferRef
     buffer::Ptr{AVBuffer}
-    data::Ptr{Uint8}
+    data::Ptr{UInt8}
     size::Cint
 end
 
@@ -783,7 +783,7 @@ const AV_CH_LAYOUT_OCTAGONAL = ((AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_LEFT) | AV_CH
 const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
 
 # begin enum AVMatrixEncoding
-typealias AVMatrixEncoding Uint32
+typealias AVMatrixEncoding UInt32
 const AV_MATRIX_ENCODING_NONE = @compat UInt32(0)
 const AV_MATRIX_ENCODING_DOLBY = @compat UInt32(1)
 const AV_MATRIX_ENCODING_DPLII = @compat UInt32(2)
@@ -804,19 +804,19 @@ const AV_DICT_DONT_OVERWRITE = 16
 const AV_DICT_APPEND = 32
 
 immutable AVDictionaryEntry
-    key::Ptr{Uint8}
-    value::Ptr{Uint8}
+    key::Ptr{UInt8}
+    value::Ptr{UInt8}
 end
 
 typealias AVDictionary Void
 
 immutable AVFifoBuffer
-    buffer::Ptr{Uint8}
-    rptr::Ptr{Uint8}
-    wptr::Ptr{Uint8}
-    _end::Ptr{Uint8}
-    rndx::Uint32
-    wndx::Uint32
+    buffer::Ptr{UInt8}
+    rptr::Ptr{UInt8}
+    wptr::Ptr{UInt8}
+    _end::Ptr{UInt8}
+    rndx::UInt32
+    wndx::UInt32
 end
 
 const AV_NUM_DATA_POINTERS = 8
@@ -825,7 +825,7 @@ const FF_DECODE_ERROR_INVALID_BITSTREAM = 1
 const FF_DECODE_ERROR_MISSING_REFERENCE = 2
 
 # begin enum AVFrameSideDataType
-typealias AVFrameSideDataType Uint32
+typealias AVFrameSideDataType UInt32
 const AV_FRAME_DATA_PANSCAN = @compat UInt32(0)
 const AV_FRAME_DATA_A53_CC = @compat UInt32(1)
 const AV_FRAME_DATA_STEREO3D = @compat UInt32(2)
@@ -839,7 +839,7 @@ const AV_FRAME_DATA_SKIP_SAMPLES = @compat UInt32(9)
 # end enum AVFrameSideDataType
 
 # begin enum AVActiveFormatDescription
-typealias AVActiveFormatDescription Uint32
+typealias AVActiveFormatDescription UInt32
 const AV_AFD_SAME = @compat UInt32(8)
 const AV_AFD_4_3 = @compat UInt32(9)
 const AV_AFD_16_9 = @compat UInt32(10)
@@ -851,20 +851,20 @@ const AV_AFD_SP_4_3 = @compat UInt32(15)
 
 immutable AVFrameSideData
     _type::AVFrameSideDataType
-    data::Ptr{Uint8}
+    data::Ptr{UInt8}
     size::Cint
     metadata::Ptr{AVDictionary}
 end
 
 immutable Array_8_Ptr
-    d1::Ptr{Uint8}
-    d2::Ptr{Uint8}
-    d3::Ptr{Uint8}
-    d4::Ptr{Uint8}
-    d5::Ptr{Uint8}
-    d6::Ptr{Uint8}
-    d7::Ptr{Uint8}
-    d8::Ptr{Uint8}
+    d1::Ptr{UInt8}
+    d2::Ptr{UInt8}
+    d3::Ptr{UInt8}
+    d4::Ptr{UInt8}
+    d5::Ptr{UInt8}
+    d6::Ptr{UInt8}
+    d7::Ptr{UInt8}
+    d8::Ptr{UInt8}
 end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
@@ -890,20 +890,20 @@ end
 zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
 
 immutable Array_8_Uint64
-    d1::Uint64
-    d2::Uint64
-    d3::Uint64
-    d4::Uint64
-    d5::Uint64
-    d6::Uint64
-    d7::Uint64
-    d8::Uint64
+    d1::UInt64
+    d2::UInt64
+    d3::UInt64
+    d4::UInt64
+    d5::UInt64
+    d6::UInt64
+    d7::UInt64
+    d8::UInt64
 end
 
-zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(Uint64),8)...)
+zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(UInt64),8)...)
 
 # begin enum AVColorRange
-typealias AVColorRange Uint32
+typealias AVColorRange UInt32
 const AVCOL_RANGE_UNSPECIFIED = @compat UInt32(0)
 const AVCOL_RANGE_MPEG = @compat UInt32(1)
 const AVCOL_RANGE_JPEG = @compat UInt32(2)
@@ -911,7 +911,7 @@ const AVCOL_RANGE_NB = @compat UInt32(3)
 # end enum AVColorRange
 
 # begin enum AVColorPrimaries
-typealias AVColorPrimaries Uint32
+typealias AVColorPrimaries UInt32
 const AVCOL_PRI_RESERVED0 = @compat UInt32(0)
 const AVCOL_PRI_BT709 = @compat UInt32(1)
 const AVCOL_PRI_UNSPECIFIED = @compat UInt32(2)
@@ -926,7 +926,7 @@ const AVCOL_PRI_NB = @compat UInt32(10)
 # end enum AVColorPrimaries
 
 # begin enum AVColorTransferCharacteristic
-typealias AVColorTransferCharacteristic Uint32
+typealias AVColorTransferCharacteristic UInt32
 const AVCOL_TRC_RESERVED0 = @compat UInt32(0)
 const AVCOL_TRC_BT709 = @compat UInt32(1)
 const AVCOL_TRC_UNSPECIFIED = @compat UInt32(2)
@@ -947,7 +947,7 @@ const AVCOL_TRC_NB = @compat UInt32(16)
 # end enum AVColorTransferCharacteristic
 
 # begin enum AVColorSpace
-typealias AVColorSpace Uint32
+typealias AVColorSpace UInt32
 const AVCOL_SPC_RGB = @compat UInt32(0)
 const AVCOL_SPC_BT709 = @compat UInt32(1)
 const AVCOL_SPC_UNSPECIFIED = @compat UInt32(2)
@@ -963,7 +963,7 @@ const AVCOL_SPC_NB = @compat UInt32(11)
 # end enum AVColorSpace
 
 # begin enum AVChromaLocation
-typealias AVChromaLocation Uint32
+typealias AVChromaLocation UInt32
 const AVCHROMA_LOC_UNSPECIFIED = @compat UInt32(0)
 const AVCHROMA_LOC_LEFT = @compat UInt32(1)
 const AVCHROMA_LOC_CENTER = @compat UInt32(2)
@@ -977,7 +977,7 @@ const AVCHROMA_LOC_NB = @compat UInt32(7)
 immutable AVFrame
     data::Array_8_Ptr
     linesize::Array_8_Cint
-    extended_data::Ptr{Ptr{Uint8}}
+    extended_data::Ptr{Ptr{UInt8}}
     width::Cint
     height::Cint
     nb_samples::Cint
@@ -996,9 +996,9 @@ immutable AVFrame
     qscale_table::Ptr{Int8}
     qstride::Cint
     qscale_type::Cint
-    mbskip_table::Ptr{Uint8}
+    mbskip_table::Ptr{UInt8}
     motion_val::Array_2_Ptr
-    mb_type::Ptr{Uint32}
+    mb_type::Ptr{UInt32}
     dct_coeff::Ptr{Int16}
     ref_index::Array_2_Ptr
     opaque::Ptr{Void}
@@ -1014,9 +1014,9 @@ immutable AVFrame
     hwaccel_picture_private::Ptr{Void}
     owner::Ptr{Void}  #Ptr{AVCodecContext}
     thread_opaque::Ptr{Void}
-    motion_subsample_log2::Uint8
+    motion_subsample_log2::UInt8
     sample_rate::Cint
-    channel_layout::Uint64
+    channel_layout::UInt64
     buf::Array_8_Ptr
     extended_buf::Ptr{Ptr{AVBufferRef}}
     nb_extended_buf::Cint
@@ -1058,7 +1058,7 @@ const AV_LOG_SKIP_REPEATED = 1
 const AV_LOG_PRINT_LEVEL = 2
 
 # begin enum ANONYMOUS_1
-typealias ANONYMOUS_1 Uint32
+typealias ANONYMOUS_1 UInt32
 const AV_CLASS_CATEGORY_NA = @compat UInt32(0)
 const AV_CLASS_CATEGORY_INPUT = @compat UInt32(1)
 const AV_CLASS_CATEGORY_OUTPUT = @compat UInt32(2)
@@ -1080,7 +1080,7 @@ const AV_CLASS_CATEGORY_NB = @compat UInt32(46)
 # end enum ANONYMOUS_1
 
 # begin enum AVClassCategory
-typealias AVClassCategory Uint32
+typealias AVClassCategory UInt32
 const AV_CLASS_CATEGORY_NA = @compat UInt32(0)
 const AV_CLASS_CATEGORY_INPUT = @compat UInt32(1)
 const AV_CLASS_CATEGORY_OUTPUT = @compat UInt32(2)
@@ -1102,7 +1102,7 @@ const AV_CLASS_CATEGORY_NB = @compat UInt32(46)
 # end enum AVClassCategory
 
 immutable AVOptionRange
-    str::Ptr{Uint8}
+    str::Ptr{UInt8}
     value_min::Cdouble
     value_max::Cdouble
     component_min::Cdouble
@@ -1117,7 +1117,7 @@ immutable AVOptionRanges
 end
 
 # begin enum AVOptionType
-typealias AVOptionType Uint32
+typealias AVOptionType UInt32
 const AV_OPT_TYPE_FLAGS = @compat UInt32(0)
 const AV_OPT_TYPE_INT = @compat UInt32(1)
 const AV_OPT_TYPE_INT64 = @compat UInt32(2)
@@ -1147,19 +1147,19 @@ const FF_OPT_TYPE_CONST = @compat UInt32(128)
 # end enum AVOptionType
 
 immutable AVOption
-    name::Ptr{Uint8}
-    help::Ptr{Uint8}
+    name::Ptr{UInt8}
+    help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
     default_val::Void
     min::Cdouble
     max::Cdouble
     flags::Cint
-    unit::Ptr{Uint8}
+    unit::Ptr{UInt8}
 end
 
 immutable AVClass
-    class_name::Ptr{Uint8}
+    class_name::Ptr{UInt8}
     item_name::Ptr{Void}
     option::Ptr{AVOption}
     version::Cint
@@ -1201,11 +1201,11 @@ const FF_LOSS_COLORQUANT = 0x0010
 const FF_LOSS_CHROMA = 0x0020
 
 immutable AVComponentDescriptor
-    plane::Uint16
-    step_minus1::Uint16
-    offset_plus1::Uint16
-    shift::Uint16
-    depth_minus1::Uint16
+    plane::UInt16
+    step_minus1::UInt16
+    offset_plus1::UInt16
+    shift::UInt16
+    depth_minus1::UInt16
 end
 
 immutable Array_4_AVComponentDescriptor
@@ -1218,13 +1218,13 @@ end
 zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
 
 immutable AVPixFmtDescriptor
-    name::Ptr{Uint8}
-    nb_components::Uint8
-    log2_chroma_w::Uint8
-    log2_chroma_h::Uint8
-    flags::Uint8
+    name::Ptr{UInt8}
+    nb_components::UInt8
+    log2_chroma_w::UInt8
+    log2_chroma_h::UInt8
+    flags::UInt8
     comp::Array_4_AVComponentDescriptor
-    alias::Ptr{Uint8}
+    alias::Ptr{UInt8}
 end
 
 const AVPALETTE_SIZE = 1024
@@ -1523,7 +1523,7 @@ const PIX_FMT_NB = @compat Int32(317)
 const AV_PIX_FMT_XVMC = AV_PIX_FMT_XVMC_MPEG2_IDCT
 const AV_PIX_FMT_GBR24P = AV_PIX_FMT_GBRP
 
-macro AV_PIX_FMT_NE (be, le) 
+macro AV_PIX_FMT_NE(be, le) 
     symbol("AV_PIX_FMT_"*string(le))
 end
 
@@ -1672,7 +1672,7 @@ const LIBAVUTIL_VERSION_MICRO = 100
 typealias AVAudioFifo Void
 
 # begin enum AVDownmixType
-typealias AVDownmixType Uint32
+typealias AVDownmixType UInt32
 const AV_DOWNMIX_TYPE_UNKNOWN = @compat UInt32(0)
 const AV_DOWNMIX_TYPE_LORO = @compat UInt32(1)
 const AV_DOWNMIX_TYPE_LTRT = @compat UInt32(2)
@@ -1695,13 +1695,13 @@ typealias AVHashContext Void
 
 immutable AVMotionVector
     source::Int32
-    w::Uint8
-    h::Uint8
+    w::UInt8
+    h::UInt8
     src_x::Int16
     src_y::Int16
     dst_x::Int16
     dst_y::Int16
-    flags::Uint64
+    flags::UInt64
 end
 
 const AV_OPT_FLAG_ENCODING_PARAM = 1
@@ -1720,7 +1720,7 @@ const AV_OPT_MULTI_COMPONENT_RANGE = 0x1000
 # Skipping MacroDefinition: av_opt_set_int_list ( obj , name , val , term , flags ) ( av_int_list_length ( val , term ) > INT_MAX / sizeof ( * ( val ) ) ? AVERROR ( EINVAL ) : av_opt_set_bin ( obj , name , ( const uint8_t * ) ( val ) , av_int_list_length ( val , term ) * sizeof ( * ( val ) ) , flags ) )
 
 # begin enum ANONYMOUS_2
-typealias ANONYMOUS_2 Uint32
+typealias ANONYMOUS_2 UInt32
 const AV_OPT_FLAG_IMPLICIT_KEY = @compat UInt32(1)
 # end enum ANONYMOUS_2
 
@@ -1728,15 +1728,15 @@ typealias av_pixelutils_sad_fn Ptr{Void}
 
 immutable AVReplayGain
     track_gain::Int32
-    track_peak::Uint32
+    track_peak::UInt32
     album_gain::Int32
-    album_peak::Uint32
+    album_peak::UInt32
 end
 
 const AV_STEREO3D_FLAG_INVERT = 1 << 0
 
 # begin enum AVStereo3DType
-typealias AVStereo3DType Uint32
+typealias AVStereo3DType UInt32
 const AV_STEREO3D_2D = @compat UInt32(0)
 const AV_STEREO3D_SIDEBYSIDE = @compat UInt32(1)
 const AV_STEREO3D_TOPBOTTOM = @compat UInt32(2)
@@ -1755,14 +1755,14 @@ end
 typealias AVThreadMessageQueue Void
 
 # begin enum AVThreadMessageFlags
-typealias AVThreadMessageFlags Uint32
+typealias AVThreadMessageFlags UInt32
 const AV_THREAD_MESSAGE_NONBLOCK = @compat UInt32(1)
 # end enum AVThreadMessageFlags
 
 const AV_TIMECODE_STR_SIZE = 16
 
 # begin enum AVTimecodeFlag
-typealias AVTimecodeFlag Uint32
+typealias AVTimecodeFlag UInt32
 const AV_TIMECODE_FLAG_DROPFRAME = @compat UInt32(1)
 const AV_TIMECODE_FLAG_24HOURSMAX = @compat UInt32(2)
 const AV_TIMECODE_FLAG_ALLOWNEGATIVE = @compat UInt32(4)
@@ -1770,31 +1770,31 @@ const AV_TIMECODE_FLAG_ALLOWNEGATIVE = @compat UInt32(4)
 
 immutable AVTimecode
     start::Cint
-    flags::Uint32
+    flags::UInt32
     rate::AVRational
-    fps::Uint32
+    fps::UInt32
 end
 
 immutable Array_16_Uint32
-    d1::Uint32
-    d2::Uint32
-    d3::Uint32
-    d4::Uint32
-    d5::Uint32
-    d6::Uint32
-    d7::Uint32
-    d8::Uint32
-    d9::Uint32
-    d10::Uint32
-    d11::Uint32
-    d12::Uint32
-    d13::Uint32
-    d14::Uint32
-    d15::Uint32
-    d16::Uint32
+    d1::UInt32
+    d2::UInt32
+    d3::UInt32
+    d4::UInt32
+    d5::UInt32
+    d6::UInt32
+    d7::UInt32
+    d8::UInt32
+    d9::UInt32
+    d10::UInt32
+    d11::UInt32
+    d12::UInt32
+    d13::UInt32
+    d14::UInt32
+    d15::UInt32
+    d16::UInt32
 end
 
-zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(Uint32),16)...)
+zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(UInt32),16)...)
 
 immutable AVXTEA
     key::Array_16_Uint32

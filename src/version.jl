@@ -11,14 +11,14 @@ have_avfilter()   = Libdl.dlopen_e(libavfilter)   != C_NULL
 #have_avresample() = isdefined(:libavresample) && Libdl.dlopen_e(libavresample) != C_NULL
 #have_swresample() = isdefined(:libswresample) && Libdl.dlopen_e(libswresample) != C_NULL
 
-_avcodec_version()    = have_avcodec()    ? av_version(ccall((:avcodec_version,    libavcodec),    Uint32, ())) : v"0"
-_avformat_version()   = have_avformat()   ? av_version(ccall((:avformat_version,   libavformat),   Uint32, ())) : v"0"
-_avutil_version()     = have_avutil()     ? av_version(ccall((:avutil_version,     libavutil),     Uint32, ())) : v"0"
-_swscale_version()    = have_swscale()    ? av_version(ccall((:swscale_version,    libswscale),    Uint32, ())) : v"0"
-_avdevice_version()   = have_avdevice()   ? av_version(ccall((:avdevice_version,   libavdevice),   Uint32, ())) : v"0"
-_avfilter_version()   = have_avfilter()   ? av_version(ccall((:avfilter_version,   libavfilter),   Uint32, ())) : v"0"
-#_avresample_version() = have_avresample() ? av_version(ccall((:avresample_version, libavresample), Uint32, ())) : v"0"
-#_swresample_version() = have_swresample() ? av_version(ccall((:swresample_version, libswresample), Uint32, ())) : v"0"
+_avcodec_version()    = have_avcodec()    ? av_version(ccall((:avcodec_version,    libavcodec),    UInt32, ())) : v"0"
+_avformat_version()   = have_avformat()   ? av_version(ccall((:avformat_version,   libavformat),   UInt32, ())) : v"0"
+_avutil_version()     = have_avutil()     ? av_version(ccall((:avutil_version,     libavutil),     UInt32, ())) : v"0"
+_swscale_version()    = have_swscale()    ? av_version(ccall((:swscale_version,    libswscale),    UInt32, ())) : v"0"
+_avdevice_version()   = have_avdevice()   ? av_version(ccall((:avdevice_version,   libavdevice),   UInt32, ())) : v"0"
+_avfilter_version()   = have_avfilter()   ? av_version(ccall((:avfilter_version,   libavfilter),   UInt32, ())) : v"0"
+#_avresample_version() = have_avresample() ? av_version(ccall((:avresample_version, libavresample), UInt32, ())) : v"0"
+#_swresample_version() = have_swresample() ? av_version(ccall((:swresample_version, libswresample), UInt32, ())) : v"0"
 
 ffmpeg_or_libav = _avutil_version().patch >= 100 ? "ffmpeg" : "libav"
 
