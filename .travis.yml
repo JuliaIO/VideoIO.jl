@@ -1,22 +1,18 @@
-language: cpp
-compiler: 
-    - gcc
+# Documentation: http://docs.travis-ci.com/user/languages/julia/
+language: julia
+addons:
+  apt:
+    packages:
+    - imagemagick
+os:
+  - linux
+#  - osx
+julia:
+  - release
+  - nightly
 notifications:
-    email: false
-env:
-    - JULIAVERSION="juliareleases"
-    - JULIAVERSION="julianightlies"
-before_install:
-    - sudo add-apt-repository ppa:staticfloat/julia-deps -y
-    - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
-    - sudo apt-get update -qq -y
-    - sudo apt-get install git julia libavcodec53 libavformat53 libavutil51 libavfilter2 libavdevice53 libpostproc52 libswscale2 -y
-    - git config --global user.name "Travis User"
-    - git config --global user.email "travis@example.net"
-    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-script:
-    - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO", coverage=true)'
-after_success:
-    - julia -e 'cd(Pkg.dir("VideoIO")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-
-
+  email: false
+# uncomment the following lines to override the default test script
+#script:
+#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+#  - julia -e 'Pkg.clone(pwd()); Pkg.build("VideoIO2"); Pkg.test("VideoIO2"; coverage=true)'
