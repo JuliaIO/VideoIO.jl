@@ -14,7 +14,7 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 println(STDERR, "Testing file reading...")
 
 function notblank(img)
-    all(green(img) .== 0x00uf8) || all(blue(img) .== 0x00uf8) || all(red(img) .== 0x00uf8) || maximum(reinterpret(Ufixed8, img)) < 0xcfuf8
+    all(Images.green(img) .== 0x00uf8) || all(Images.blue(img) .== 0x00uf8) || all(Images.red(img) .== 0x00uf8) || maximum(reinterpret(Ufixed8, img)) < 0xcfuf8
 end
 
 for name in VideoIO.TestVideos.names()
