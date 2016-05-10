@@ -1,6 +1,8 @@
 using Base.Test
 using Compat
-using Images, FixedPointNumbers
+using FixedPointNumbers
+
+import Images: Image
 import VideoIO
 
 testdir = joinpath(Pkg.dir("VideoIO"), "test")
@@ -14,7 +16,7 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 println(STDERR, "Testing file reading...")
 
 function notblank(img)
-    all(Images.green(img) .== 0x00uf8) || all(Images.blue(img) .== 0x00uf8) || all(Images.red(img) .== 0x00uf8) || maximum(reinterpret(Ufixed8, img)) < 0xcfuf8
+    all(Images.green(img) .== 0x00uf8) || all(Images.blue(img) .== 0x00uf8) || all(Images.red(img) .== 0x00uf8) || maximum(reinterpret(UFixed8, img)) < 0xcfuf8
 end
 
 for name in VideoIO.TestVideos.names()
@@ -22,7 +24,7 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    first_frame = imread(first_frame_file) # comment line when creating png files
+    first_frame = Images.load(first_frame_file) # comment line when creating png files
 
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
@@ -64,7 +66,7 @@ for name in VideoIO.TestVideos.names()
 
     println(STDERR, "   Testing $name...")
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    first_frame = imread(first_frame_file) # comment line when creating png files
+    first_frame = Images.load(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
     v = VideoIO.openvideo(open(filename))
