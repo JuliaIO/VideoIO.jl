@@ -36,14 +36,14 @@ typealias AVFilterLink AVFilterLink
 typealias AVFilterPad AVFilterPad
 
 immutable Array_8_Ptr
-    d1::Ptr{Uint8}
-    d2::Ptr{Uint8}
-    d3::Ptr{Uint8}
-    d4::Ptr{Uint8}
-    d5::Ptr{Uint8}
-    d6::Ptr{Uint8}
-    d7::Ptr{Uint8}
-    d8::Ptr{Uint8}
+    d1::Ptr{UInt8}
+    d2::Ptr{UInt8}
+    d3::Ptr{UInt8}
+    d4::Ptr{UInt8}
+    d5::Ptr{UInt8}
+    d6::Ptr{UInt8}
+    d7::Ptr{UInt8}
+    d8::Ptr{UInt8}
 end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
@@ -64,7 +64,7 @@ zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 immutable AVFilterBuffer
     data::Array_8_Ptr
     linesize::Array_8_Cint
-    refcount::Uint32
+    refcount::UInt32
     priv::Ptr{Void}
     free::Ptr{Void}
     format::Cint
@@ -73,10 +73,10 @@ immutable AVFilterBuffer
 end
 
 immutable AVFilterBufferRefAudioProps
-    channel_layout::Uint64
+    channel_layout::UInt64
     nb_samples::Cint
     size::Cint
-    sample_rate::Uint32
+    sample_rate::UInt32
     planar::Cint
 end
 
@@ -104,31 +104,31 @@ immutable AVFilterBufferRef
 end
 
 immutable AVFilterFormats
-    format_count::Uint32
+    format_count::UInt32
     formats::Ptr{Cint}
-    refcount::Uint32
+    refcount::UInt32
     refs::Ptr{Ptr{Ptr{AVFilterFormats}}}
 end
 
 immutable AVFilter
-    name::Ptr{Uint8}
+    name::Ptr{UInt8}
     priv_size::Cint
     init::Ptr{Void}
     uninit::Ptr{Void}
     query_formats::Ptr{Void}
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
-    description::Ptr{Uint8}
+    description::Ptr{UInt8}
 end
 
 immutable AVFilterGraph
-    filter_count::Uint32
+    filter_count::UInt32
     filters::Ptr{Ptr{AVFilterContext}}
-    scale_sws_opts::Ptr{Uint8}
+    scale_sws_opts::Ptr{UInt8}
 end
 
 immutable AVFilterInOut
-    name::Ptr{Uint8}
+    name::Ptr{UInt8}
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint
     next::Ptr{AVFilterInOut}

@@ -16,7 +16,7 @@ function av_buffersrc_add_ref(buffer_src,picref,flags::Integer)
 end
 
 function av_buffersrc_get_nb_failed_requests(buffer_src)
-    ccall((:av_buffersrc_get_nb_failed_requests,libavfilter),Uint32,(Ptr{AVFilterContext},),buffer_src)
+    ccall((:av_buffersrc_get_nb_failed_requests,libavfilter),UInt32,(Ptr{AVFilterContext},),buffer_src)
 end
 
 function av_buffersrc_buffer(ctx,buf)

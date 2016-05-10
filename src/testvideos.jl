@@ -12,12 +12,12 @@ export testvideo
 videodir = joinpath(Pkg.dir("VideoIO", "videos"))
 
 type VideoFile{compression}
-    name::String
-    description::String
-    license::String
-    credit::String
-    source::String
-    download_url::String
+    name::AbstractString
+    description::AbstractString
+    license::AbstractString
+    credit::AbstractString
+    source::AbstractString
+    download_url::AbstractString
 end
 
 show(io::IO, v::VideoFile) = print(io, """\

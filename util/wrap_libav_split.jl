@@ -131,14 +131,14 @@ function rewrite_fn(e, fncall, body, use_strpack=false)
 
     global strpack_structs
 
-    # Add explicit conversions for Ptr & Uint32/Int32
+    # Add explicit conversions for Ptr & UInt32/Int32
     for call_arg in fncall.args[2:end]
         @match call_arg begin
             # Don't type Ptr{x} types
             Expr(:(::), [sym, Expr(:curly, [:Ptr, _], _)], _) => push!(parms, sym)
 
             # Type all integers as Integer
-            Expr(:(::), [sym, (:Uint32 || :Cuint || :Int32 || :Cint)], _) => (sym; push!(parms, :($sym::Integer)))
+            Expr(:(::), [sym, (:UInt32 || :Cuint || :Int32 || :Cint)], _) => (sym; push!(parms, :($sym::Integer)))
 
             # Everything else is unchanged
             _ => push!(parms, call_arg)
@@ -174,7 +174,7 @@ function rewrite_struct(e::Expr)
             Expr(:(::), [varname, vartype], _), if beginswith(string(vartype), "Array") end => 
                 begin
                     @match string(vartype) r"Array_([0-9]+)_(.*)"(size_str, type_str)
-                    size = int(size_str)
+                    size = Int(size_str)
                     t = symbol(type_str)
                     push!(new_vars, Expr(:(::), varname, :(Array{$t}($size))))
                 end

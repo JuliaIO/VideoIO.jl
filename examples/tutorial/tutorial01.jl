@@ -76,17 +76,17 @@ function show_vid(sample_file)
 
     # pFmtDesc = get_pix_fmt_descriptor_ptr(VideoIO.PIX_FMT_RGB24)
     # bits_per_pixel = VideoIO.av_get_bits_per_pixel(pFmtDesc)
-    # buffer = Array(Uint8, bits_per_pixel>>3, codecCtx.width, codecCtx.height)
+    # buffer = Array(UInt8, bits_per_pixel>>3, codecCtx.width, codecCtx.height)
 
     numBytes = VideoIO.avpicture_get_size(VideoIO.PIX_FMT_RGB24, width, height);
-    rgb_buffer = Array(Uint8, 3, width, height)
+    rgb_buffer = Array(UInt8, 3, width, height)
 
     sws_ctx = VideoIO.sws_getContext(width, height, pix_fmt, 
                                 width, height, VideoIO.PIX_FMT_RGB24,
                                 VideoIO.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
 
     VideoIO.avpicture_fill(aFrameRGB, rgb_buffer, VideoIO.PIX_FMT_RGB24, width, height)
-    apRGBData     = reinterpret(Ptr{Uint8}, [aFrameRGB[1].data])
+    apRGBData     = reinterpret(Ptr{UInt8}, [aFrameRGB[1].data])
     apRGBLinesize = reinterpret(Cint,       [aFrameRGB[1].linesize])
 
     aPacket = [VideoIO.AVPacket()]
@@ -106,7 +106,7 @@ function show_vid(sample_file)
                 #i%10 == 0 && 
                 println("finished frame $i")
 
-                apData     = reinterpret(Ptr{Uint8}, [aFrame[1].data])
+                apData     = reinterpret(Ptr{UInt8}, [aFrame[1].data])
                 apLinesize = reinterpret(Cint,       [aFrame[1].linesize])
 
                 # println(apRGBData)

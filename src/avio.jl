@@ -13,9 +13,9 @@ end
 abstract StreamContext
 
 if isdefined(Main, :ColorTypes)
-    typealias EightBitTypes Union(UInt8, Main.FixedPointNumbers.Ufixed8, Main.ColorTypes.RGB{Main.FixedPointNumbers.Ufixed8})
+    typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.UFixed8, Main.ColorTypes.RGB{Main.FixedPointNumbers.UFixed8}})
 elseif isdefined(Main, :FixedPointNumbers)
-    typealias EightBitTypes Union(UInt8, Main.FixedPointNumbers.Ufixed8)
+    typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.UFixed8})
 else
     typealias EightBitTypes UInt8
 end
@@ -25,7 +25,7 @@ type AVInput{I}
     io::I
     apFormatContext::Vector{Ptr{AVFormatContext}}
     apAVIOContext::Vector{Ptr{AVIOContext}}
-    avio_ctx_buffer_size::Uint
+    avio_ctx_buffer_size::UInt
     aPacket::Vector{AVPacket}           # Reusable packet
 
     unknown_info::Vector{StreamInfo}
@@ -204,7 +204,7 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
     nothing
 end
 
-function open_avinput(avin::AVInput, source::String, input_format=C_NULL)
+function open_avinput(avin::AVInput, source::AbstractString, input_format=C_NULL)
     if avformat_open_input(avin.apFormatContext,
                            source,
                            input_format,
@@ -215,7 +215,7 @@ function open_avinput(avin::AVInput, source::String, input_format=C_NULL)
     nothing
 end
 
-function AVInput{T<:Union(IO, String)}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
+function AVInput{T<:@compat(Union{IO, AbstractString})}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
 
     # Register all codecs and formats
     av_register_all()
@@ -364,7 +364,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     vr
 end
 
-VideoReader{T<:Union(IO, String)}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
+VideoReader{T<:@compat(Union{IO, AbstractString})}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
 
 function decode_packet(r::VideoReader, aPacket)
     # Do we already have a complete frame that hasn't been consumed?
@@ -481,7 +481,7 @@ end
 # Utility functions
 
 # Not exported
-open(filename::String) = AVInput(filename)
+open(filename::AbstractString) = AVInput(filename)
 openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
 read(r::VideoReader) = retrieve(r)
@@ -512,7 +512,7 @@ function seekstart(s::VideoReader, video_stream=1)
     return s
 end
 
-function seekstart{T<:String}(avin::AVInput{T}, video_stream = 1)
+function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
     # AVFormatContext
     fc = avin.apFormatContext[1]
 

@@ -73,11 +73,11 @@ function av_mallocz_array(nmemb::Csize_t,size::Csize_t)
 end
 
 function av_strdup(s)
-    ccall((:av_strdup,libavutil),Ptr{Uint8},(Ptr{Uint8},),s)
+    ccall((:av_strdup,libavutil),Ptr{UInt8},(Ptr{UInt8},),s)
 end
 
 function av_strndup(s,len::Csize_t)
-    ccall((:av_strndup,libavutil),Ptr{Uint8},(Ptr{Uint8},Csize_t),s,len)
+    ccall((:av_strndup,libavutil),Ptr{UInt8},(Ptr{UInt8},Csize_t),s,len)
 end
 
 function av_memdup(p,size::Csize_t)
@@ -97,7 +97,7 @@ function av_dynarray_add_nofree(tab_ptr,nb_ptr,elem)
 end
 
 function av_dynarray2_add(tab_ptr,nb_ptr,elem_size::Csize_t,elem_data)
-    ccall((:av_dynarray2_add,libavutil),Ptr{Void},(Ptr{Ptr{Void}},Ptr{Cint},Csize_t,Ptr{Uint8}),tab_ptr,nb_ptr,elem_size,elem_data)
+    ccall((:av_dynarray2_add,libavutil),Ptr{Void},(Ptr{Ptr{Void}},Ptr{Cint},Csize_t,Ptr{UInt8}),tab_ptr,nb_ptr,elem_size,elem_data)
 end
 
 function av_size_mult(a::Csize_t,b::Csize_t,r)
@@ -109,13 +109,13 @@ function av_max_alloc(max::Csize_t)
 end
 
 function av_memcpy_backptr(dst,back::Integer,cnt::Integer)
-    ccall((:av_memcpy_backptr,libavutil),Void,(Ptr{Uint8},Cint,Cint),dst,back,cnt)
+    ccall((:av_memcpy_backptr,libavutil),Void,(Ptr{UInt8},Cint,Cint),dst,back,cnt)
 end
 
 function av_fast_realloc(ptr,size,min_size::Csize_t)
-    ccall((:av_fast_realloc,libavutil),Ptr{Void},(Ptr{Void},Ptr{Uint32},Csize_t),ptr,size,min_size)
+    ccall((:av_fast_realloc,libavutil),Ptr{Void},(Ptr{Void},Ptr{UInt32},Csize_t),ptr,size,min_size)
 end
 
 function av_fast_malloc(ptr,size,min_size::Csize_t)
-    ccall((:av_fast_malloc,libavutil),Void,(Ptr{Void},Ptr{Uint32},Csize_t),ptr,size,min_size)
+    ccall((:av_fast_malloc,libavutil),Void,(Ptr{Void},Ptr{UInt32},Csize_t),ptr,size,min_size)
 end
