@@ -1,6 +1,7 @@
 # AVIO
 
 import Base: read, read!, show, close, eof, isopen, seekstart
+import Images
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
@@ -688,13 +689,14 @@ try
         global playvideo, viewcam, play
 
         function play(f, flip=false)
-            img = read(f, Main.Images.Image)
-            canvas, _ = Main.ImageView.view(img, flipx=flip, interactive=false)
-            buf = Main.Images.data(img)
+            img = read(f)
+            colim = Images.colorim(img)
+            canvas, _ = Main.ImageView.view(colim, flipx=flip, interactive=false)
 
             while !eof(f)
-                read!(f, buf)
-                Main.ImageView.view(canvas, img, flipx=flip, interactive=false)
+                read!(f, img)
+                colim = Images.colorim(img)
+                Main.ImageView.view(canvas, colim, flipx=flip, interactive=false)
                 sleep(1/f.framerate)
             end
         end
