@@ -39,7 +39,7 @@ function av_mallocz_array(nmemb::Csize_t,size::Csize_t)
 end
 
 function av_strdup(s)
-    ccall((:av_strdup,libavutil),Ptr{Uint8},(Ptr{Uint8},),s)
+    ccall((:av_strdup,libavutil),Ptr{UInt8},(Ptr{UInt8},),s)
 end
 
 function av_freep(ptr)
@@ -47,5 +47,5 @@ function av_freep(ptr)
 end
 
 function av_memcpy_backptr(dst,back::Integer,cnt::Integer)
-    ccall((:av_memcpy_backptr,libavutil),Void,(Ptr{Uint8},Cint,Cint),dst,back,cnt)
+    ccall((:av_memcpy_backptr,libavutil),Void,(Ptr{UInt8},Cint,Cint),dst,back,cnt)
 end

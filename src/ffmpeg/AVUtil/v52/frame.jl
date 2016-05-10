@@ -147,7 +147,7 @@ function av_frame_set_color_range(frame,val::AVColorRange)
 end
 
 function av_get_colorspace_name(val::AVColorSpace)
-    ccall((:av_get_colorspace_name,libavutil),Ptr{Uint8},(AVColorSpace,),val)
+    ccall((:av_get_colorspace_name,libavutil),Ptr{UInt8},(AVColorSpace,),val)
 end
 
 function av_frame_alloc()

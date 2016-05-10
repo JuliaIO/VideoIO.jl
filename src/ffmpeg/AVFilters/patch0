@@ -7,8 +7,8 @@ diff -rU 3 ../util/ffmpeg/AVFilter/v4/libavfilter_h.jl AVFilter/v4/libavfilter_h
  
 -type AVFilter
 +type AVFilter_
-     name::Ptr{Uint8}
-     description::Ptr{Uint8}
+     name::Ptr{UInt8}
+     description::Ptr{UInt8}
      inputs::Ptr{AVFilterPad}
 @@ -155,7 +155,7 @@
      uninit::Ptr{Void}

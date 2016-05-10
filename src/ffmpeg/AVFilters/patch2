@@ -16,8 +16,8 @@ diff -rU 3 ../util/ffmpeg/AVFilters/v4/libavfilter_h.jl AVFilters/v4/libavfilter
  
 -immutable AVFilter
 +immutable AVFilter_
-     name::Ptr{Uint8}
-     description::Ptr{Uint8}
+     name::Ptr{UInt8}
+     description::Ptr{UInt8}
      inputs::Ptr{AVFilterPad}
 @@ -157,7 +157,7 @@
      uninit::Ptr{Void}

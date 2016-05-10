@@ -19,7 +19,7 @@ export
 
 
 function av_fifo_alloc(size::Integer)
-    ccall((:av_fifo_alloc,libavutil),Ptr{AVFifoBuffer},(Uint32,),size)
+    ccall((:av_fifo_alloc,libavutil),Ptr{AVFifoBuffer},(UInt32,),size)
 end
 
 function av_fifo_alloc_array(nmemb::Csize_t,size::Csize_t)
@@ -55,11 +55,11 @@ function av_fifo_generic_write(f,src,size::Integer,func)
 end
 
 function av_fifo_realloc2(f,size::Integer)
-    ccall((:av_fifo_realloc2,libavutil),Cint,(Ptr{AVFifoBuffer},Uint32),f,size)
+    ccall((:av_fifo_realloc2,libavutil),Cint,(Ptr{AVFifoBuffer},UInt32),f,size)
 end
 
 function av_fifo_grow(f,additional_space::Integer)
-    ccall((:av_fifo_grow,libavutil),Cint,(Ptr{AVFifoBuffer},Uint32),f,additional_space)
+    ccall((:av_fifo_grow,libavutil),Cint,(Ptr{AVFifoBuffer},UInt32),f,additional_space)
 end
 
 function av_fifo_drain(f,size::Integer)
@@ -67,5 +67,5 @@ function av_fifo_drain(f,size::Integer)
 end
 
 function av_fifo_peek2(f,offs::Integer)
-    ccall((:av_fifo_peek2,libavutil),Ptr{Uint8},(Ptr{AVFifoBuffer},Cint),f,offs)
+    ccall((:av_fifo_peek2,libavutil),Ptr{UInt8},(Ptr{AVFifoBuffer},Cint),f,offs)
 end

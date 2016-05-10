@@ -40,7 +40,7 @@ function av_opt_set_defaults(s)
 end
 
 function av_set_options_string(ctx,opts,key_val_sep,pairs_sep)
-    ccall((:av_set_options_string,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Ptr{Uint8}),ctx,opts,key_val_sep,pairs_sep)
+    ccall((:av_set_options_string,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Ptr{UInt8},Ptr{UInt8}),ctx,opts,key_val_sep,pairs_sep)
 end
 
 function av_opt_free(obj)
@@ -48,7 +48,7 @@ function av_opt_free(obj)
 end
 
 function av_opt_flag_is_set(obj,field_name,flag_name)
-    ccall((:av_opt_flag_is_set,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Ptr{Uint8}),obj,field_name,flag_name)
+    ccall((:av_opt_flag_is_set,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Ptr{UInt8}),obj,field_name,flag_name)
 end
 
 function av_opt_set_dict(obj,options)
@@ -56,35 +56,35 @@ function av_opt_set_dict(obj,options)
 end
 
 function av_opt_eval_flags(obj,o,val,flags_out)
-    ccall((:av_opt_eval_flags,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{Uint8},Ptr{Cint}),obj,o,val,flags_out)
+    ccall((:av_opt_eval_flags,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{UInt8},Ptr{Cint}),obj,o,val,flags_out)
 end
 
 function av_opt_eval_int(obj,o,val,int_out)
-    ccall((:av_opt_eval_int,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{Uint8},Ptr{Cint}),obj,o,val,int_out)
+    ccall((:av_opt_eval_int,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{UInt8},Ptr{Cint}),obj,o,val,int_out)
 end
 
 function av_opt_eval_int64(obj,o,val,int64_out)
-    ccall((:av_opt_eval_int64,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{Uint8},Ptr{Int64}),obj,o,val,int64_out)
+    ccall((:av_opt_eval_int64,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{UInt8},Ptr{Int64}),obj,o,val,int64_out)
 end
 
 function av_opt_eval_float(obj,o,val,float_out)
-    ccall((:av_opt_eval_float,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{Uint8},Ptr{Cfloat}),obj,o,val,float_out)
+    ccall((:av_opt_eval_float,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{UInt8},Ptr{Cfloat}),obj,o,val,float_out)
 end
 
 function av_opt_eval_double(obj,o,val,double_out)
-    ccall((:av_opt_eval_double,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{Uint8},Ptr{Cdouble}),obj,o,val,double_out)
+    ccall((:av_opt_eval_double,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{UInt8},Ptr{Cdouble}),obj,o,val,double_out)
 end
 
 function av_opt_eval_q(obj,o,val,q_out)
-    ccall((:av_opt_eval_q,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{Uint8},Ptr{AVRational}),obj,o,val,q_out)
+    ccall((:av_opt_eval_q,libavutil),Cint,(Ptr{Void},Ptr{AVOption},Ptr{UInt8},Ptr{AVRational}),obj,o,val,q_out)
 end
 
 function av_opt_find(obj,name,unit,opt_flags::Integer,search_flags::Integer)
-    ccall((:av_opt_find,libavutil),Ptr{AVOption},(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Cint,Cint),obj,name,unit,opt_flags,search_flags)
+    ccall((:av_opt_find,libavutil),Ptr{AVOption},(Ptr{Void},Ptr{UInt8},Ptr{UInt8},Cint,Cint),obj,name,unit,opt_flags,search_flags)
 end
 
 function av_opt_find2(obj,name,unit,opt_flags::Integer,search_flags::Integer,target_obj)
-    ccall((:av_opt_find2,libavutil),Ptr{AVOption},(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Cint,Cint,Ptr{Ptr{Void}}),obj,name,unit,opt_flags,search_flags,target_obj)
+    ccall((:av_opt_find2,libavutil),Ptr{AVOption},(Ptr{Void},Ptr{UInt8},Ptr{UInt8},Cint,Cint,Ptr{Ptr{Void}}),obj,name,unit,opt_flags,search_flags,target_obj)
 end
 
 function av_opt_next(obj,prev)
@@ -100,37 +100,37 @@ function av_opt_child_class_next(parent,prev)
 end
 
 function av_opt_set(obj,name,val,search_flags::Integer)
-    ccall((:av_opt_set,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Cint),obj,name,val,search_flags)
+    ccall((:av_opt_set,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Ptr{UInt8},Cint),obj,name,val,search_flags)
 end
 
 function av_opt_set_int(obj,name,val::Int64,search_flags::Integer)
-    ccall((:av_opt_set_int,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Int64,Cint),obj,name,val,search_flags)
+    ccall((:av_opt_set_int,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Int64,Cint),obj,name,val,search_flags)
 end
 
 function av_opt_set_double(obj,name,val::Cdouble,search_flags::Integer)
-    ccall((:av_opt_set_double,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cdouble,Cint),obj,name,val,search_flags)
+    ccall((:av_opt_set_double,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Cdouble,Cint),obj,name,val,search_flags)
 end
 
 function av_opt_set_q(obj,name,val::AVRational,search_flags::Integer)
-    ccall((:av_opt_set_q,libavutil),Cint,(Ptr{Void},Ptr{Uint8},AVRational,Cint),obj,name,val,search_flags)
+    ccall((:av_opt_set_q,libavutil),Cint,(Ptr{Void},Ptr{UInt8},AVRational,Cint),obj,name,val,search_flags)
 end
 
 function av_opt_set_bin(obj,name,val,size::Integer,search_flags::Integer)
-    ccall((:av_opt_set_bin,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Ptr{Uint8},Cint,Cint),obj,name,val,size,search_flags)
+    ccall((:av_opt_set_bin,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Ptr{UInt8},Cint,Cint),obj,name,val,size,search_flags)
 end
 
 function av_opt_get(obj,name,search_flags::Integer,out_val)
-    ccall((:av_opt_get,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cint,Ptr{Ptr{Uint8}}),obj,name,search_flags,out_val)
+    ccall((:av_opt_get,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Cint,Ptr{Ptr{UInt8}}),obj,name,search_flags,out_val)
 end
 
 function av_opt_get_int(obj,name,search_flags::Integer,out_val)
-    ccall((:av_opt_get_int,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cint,Ptr{Int64}),obj,name,search_flags,out_val)
+    ccall((:av_opt_get_int,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Cint,Ptr{Int64}),obj,name,search_flags,out_val)
 end
 
 function av_opt_get_double(obj,name,search_flags::Integer,out_val)
-    ccall((:av_opt_get_double,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cint,Ptr{Cdouble}),obj,name,search_flags,out_val)
+    ccall((:av_opt_get_double,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Cint,Ptr{Cdouble}),obj,name,search_flags,out_val)
 end
 
 function av_opt_get_q(obj,name,search_flags::Integer,out_val)
-    ccall((:av_opt_get_q,libavutil),Cint,(Ptr{Void},Ptr{Uint8},Cint,Ptr{AVRational}),obj,name,search_flags,out_val)
+    ccall((:av_opt_get_q,libavutil),Cint,(Ptr{Void},Ptr{UInt8},Cint,Ptr{AVRational}),obj,name,search_flags,out_val)
 end

@@ -39,15 +39,15 @@ export
 
 
 function swscale_version()
-    ccall((:swscale_version,libswscale),Uint32,())
+    ccall((:swscale_version,libswscale),UInt32,())
 end
 
 function swscale_configuration()
-    ccall((:swscale_configuration,libswscale),Ptr{Uint8},())
+    ccall((:swscale_configuration,libswscale),Ptr{UInt8},())
 end
 
 function swscale_license()
-    ccall((:swscale_license,libswscale),Ptr{Uint8},())
+    ccall((:swscale_license,libswscale),Ptr{UInt8},())
 end
 
 function sws_getCoefficients(colorspace::Integer)
@@ -83,7 +83,7 @@ function sws_getContext(srcW::Integer,srcH::Integer,srcFormat::AVPixelFormat,dst
 end
 
 function sws_scale(c,srcSlice,srcStride,srcSliceY::Integer,srcSliceH::Integer,dst,dstStride)
-    ccall((:sws_scale,libswscale),Cint,(Ptr{SwsContext},Ptr{Ptr{Uint8}},Ptr{Cint},Cint,Cint,Ptr{Ptr{Uint8}},Ptr{Cint}),c,srcSlice,srcStride,srcSliceY,srcSliceH,dst,dstStride)
+    ccall((:sws_scale,libswscale),Cint,(Ptr{SwsContext},Ptr{Ptr{UInt8}},Ptr{Cint},Cint,Cint,Ptr{Ptr{UInt8}},Ptr{Cint}),c,srcSlice,srcStride,srcSliceY,srcSliceH,dst,dstStride)
 end
 
 function sws_setColorspaceDetails(c,inv_table,srcRange::Integer,table,dstRange::Integer,brightness::Integer,contrast::Integer,saturation::Integer)
@@ -159,11 +159,11 @@ function sws_getCachedContext(context,srcW::Integer,srcH::Integer,srcFormat::AVP
 end
 
 function sws_convertPalette8ToPacked32(src,dst,num_pixels::Integer,palette)
-    ccall((:sws_convertPalette8ToPacked32,libswscale),Void,(Ptr{Uint8},Ptr{Uint8},Cint,Ptr{Uint8}),src,dst,num_pixels,palette)
+    ccall((:sws_convertPalette8ToPacked32,libswscale),Void,(Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8}),src,dst,num_pixels,palette)
 end
 
 function sws_convertPalette8ToPacked24(src,dst,num_pixels::Integer,palette)
-    ccall((:sws_convertPalette8ToPacked24,libswscale),Void,(Ptr{Uint8},Ptr{Uint8},Cint,Ptr{Uint8}),src,dst,num_pixels,palette)
+    ccall((:sws_convertPalette8ToPacked24,libswscale),Void,(Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8}),src,dst,num_pixels,palette)
 end
 
 function sws_get_class()

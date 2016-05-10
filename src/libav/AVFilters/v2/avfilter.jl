@@ -59,15 +59,15 @@ export
 
 
 function avfilter_version()
-    ccall((:avfilter_version,libavfilter),Uint32,())
+    ccall((:avfilter_version,libavfilter),UInt32,())
 end
 
 function avfilter_configuration()
-    ccall((:avfilter_configuration,libavfilter),Ptr{Uint8},())
+    ccall((:avfilter_configuration,libavfilter),Ptr{UInt8},())
 end
 
 function avfilter_license()
-    ccall((:avfilter_license,libavfilter),Ptr{Uint8},())
+    ccall((:avfilter_license,libavfilter),Ptr{UInt8},())
 end
 
 function avfilter_copy_buffer_ref_props(dst,src)
@@ -138,8 +138,8 @@ function avfilter_default_get_video_buffer(link,perms::Integer,w::Integer,h::Int
     ccall((:avfilter_default_get_video_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,Cint,Cint),link,perms,w,h)
 end
 
-function avfilter_default_get_audio_buffer(link,perms::Integer,sample_fmt::AVSampleFormat,size::Integer,channel_layout::Uint64,planar::Integer)
-    ccall((:avfilter_default_get_audio_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,AVSampleFormat,Cint,Uint64,Cint),link,perms,sample_fmt,size,channel_layout,planar)
+function avfilter_default_get_audio_buffer(link,perms::Integer,sample_fmt::AVSampleFormat,size::Integer,channel_layout::UInt64,planar::Integer)
+    ccall((:avfilter_default_get_audio_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,AVSampleFormat,Cint,UInt64,Cint),link,perms,sample_fmt,size,channel_layout,planar)
 end
 
 function avfilter_set_common_formats(ctx,formats)
@@ -170,12 +170,12 @@ function avfilter_null_get_video_buffer(link,perms::Integer,w::Integer,h::Intege
     ccall((:avfilter_null_get_video_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,Cint,Cint),link,perms,w,h)
 end
 
-function avfilter_null_get_audio_buffer(link,perms::Integer,sample_fmt::AVSampleFormat,size::Integer,channel_layout::Uint64,planar::Integer)
-    ccall((:avfilter_null_get_audio_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,AVSampleFormat,Cint,Uint64,Cint),link,perms,sample_fmt,size,channel_layout,planar)
+function avfilter_null_get_audio_buffer(link,perms::Integer,sample_fmt::AVSampleFormat,size::Integer,channel_layout::UInt64,planar::Integer)
+    ccall((:avfilter_null_get_audio_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,AVSampleFormat,Cint,UInt64,Cint),link,perms,sample_fmt,size,channel_layout,planar)
 end
 
 function avfilter_link(src,srcpad::Integer,dst,dstpad::Integer)
-    ccall((:avfilter_link,libavfilter),Cint,(Ptr{AVFilterContext},Uint32,Ptr{AVFilterContext},Uint32),src,srcpad,dst,dstpad)
+    ccall((:avfilter_link,libavfilter),Cint,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterContext},UInt32),src,srcpad,dst,dstpad)
 end
 
 function avfilter_config_links(filter)
@@ -187,11 +187,11 @@ function avfilter_get_video_buffer(link,perms::Integer,w::Integer,h::Integer)
 end
 
 function avfilter_get_video_buffer_ref_from_arrays(data,linesize,perms::Integer,w::Integer,h::Integer,format::PixelFormat)
-    ccall((:avfilter_get_video_buffer_ref_from_arrays,libavfilter),Ptr{AVFilterBufferRef},(Ptr{Ptr{Uint8}},Ptr{Cint},Cint,Cint,Cint,PixelFormat),data,linesize,perms,w,h,format)
+    ccall((:avfilter_get_video_buffer_ref_from_arrays,libavfilter),Ptr{AVFilterBufferRef},(Ptr{Ptr{UInt8}},Ptr{Cint},Cint,Cint,Cint,PixelFormat),data,linesize,perms,w,h,format)
 end
 
-function avfilter_get_audio_buffer(link,perms::Integer,sample_fmt::AVSampleFormat,size::Integer,channel_layout::Uint64,planar::Integer)
-    ccall((:avfilter_get_audio_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,AVSampleFormat,Cint,Uint64,Cint),link,perms,sample_fmt,size,channel_layout,planar)
+function avfilter_get_audio_buffer(link,perms::Integer,sample_fmt::AVSampleFormat,size::Integer,channel_layout::UInt64,planar::Integer)
+    ccall((:avfilter_get_audio_buffer,libavfilter),Ptr{AVFilterBufferRef},(Ptr{AVFilterLink},Cint,AVSampleFormat,Cint,UInt64,Cint),link,perms,sample_fmt,size,channel_layout,planar)
 end
 
 function avfilter_request_frame(link)
@@ -231,7 +231,7 @@ function avfilter_register(filter)
 end
 
 function avfilter_get_by_name(name)
-    ccall((:avfilter_get_by_name,libavfilter),Ptr{AVFilter},(Ptr{Uint8},),name)
+    ccall((:avfilter_get_by_name,libavfilter),Ptr{AVFilter},(Ptr{UInt8},),name)
 end
 
 function av_filter_next(filter)
@@ -239,11 +239,11 @@ function av_filter_next(filter)
 end
 
 function avfilter_open(filter_ctx,filter,inst_name)
-    ccall((:avfilter_open,libavfilter),Cint,(Ptr{Ptr{AVFilterContext}},Ptr{AVFilter},Ptr{Uint8}),filter_ctx,filter,inst_name)
+    ccall((:avfilter_open,libavfilter),Cint,(Ptr{Ptr{AVFilterContext}},Ptr{AVFilter},Ptr{UInt8}),filter_ctx,filter,inst_name)
 end
 
 function avfilter_init_filter(filter,args,opaque)
-    ccall((:avfilter_init_filter,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{Uint8},Ptr{Void}),filter,args,opaque)
+    ccall((:avfilter_init_filter,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{UInt8},Ptr{Void}),filter,args,opaque)
 end
 
 function avfilter_free(filter)
@@ -251,19 +251,19 @@ function avfilter_free(filter)
 end
 
 function avfilter_insert_filter(link,filt,filt_srcpad_idx::Integer,filt_dstpad_idx::Integer)
-    ccall((:avfilter_insert_filter,libavfilter),Cint,(Ptr{AVFilterLink},Ptr{AVFilterContext},Uint32,Uint32),link,filt,filt_srcpad_idx,filt_dstpad_idx)
+    ccall((:avfilter_insert_filter,libavfilter),Cint,(Ptr{AVFilterLink},Ptr{AVFilterContext},UInt32,UInt32),link,filt,filt_srcpad_idx,filt_dstpad_idx)
 end
 
 function avfilter_insert_pad(idx::Integer,count,padidx_off::Csize_t,pads,links,newpad)
-    ccall((:avfilter_insert_pad,libavfilter),Void,(Uint32,Ptr{Uint32},Csize_t,Ptr{Ptr{AVFilterPad}},Ptr{Ptr{Ptr{AVFilterLink}}},Ptr{AVFilterPad}),idx,count,padidx_off,pads,links,newpad)
+    ccall((:avfilter_insert_pad,libavfilter),Void,(UInt32,Ptr{UInt32},Csize_t,Ptr{Ptr{AVFilterPad}},Ptr{Ptr{Ptr{AVFilterLink}}},Ptr{AVFilterPad}),idx,count,padidx_off,pads,links,newpad)
 end
 
 function avfilter_insert_inpad(f,index::Integer,p)
-    ccall((:avfilter_insert_inpad,libavfilter),Void,(Ptr{AVFilterContext},Uint32,Ptr{AVFilterPad}),f,index,p)
+    ccall((:avfilter_insert_inpad,libavfilter),Void,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterPad}),f,index,p)
 end
 
 function avfilter_insert_outpad(f,index::Integer,p)
-    ccall((:avfilter_insert_outpad,libavfilter),Void,(Ptr{AVFilterContext},Uint32,Ptr{AVFilterPad}),f,index,p)
+    ccall((:avfilter_insert_outpad,libavfilter),Void,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterPad}),f,index,p)
 end
 
 function avfilter_copy_frame_props(dst,src)

@@ -27,23 +27,23 @@ export
 
 
 function av_read_image_line(dst,data,linesize,desc,x::Integer,y::Integer,c::Integer,w::Integer,read_pal_component::Integer)
-    ccall((:av_read_image_line,libavutil),Void,(Ptr{Uint16},Ptr{Ptr{Uint8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint,Cint),dst,data,linesize,desc,x,y,c,w,read_pal_component)
+    ccall((:av_read_image_line,libavutil),Void,(Ptr{UInt16},Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint,Cint),dst,data,linesize,desc,x,y,c,w,read_pal_component)
 end
 
 function av_write_image_line(src,data,linesize,desc,x::Integer,y::Integer,c::Integer,w::Integer)
-    ccall((:av_write_image_line,libavutil),Void,(Ptr{Uint16},Ptr{Ptr{Uint8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint),src,data,linesize,desc,x,y,c,w)
+    ccall((:av_write_image_line,libavutil),Void,(Ptr{UInt16},Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint),src,data,linesize,desc,x,y,c,w)
 end
 
 function av_get_pix_fmt(name)
-    ccall((:av_get_pix_fmt,libavutil),Cint,(Ptr{Uint8},),name)
+    ccall((:av_get_pix_fmt,libavutil),Cint,(Ptr{UInt8},),name)
 end
 
 function av_get_pix_fmt_name(pix_fmt::AVPixelFormat)
-    ccall((:av_get_pix_fmt_name,libavutil),Ptr{Uint8},(AVPixelFormat,),pix_fmt)
+    ccall((:av_get_pix_fmt_name,libavutil),Ptr{UInt8},(AVPixelFormat,),pix_fmt)
 end
 
 function av_get_pix_fmt_string(buf,buf_size::Integer,pix_fmt::AVPixelFormat)
-    ccall((:av_get_pix_fmt_string,libavutil),Ptr{Uint8},(Ptr{Uint8},Cint,AVPixelFormat),buf,buf_size,pix_fmt)
+    ccall((:av_get_pix_fmt_string,libavutil),Ptr{UInt8},(Ptr{UInt8},Cint,AVPixelFormat),buf,buf_size,pix_fmt)
 end
 
 function av_get_bits_per_pixel(pixdesc)
@@ -91,21 +91,21 @@ function av_find_best_pix_fmt_of_2(dst_pix_fmt1::AVPixelFormat,dst_pix_fmt2::AVP
 end
 
 function av_color_range_name(range::AVColorRange)
-    ccall((:av_color_range_name,libavutil),Ptr{Uint8},(AVColorRange,),range)
+    ccall((:av_color_range_name,libavutil),Ptr{UInt8},(AVColorRange,),range)
 end
 
 function av_color_primaries_name(primaries::AVColorPrimaries)
-    ccall((:av_color_primaries_name,libavutil),Ptr{Uint8},(AVColorPrimaries,),primaries)
+    ccall((:av_color_primaries_name,libavutil),Ptr{UInt8},(AVColorPrimaries,),primaries)
 end
 
 function av_color_transfer_name(transfer::AVColorTransferCharacteristic)
-    ccall((:av_color_transfer_name,libavutil),Ptr{Uint8},(AVColorTransferCharacteristic,),transfer)
+    ccall((:av_color_transfer_name,libavutil),Ptr{UInt8},(AVColorTransferCharacteristic,),transfer)
 end
 
 function av_color_space_name(space::AVColorSpace)
-    ccall((:av_color_space_name,libavutil),Ptr{Uint8},(AVColorSpace,),space)
+    ccall((:av_color_space_name,libavutil),Ptr{UInt8},(AVColorSpace,),space)
 end
 
 function av_chroma_location_name(location::AVChromaLocation)
-    ccall((:av_chroma_location_name,libavutil),Ptr{Uint8},(AVChromaLocation,),location)
+    ccall((:av_chroma_location_name,libavutil),Ptr{UInt8},(AVChromaLocation,),location)
 end

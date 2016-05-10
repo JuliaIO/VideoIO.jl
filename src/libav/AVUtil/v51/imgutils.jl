@@ -27,25 +27,25 @@ function av_image_fill_linesizes(linesizes,pix_fmt::PixelFormat,width::Integer)
 end
 
 function av_image_fill_pointers(data,pix_fmt::PixelFormat,height::Integer,ptr,linesizes)
-    ccall((:av_image_fill_pointers,libavutil),Cint,(Ptr{Ptr{Uint8}},PixelFormat,Cint,Ptr{Uint8},Ptr{Cint}),data,pix_fmt,height,ptr,linesizes)
+    ccall((:av_image_fill_pointers,libavutil),Cint,(Ptr{Ptr{UInt8}},PixelFormat,Cint,Ptr{UInt8},Ptr{Cint}),data,pix_fmt,height,ptr,linesizes)
 end
 
 function av_image_alloc(pointers,linesizes,w::Integer,h::Integer,pix_fmt::PixelFormat,align::Integer)
-    ccall((:av_image_alloc,libavutil),Cint,(Ptr{Ptr{Uint8}},Ptr{Cint},Cint,Cint,PixelFormat,Cint),pointers,linesizes,w,h,pix_fmt,align)
+    ccall((:av_image_alloc,libavutil),Cint,(Ptr{Ptr{UInt8}},Ptr{Cint},Cint,Cint,PixelFormat,Cint),pointers,linesizes,w,h,pix_fmt,align)
 end
 
 function av_image_copy_plane(dst,dst_linesize::Integer,src,src_linesize::Integer,bytewidth::Integer,height::Integer)
-    ccall((:av_image_copy_plane,libavutil),Void,(Ptr{Uint8},Cint,Ptr{Uint8},Cint,Cint,Cint),dst,dst_linesize,src,src_linesize,bytewidth,height)
+    ccall((:av_image_copy_plane,libavutil),Void,(Ptr{UInt8},Cint,Ptr{UInt8},Cint,Cint,Cint),dst,dst_linesize,src,src_linesize,bytewidth,height)
 end
 
 function av_image_copy(dst_data,dst_linesizes,src_data,src_linesizes,pix_fmt::PixelFormat,width::Integer,height::Integer)
-    ccall((:av_image_copy,libavutil),Void,(Ptr{Ptr{Uint8}},Ptr{Cint},Ptr{Ptr{Uint8}},Ptr{Cint},PixelFormat,Cint,Cint),dst_data,dst_linesizes,src_data,src_linesizes,pix_fmt,width,height)
+    ccall((:av_image_copy,libavutil),Void,(Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{Ptr{UInt8}},Ptr{Cint},PixelFormat,Cint,Cint),dst_data,dst_linesizes,src_data,src_linesizes,pix_fmt,width,height)
 end
 
 function av_image_check_size(w::Integer,h::Integer,log_offset::Integer,log_ctx)
-    ccall((:av_image_check_size,libavutil),Cint,(Uint32,Uint32,Cint,Ptr{Void}),w,h,log_offset,log_ctx)
+    ccall((:av_image_check_size,libavutil),Cint,(UInt32,UInt32,Cint,Ptr{Void}),w,h,log_offset,log_ctx)
 end
 
 function ff_set_systematic_pal2(pal,pix_fmt::PixelFormat)
-    ccall((:ff_set_systematic_pal2,libavutil),Cint,(Ptr{Uint32},PixelFormat),pal,pix_fmt)
+    ccall((:ff_set_systematic_pal2,libavutil),Cint,(Ptr{UInt32},PixelFormat),pal,pix_fmt)
 end

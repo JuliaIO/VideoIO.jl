@@ -71,15 +71,15 @@ function av_append_packet(s,pkt,size::Integer)
 end
 
 function avformat_version()
-    ccall((:avformat_version,libavformat),Uint32,())
+    ccall((:avformat_version,libavformat),UInt32,())
 end
 
 function avformat_configuration()
-    ccall((:avformat_configuration,libavformat),Ptr{Uint8},())
+    ccall((:avformat_configuration,libavformat),Ptr{UInt8},())
 end
 
 function avformat_license()
-    ccall((:avformat_license,libavformat),Ptr{Uint8},())
+    ccall((:avformat_license,libavformat),Ptr{UInt8},())
 end
 
 function av_register_all()
@@ -131,7 +131,7 @@ function av_new_program(s,id::Integer)
 end
 
 function av_find_input_format(short_name)
-    ccall((:av_find_input_format,libavformat),Ptr{AVInputFormat},(Ptr{Uint8},),short_name)
+    ccall((:av_find_input_format,libavformat),Ptr{AVInputFormat},(Ptr{UInt8},),short_name)
 end
 
 function av_probe_input_format(pd,is_opened::Integer)
@@ -143,11 +143,11 @@ function av_probe_input_format2(pd,is_opened::Integer,score_max)
 end
 
 function av_probe_input_buffer(pb,fmt,filename,logctx,offset::Integer,max_probe_size::Integer)
-    ccall((:av_probe_input_buffer,libavformat),Cint,(Ptr{AVIOContext},Ptr{Ptr{AVInputFormat}},Ptr{Uint8},Ptr{Void},Uint32,Uint32),pb,fmt,filename,logctx,offset,max_probe_size)
+    ccall((:av_probe_input_buffer,libavformat),Cint,(Ptr{AVIOContext},Ptr{Ptr{AVInputFormat}},Ptr{UInt8},Ptr{Void},UInt32,UInt32),pb,fmt,filename,logctx,offset,max_probe_size)
 end
 
 function avformat_open_input(ps,filename,fmt,options)
-    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{Uint8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)
+    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{UInt8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)
 end
 
 function avformat_find_stream_info(ic,options)
@@ -211,19 +211,19 @@ function av_write_trailer(s)
 end
 
 function av_guess_format(short_name,filename,mime_type)
-    ccall((:av_guess_format,libavformat),Ptr{AVOutputFormat},(Ptr{Uint8},Ptr{Uint8},Ptr{Uint8}),short_name,filename,mime_type)
+    ccall((:av_guess_format,libavformat),Ptr{AVOutputFormat},(Ptr{UInt8},Ptr{UInt8},Ptr{UInt8}),short_name,filename,mime_type)
 end
 
 function av_guess_codec(fmt,short_name,filename,mime_type,_type::AVMediaType)
-    ccall((:av_guess_codec,libavformat),Cint,(Ptr{AVOutputFormat},Ptr{Uint8},Ptr{Uint8},Ptr{Uint8},AVMediaType),fmt,short_name,filename,mime_type,_type)
+    ccall((:av_guess_codec,libavformat),Cint,(Ptr{AVOutputFormat},Ptr{UInt8},Ptr{UInt8},Ptr{UInt8},AVMediaType),fmt,short_name,filename,mime_type,_type)
 end
 
 function av_hex_dump(f,buf,size::Integer)
-    ccall((:av_hex_dump,libavformat),Void,(Ptr{FILE},Ptr{Uint8},Cint),f,buf,size)
+    ccall((:av_hex_dump,libavformat),Void,(Ptr{FILE},Ptr{UInt8},Cint),f,buf,size)
 end
 
 function av_hex_dump_log(avcl,level::Integer,buf,size::Integer)
-    ccall((:av_hex_dump_log,libavformat),Void,(Ptr{Void},Cint,Ptr{Uint8},Cint),avcl,level,buf,size)
+    ccall((:av_hex_dump_log,libavformat),Void,(Ptr{Void},Cint,Ptr{UInt8},Cint),avcl,level,buf,size)
 end
 
 function av_pkt_dump2(f,pkt,dump_payload::Integer,st)
@@ -235,11 +235,11 @@ function av_pkt_dump_log2(avcl,level::Integer,pkt,dump_payload::Integer,st)
 end
 
 function av_codec_get_id(tags,tag::Integer)
-    ccall((:av_codec_get_id,libavformat),Cint,(Ptr{Ptr{AVCodecTag}},Uint32),tags,tag)
+    ccall((:av_codec_get_id,libavformat),Cint,(Ptr{Ptr{AVCodecTag}},UInt32),tags,tag)
 end
 
 function av_codec_get_tag(tags,id::AVCodecID)
-    ccall((:av_codec_get_tag,libavformat),Uint32,(Ptr{Ptr{AVCodecTag}},AVCodecID),tags,id)
+    ccall((:av_codec_get_tag,libavformat),UInt32,(Ptr{Ptr{AVCodecTag}},AVCodecID),tags,id)
 end
 
 function av_find_default_stream_index(s)
@@ -255,27 +255,27 @@ function av_add_index_entry(st,pos::Int64,timestamp::Int64,size::Integer,distanc
 end
 
 function av_url_split(proto,proto_size::Integer,authorization,authorization_size::Integer,hostname,hostname_size::Integer,port_ptr,path,path_size::Integer,url)
-    ccall((:av_url_split,libavformat),Void,(Ptr{Uint8},Cint,Ptr{Uint8},Cint,Ptr{Uint8},Cint,Ptr{Cint},Ptr{Uint8},Cint,Ptr{Uint8}),proto,proto_size,authorization,authorization_size,hostname,hostname_size,port_ptr,path,path_size,url)
+    ccall((:av_url_split,libavformat),Void,(Ptr{UInt8},Cint,Ptr{UInt8},Cint,Ptr{UInt8},Cint,Ptr{Cint},Ptr{UInt8},Cint,Ptr{UInt8}),proto,proto_size,authorization,authorization_size,hostname,hostname_size,port_ptr,path,path_size,url)
 end
 
 function av_dump_format(ic,index::Integer,url,is_output::Integer)
-    ccall((:av_dump_format,libavformat),Void,(Ptr{AVFormatContext},Cint,Ptr{Uint8},Cint),ic,index,url,is_output)
+    ccall((:av_dump_format,libavformat),Void,(Ptr{AVFormatContext},Cint,Ptr{UInt8},Cint),ic,index,url,is_output)
 end
 
 function av_get_frame_filename(buf,buf_size::Integer,path,number::Integer)
-    ccall((:av_get_frame_filename,libavformat),Cint,(Ptr{Uint8},Cint,Ptr{Uint8},Cint),buf,buf_size,path,number)
+    ccall((:av_get_frame_filename,libavformat),Cint,(Ptr{UInt8},Cint,Ptr{UInt8},Cint),buf,buf_size,path,number)
 end
 
 function av_filename_number_test(filename)
-    ccall((:av_filename_number_test,libavformat),Cint,(Ptr{Uint8},),filename)
+    ccall((:av_filename_number_test,libavformat),Cint,(Ptr{UInt8},),filename)
 end
 
 function av_sdp_create(ac,n_files::Integer,buf,size::Integer)
-    ccall((:av_sdp_create,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Cint,Ptr{Uint8},Cint),ac,n_files,buf,size)
+    ccall((:av_sdp_create,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Cint,Ptr{UInt8},Cint),ac,n_files,buf,size)
 end
 
 function av_match_ext(filename,extensions)
-    ccall((:av_match_ext,libavformat),Cint,(Ptr{Uint8},Ptr{Uint8}),filename,extensions)
+    ccall((:av_match_ext,libavformat),Cint,(Ptr{UInt8},Ptr{UInt8}),filename,extensions)
 end
 
 function avformat_query_codec(ofmt,codec_id::AVCodecID,std_compliance::Integer)

@@ -48,27 +48,27 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 +    codec::Ptr{AVCodec_}
      codec_name::Array_32_Uint8
      codec_id::AVCodecID
-     codec_tag::Uint32
+     codec_tag::UInt32
 @@ -2632,68 +2632,68 @@
  const AV_LOCK_DESTROY = @compat UInt32(3)
  # end enum AVLockOp
  
 -immutable vaapi_context
 -    display::Ptr{Void}
--    config_id::Uint32
--    context_id::Uint32
--    pic_param_buf_id::Uint32
--    iq_matrix_buf_id::Uint32
--    bitplane_buf_id::Uint32
--    slice_buf_ids::Ptr{Uint32}
--    n_slice_buf_ids::Uint32
--    slice_buf_ids_alloc::Uint32
+-    config_id::UInt32
+-    context_id::UInt32
+-    pic_param_buf_id::UInt32
+-    iq_matrix_buf_id::UInt32
+-    bitplane_buf_id::UInt32
+-    slice_buf_ids::Ptr{UInt32}
+-    n_slice_buf_ids::UInt32
+-    slice_buf_ids_alloc::UInt32
 -    slice_params::Ptr{Void}
--    slice_param_size::Uint32
--    slice_params_alloc::Uint32
--    slice_count::Uint32
--    slice_data::Ptr{Uint8}
--    slice_data_size::Uint32
+-    slice_param_size::UInt32
+-    slice_params_alloc::UInt32
+-    slice_count::UInt32
+-    slice_data::Ptr{UInt8}
+-    slice_data_size::UInt32
 -end
 -
 -const FF_VDPAU_STATE_USED_FOR_RENDER = 1
@@ -112,28 +112,28 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 -    p_surface::Ptr{XvMCSurface}
 -    p_past_surface::Ptr{XvMCSurface}
 -    p_future_surface::Ptr{XvMCSurface}
--    picture_structure::Uint32
--    flags::Uint32
+-    picture_structure::UInt32
+-    flags::UInt32
 -    start_mv_blocks_num::Cint
 -    filled_mv_blocks_num::Cint
 -    next_free_data_block_num::Cint
 -end
 +# immutable vaapi_context
 +#     display::Ptr{Void}
-+#     config_id::Uint32
-+#     context_id::Uint32
-+#     pic_param_buf_id::Uint32
-+#     iq_matrix_buf_id::Uint32
-+#     bitplane_buf_id::Uint32
-+#     slice_buf_ids::Ptr{Uint32}
-+#     n_slice_buf_ids::Uint32
-+#     slice_buf_ids_alloc::Uint32
++#     config_id::UInt32
++#     context_id::UInt32
++#     pic_param_buf_id::UInt32
++#     iq_matrix_buf_id::UInt32
++#     bitplane_buf_id::UInt32
++#     slice_buf_ids::Ptr{UInt32}
++#     n_slice_buf_ids::UInt32
++#     slice_buf_ids_alloc::UInt32
 +#     slice_params::Ptr{Void}
-+#     slice_param_size::Uint32
-+#     slice_params_alloc::Uint32
-+#     slice_count::Uint32
-+#     slice_data::Ptr{Uint8}
-+#     slice_data_size::Uint32
++#     slice_param_size::UInt32
++#     slice_params_alloc::UInt32
++#     slice_count::UInt32
++#     slice_data::Ptr{UInt8}
++#     slice_data_size::UInt32
 +# end
 +
 +# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
@@ -177,8 +177,8 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 +#     p_surface::Ptr{XvMCSurface}
 +#     p_past_surface::Ptr{XvMCSurface}
 +#     p_future_surface::Ptr{XvMCSurface}
-+#     picture_structure::Uint32
-+#     flags::Uint32
++#     picture_structure::UInt32
++#     flags::UInt32
 +#     start_mv_blocks_num::Cint
 +#     filled_mv_blocks_num::Cint
 +#     next_free_data_block_num::Cint

@@ -26,11 +26,11 @@ function av_buffer_allocz(size::Integer)
 end
 
 function av_buffer_create(data,size::Integer,free,opaque,flags::Integer)
-    ccall((:av_buffer_create,libavutil),Ptr{AVBufferRef},(Ptr{Uint8},Cint,Ptr{Void},Ptr{Void},Cint),data,size,free,opaque,flags)
+    ccall((:av_buffer_create,libavutil),Ptr{AVBufferRef},(Ptr{UInt8},Cint,Ptr{Void},Ptr{Void},Cint),data,size,free,opaque,flags)
 end
 
 function av_buffer_default_free(opaque,data)
-    ccall((:av_buffer_default_free,libavutil),Void,(Ptr{Void},Ptr{Uint8}),opaque,data)
+    ccall((:av_buffer_default_free,libavutil),Void,(Ptr{Void},Ptr{UInt8}),opaque,data)
 end
 
 function av_buffer_ref(buf)

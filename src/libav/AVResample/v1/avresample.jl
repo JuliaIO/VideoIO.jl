@@ -23,15 +23,15 @@ export
 
 
 function avresample_version()
-    ccall((:avresample_version,libavresample),Uint32,())
+    ccall((:avresample_version,libavresample),UInt32,())
 end
 
 function avresample_configuration()
-    ccall((:avresample_configuration,libavresample),Ptr{Uint8},())
+    ccall((:avresample_configuration,libavresample),Ptr{UInt8},())
 end
 
 function avresample_license()
-    ccall((:avresample_license,libavresample),Ptr{Uint8},())
+    ccall((:avresample_license,libavresample),Ptr{UInt8},())
 end
 
 function avresample_get_class()
@@ -54,8 +54,8 @@ function avresample_free(avr)
     ccall((:avresample_free,libavresample),Void,(Ptr{Ptr{AVAudioResampleContext}},),avr)
 end
 
-function avresample_build_matrix(in_layout::Uint64,out_layout::Uint64,center_mix_level::Cdouble,surround_mix_level::Cdouble,lfe_mix_level::Cdouble,normalize::Integer,matrix,stride::Integer,matrix_encoding::AVMatrixEncoding)
-    ccall((:avresample_build_matrix,libavresample),Cint,(Uint64,Uint64,Cdouble,Cdouble,Cdouble,Cint,Ptr{Cdouble},Cint,AVMatrixEncoding),in_layout,out_layout,center_mix_level,surround_mix_level,lfe_mix_level,normalize,matrix,stride,matrix_encoding)
+function avresample_build_matrix(in_layout::UInt64,out_layout::UInt64,center_mix_level::Cdouble,surround_mix_level::Cdouble,lfe_mix_level::Cdouble,normalize::Integer,matrix,stride::Integer,matrix_encoding::AVMatrixEncoding)
+    ccall((:avresample_build_matrix,libavresample),Cint,(UInt64,UInt64,Cdouble,Cdouble,Cdouble,Cint,Ptr{Cdouble},Cint,AVMatrixEncoding),in_layout,out_layout,center_mix_level,surround_mix_level,lfe_mix_level,normalize,matrix,stride,matrix_encoding)
 end
 
 function avresample_get_matrix(avr,matrix,stride::Integer)
@@ -75,7 +75,7 @@ function avresample_set_compensation(avr,sample_delta::Integer,compensation_dist
 end
 
 function avresample_convert(avr,output,out_plane_size::Integer,out_samples::Integer,input,in_plane_size::Integer,in_samples::Integer)
-    ccall((:avresample_convert,libavresample),Cint,(Ptr{AVAudioResampleContext},Ptr{Ptr{Uint8}},Cint,Cint,Ptr{Ptr{Uint8}},Cint,Cint),avr,output,out_plane_size,out_samples,input,in_plane_size,in_samples)
+    ccall((:avresample_convert,libavresample),Cint,(Ptr{AVAudioResampleContext},Ptr{Ptr{UInt8}},Cint,Cint,Ptr{Ptr{UInt8}},Cint,Cint),avr,output,out_plane_size,out_samples,input,in_plane_size,in_samples)
 end
 
 function avresample_get_delay(avr)
@@ -87,5 +87,5 @@ function avresample_available(avr)
 end
 
 function avresample_read(avr,output,nb_samples::Integer)
-    ccall((:avresample_read,libavresample),Cint,(Ptr{AVAudioResampleContext},Ptr{Ptr{Uint8}},Cint),avr,output,nb_samples)
+    ccall((:avresample_read,libavresample),Cint,(Ptr{AVAudioResampleContext},Ptr{Ptr{UInt8}},Cint),avr,output,nb_samples)
 end

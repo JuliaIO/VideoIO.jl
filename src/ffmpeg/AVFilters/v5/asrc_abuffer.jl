@@ -9,11 +9,11 @@ export
 
 
 function av_asrc_buffer_add_samples(abuffersrc,data,linesize,nb_samples::Integer,sample_rate::Integer,sample_fmt::Integer,ch_layout::Int64,planar::Integer,pts::Int64,flags::Integer)
-    ccall((:av_asrc_buffer_add_samples,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{Ptr{Uint8}},Ptr{Cint},Cint,Cint,Cint,Int64,Cint,Int64,Cint),abuffersrc,data,linesize,nb_samples,sample_rate,sample_fmt,ch_layout,planar,pts,flags)
+    ccall((:av_asrc_buffer_add_samples,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{Ptr{UInt8}},Ptr{Cint},Cint,Cint,Cint,Int64,Cint,Int64,Cint),abuffersrc,data,linesize,nb_samples,sample_rate,sample_fmt,ch_layout,planar,pts,flags)
 end
 
 function av_asrc_buffer_add_buffer(abuffersrc,buf,buf_size::Integer,sample_rate::Integer,sample_fmt::Integer,ch_layout::Int64,planar::Integer,pts::Int64,flags::Integer)
-    ccall((:av_asrc_buffer_add_buffer,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{Uint8},Cint,Cint,Cint,Int64,Cint,Int64,Cint),abuffersrc,buf,buf_size,sample_rate,sample_fmt,ch_layout,planar,pts,flags)
+    ccall((:av_asrc_buffer_add_buffer,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{UInt8},Cint,Cint,Cint,Int64,Cint,Int64,Cint),abuffersrc,buf,buf_size,sample_rate,sample_fmt,ch_layout,planar,pts,flags)
 end
 
 function av_asrc_buffer_add_audio_buffer_ref(abuffersrc,samplesref,flags::Integer)
