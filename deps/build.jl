@@ -1,4 +1,5 @@
 using BinDeps
+using Compat
 
 @BinDeps.setup
 
@@ -40,7 +41,7 @@ end
 
 
 # System Package Managers
-apt_packages = Dict(
+apt_packages = @compat Dict(
     "libavcodec-extra-53"   => libavcodec,
     "libavcodec53"          => libavcodec,
     "libavcodec-extra-54"   => libavcodec,
@@ -89,10 +90,10 @@ provides(AptGet,
          apt_packages)
 
 provides(Yum,
-         Dict("ffmpeg" => libav_libs))
+         @compat Dict("ffmpeg" => libav_libs))
 
 provides(Pacman,
-         Dict("ffmpeg" => libav_libs))
+         @compat Dict("ffmpeg" => libav_libs))
 
 provides(Sources,
          URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"),
@@ -100,7 +101,7 @@ provides(Sources,
 
 provides(BuildProcess, Autotools(configure_options=["--enable-gpl"]), libav_libs, os = :Unix)
 
-@BinDeps.install Dict(
+@BinDeps.install @compat Dict(
     :libavcodec => :libavcodec,
     :libavformat => :libavformat,
     :libavutil => :libavutil,
