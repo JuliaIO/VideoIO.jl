@@ -15,8 +15,18 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 println(STDERR, "Testing file reading...")
 
+if !isdefined(Main, :UFixed8)
+    UFixed8 = Ufixed8
+end
+
 function notblank(img)
     all(Images.green(img) .== 0x00uf8) || all(Images.blue(img) .== 0x00uf8) || all(Images.red(img) .== 0x00uf8) || maximum(reinterpret(UFixed8, img)) < 0xcfuf8
+end
+
+if isdefined(Images, :load)
+    imload = Images.load
+else
+    imload = Images.imread
 end
 
 for name in VideoIO.TestVideos.names()
@@ -24,7 +34,7 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    first_frame = Images.load(first_frame_file) # comment line when creating png files
+    first_frame = imload(first_frame_file) # comment line when creating png files
 
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
@@ -66,7 +76,7 @@ for name in VideoIO.TestVideos.names()
 
     println(STDERR, "   Testing $name...")
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    first_frame = Images.load(first_frame_file) # comment line when creating png files
+    first_frame = imload(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
     v = VideoIO.openvideo(open(filename))
