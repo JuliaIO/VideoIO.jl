@@ -15,7 +15,7 @@ if !isdefined(:ffmpeg_or_libav)
     include("version.jl")
 end
 
-av_load_path = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav)
+av_load_path = joinpath(dirname(@__FILE__), ffmpeg_or_libav)
 !(av_load_path in LOAD_PATH) && unshift!(LOAD_PATH, av_load_path)
 
 

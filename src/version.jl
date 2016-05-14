@@ -22,14 +22,14 @@ _avfilter_version()   = have_avfilter()   ? av_version(ccall((:avfilter_version,
 
 ffmpeg_or_libav = _avutil_version().patch >= 100 ? "ffmpeg" : "libav"
 
-avcodec_dir    = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVCodecs",   "v$(_avcodec_version().major)")
-avformat_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVFormat",   "v$(_avformat_version().major)")
-avutil_dir     = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVUtil",     "v$(_avutil_version().major)")
-swscale_dir    = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "SWScale",    "v$(_swscale_version().major)")
-avdevice_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVDevice",   "v$(_avdevice_version().major)")
-avfilter_dir   = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVFilters",  "v$(_avfilter_version().major)")
-#avresample_dir = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "AVResample", "v$(_avresample_version().major)")
-#swresample_dir = joinpath(Pkg.dir("VideoIO"), "src", ffmpeg_or_libav, "SWResample", "v$(_swresample_version().major)")
+avcodec_dir    = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVCodecs",   "v$(_avcodec_version().major)")
+avformat_dir   = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVFormat",   "v$(_avformat_version().major)")
+avutil_dir     = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVUtil",     "v$(_avutil_version().major)")
+swscale_dir    = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "SWScale",    "v$(_swscale_version().major)")
+avdevice_dir   = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVDevice",   "v$(_avdevice_version().major)")
+avfilter_dir   = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVFilters",  "v$(_avfilter_version().major)")
+#avresample_dir = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVResample", "v$(_avresample_version().major)")
+#swresample_dir = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "SWResample", "v$(_swresample_version().major)")
 
 function versioninfo()
     println("Using $ffmpeg_or_libav")

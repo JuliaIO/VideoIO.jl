@@ -9,7 +9,7 @@ import ZipFile
 import Base: download, show
 export testvideo
 
-videodir = joinpath(Pkg.dir("VideoIO", "videos"))
+videodir = joinpath(dirname(@__FILE__), "..", "videos")
 
 type VideoFile{compression}
     name::AbstractString
