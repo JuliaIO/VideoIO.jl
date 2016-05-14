@@ -5,8 +5,8 @@ using FixedPointNumbers
 import Images: Image
 import VideoIO
 
-testdir = joinpath(Pkg.dir("VideoIO"), "test")
-videodir = joinpath(Pkg.dir("VideoIO"), "videos")
+testdir = dirname(@__FILE__)
+videodir = joinpath(testdir, "..", "videos")
 
 VideoIO.TestVideos.available()
 VideoIO.TestVideos.download_all()

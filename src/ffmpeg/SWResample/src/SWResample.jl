@@ -1,5 +1,5 @@
 module SWResample
-  include(joinpath(Pkg.dir("VideoIO"),"src","init.jl"))
+  include(joinpath(dirname(@__FILE__),"..","..","..","init.jl"))
   w(f) = joinpath(swresample_dir, f)
 
   using AVUtil

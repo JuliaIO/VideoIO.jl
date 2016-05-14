@@ -624,7 +624,7 @@ if have_avdevice()
     end
 
     @windows_only begin
-        ffmpeg = joinpath(Pkg.dir("VideoIO"), "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
+        ffmpeg = joinpath(dirname(@__FILE__), "..", "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
         CAMERA_DEVICES = get_camera_devices(ffmpeg, "dshow", "dummy")
