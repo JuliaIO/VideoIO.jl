@@ -12,10 +12,18 @@ end
 
 abstract StreamContext
 
+if isdefined(Main, :FixedPointNumbers)
+    if isdefined(Main.FixedPointNumbers, :Ufixed8)
+        UFixed8 = Main.FixedPointNumbers.Ufixed8
+    else
+        UFixed8 = Main.FixedPointNumbers.UFixed8
+    end
+end
+
 if isdefined(Main, :ColorTypes)
-    typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.UFixed8, Main.ColorTypes.RGB{Main.FixedPointNumbers.UFixed8}})
+    typealias EightBitTypes @compat(Union{UInt8, UFixed8, Main.ColorTypes.RGB{UFixed8}})
 elseif isdefined(Main, :FixedPointNumbers)
-    typealias EightBitTypes @compat(Union{UInt8, Main.FixedPointNumbers.UFixed8})
+    typealias EightBitTypes @compat(Union{UInt8, UFixed8})
 else
     typealias EightBitTypes UInt8
 end

@@ -185,8 +185,8 @@ end
 
 # begin enum ANONYMOUS_1
 typealias ANONYMOUS_1 Cint
-const AVFILTER_AUTO_CONVERT_ALL = Int32(0)
-const AVFILTER_AUTO_CONVERT_NONE = Int32(-1)
+const AVFILTER_AUTO_CONVERT_ALL = @compat Int32(0)
+const AVFILTER_AUTO_CONVERT_NONE = @compat Int32(-1)
 # end enum ANONYMOUS_1
 
 immutable AVFilterInOut
