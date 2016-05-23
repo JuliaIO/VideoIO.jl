@@ -30,7 +30,7 @@ export
     AVFilterBufferRefAudioProps,
     AVFilterBufferRefVideoProps,
     AVFilterBufferRef,
-    AVFilter_,
+    AVFilter,
     AVFilterInternal,
     AVFilterGraphInternal,
     AVFilterGraph,
@@ -145,7 +145,7 @@ immutable AVFilterBufferRef
     metadata::Ptr{AVDictionary}
 end
 
-immutable AVFilter_
+immutable AVFilter
     name::Ptr{UInt8}
     description::Ptr{UInt8}
     inputs::Ptr{AVFilterPad}
@@ -157,7 +157,7 @@ immutable AVFilter_
     uninit::Ptr{Void}
     query_formats::Ptr{Void}
     priv_size::Cint
-    next::Ptr{AVFilter_}
+    next::Ptr{AVFilter}
     process_command::Ptr{Void}
     init_opaque::Ptr{Void}
 end

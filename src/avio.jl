@@ -284,7 +284,7 @@ end
 function VideoReader(avin::AVInput, video_stream=1;
                      transcode::Bool=true,
                      transcode_interpolation=SWS_BILINEAR,
-                     target_format=PIX_FMT_RGB24)
+                     target_format=AV_PIX_FMT_RGB24)
 
     1 <= video_stream <= length(avin.video_info) || error("video stream $video_stream not found")
 

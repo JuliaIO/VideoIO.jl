@@ -52,7 +52,7 @@ function show_vid(sample_file)
     if videoStream == -1
         error("Didn't find a video stream")
     end
-    
+
     # Get a pointer to the codec context for the video stream
     pCodecCtx = streams[videoStream].codec
     codecCtx = codecCtxs[videoStream]
@@ -74,25 +74,25 @@ function show_vid(sample_file)
     aFrame = [VideoIO.AVFrame()]
     aFrameRGB = [VideoIO.AVFrame()]
 
-    # pFmtDesc = get_pix_fmt_descriptor_ptr(VideoIO.PIX_FMT_RGB24)
+    # pFmtDesc = get_pix_fmt_descriptor_ptr(VideoIO.AV_PIX_FMT_RGB24)
     # bits_per_pixel = VideoIO.av_get_bits_per_pixel(pFmtDesc)
     # buffer = Array(UInt8, bits_per_pixel>>3, codecCtx.width, codecCtx.height)
 
-    numBytes = VideoIO.avpicture_get_size(VideoIO.PIX_FMT_RGB24, width, height);
+    numBytes = VideoIO.avpicture_get_size(VideoIO.AV_PIX_FMT_RGB24, width, height);
     rgb_buffer = Array(UInt8, 3, width, height)
 
-    sws_ctx = VideoIO.sws_getContext(width, height, pix_fmt, 
-                                width, height, VideoIO.PIX_FMT_RGB24,
+    sws_ctx = VideoIO.sws_getContext(width, height, pix_fmt,
+                                width, height, VideoIO.AV_PIX_FMT_RGB24,
                                 VideoIO.SWS_BILINEAR, C_NULL, C_NULL, C_NULL)
 
-    VideoIO.avpicture_fill(aFrameRGB, rgb_buffer, VideoIO.PIX_FMT_RGB24, width, height)
+    VideoIO.avpicture_fill(aFrameRGB, rgb_buffer, VideoIO.AV_PIX_FMT_RGB24, width, height)
     apRGBData     = reinterpret(Ptr{UInt8}, [aFrameRGB[1].data])
     apRGBLinesize = reinterpret(Cint,       [aFrameRGB[1].linesize])
 
     aPacket = [VideoIO.AVPacket()]
 
     aFrameFinished = Int32[0]
-    
+
     i = 0
     first = true
     while VideoIO.av_read_frame(pFormatCtx, aPacket) >= 0
@@ -103,7 +103,7 @@ function show_vid(sample_file)
             frameFinished = aFrameFinished[1]
             if frameFinished > 0
 
-                #i%10 == 0 && 
+                #i%10 == 0 &&
                 println("finished frame $i")
 
                 apData     = reinterpret(Ptr{UInt8}, [aFrame[1].data])
@@ -114,7 +114,7 @@ function show_vid(sample_file)
                 # println(pointer(rgb_buffer))
                 # println()
 
-                VideoIO.sws_scale(sws_ctx, 
+                VideoIO.sws_scale(sws_ctx,
                              apData,
                              apLinesize,
                              zero(Int32),
@@ -123,7 +123,7 @@ function show_vid(sample_file)
                              apRGBLinesize)
 
                 # println(rgb_buffer[1:20])
-                
+
                 img = Images.Image(rgb_buffer, {"colordim" => 1, "colorspace" => "RGB", "spatialorder" => ["x", "y"]})
 
                 if first

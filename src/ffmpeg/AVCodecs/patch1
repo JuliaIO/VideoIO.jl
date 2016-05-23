@@ -24,15 +24,6 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
  
  
  
-@@ -2240,7 +2240,7 @@
-     priv_class::Ptr{AVClass}
-     profiles::Ptr{AVProfile}
-     priv_data_size::Cint
--    next::Ptr{AVCodec}
-+    next::Ptr{AVCodec_}
-     init_thread_copy::Ptr{Void}
-     update_thread_context::Ptr{Void}
-     defaults::Ptr{AVCodecDefault}
 @@ -2267,13 +2267,13 @@
      decode_mb::Ptr{Void}
  end

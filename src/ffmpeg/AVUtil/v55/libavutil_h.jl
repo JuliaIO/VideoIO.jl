@@ -1,0 +1,1493 @@
+# Automatically generated using Clang.jl wrap_c, version 0.0.0
+
+using Compat
+import Base.zero
+
+
+export
+    OBJC_NEW_PROPERTIES,
+    AV_TIME_BASE,
+    AV_NOPTS_VALUE,
+    AVMediaType,
+    AVMEDIA_TYPE_UNKNOWN,
+    AVMEDIA_TYPE_VIDEO,
+    AVMEDIA_TYPE_AUDIO,
+    AVMEDIA_TYPE_DATA,
+    AVMEDIA_TYPE_SUBTITLE,
+    AVMEDIA_TYPE_ATTACHMENT,
+    AVMEDIA_TYPE_NB,
+    AVPictureType,
+    AV_PICTURE_TYPE_NONE,
+    AV_PICTURE_TYPE_I,
+    AV_PICTURE_TYPE_P,
+    AV_PICTURE_TYPE_B,
+    AV_PICTURE_TYPE_S,
+    AV_PICTURE_TYPE_SI,
+    AV_PICTURE_TYPE_SP,
+    AV_PICTURE_TYPE_BI,
+    AV_BUFFER_FLAG_READONLY,
+    AVBuffer,
+    AVBufferRef,
+    AVBufferPool,
+    AV_DICT_MATCH_CASE,
+    AV_DICT_IGNORE_SUFFIX,
+    AV_DICT_DONT_STRDUP_KEY,
+    AV_DICT_DONT_STRDUP_VAL,
+    AV_DICT_DONT_OVERWRITE,
+    AV_DICT_APPEND,
+    AVDictionaryEntry,
+    AVDictionary,
+    AVFifoBuffer,
+    AV_NUM_DATA_POINTERS,
+    AV_FRAME_FLAG_CORRUPT,
+    AVFrameSideDataType,
+    AV_FRAME_DATA_PANSCAN,
+    AV_FRAME_DATA_A53_CC,
+    AV_FRAME_DATA_STEREO3D,
+    AV_FRAME_DATA_MATRIXENCODING,
+    AV_FRAME_DATA_DOWNMIX_INFO,
+    AV_FRAME_DATA_REPLAYGAIN,
+    AV_FRAME_DATA_DISPLAYMATRIX,
+    AV_FRAME_DATA_AFD,
+    AV_FRAME_DATA_MOTION_VECTORS,
+    AV_FRAME_DATA_SKIP_SAMPLES,
+    AV_FRAME_DATA_AUDIO_SERVICE_TYPE,
+    AV_FRAME_DATA_MASTERING_DISPLAY_METADATA,
+    AV_FRAME_DATA_GOP_TIMECODE,
+    AVActiveFormatDescription,
+    AV_AFD_SAME,
+    AV_AFD_4_3,
+    AV_AFD_16_9,
+    AV_AFD_14_9,
+    AV_AFD_4_3_SP_14_9,
+    AV_AFD_16_9_SP_14_9,
+    AV_AFD_SP_4_3,
+    AVFrameSideData,
+    AVRational,
+    AVColorRange,
+    AVCOL_RANGE_UNSPECIFIED,
+    AVCOL_RANGE_MPEG,
+    AVCOL_RANGE_JPEG,
+    AVCOL_RANGE_NB,
+    AVColorPrimaries,
+    AVCOL_PRI_RESERVED0,
+    AVCOL_PRI_BT709,
+    AVCOL_PRI_UNSPECIFIED,
+    AVCOL_PRI_RESERVED,
+    AVCOL_PRI_BT470M,
+    AVCOL_PRI_BT470BG,
+    AVCOL_PRI_SMPTE170M,
+    AVCOL_PRI_SMPTE240M,
+    AVCOL_PRI_FILM,
+    AVCOL_PRI_BT2020,
+    AVCOL_PRI_SMPTEST428_1,
+    AVCOL_PRI_NB,
+    AVColorTransferCharacteristic,
+    AVCOL_TRC_RESERVED0,
+    AVCOL_TRC_BT709,
+    AVCOL_TRC_UNSPECIFIED,
+    AVCOL_TRC_RESERVED,
+    AVCOL_TRC_GAMMA22,
+    AVCOL_TRC_GAMMA28,
+    AVCOL_TRC_SMPTE170M,
+    AVCOL_TRC_SMPTE240M,
+    AVCOL_TRC_LINEAR,
+    AVCOL_TRC_LOG,
+    AVCOL_TRC_LOG_SQRT,
+    AVCOL_TRC_IEC61966_2_4,
+    AVCOL_TRC_BT1361_ECG,
+    AVCOL_TRC_IEC61966_2_1,
+    AVCOL_TRC_BT2020_10,
+    AVCOL_TRC_BT2020_12,
+    AVCOL_TRC_SMPTEST2084,
+    AVCOL_TRC_SMPTEST428_1,
+    AVCOL_TRC_NB,
+    AVColorSpace,
+    AVCOL_SPC_RGB,
+    AVCOL_SPC_BT709,
+    AVCOL_SPC_UNSPECIFIED,
+    AVCOL_SPC_RESERVED,
+    AVCOL_SPC_FCC,
+    AVCOL_SPC_BT470BG,
+    AVCOL_SPC_SMPTE170M,
+    AVCOL_SPC_SMPTE240M,
+    AVCOL_SPC_YCOCG,
+    AVCOL_SPC_BT2020_NCL,
+    AVCOL_SPC_BT2020_CL,
+    AVCOL_SPC_NB,
+    AVChromaLocation,
+    AVCHROMA_LOC_UNSPECIFIED,
+    AVCHROMA_LOC_LEFT,
+    AVCHROMA_LOC_CENTER,
+    AVCHROMA_LOC_TOPLEFT,
+    AVCHROMA_LOC_TOP,
+    AVCHROMA_LOC_BOTTOMLEFT,
+    AVCHROMA_LOC_BOTTOM,
+    AVCHROMA_LOC_NB,
+    AVFrame,
+    AV_LOG_QUIET,
+    AV_LOG_PANIC,
+    AV_LOG_FATAL,
+    AV_LOG_ERROR,
+    AV_LOG_WARNING,
+    AV_LOG_INFO,
+    AV_LOG_VERBOSE,
+    AV_LOG_DEBUG,
+    AV_LOG_TRACE,
+    AV_LOG_MAX_OFFSET,
+    AV_LOG_SKIP_REPEATED,
+    AV_LOG_PRINT_LEVEL,
+    ANONYMOUS_1,
+    AV_CLASS_CATEGORY_NA,
+    AV_CLASS_CATEGORY_INPUT,
+    AV_CLASS_CATEGORY_OUTPUT,
+    AV_CLASS_CATEGORY_MUXER,
+    AV_CLASS_CATEGORY_DEMUXER,
+    AV_CLASS_CATEGORY_ENCODER,
+    AV_CLASS_CATEGORY_DECODER,
+    AV_CLASS_CATEGORY_FILTER,
+    AV_CLASS_CATEGORY_BITSTREAM_FILTER,
+    AV_CLASS_CATEGORY_SWSCALER,
+    AV_CLASS_CATEGORY_SWRESAMPLER,
+    AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
+    AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT,
+    AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT,
+    AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT,
+    AV_CLASS_CATEGORY_DEVICE_OUTPUT,
+    AV_CLASS_CATEGORY_DEVICE_INPUT,
+    AV_CLASS_CATEGORY_NB,
+    AVClassCategory,
+    AV_CLASS_CATEGORY_NA,
+    AV_CLASS_CATEGORY_INPUT,
+    AV_CLASS_CATEGORY_OUTPUT,
+    AV_CLASS_CATEGORY_MUXER,
+    AV_CLASS_CATEGORY_DEMUXER,
+    AV_CLASS_CATEGORY_ENCODER,
+    AV_CLASS_CATEGORY_DECODER,
+    AV_CLASS_CATEGORY_FILTER,
+    AV_CLASS_CATEGORY_BITSTREAM_FILTER,
+    AV_CLASS_CATEGORY_SWSCALER,
+    AV_CLASS_CATEGORY_SWRESAMPLER,
+    AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
+    AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT,
+    AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT,
+    AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT,
+    AV_CLASS_CATEGORY_DEVICE_OUTPUT,
+    AV_CLASS_CATEGORY_DEVICE_INPUT,
+    AV_CLASS_CATEGORY_NB,
+    AVOptionRange,
+    AVOptionRanges,
+    AVOptionType,
+    AV_OPT_TYPE_FLAGS,
+    AV_OPT_TYPE_INT,
+    AV_OPT_TYPE_INT64,
+    AV_OPT_TYPE_DOUBLE,
+    AV_OPT_TYPE_FLOAT,
+    AV_OPT_TYPE_STRING,
+    AV_OPT_TYPE_RATIONAL,
+    AV_OPT_TYPE_BINARY,
+    AV_OPT_TYPE_DICT,
+    AV_OPT_TYPE_CONST,
+    AV_OPT_TYPE_IMAGE_SIZE,
+    AV_OPT_TYPE_PIXEL_FMT,
+    AV_OPT_TYPE_SAMPLE_FMT,
+    AV_OPT_TYPE_VIDEO_RATE,
+    AV_OPT_TYPE_DURATION,
+    AV_OPT_TYPE_COLOR,
+    AV_OPT_TYPE_CHANNEL_LAYOUT,
+    AV_OPT_TYPE_BOOL,
+    AVOption,
+    AVClass,
+    AV_PIX_FMT_FLAG_BE,
+    AV_PIX_FMT_FLAG_PAL,
+    AV_PIX_FMT_FLAG_BITSTREAM,
+    AV_PIX_FMT_FLAG_HWACCEL,
+    AV_PIX_FMT_FLAG_PLANAR,
+    AV_PIX_FMT_FLAG_RGB,
+    AV_PIX_FMT_FLAG_PSEUDOPAL,
+    AV_PIX_FMT_FLAG_ALPHA,
+    AVComponentDescriptor,
+    AVPixFmtDescriptor,
+    AVPALETTE_SIZE,
+    AVPALETTE_COUNT,
+    AVPixelFormat,
+    AV_PIX_FMT_NONE,
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUYV422,
+    AV_PIX_FMT_RGB24,
+    AV_PIX_FMT_BGR24,
+    AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_MONOWHITE,
+    AV_PIX_FMT_MONOBLACK,
+    AV_PIX_FMT_PAL8,
+    AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_XVMC_MPEG2_MC,
+    AV_PIX_FMT_XVMC_MPEG2_IDCT,
+    AV_PIX_FMT_UYVY422,
+    AV_PIX_FMT_UYYVYY411,
+    AV_PIX_FMT_BGR8,
+    AV_PIX_FMT_BGR4,
+    AV_PIX_FMT_BGR4_BYTE,
+    AV_PIX_FMT_RGB8,
+    AV_PIX_FMT_RGB4,
+    AV_PIX_FMT_RGB4_BYTE,
+    AV_PIX_FMT_NV12,
+    AV_PIX_FMT_NV21,
+    AV_PIX_FMT_ARGB,
+    AV_PIX_FMT_RGBA,
+    AV_PIX_FMT_ABGR,
+    AV_PIX_FMT_BGRA,
+    AV_PIX_FMT_GRAY16BE,
+    AV_PIX_FMT_GRAY16LE,
+    AV_PIX_FMT_YUV440P,
+    AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUVA420P,
+    AV_PIX_FMT_VDPAU_H264,
+    AV_PIX_FMT_VDPAU_MPEG1,
+    AV_PIX_FMT_VDPAU_MPEG2,
+    AV_PIX_FMT_VDPAU_WMV3,
+    AV_PIX_FMT_VDPAU_VC1,
+    AV_PIX_FMT_RGB48BE,
+    AV_PIX_FMT_RGB48LE,
+    AV_PIX_FMT_RGB565BE,
+    AV_PIX_FMT_RGB565LE,
+    AV_PIX_FMT_RGB555BE,
+    AV_PIX_FMT_RGB555LE,
+    AV_PIX_FMT_BGR565BE,
+    AV_PIX_FMT_BGR565LE,
+    AV_PIX_FMT_BGR555BE,
+    AV_PIX_FMT_BGR555LE,
+    AV_PIX_FMT_VAAPI_MOCO,
+    AV_PIX_FMT_VAAPI_IDCT,
+    AV_PIX_FMT_VAAPI_VLD,
+    AV_PIX_FMT_VAAPI,
+    AV_PIX_FMT_YUV420P16LE,
+    AV_PIX_FMT_YUV420P16BE,
+    AV_PIX_FMT_YUV422P16LE,
+    AV_PIX_FMT_YUV422P16BE,
+    AV_PIX_FMT_YUV444P16LE,
+    AV_PIX_FMT_YUV444P16BE,
+    AV_PIX_FMT_VDPAU_MPEG4,
+    AV_PIX_FMT_DXVA2_VLD,
+    AV_PIX_FMT_RGB444LE,
+    AV_PIX_FMT_RGB444BE,
+    AV_PIX_FMT_BGR444LE,
+    AV_PIX_FMT_BGR444BE,
+    AV_PIX_FMT_YA8,
+    AV_PIX_FMT_Y400A,
+    AV_PIX_FMT_GRAY8A,
+    AV_PIX_FMT_BGR48BE,
+    AV_PIX_FMT_BGR48LE,
+    AV_PIX_FMT_YUV420P9BE,
+    AV_PIX_FMT_YUV420P9LE,
+    AV_PIX_FMT_YUV420P10BE,
+    AV_PIX_FMT_YUV420P10LE,
+    AV_PIX_FMT_YUV422P10BE,
+    AV_PIX_FMT_YUV422P10LE,
+    AV_PIX_FMT_YUV444P9BE,
+    AV_PIX_FMT_YUV444P9LE,
+    AV_PIX_FMT_YUV444P10BE,
+    AV_PIX_FMT_YUV444P10LE,
+    AV_PIX_FMT_YUV422P9BE,
+    AV_PIX_FMT_YUV422P9LE,
+    AV_PIX_FMT_VDA_VLD,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_GBRP9BE,
+    AV_PIX_FMT_GBRP9LE,
+    AV_PIX_FMT_GBRP10BE,
+    AV_PIX_FMT_GBRP10LE,
+    AV_PIX_FMT_GBRP16BE,
+    AV_PIX_FMT_GBRP16LE,
+    AV_PIX_FMT_YUVA422P,
+    AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVA420P9BE,
+    AV_PIX_FMT_YUVA420P9LE,
+    AV_PIX_FMT_YUVA422P9BE,
+    AV_PIX_FMT_YUVA422P9LE,
+    AV_PIX_FMT_YUVA444P9BE,
+    AV_PIX_FMT_YUVA444P9LE,
+    AV_PIX_FMT_YUVA420P10BE,
+    AV_PIX_FMT_YUVA420P10LE,
+    AV_PIX_FMT_YUVA422P10BE,
+    AV_PIX_FMT_YUVA422P10LE,
+    AV_PIX_FMT_YUVA444P10BE,
+    AV_PIX_FMT_YUVA444P10LE,
+    AV_PIX_FMT_YUVA420P16BE,
+    AV_PIX_FMT_YUVA420P16LE,
+    AV_PIX_FMT_YUVA422P16BE,
+    AV_PIX_FMT_YUVA422P16LE,
+    AV_PIX_FMT_YUVA444P16BE,
+    AV_PIX_FMT_YUVA444P16LE,
+    AV_PIX_FMT_VDPAU,
+    AV_PIX_FMT_XYZ12LE,
+    AV_PIX_FMT_XYZ12BE,
+    AV_PIX_FMT_NV16,
+    AV_PIX_FMT_NV20LE,
+    AV_PIX_FMT_NV20BE,
+    AV_PIX_FMT_RGBA64BE,
+    AV_PIX_FMT_RGBA64LE,
+    AV_PIX_FMT_BGRA64BE,
+    AV_PIX_FMT_BGRA64LE,
+    AV_PIX_FMT_YVYU422,
+    AV_PIX_FMT_VDA,
+    AV_PIX_FMT_YA16BE,
+    AV_PIX_FMT_YA16LE,
+    AV_PIX_FMT_GBRAP,
+    AV_PIX_FMT_GBRAP16BE,
+    AV_PIX_FMT_GBRAP16LE,
+    AV_PIX_FMT_QSV,
+    AV_PIX_FMT_MMAL,
+    AV_PIX_FMT_D3D11VA_VLD,
+    AV_PIX_FMT_0RGB,
+    AV_PIX_FMT_RGB0,
+    AV_PIX_FMT_0BGR,
+    AV_PIX_FMT_BGR0,
+    AV_PIX_FMT_YUV420P12BE,
+    AV_PIX_FMT_YUV420P12LE,
+    AV_PIX_FMT_YUV420P14BE,
+    AV_PIX_FMT_YUV420P14LE,
+    AV_PIX_FMT_YUV422P12BE,
+    AV_PIX_FMT_YUV422P12LE,
+    AV_PIX_FMT_YUV422P14BE,
+    AV_PIX_FMT_YUV422P14LE,
+    AV_PIX_FMT_YUV444P12BE,
+    AV_PIX_FMT_YUV444P12LE,
+    AV_PIX_FMT_YUV444P14BE,
+    AV_PIX_FMT_YUV444P14LE,
+    AV_PIX_FMT_GBRP12BE,
+    AV_PIX_FMT_GBRP12LE,
+    AV_PIX_FMT_GBRP14BE,
+    AV_PIX_FMT_GBRP14LE,
+    AV_PIX_FMT_YUVJ411P,
+    AV_PIX_FMT_BAYER_BGGR8,
+    AV_PIX_FMT_BAYER_RGGB8,
+    AV_PIX_FMT_BAYER_GBRG8,
+    AV_PIX_FMT_BAYER_GRBG8,
+    AV_PIX_FMT_BAYER_BGGR16LE,
+    AV_PIX_FMT_BAYER_BGGR16BE,
+    AV_PIX_FMT_BAYER_RGGB16LE,
+    AV_PIX_FMT_BAYER_RGGB16BE,
+    AV_PIX_FMT_BAYER_GBRG16LE,
+    AV_PIX_FMT_BAYER_GBRG16BE,
+    AV_PIX_FMT_BAYER_GRBG16LE,
+    AV_PIX_FMT_BAYER_GRBG16BE,
+    AV_PIX_FMT_YUV440P10LE,
+    AV_PIX_FMT_YUV440P10BE,
+    AV_PIX_FMT_YUV440P12LE,
+    AV_PIX_FMT_YUV440P12BE,
+    AV_PIX_FMT_AYUV64LE,
+    AV_PIX_FMT_AYUV64BE,
+    AV_PIX_FMT_VIDEOTOOLBOX,
+    AV_PIX_FMT_P010LE,
+    AV_PIX_FMT_P010BE,
+    AV_PIX_FMT_NB,
+    AV_PIX_FMT_XVMC,
+    AV_PIX_FMT_GBR24P,
+    AVCOL_SPC_YCGCO,
+    AVSampleFormat,
+    AV_SAMPLE_FMT_NONE,
+    AV_SAMPLE_FMT_U8,
+    AV_SAMPLE_FMT_S16,
+    AV_SAMPLE_FMT_S32,
+    AV_SAMPLE_FMT_FLT,
+    AV_SAMPLE_FMT_DBL,
+    AV_SAMPLE_FMT_U8P,
+    AV_SAMPLE_FMT_S16P,
+    AV_SAMPLE_FMT_S32P,
+    AV_SAMPLE_FMT_FLTP,
+    AV_SAMPLE_FMT_DBLP,
+    AV_SAMPLE_FMT_NB,
+    LIBAVUTIL_VERSION_MAJOR,
+    LIBAVUTIL_VERSION_MINOR,
+    LIBAVUTIL_VERSION_MICRO,
+    LIBAVUTIL_BUILD,
+    AES_CTR_KEY_SIZE,
+    AES_CTR_IV_SIZE,
+    AVAESCTR,
+    AVAudioFifo,
+    AVCAMELLIA,
+    AVCAST5,
+    AV_CH_FRONT_LEFT,
+    AV_CH_FRONT_RIGHT,
+    AV_CH_FRONT_CENTER,
+    AV_CH_LOW_FREQUENCY,
+    AV_CH_BACK_LEFT,
+    AV_CH_BACK_RIGHT,
+    AV_CH_FRONT_LEFT_OF_CENTER,
+    AV_CH_FRONT_RIGHT_OF_CENTER,
+    AV_CH_BACK_CENTER,
+    AV_CH_SIDE_LEFT,
+    AV_CH_SIDE_RIGHT,
+    AV_CH_TOP_CENTER,
+    AV_CH_TOP_FRONT_LEFT,
+    AV_CH_TOP_FRONT_CENTER,
+    AV_CH_TOP_FRONT_RIGHT,
+    AV_CH_TOP_BACK_LEFT,
+    AV_CH_TOP_BACK_CENTER,
+    AV_CH_TOP_BACK_RIGHT,
+    AV_CH_STEREO_LEFT,
+    AV_CH_STEREO_RIGHT,
+    AV_CH_WIDE_LEFT,
+    AV_CH_WIDE_RIGHT,
+    AV_CH_SURROUND_DIRECT_LEFT,
+    AV_CH_SURROUND_DIRECT_RIGHT,
+    AV_CH_LOW_FREQUENCY_2,
+    AV_CH_LAYOUT_NATIVE,
+    AV_CH_LAYOUT_MONO,
+    AV_CH_LAYOUT_STEREO,
+    AV_CH_LAYOUT_2POINT1,
+    AV_CH_LAYOUT_2_1,
+    AV_CH_LAYOUT_SURROUND,
+    AV_CH_LAYOUT_3POINT1,
+    AV_CH_LAYOUT_4POINT0,
+    AV_CH_LAYOUT_4POINT1,
+    AV_CH_LAYOUT_2_2,
+    AV_CH_LAYOUT_QUAD,
+    AV_CH_LAYOUT_5POINT0,
+    AV_CH_LAYOUT_5POINT1,
+    AV_CH_LAYOUT_5POINT0_BACK,
+    AV_CH_LAYOUT_5POINT1_BACK,
+    AV_CH_LAYOUT_6POINT0,
+    AV_CH_LAYOUT_6POINT0_FRONT,
+    AV_CH_LAYOUT_HEXAGONAL,
+    AV_CH_LAYOUT_6POINT1,
+    AV_CH_LAYOUT_6POINT1_BACK,
+    AV_CH_LAYOUT_6POINT1_FRONT,
+    AV_CH_LAYOUT_7POINT0,
+    AV_CH_LAYOUT_7POINT0_FRONT,
+    AV_CH_LAYOUT_7POINT1,
+    AV_CH_LAYOUT_7POINT1_WIDE,
+    AV_CH_LAYOUT_7POINT1_WIDE_BACK,
+    AV_CH_LAYOUT_OCTAGONAL,
+    AV_CH_LAYOUT_HEXADECAGONAL,
+    AV_CH_LAYOUT_STEREO_DOWNMIX,
+    AVMatrixEncoding,
+    AV_MATRIX_ENCODING_NONE,
+    AV_MATRIX_ENCODING_DOLBY,
+    AV_MATRIX_ENCODING_DPLII,
+    AV_MATRIX_ENCODING_DPLIIX,
+    AV_MATRIX_ENCODING_DPLIIZ,
+    AV_MATRIX_ENCODING_DOLBYEX,
+    AV_MATRIX_ENCODING_DOLBYHEADPHONE,
+    AV_MATRIX_ENCODING_NB,
+    AVBPrint,
+    AVDES,
+    AVDownmixType,
+    AV_DOWNMIX_TYPE_UNKNOWN,
+    AV_DOWNMIX_TYPE_LORO,
+    AV_DOWNMIX_TYPE_LTRT,
+    AV_DOWNMIX_TYPE_DPLII,
+    AV_DOWNMIX_TYPE_NB,
+    AVDownmixInfo,
+    AV_HASH_MAX_SIZE,
+    AVHashContext,
+    AVMasteringDisplayMetadata,
+    AVMotionVector,
+    CL_USE_DEPRECATED_OPENCL_1_2_APIS,
+    AVOpenCLDeviceNode,
+    AVOpenCLPlatformNode,
+    AVOpenCLDeviceList,
+    AVOpenCLExternalEnv,
+    AV_OPT_FLAG_ENCODING_PARAM,
+    AV_OPT_FLAG_DECODING_PARAM,
+    AV_OPT_FLAG_METADATA,
+    AV_OPT_FLAG_AUDIO_PARAM,
+    AV_OPT_FLAG_VIDEO_PARAM,
+    AV_OPT_FLAG_SUBTITLE_PARAM,
+    AV_OPT_FLAG_EXPORT,
+    AV_OPT_FLAG_READONLY,
+    AV_OPT_FLAG_FILTERING_PARAM,
+    AV_OPT_SEARCH_CHILDREN,
+    AV_OPT_SEARCH_FAKE_OBJ,
+    AV_OPT_ALLOW_NULL,
+    AV_OPT_MULTI_COMPONENT_RANGE,
+    AV_OPT_SERIALIZE_SKIP_DEFAULTS,
+    AV_OPT_SERIALIZE_OPT_FLAGS_EXACT,
+    ANONYMOUS_2,
+    AV_OPT_FLAG_IMPLICIT_KEY,
+    av_pixelutils_sad_fn,
+    AVRC4,
+    AVReplayGain,
+    AV_STEREO3D_FLAG_INVERT,
+    AVStereo3DType,
+    AV_STEREO3D_2D,
+    AV_STEREO3D_SIDEBYSIDE,
+    AV_STEREO3D_TOPBOTTOM,
+    AV_STEREO3D_FRAMESEQUENCE,
+    AV_STEREO3D_CHECKERBOARD,
+    AV_STEREO3D_SIDEBYSIDE_QUINCUNX,
+    AV_STEREO3D_LINES,
+    AV_STEREO3D_COLUMNS,
+    AVStereo3D,
+    AVTEA,
+    AVThreadMessageQueue,
+    AVThreadMessageFlags,
+    AV_THREAD_MESSAGE_NONBLOCK,
+    AV_TIMECODE_STR_SIZE,
+    AVTimecodeFlag,
+    AV_TIMECODE_FLAG_DROPFRAME,
+    AV_TIMECODE_FLAG_24HOURSMAX,
+    AV_TIMECODE_FLAG_ALLOWNEGATIVE,
+    AVTimecode,
+    AVTreeNode,
+    AVTWOFISH,
+    AVXTEA
+
+
+const OBJC_NEW_PROPERTIES = 1
+const FF_LAMBDA_SHIFT = 7
+const FF_LAMBDA_SCALE = 1 << FF_LAMBDA_SHIFT
+const FF_QP2LAMBDA = 118
+const FF_LAMBDA_MAX = 256 * 128 - 1
+const FF_QUALITY_SCALE = FF_LAMBDA_SCALE
+
+const AV_NOPTS_VALUE = reinterpret(Int64, 0x8000000000000000)
+
+const AV_TIME_BASE = 1000000
+
+# Skipping MacroDefinition: AV_TIME_BASE_Q ( AVRational ) { 1 , AV_TIME_BASE }
+# Skipping MacroDefinition: av_int_list_length ( list , term ) av_int_list_length_for_size ( sizeof ( * ( list ) ) , list , term )
+
+# begin enum AVMediaType
+typealias AVMediaType Cint
+const AVMEDIA_TYPE_UNKNOWN = (Int32)(-1)
+const AVMEDIA_TYPE_VIDEO = (Int32)(0)
+const AVMEDIA_TYPE_AUDIO = (Int32)(1)
+const AVMEDIA_TYPE_DATA = (Int32)(2)
+const AVMEDIA_TYPE_SUBTITLE = (Int32)(3)
+const AVMEDIA_TYPE_ATTACHMENT = (Int32)(4)
+const AVMEDIA_TYPE_NB = (Int32)(5)
+# end enum AVMediaType
+
+# begin enum AVPictureType
+typealias AVPictureType UInt32
+const AV_PICTURE_TYPE_NONE = (UInt32)(0)
+const AV_PICTURE_TYPE_I = (UInt32)(1)
+const AV_PICTURE_TYPE_P = (UInt32)(2)
+const AV_PICTURE_TYPE_B = (UInt32)(3)
+const AV_PICTURE_TYPE_S = (UInt32)(4)
+const AV_PICTURE_TYPE_SI = (UInt32)(5)
+const AV_PICTURE_TYPE_SP = (UInt32)(6)
+const AV_PICTURE_TYPE_BI = (UInt32)(7)
+# end enum AVPictureType
+
+const AV_BUFFER_FLAG_READONLY = 1 << 0
+
+typealias AVBuffer Void
+
+immutable AVBufferRef
+    buffer::Ptr{AVBuffer}
+    data::Ptr{UInt8}
+    size::Cint
+end
+
+typealias AVBufferPool Void
+
+const AV_DICT_MATCH_CASE = 1
+const AV_DICT_IGNORE_SUFFIX = 2
+const AV_DICT_DONT_STRDUP_KEY = 4
+const AV_DICT_DONT_STRDUP_VAL = 8
+const AV_DICT_DONT_OVERWRITE = 16
+const AV_DICT_APPEND = 32
+
+immutable AVDictionaryEntry
+    key::Cstring
+    value::Cstring
+end
+
+typealias AVDictionary Void
+
+immutable AVFifoBuffer
+    buffer::Ptr{UInt8}
+    rptr::Ptr{UInt8}
+    wptr::Ptr{UInt8}
+    _end::Ptr{UInt8}
+    rndx::UInt32
+    wndx::UInt32
+end
+
+const AV_NUM_DATA_POINTERS = 8
+const AV_FRAME_FLAG_CORRUPT = 1 << 0
+const FF_DECODE_ERROR_INVALID_BITSTREAM = 1
+const FF_DECODE_ERROR_MISSING_REFERENCE = 2
+
+# begin enum AVFrameSideDataType
+typealias AVFrameSideDataType UInt32
+const AV_FRAME_DATA_PANSCAN = (UInt32)(0)
+const AV_FRAME_DATA_A53_CC = (UInt32)(1)
+const AV_FRAME_DATA_STEREO3D = (UInt32)(2)
+const AV_FRAME_DATA_MATRIXENCODING = (UInt32)(3)
+const AV_FRAME_DATA_DOWNMIX_INFO = (UInt32)(4)
+const AV_FRAME_DATA_REPLAYGAIN = (UInt32)(5)
+const AV_FRAME_DATA_DISPLAYMATRIX = (UInt32)(6)
+const AV_FRAME_DATA_AFD = (UInt32)(7)
+const AV_FRAME_DATA_MOTION_VECTORS = (UInt32)(8)
+const AV_FRAME_DATA_SKIP_SAMPLES = (UInt32)(9)
+const AV_FRAME_DATA_AUDIO_SERVICE_TYPE = (UInt32)(10)
+const AV_FRAME_DATA_MASTERING_DISPLAY_METADATA = (UInt32)(11)
+const AV_FRAME_DATA_GOP_TIMECODE = (UInt32)(12)
+# end enum AVFrameSideDataType
+
+# begin enum AVActiveFormatDescription
+typealias AVActiveFormatDescription UInt32
+const AV_AFD_SAME = (UInt32)(8)
+const AV_AFD_4_3 = (UInt32)(9)
+const AV_AFD_16_9 = (UInt32)(10)
+const AV_AFD_14_9 = (UInt32)(11)
+const AV_AFD_4_3_SP_14_9 = (UInt32)(13)
+const AV_AFD_16_9_SP_14_9 = (UInt32)(14)
+const AV_AFD_SP_4_3 = (UInt32)(15)
+# end enum AVActiveFormatDescription
+
+immutable AVFrameSideData
+    _type::AVFrameSideDataType
+    data::Ptr{UInt8}
+    size::Cint
+    metadata::Ptr{AVDictionary}
+    buf::Ptr{AVBufferRef}
+end
+
+immutable AVRational
+    num::Cint
+    den::Cint
+end
+
+# begin enum AVColorRange
+typealias AVColorRange UInt32
+const AVCOL_RANGE_UNSPECIFIED = (UInt32)(0)
+const AVCOL_RANGE_MPEG = (UInt32)(1)
+const AVCOL_RANGE_JPEG = (UInt32)(2)
+const AVCOL_RANGE_NB = (UInt32)(3)
+# end enum AVColorRange
+
+# begin enum AVColorPrimaries
+typealias AVColorPrimaries UInt32
+const AVCOL_PRI_RESERVED0 = (UInt32)(0)
+const AVCOL_PRI_BT709 = (UInt32)(1)
+const AVCOL_PRI_UNSPECIFIED = (UInt32)(2)
+const AVCOL_PRI_RESERVED = (UInt32)(3)
+const AVCOL_PRI_BT470M = (UInt32)(4)
+const AVCOL_PRI_BT470BG = (UInt32)(5)
+const AVCOL_PRI_SMPTE170M = (UInt32)(6)
+const AVCOL_PRI_SMPTE240M = (UInt32)(7)
+const AVCOL_PRI_FILM = (UInt32)(8)
+const AVCOL_PRI_BT2020 = (UInt32)(9)
+const AVCOL_PRI_SMPTEST428_1 = (UInt32)(10)
+const AVCOL_PRI_NB = (UInt32)(11)
+# end enum AVColorPrimaries
+
+# begin enum AVColorTransferCharacteristic
+typealias AVColorTransferCharacteristic UInt32
+const AVCOL_TRC_RESERVED0 = (UInt32)(0)
+const AVCOL_TRC_BT709 = (UInt32)(1)
+const AVCOL_TRC_UNSPECIFIED = (UInt32)(2)
+const AVCOL_TRC_RESERVED = (UInt32)(3)
+const AVCOL_TRC_GAMMA22 = (UInt32)(4)
+const AVCOL_TRC_GAMMA28 = (UInt32)(5)
+const AVCOL_TRC_SMPTE170M = (UInt32)(6)
+const AVCOL_TRC_SMPTE240M = (UInt32)(7)
+const AVCOL_TRC_LINEAR = (UInt32)(8)
+const AVCOL_TRC_LOG = (UInt32)(9)
+const AVCOL_TRC_LOG_SQRT = (UInt32)(10)
+const AVCOL_TRC_IEC61966_2_4 = (UInt32)(11)
+const AVCOL_TRC_BT1361_ECG = (UInt32)(12)
+const AVCOL_TRC_IEC61966_2_1 = (UInt32)(13)
+const AVCOL_TRC_BT2020_10 = (UInt32)(14)
+const AVCOL_TRC_BT2020_12 = (UInt32)(15)
+const AVCOL_TRC_SMPTEST2084 = (UInt32)(16)
+const AVCOL_TRC_SMPTEST428_1 = (UInt32)(17)
+const AVCOL_TRC_NB = (UInt32)(18)
+# end enum AVColorTransferCharacteristic
+
+# begin enum AVColorSpace
+typealias AVColorSpace UInt32
+const AVCOL_SPC_RGB = (UInt32)(0)
+const AVCOL_SPC_BT709 = (UInt32)(1)
+const AVCOL_SPC_UNSPECIFIED = (UInt32)(2)
+const AVCOL_SPC_RESERVED = (UInt32)(3)
+const AVCOL_SPC_FCC = (UInt32)(4)
+const AVCOL_SPC_BT470BG = (UInt32)(5)
+const AVCOL_SPC_SMPTE170M = (UInt32)(6)
+const AVCOL_SPC_SMPTE240M = (UInt32)(7)
+const AVCOL_SPC_YCOCG = (UInt32)(8)
+const AVCOL_SPC_BT2020_NCL = (UInt32)(9)
+const AVCOL_SPC_BT2020_CL = (UInt32)(10)
+const AVCOL_SPC_NB = (UInt32)(11)
+# end enum AVColorSpace
+
+# begin enum AVChromaLocation
+typealias AVChromaLocation UInt32
+const AVCHROMA_LOC_UNSPECIFIED = (UInt32)(0)
+const AVCHROMA_LOC_LEFT = (UInt32)(1)
+const AVCHROMA_LOC_CENTER = (UInt32)(2)
+const AVCHROMA_LOC_TOPLEFT = (UInt32)(3)
+const AVCHROMA_LOC_TOP = (UInt32)(4)
+const AVCHROMA_LOC_BOTTOMLEFT = (UInt32)(5)
+const AVCHROMA_LOC_BOTTOM = (UInt32)(6)
+const AVCHROMA_LOC_NB = (UInt32)(7)
+# end enum AVChromaLocation
+
+zero{N,P<:Ptr}(::Type{NTuple{N,P}}) = (N == 1 ? (C_NULL,) : (zero(NTuple{N-1,P})..., C_NULL))
+zero{N,T}(::Type{NTuple{N,T}}) = (N == 1 ? (zero(T),) : (zero(NTuple{N-1,T})..., zero(T)))
+
+immutable AVFrame
+    data::NTuple{8,Ptr{UInt8}}
+    linesize::NTuple{8,Cint}
+    extended_data::Ptr{Ptr{UInt8}}
+    width::Cint
+    height::Cint
+    nb_samples::Cint
+    format::Cint
+    key_frame::Cint
+    pict_type::AVPictureType
+    sample_aspect_ratio::AVRational
+    pts::Int64
+    pkt_pts::Int64
+    pkt_dts::Int64
+    coded_picture_number::Cint
+    display_picture_number::Cint
+    quality::Cint
+    opaque::Ptr{Void}
+    error::NTuple{8,UInt64}
+    repeat_pict::Cint
+    interlaced_frame::Cint
+    top_field_first::Cint
+    palette_has_changed::Cint
+    reordered_opaque::Int64
+    sample_rate::Cint
+    channel_layout::UInt64
+    buf::NTuple{8,Ptr{AVBufferRef}}
+    extended_buf::Ptr{Ptr{AVBufferRef}}
+    nb_extended_buf::Cint
+    side_data::Ptr{Ptr{AVFrameSideData}}
+    nb_side_data::Cint
+    flags::Cint
+    color_range::AVColorRange
+    color_primaries::AVColorPrimaries
+    color_trc::AVColorTransferCharacteristic
+    colorspace::AVColorSpace
+    chroma_location::AVChromaLocation
+    best_effort_timestamp::Int64
+    pkt_pos::Int64
+    pkt_duration::Int64
+    metadata::Ptr{AVDictionary}
+    decode_error_flags::Cint
+    channels::Cint
+    pkt_size::Cint
+    qscale_table::Ptr{Int8}
+    qstride::Cint
+    qscale_type::Cint
+    qp_table_buf::Ptr{AVBufferRef}
+end
+
+# Skipping MacroDefinition: AV_IS_INPUT_DEVICE ( category ) ( ( ( category ) == AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT ) || ( ( category ) == AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT ) || ( ( category ) == AV_CLASS_CATEGORY_DEVICE_INPUT ) )
+# Skipping MacroDefinition: AV_IS_OUTPUT_DEVICE ( category ) ( ( ( category ) == AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT ) || ( ( category ) == AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT ) || ( ( category ) == AV_CLASS_CATEGORY_DEVICE_OUTPUT ) )
+
+const AV_LOG_QUIET = -8
+const AV_LOG_PANIC = 0
+const AV_LOG_FATAL = 8
+const AV_LOG_ERROR = 16
+const AV_LOG_WARNING = 24
+const AV_LOG_INFO = 32
+const AV_LOG_VERBOSE = 40
+const AV_LOG_DEBUG = 48
+const AV_LOG_TRACE = 56
+const AV_LOG_MAX_OFFSET = AV_LOG_TRACE - AV_LOG_QUIET
+
+# Skipping MacroDefinition: AV_LOG_C ( x ) ( ( x ) << 8 )
+# Skipping MacroDefinition: av_dlog ( pctx , ... ) do { if ( 0 ) av_log ( pctx , AV_LOG_DEBUG , __VA_ARGS__ ) ; } while ( 0 )
+
+const AV_LOG_SKIP_REPEATED = 1
+const AV_LOG_PRINT_LEVEL = 2
+
+# begin enum ANONYMOUS_1
+typealias ANONYMOUS_1 UInt32
+const AV_CLASS_CATEGORY_NA = (UInt32)(0)
+const AV_CLASS_CATEGORY_INPUT = (UInt32)(1)
+const AV_CLASS_CATEGORY_OUTPUT = (UInt32)(2)
+const AV_CLASS_CATEGORY_MUXER = (UInt32)(3)
+const AV_CLASS_CATEGORY_DEMUXER = (UInt32)(4)
+const AV_CLASS_CATEGORY_ENCODER = (UInt32)(5)
+const AV_CLASS_CATEGORY_DECODER = (UInt32)(6)
+const AV_CLASS_CATEGORY_FILTER = (UInt32)(7)
+const AV_CLASS_CATEGORY_BITSTREAM_FILTER = (UInt32)(8)
+const AV_CLASS_CATEGORY_SWSCALER = (UInt32)(9)
+const AV_CLASS_CATEGORY_SWRESAMPLER = (UInt32)(10)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT = (UInt32)(40)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT = (UInt32)(41)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT = (UInt32)(42)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT = (UInt32)(43)
+const AV_CLASS_CATEGORY_DEVICE_OUTPUT = (UInt32)(44)
+const AV_CLASS_CATEGORY_DEVICE_INPUT = (UInt32)(45)
+const AV_CLASS_CATEGORY_NB = (UInt32)(46)
+# end enum ANONYMOUS_1
+
+# begin enum AVClassCategory
+typealias AVClassCategory UInt32
+const AV_CLASS_CATEGORY_NA = (UInt32)(0)
+const AV_CLASS_CATEGORY_INPUT = (UInt32)(1)
+const AV_CLASS_CATEGORY_OUTPUT = (UInt32)(2)
+const AV_CLASS_CATEGORY_MUXER = (UInt32)(3)
+const AV_CLASS_CATEGORY_DEMUXER = (UInt32)(4)
+const AV_CLASS_CATEGORY_ENCODER = (UInt32)(5)
+const AV_CLASS_CATEGORY_DECODER = (UInt32)(6)
+const AV_CLASS_CATEGORY_FILTER = (UInt32)(7)
+const AV_CLASS_CATEGORY_BITSTREAM_FILTER = (UInt32)(8)
+const AV_CLASS_CATEGORY_SWSCALER = (UInt32)(9)
+const AV_CLASS_CATEGORY_SWRESAMPLER = (UInt32)(10)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT = (UInt32)(40)
+const AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT = (UInt32)(41)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT = (UInt32)(42)
+const AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT = (UInt32)(43)
+const AV_CLASS_CATEGORY_DEVICE_OUTPUT = (UInt32)(44)
+const AV_CLASS_CATEGORY_DEVICE_INPUT = (UInt32)(45)
+const AV_CLASS_CATEGORY_NB = (UInt32)(46)
+# end enum AVClassCategory
+
+immutable AVOptionRange
+    str::Cstring
+    value_min::Cdouble
+    value_max::Cdouble
+    component_min::Cdouble
+    component_max::Cdouble
+    is_range::Cint
+end
+
+immutable AVOptionRanges
+    range::Ptr{Ptr{AVOptionRange}}
+    nb_ranges::Cint
+    nb_components::Cint
+end
+
+# begin enum AVOptionType
+typealias AVOptionType UInt32
+const AV_OPT_TYPE_FLAGS = (UInt32)(0)
+const AV_OPT_TYPE_INT = (UInt32)(1)
+const AV_OPT_TYPE_INT64 = (UInt32)(2)
+const AV_OPT_TYPE_DOUBLE = (UInt32)(3)
+const AV_OPT_TYPE_FLOAT = (UInt32)(4)
+const AV_OPT_TYPE_STRING = (UInt32)(5)
+const AV_OPT_TYPE_RATIONAL = (UInt32)(6)
+const AV_OPT_TYPE_BINARY = (UInt32)(7)
+const AV_OPT_TYPE_DICT = (UInt32)(8)
+const AV_OPT_TYPE_CONST = (UInt32)(128)
+const AV_OPT_TYPE_IMAGE_SIZE = (UInt32)(1397316165)
+const AV_OPT_TYPE_PIXEL_FMT = (UInt32)(1346784596)
+const AV_OPT_TYPE_SAMPLE_FMT = (UInt32)(1397116244)
+const AV_OPT_TYPE_VIDEO_RATE = (UInt32)(1448231252)
+const AV_OPT_TYPE_DURATION = (UInt32)(1146442272)
+const AV_OPT_TYPE_COLOR = (UInt32)(1129270354)
+const AV_OPT_TYPE_CHANNEL_LAYOUT = (UInt32)(1128811585)
+const AV_OPT_TYPE_BOOL = (UInt32)(1112493900)
+# end enum AVOptionType
+
+immutable AVOption
+    name::Cstring
+    help::Cstring
+    offset::Cint
+    _type::AVOptionType
+    default_val::Void
+    min::Cdouble
+    max::Cdouble
+    flags::Cint
+    unit::Cstring
+end
+
+immutable AVClass
+    class_name::Cstring
+    item_name::Ptr{Void}
+    option::Ptr{AVOption}
+    version::Cint
+    log_level_offset_offset::Cint
+    parent_log_context_offset::Cint
+    child_next::Ptr{Void}
+    child_class_next::Ptr{Void}
+    category::AVClassCategory
+    get_category::Ptr{Void}
+    query_ranges::Ptr{Void}
+end
+
+# Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v
+# Skipping MacroDefinition: DECLARE_ASM_CONST ( n , t , v ) static const t av_used __attribute__ ( ( aligned ( n ) ) ) v
+# Skipping MacroDefinition: av_malloc_attrib __attribute__ ( ( __malloc__ ) )
+# Skipping MacroDefinition: av_alloc_size ( ... )
+
+const AV_PIX_FMT_FLAG_BE = 1 << 0
+const AV_PIX_FMT_FLAG_PAL = 1 << 1
+const AV_PIX_FMT_FLAG_BITSTREAM = 1 << 2
+const AV_PIX_FMT_FLAG_HWACCEL = 1 << 3
+const AV_PIX_FMT_FLAG_PLANAR = 1 << 4
+const AV_PIX_FMT_FLAG_RGB = 1 << 5
+const AV_PIX_FMT_FLAG_PSEUDOPAL = 1 << 6
+const AV_PIX_FMT_FLAG_ALPHA = 1 << 7
+const FF_LOSS_RESOLUTION = 0x0001
+const FF_LOSS_DEPTH = 0x0002
+const FF_LOSS_COLORSPACE = 0x0004
+const FF_LOSS_ALPHA = 0x0008
+const FF_LOSS_COLORQUANT = 0x0010
+const FF_LOSS_CHROMA = 0x0020
+
+immutable AVComponentDescriptor
+    plane::Cint
+    step::Cint
+    offset::Cint
+    shift::Cint
+    depth::Cint
+    step_minus1::Cint
+    depth_minus1::Cint
+    offset_plus1::Cint
+end
+
+immutable AVPixFmtDescriptor
+    name::Cstring
+    nb_components::UInt8
+    log2_chroma_w::UInt8
+    log2_chroma_h::UInt8
+    flags::UInt64
+    comp::NTuple{4,AVComponentDescriptor}
+    alias::Cstring
+end
+
+const AVPALETTE_SIZE = 1024
+const AVPALETTE_COUNT = 256
+
+# begin enum AVPixelFormat
+typealias AVPixelFormat Cint
+const AV_PIX_FMT_NONE = (Int32)(-1)
+const AV_PIX_FMT_YUV420P = (Int32)(0)
+const AV_PIX_FMT_YUYV422 = (Int32)(1)
+const AV_PIX_FMT_RGB24 = (Int32)(2)
+const AV_PIX_FMT_BGR24 = (Int32)(3)
+const AV_PIX_FMT_YUV422P = (Int32)(4)
+const AV_PIX_FMT_YUV444P = (Int32)(5)
+const AV_PIX_FMT_YUV410P = (Int32)(6)
+const AV_PIX_FMT_YUV411P = (Int32)(7)
+const AV_PIX_FMT_GRAY8 = (Int32)(8)
+const AV_PIX_FMT_MONOWHITE = (Int32)(9)
+const AV_PIX_FMT_MONOBLACK = (Int32)(10)
+const AV_PIX_FMT_PAL8 = (Int32)(11)
+const AV_PIX_FMT_YUVJ420P = (Int32)(12)
+const AV_PIX_FMT_YUVJ422P = (Int32)(13)
+const AV_PIX_FMT_YUVJ444P = (Int32)(14)
+const AV_PIX_FMT_XVMC_MPEG2_MC = (Int32)(15)
+const AV_PIX_FMT_XVMC_MPEG2_IDCT = (Int32)(16)
+const AV_PIX_FMT_UYVY422 = (Int32)(17)
+const AV_PIX_FMT_UYYVYY411 = (Int32)(18)
+const AV_PIX_FMT_BGR8 = (Int32)(19)
+const AV_PIX_FMT_BGR4 = (Int32)(20)
+const AV_PIX_FMT_BGR4_BYTE = (Int32)(21)
+const AV_PIX_FMT_RGB8 = (Int32)(22)
+const AV_PIX_FMT_RGB4 = (Int32)(23)
+const AV_PIX_FMT_RGB4_BYTE = (Int32)(24)
+const AV_PIX_FMT_NV12 = (Int32)(25)
+const AV_PIX_FMT_NV21 = (Int32)(26)
+const AV_PIX_FMT_ARGB = (Int32)(27)
+const AV_PIX_FMT_RGBA = (Int32)(28)
+const AV_PIX_FMT_ABGR = (Int32)(29)
+const AV_PIX_FMT_BGRA = (Int32)(30)
+const AV_PIX_FMT_GRAY16BE = (Int32)(31)
+const AV_PIX_FMT_GRAY16LE = (Int32)(32)
+const AV_PIX_FMT_YUV440P = (Int32)(33)
+const AV_PIX_FMT_YUVJ440P = (Int32)(34)
+const AV_PIX_FMT_YUVA420P = (Int32)(35)
+const AV_PIX_FMT_VDPAU_H264 = (Int32)(36)
+const AV_PIX_FMT_VDPAU_MPEG1 = (Int32)(37)
+const AV_PIX_FMT_VDPAU_MPEG2 = (Int32)(38)
+const AV_PIX_FMT_VDPAU_WMV3 = (Int32)(39)
+const AV_PIX_FMT_VDPAU_VC1 = (Int32)(40)
+const AV_PIX_FMT_RGB48BE = (Int32)(41)
+const AV_PIX_FMT_RGB48LE = (Int32)(42)
+const AV_PIX_FMT_RGB565BE = (Int32)(43)
+const AV_PIX_FMT_RGB565LE = (Int32)(44)
+const AV_PIX_FMT_RGB555BE = (Int32)(45)
+const AV_PIX_FMT_RGB555LE = (Int32)(46)
+const AV_PIX_FMT_BGR565BE = (Int32)(47)
+const AV_PIX_FMT_BGR565LE = (Int32)(48)
+const AV_PIX_FMT_BGR555BE = (Int32)(49)
+const AV_PIX_FMT_BGR555LE = (Int32)(50)
+const AV_PIX_FMT_VAAPI_MOCO = (Int32)(51)
+const AV_PIX_FMT_VAAPI_IDCT = (Int32)(52)
+const AV_PIX_FMT_VAAPI_VLD = (Int32)(53)
+const AV_PIX_FMT_VAAPI = (Int32)(53)
+const AV_PIX_FMT_YUV420P16LE = (Int32)(54)
+const AV_PIX_FMT_YUV420P16BE = (Int32)(55)
+const AV_PIX_FMT_YUV422P16LE = (Int32)(56)
+const AV_PIX_FMT_YUV422P16BE = (Int32)(57)
+const AV_PIX_FMT_YUV444P16LE = (Int32)(58)
+const AV_PIX_FMT_YUV444P16BE = (Int32)(59)
+const AV_PIX_FMT_VDPAU_MPEG4 = (Int32)(60)
+const AV_PIX_FMT_DXVA2_VLD = (Int32)(61)
+const AV_PIX_FMT_RGB444LE = (Int32)(62)
+const AV_PIX_FMT_RGB444BE = (Int32)(63)
+const AV_PIX_FMT_BGR444LE = (Int32)(64)
+const AV_PIX_FMT_BGR444BE = (Int32)(65)
+const AV_PIX_FMT_YA8 = (Int32)(66)
+const AV_PIX_FMT_Y400A = (Int32)(66)
+const AV_PIX_FMT_GRAY8A = (Int32)(66)
+const AV_PIX_FMT_BGR48BE = (Int32)(67)
+const AV_PIX_FMT_BGR48LE = (Int32)(68)
+const AV_PIX_FMT_YUV420P9BE = (Int32)(69)
+const AV_PIX_FMT_YUV420P9LE = (Int32)(70)
+const AV_PIX_FMT_YUV420P10BE = (Int32)(71)
+const AV_PIX_FMT_YUV420P10LE = (Int32)(72)
+const AV_PIX_FMT_YUV422P10BE = (Int32)(73)
+const AV_PIX_FMT_YUV422P10LE = (Int32)(74)
+const AV_PIX_FMT_YUV444P9BE = (Int32)(75)
+const AV_PIX_FMT_YUV444P9LE = (Int32)(76)
+const AV_PIX_FMT_YUV444P10BE = (Int32)(77)
+const AV_PIX_FMT_YUV444P10LE = (Int32)(78)
+const AV_PIX_FMT_YUV422P9BE = (Int32)(79)
+const AV_PIX_FMT_YUV422P9LE = (Int32)(80)
+const AV_PIX_FMT_VDA_VLD = (Int32)(81)
+const AV_PIX_FMT_GBRP = (Int32)(82)
+const AV_PIX_FMT_GBRP9BE = (Int32)(83)
+const AV_PIX_FMT_GBRP9LE = (Int32)(84)
+const AV_PIX_FMT_GBRP10BE = (Int32)(85)
+const AV_PIX_FMT_GBRP10LE = (Int32)(86)
+const AV_PIX_FMT_GBRP16BE = (Int32)(87)
+const AV_PIX_FMT_GBRP16LE = (Int32)(88)
+const AV_PIX_FMT_YUVA422P = (Int32)(89)
+const AV_PIX_FMT_YUVA444P = (Int32)(90)
+const AV_PIX_FMT_YUVA420P9BE = (Int32)(91)
+const AV_PIX_FMT_YUVA420P9LE = (Int32)(92)
+const AV_PIX_FMT_YUVA422P9BE = (Int32)(93)
+const AV_PIX_FMT_YUVA422P9LE = (Int32)(94)
+const AV_PIX_FMT_YUVA444P9BE = (Int32)(95)
+const AV_PIX_FMT_YUVA444P9LE = (Int32)(96)
+const AV_PIX_FMT_YUVA420P10BE = (Int32)(97)
+const AV_PIX_FMT_YUVA420P10LE = (Int32)(98)
+const AV_PIX_FMT_YUVA422P10BE = (Int32)(99)
+const AV_PIX_FMT_YUVA422P10LE = (Int32)(100)
+const AV_PIX_FMT_YUVA444P10BE = (Int32)(101)
+const AV_PIX_FMT_YUVA444P10LE = (Int32)(102)
+const AV_PIX_FMT_YUVA420P16BE = (Int32)(103)
+const AV_PIX_FMT_YUVA420P16LE = (Int32)(104)
+const AV_PIX_FMT_YUVA422P16BE = (Int32)(105)
+const AV_PIX_FMT_YUVA422P16LE = (Int32)(106)
+const AV_PIX_FMT_YUVA444P16BE = (Int32)(107)
+const AV_PIX_FMT_YUVA444P16LE = (Int32)(108)
+const AV_PIX_FMT_VDPAU = (Int32)(109)
+const AV_PIX_FMT_XYZ12LE = (Int32)(110)
+const AV_PIX_FMT_XYZ12BE = (Int32)(111)
+const AV_PIX_FMT_NV16 = (Int32)(112)
+const AV_PIX_FMT_NV20LE = (Int32)(113)
+const AV_PIX_FMT_NV20BE = (Int32)(114)
+const AV_PIX_FMT_RGBA64BE = (Int32)(115)
+const AV_PIX_FMT_RGBA64LE = (Int32)(116)
+const AV_PIX_FMT_BGRA64BE = (Int32)(117)
+const AV_PIX_FMT_BGRA64LE = (Int32)(118)
+const AV_PIX_FMT_YVYU422 = (Int32)(119)
+const AV_PIX_FMT_VDA = (Int32)(120)
+const AV_PIX_FMT_YA16BE = (Int32)(121)
+const AV_PIX_FMT_YA16LE = (Int32)(122)
+const AV_PIX_FMT_GBRAP = (Int32)(123)
+const AV_PIX_FMT_GBRAP16BE = (Int32)(124)
+const AV_PIX_FMT_GBRAP16LE = (Int32)(125)
+const AV_PIX_FMT_QSV = (Int32)(126)
+const AV_PIX_FMT_MMAL = (Int32)(127)
+const AV_PIX_FMT_D3D11VA_VLD = (Int32)(128)
+const AV_PIX_FMT_0RGB = (Int32)(295)
+const AV_PIX_FMT_RGB0 = (Int32)(296)
+const AV_PIX_FMT_0BGR = (Int32)(297)
+const AV_PIX_FMT_BGR0 = (Int32)(298)
+const AV_PIX_FMT_YUV420P12BE = (Int32)(299)
+const AV_PIX_FMT_YUV420P12LE = (Int32)(300)
+const AV_PIX_FMT_YUV420P14BE = (Int32)(301)
+const AV_PIX_FMT_YUV420P14LE = (Int32)(302)
+const AV_PIX_FMT_YUV422P12BE = (Int32)(303)
+const AV_PIX_FMT_YUV422P12LE = (Int32)(304)
+const AV_PIX_FMT_YUV422P14BE = (Int32)(305)
+const AV_PIX_FMT_YUV422P14LE = (Int32)(306)
+const AV_PIX_FMT_YUV444P12BE = (Int32)(307)
+const AV_PIX_FMT_YUV444P12LE = (Int32)(308)
+const AV_PIX_FMT_YUV444P14BE = (Int32)(309)
+const AV_PIX_FMT_YUV444P14LE = (Int32)(310)
+const AV_PIX_FMT_GBRP12BE = (Int32)(311)
+const AV_PIX_FMT_GBRP12LE = (Int32)(312)
+const AV_PIX_FMT_GBRP14BE = (Int32)(313)
+const AV_PIX_FMT_GBRP14LE = (Int32)(314)
+const AV_PIX_FMT_YUVJ411P = (Int32)(315)
+const AV_PIX_FMT_BAYER_BGGR8 = (Int32)(316)
+const AV_PIX_FMT_BAYER_RGGB8 = (Int32)(317)
+const AV_PIX_FMT_BAYER_GBRG8 = (Int32)(318)
+const AV_PIX_FMT_BAYER_GRBG8 = (Int32)(319)
+const AV_PIX_FMT_BAYER_BGGR16LE = (Int32)(320)
+const AV_PIX_FMT_BAYER_BGGR16BE = (Int32)(321)
+const AV_PIX_FMT_BAYER_RGGB16LE = (Int32)(322)
+const AV_PIX_FMT_BAYER_RGGB16BE = (Int32)(323)
+const AV_PIX_FMT_BAYER_GBRG16LE = (Int32)(324)
+const AV_PIX_FMT_BAYER_GBRG16BE = (Int32)(325)
+const AV_PIX_FMT_BAYER_GRBG16LE = (Int32)(326)
+const AV_PIX_FMT_BAYER_GRBG16BE = (Int32)(327)
+const AV_PIX_FMT_YUV440P10LE = (Int32)(328)
+const AV_PIX_FMT_YUV440P10BE = (Int32)(329)
+const AV_PIX_FMT_YUV440P12LE = (Int32)(330)
+const AV_PIX_FMT_YUV440P12BE = (Int32)(331)
+const AV_PIX_FMT_AYUV64LE = (Int32)(332)
+const AV_PIX_FMT_AYUV64BE = (Int32)(333)
+const AV_PIX_FMT_VIDEOTOOLBOX = (Int32)(334)
+const AV_PIX_FMT_P010LE = (Int32)(335)
+const AV_PIX_FMT_P010BE = (Int32)(336)
+const AV_PIX_FMT_NB = (Int32)(337)
+# end enum AVPixelFormat
+
+const AV_PIX_FMT_XVMC = AV_PIX_FMT_XVMC_MPEG2_IDCT
+const AV_PIX_FMT_GBR24P = AV_PIX_FMT_GBRP
+
+# Skipping MacroDefinition: AV_PIX_FMT_NE ( be , le ) AV_PIX_FMT_ ## le
+# Skipping MacroDefinition: AV_PIX_FMT_RGB32 AV_PIX_FMT_NE ( ARGB , BGRA )
+# Skipping MacroDefinition: AV_PIX_FMT_RGB32_1 AV_PIX_FMT_NE ( RGBA , ABGR )
+# Skipping MacroDefinition: AV_PIX_FMT_BGR32 AV_PIX_FMT_NE ( ABGR , RGBA )
+# Skipping MacroDefinition: AV_PIX_FMT_BGR32_1 AV_PIX_FMT_NE ( BGRA , ARGB )
+# Skipping MacroDefinition: AV_PIX_FMT_0RGB32 AV_PIX_FMT_NE ( 0RGB , BGR0 )
+# Skipping MacroDefinition: AV_PIX_FMT_0BGR32 AV_PIX_FMT_NE ( 0BGR , RGB0 )
+# Skipping MacroDefinition: AV_PIX_FMT_GRAY16 AV_PIX_FMT_NE ( GRAY16BE , GRAY16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YA16 AV_PIX_FMT_NE ( YA16BE , YA16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_RGB48 AV_PIX_FMT_NE ( RGB48BE , RGB48LE )
+# Skipping MacroDefinition: AV_PIX_FMT_RGB565 AV_PIX_FMT_NE ( RGB565BE , RGB565LE )
+# Skipping MacroDefinition: AV_PIX_FMT_RGB555 AV_PIX_FMT_NE ( RGB555BE , RGB555LE )
+# Skipping MacroDefinition: AV_PIX_FMT_RGB444 AV_PIX_FMT_NE ( RGB444BE , RGB444LE )
+# Skipping MacroDefinition: AV_PIX_FMT_RGBA64 AV_PIX_FMT_NE ( RGBA64BE , RGBA64LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BGR48 AV_PIX_FMT_NE ( BGR48BE , BGR48LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BGR565 AV_PIX_FMT_NE ( BGR565BE , BGR565LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BGR555 AV_PIX_FMT_NE ( BGR555BE , BGR555LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BGR444 AV_PIX_FMT_NE ( BGR444BE , BGR444LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BGRA64 AV_PIX_FMT_NE ( BGRA64BE , BGRA64LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV420P9 AV_PIX_FMT_NE ( YUV420P9BE , YUV420P9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV422P9 AV_PIX_FMT_NE ( YUV422P9BE , YUV422P9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV444P9 AV_PIX_FMT_NE ( YUV444P9BE , YUV444P9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV420P10 AV_PIX_FMT_NE ( YUV420P10BE , YUV420P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV422P10 AV_PIX_FMT_NE ( YUV422P10BE , YUV422P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV440P10 AV_PIX_FMT_NE ( YUV440P10BE , YUV440P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV444P10 AV_PIX_FMT_NE ( YUV444P10BE , YUV444P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV420P12 AV_PIX_FMT_NE ( YUV420P12BE , YUV420P12LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV422P12 AV_PIX_FMT_NE ( YUV422P12BE , YUV422P12LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV440P12 AV_PIX_FMT_NE ( YUV440P12BE , YUV440P12LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV444P12 AV_PIX_FMT_NE ( YUV444P12BE , YUV444P12LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV420P14 AV_PIX_FMT_NE ( YUV420P14BE , YUV420P14LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV422P14 AV_PIX_FMT_NE ( YUV422P14BE , YUV422P14LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV444P14 AV_PIX_FMT_NE ( YUV444P14BE , YUV444P14LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV420P16 AV_PIX_FMT_NE ( YUV420P16BE , YUV420P16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV422P16 AV_PIX_FMT_NE ( YUV422P16BE , YUV422P16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUV444P16 AV_PIX_FMT_NE ( YUV444P16BE , YUV444P16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_GBRP9 AV_PIX_FMT_NE ( GBRP9BE , GBRP9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_GBRP10 AV_PIX_FMT_NE ( GBRP10BE , GBRP10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_GBRP12 AV_PIX_FMT_NE ( GBRP12BE , GBRP12LE )
+# Skipping MacroDefinition: AV_PIX_FMT_GBRP14 AV_PIX_FMT_NE ( GBRP14BE , GBRP14LE )
+# Skipping MacroDefinition: AV_PIX_FMT_GBRP16 AV_PIX_FMT_NE ( GBRP16BE , GBRP16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_GBRAP16 AV_PIX_FMT_NE ( GBRAP16BE , GBRAP16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BAYER_BGGR16 AV_PIX_FMT_NE ( BAYER_BGGR16BE , BAYER_BGGR16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BAYER_RGGB16 AV_PIX_FMT_NE ( BAYER_RGGB16BE , BAYER_RGGB16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BAYER_GBRG16 AV_PIX_FMT_NE ( BAYER_GBRG16BE , BAYER_GBRG16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_BAYER_GRBG16 AV_PIX_FMT_NE ( BAYER_GRBG16BE , BAYER_GRBG16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA420P9 AV_PIX_FMT_NE ( YUVA420P9BE , YUVA420P9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA422P9 AV_PIX_FMT_NE ( YUVA422P9BE , YUVA422P9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA444P9 AV_PIX_FMT_NE ( YUVA444P9BE , YUVA444P9LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA420P10 AV_PIX_FMT_NE ( YUVA420P10BE , YUVA420P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA422P10 AV_PIX_FMT_NE ( YUVA422P10BE , YUVA422P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA444P10 AV_PIX_FMT_NE ( YUVA444P10BE , YUVA444P10LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA420P16 AV_PIX_FMT_NE ( YUVA420P16BE , YUVA420P16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA422P16 AV_PIX_FMT_NE ( YUVA422P16BE , YUVA422P16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_YUVA444P16 AV_PIX_FMT_NE ( YUVA444P16BE , YUVA444P16LE )
+# Skipping MacroDefinition: AV_PIX_FMT_XYZ12 AV_PIX_FMT_NE ( XYZ12BE , XYZ12LE )
+# Skipping MacroDefinition: AV_PIX_FMT_NV20 AV_PIX_FMT_NE ( NV20BE , NV20LE )
+# Skipping MacroDefinition: AV_PIX_FMT_AYUV64 AV_PIX_FMT_NE ( AYUV64BE , AYUV64LE )
+# Skipping MacroDefinition: AV_PIX_FMT_P010 AV_PIX_FMT_NE ( P010BE , P010LE )
+
+const AVCOL_SPC_YCGCO = AVCOL_SPC_YCOCG
+
+# begin enum AVSampleFormat
+typealias AVSampleFormat Cint
+const AV_SAMPLE_FMT_NONE = (Int32)(-1)
+const AV_SAMPLE_FMT_U8 = (Int32)(0)
+const AV_SAMPLE_FMT_S16 = (Int32)(1)
+const AV_SAMPLE_FMT_S32 = (Int32)(2)
+const AV_SAMPLE_FMT_FLT = (Int32)(3)
+const AV_SAMPLE_FMT_DBL = (Int32)(4)
+const AV_SAMPLE_FMT_U8P = (Int32)(5)
+const AV_SAMPLE_FMT_S16P = (Int32)(6)
+const AV_SAMPLE_FMT_S32P = (Int32)(7)
+const AV_SAMPLE_FMT_FLTP = (Int32)(8)
+const AV_SAMPLE_FMT_DBLP = (Int32)(9)
+const AV_SAMPLE_FMT_NB = (Int32)(10)
+# end enum AVSampleFormat
+
+# Skipping MacroDefinition: AV_VERSION_INT ( a , b , c ) ( ( a ) << 16 | ( b ) << 8 | ( c ) )
+# Skipping MacroDefinition: AV_VERSION_DOT ( a , b , c ) a ## . ## b ## . ## c
+# Skipping MacroDefinition: AV_VERSION ( a , b , c ) AV_VERSION_DOT ( a , b , c )
+# Skipping MacroDefinition: AV_VERSION_MAJOR ( a ) ( ( a ) >> 16 )
+# Skipping MacroDefinition: AV_VERSION_MINOR ( a ) ( ( ( a ) & 0x00FF00 ) >> 8 )
+# Skipping MacroDefinition: AV_VERSION_MICRO ( a ) ( ( a ) & 0xFF )
+
+const LIBAVUTIL_VERSION_MAJOR = 55
+const LIBAVUTIL_VERSION_MINOR = 17
+const LIBAVUTIL_VERSION_MICRO = 103
+
+# Skipping MacroDefinition: LIBAVUTIL_VERSION_INT AV_VERSION_INT ( LIBAVUTIL_VERSION_MAJOR , LIBAVUTIL_VERSION_MINOR , LIBAVUTIL_VERSION_MICRO )
+# Skipping MacroDefinition: LIBAVUTIL_VERSION AV_VERSION ( LIBAVUTIL_VERSION_MAJOR , LIBAVUTIL_VERSION_MINOR , LIBAVUTIL_VERSION_MICRO )
+
+# const LIBAVUTIL_BUILD = LIBAVUTIL_VERSION_INT
+
+# Skipping MacroDefinition: LIBAVUTIL_IDENT "Lavu" AV_STRINGIFY ( LIBAVUTIL_VERSION )
+# Skipping MacroDefinition: FF_API_VDPAU ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_XVMC ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_OPT_TYPE_METADATA ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_DLOG ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_VAAPI ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_FRAME_QP ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_PLUS1_MINUS1 ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_ERROR_FRAME ( LIBAVUTIL_VERSION_MAJOR < 56 )
+# Skipping MacroDefinition: FF_API_CRC_BIG_TABLE ( LIBAVUTIL_VERSION_MAJOR < 56 )
+
+const AES_CTR_KEY_SIZE = 16
+const AES_CTR_IV_SIZE = 8
+
+typealias AVAESCTR Void
+typealias AVAudioFifo Void
+typealias AVCAMELLIA Void
+typealias AVCAST5 Void
+
+const AV_CH_FRONT_LEFT = 0x00000001
+const AV_CH_FRONT_RIGHT = 0x00000002
+const AV_CH_FRONT_CENTER = 0x00000004
+const AV_CH_LOW_FREQUENCY = 0x00000008
+const AV_CH_BACK_LEFT = 0x00000010
+const AV_CH_BACK_RIGHT = 0x00000020
+const AV_CH_FRONT_LEFT_OF_CENTER = 0x00000040
+const AV_CH_FRONT_RIGHT_OF_CENTER = 0x00000080
+const AV_CH_BACK_CENTER = 0x00000100
+const AV_CH_SIDE_LEFT = 0x00000200
+const AV_CH_SIDE_RIGHT = 0x00000400
+const AV_CH_TOP_CENTER = 0x00000800
+const AV_CH_TOP_FRONT_LEFT = 0x00001000
+const AV_CH_TOP_FRONT_CENTER = 0x00002000
+const AV_CH_TOP_FRONT_RIGHT = 0x00004000
+const AV_CH_TOP_BACK_LEFT = 0x00008000
+const AV_CH_TOP_BACK_CENTER = 0x00010000
+const AV_CH_TOP_BACK_RIGHT = 0x00020000
+const AV_CH_STEREO_LEFT = 0x20000000
+const AV_CH_STEREO_RIGHT = 0x40000000
+const AV_CH_WIDE_LEFT = UInt64(0x0000000080000000)
+const AV_CH_WIDE_RIGHT = UInt64(0x0000000100000000)
+const AV_CH_SURROUND_DIRECT_LEFT = UInt64(0x0000000200000000)
+const AV_CH_SURROUND_DIRECT_RIGHT = UInt64(0x0000000400000000)
+const AV_CH_LOW_FREQUENCY_2 = UInt64(0x0000000800000000)
+const AV_CH_LAYOUT_NATIVE = UInt64(0x8000000000000000)
+const AV_CH_LAYOUT_MONO = AV_CH_FRONT_CENTER
+const AV_CH_LAYOUT_STEREO = AV_CH_FRONT_LEFT | AV_CH_FRONT_RIGHT
+const AV_CH_LAYOUT_2POINT1 = AV_CH_LAYOUT_STEREO | AV_CH_LOW_FREQUENCY
+const AV_CH_LAYOUT_2_1 = AV_CH_LAYOUT_STEREO | AV_CH_BACK_CENTER
+const AV_CH_LAYOUT_SURROUND = AV_CH_LAYOUT_STEREO | AV_CH_FRONT_CENTER
+const AV_CH_LAYOUT_3POINT1 = AV_CH_LAYOUT_SURROUND | AV_CH_LOW_FREQUENCY
+const AV_CH_LAYOUT_4POINT0 = AV_CH_LAYOUT_SURROUND | AV_CH_BACK_CENTER
+const AV_CH_LAYOUT_4POINT1 = AV_CH_LAYOUT_4POINT0 | AV_CH_LOW_FREQUENCY
+const AV_CH_LAYOUT_2_2 = (AV_CH_LAYOUT_STEREO | AV_CH_SIDE_LEFT) | AV_CH_SIDE_RIGHT
+const AV_CH_LAYOUT_QUAD = (AV_CH_LAYOUT_STEREO | AV_CH_BACK_LEFT) | AV_CH_BACK_RIGHT
+const AV_CH_LAYOUT_5POINT0 = (AV_CH_LAYOUT_SURROUND | AV_CH_SIDE_LEFT) | AV_CH_SIDE_RIGHT
+const AV_CH_LAYOUT_5POINT1 = AV_CH_LAYOUT_5POINT0 | AV_CH_LOW_FREQUENCY
+const AV_CH_LAYOUT_5POINT0_BACK = (AV_CH_LAYOUT_SURROUND | AV_CH_BACK_LEFT) | AV_CH_BACK_RIGHT
+const AV_CH_LAYOUT_5POINT1_BACK = AV_CH_LAYOUT_5POINT0_BACK | AV_CH_LOW_FREQUENCY
+const AV_CH_LAYOUT_6POINT0 = AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_CENTER
+const AV_CH_LAYOUT_6POINT0_FRONT = (AV_CH_LAYOUT_2_2 | AV_CH_FRONT_LEFT_OF_CENTER) | AV_CH_FRONT_RIGHT_OF_CENTER
+const AV_CH_LAYOUT_HEXAGONAL = AV_CH_LAYOUT_5POINT0_BACK | AV_CH_BACK_CENTER
+const AV_CH_LAYOUT_6POINT1 = AV_CH_LAYOUT_5POINT1 | AV_CH_BACK_CENTER
+const AV_CH_LAYOUT_6POINT1_BACK = AV_CH_LAYOUT_5POINT1_BACK | AV_CH_BACK_CENTER
+const AV_CH_LAYOUT_6POINT1_FRONT = AV_CH_LAYOUT_6POINT0_FRONT | AV_CH_LOW_FREQUENCY
+const AV_CH_LAYOUT_7POINT0 = (AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_LEFT) | AV_CH_BACK_RIGHT
+const AV_CH_LAYOUT_7POINT0_FRONT = (AV_CH_LAYOUT_5POINT0 | AV_CH_FRONT_LEFT_OF_CENTER) | AV_CH_FRONT_RIGHT_OF_CENTER
+const AV_CH_LAYOUT_7POINT1 = (AV_CH_LAYOUT_5POINT1 | AV_CH_BACK_LEFT) | AV_CH_BACK_RIGHT
+const AV_CH_LAYOUT_7POINT1_WIDE = (AV_CH_LAYOUT_5POINT1 | AV_CH_FRONT_LEFT_OF_CENTER) | AV_CH_FRONT_RIGHT_OF_CENTER
+const AV_CH_LAYOUT_7POINT1_WIDE_BACK = (AV_CH_LAYOUT_5POINT1_BACK | AV_CH_FRONT_LEFT_OF_CENTER) | AV_CH_FRONT_RIGHT_OF_CENTER
+const AV_CH_LAYOUT_OCTAGONAL = ((AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_LEFT) | AV_CH_BACK_CENTER) | AV_CH_BACK_RIGHT
+const AV_CH_LAYOUT_HEXADECAGONAL = (((((((AV_CH_LAYOUT_OCTAGONAL | AV_CH_WIDE_LEFT) | AV_CH_WIDE_RIGHT) | AV_CH_TOP_BACK_LEFT) | AV_CH_TOP_BACK_RIGHT) | AV_CH_TOP_BACK_CENTER) | AV_CH_TOP_FRONT_CENTER) | AV_CH_TOP_FRONT_LEFT) | AV_CH_TOP_FRONT_RIGHT
+const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
+
+# begin enum AVMatrixEncoding
+typealias AVMatrixEncoding UInt32
+const AV_MATRIX_ENCODING_NONE = (UInt32)(0)
+const AV_MATRIX_ENCODING_DOLBY = (UInt32)(1)
+const AV_MATRIX_ENCODING_DPLII = (UInt32)(2)
+const AV_MATRIX_ENCODING_DPLIIX = (UInt32)(3)
+const AV_MATRIX_ENCODING_DPLIIZ = (UInt32)(4)
+const AV_MATRIX_ENCODING_DOLBYEX = (UInt32)(5)
+const AV_MATRIX_ENCODING_DOLBYHEADPHONE = (UInt32)(6)
+const AV_MATRIX_ENCODING_NB = (UInt32)(7)
+# end enum AVMatrixEncoding
+
+typealias AVBPrint Void
+
+immutable AVDES
+    round_keys::NTuple{3,NTuple{16,UInt64}}
+    triple_des::Cint
+end
+
+# begin enum AVDownmixType
+typealias AVDownmixType UInt32
+const AV_DOWNMIX_TYPE_UNKNOWN = (UInt32)(0)
+const AV_DOWNMIX_TYPE_LORO = (UInt32)(1)
+const AV_DOWNMIX_TYPE_LTRT = (UInt32)(2)
+const AV_DOWNMIX_TYPE_DPLII = (UInt32)(3)
+const AV_DOWNMIX_TYPE_NB = (UInt32)(4)
+# end enum AVDownmixType
+
+immutable AVDownmixInfo
+    preferred_downmix_type::AVDownmixType
+    center_mix_level::Cdouble
+    center_mix_level_ltrt::Cdouble
+    surround_mix_level::Cdouble
+    surround_mix_level_ltrt::Cdouble
+    lfe_mix_level::Cdouble
+end
+
+const AV_HASH_MAX_SIZE = 64
+
+typealias AVHashContext Void
+
+immutable AVMasteringDisplayMetadata
+    display_primaries::NTuple{3,NTuple{2,AVRational}}
+    white_point::NTuple{2,AVRational}
+    min_luminance::AVRational
+    max_luminance::AVRational
+    has_primaries::Cint
+    has_luminance::Cint
+end
+
+immutable AVMotionVector
+    source::Int32
+    w::UInt8
+    h::UInt8
+    src_x::Int16
+    src_y::Int16
+    dst_x::Int16
+    dst_y::Int16
+    flags::UInt64
+    motion_x::Int32
+    motion_y::Int32
+    motion_scale::UInt16
+end
+
+const CL_USE_DEPRECATED_OPENCL_1_2_APIS = 1
+
+# Skipping MacroDefinition: AV_OPENCL_KERNEL ( ... ) # __VA_ARGS__
+
+# immutable AVOpenCLDeviceNode
+#     device_type::Cint
+#     device_name::Cstring
+#     device_id::cl_device_id
+# end
+#
+# immutable AVOpenCLPlatformNode
+#     platform_id::cl_platform_id
+#     platform_name::Cstring
+#     device_num::Cint
+#     device_node::Ptr{Ptr{AVOpenCLDeviceNode}}
+# end
+#
+# immutable AVOpenCLDeviceList
+#     platform_num::Cint
+#     platform_node::Ptr{Ptr{AVOpenCLPlatformNode}}
+# end
+#
+# immutable AVOpenCLExternalEnv
+#     platform_id::cl_platform_id
+#     device_type::cl_device_type
+#     context::cl_context
+#     device_id::cl_device_id
+#     command_queue::cl_command_queue
+#     platform_name::Cstring
+# end
+
+const AV_OPT_FLAG_ENCODING_PARAM = 1
+const AV_OPT_FLAG_DECODING_PARAM = 2
+const AV_OPT_FLAG_METADATA = 4
+const AV_OPT_FLAG_AUDIO_PARAM = 8
+const AV_OPT_FLAG_VIDEO_PARAM = 16
+const AV_OPT_FLAG_SUBTITLE_PARAM = 32
+const AV_OPT_FLAG_EXPORT = 64
+const AV_OPT_FLAG_READONLY = 128
+const AV_OPT_FLAG_FILTERING_PARAM = 1 << 16
+const AV_OPT_SEARCH_CHILDREN = 1 << 0
+const AV_OPT_SEARCH_FAKE_OBJ = 1 << 1
+const AV_OPT_ALLOW_NULL = 1 << 2
+const AV_OPT_MULTI_COMPONENT_RANGE = 1 << 12
+
+# Skipping MacroDefinition: av_opt_set_int_list ( obj , name , val , term , flags ) ( av_int_list_length ( val , term ) > INT_MAX / sizeof ( * ( val ) ) ? AVERROR ( EINVAL ) : av_opt_set_bin ( obj , name , ( const uint8_t * ) ( val ) , av_int_list_length ( val , term ) * sizeof ( * ( val ) ) , flags ) )
+
+const AV_OPT_SERIALIZE_SKIP_DEFAULTS = 0x00000001
+const AV_OPT_SERIALIZE_OPT_FLAGS_EXACT = 0x00000002
+
+# begin enum ANONYMOUS_2
+typealias ANONYMOUS_2 UInt32
+const AV_OPT_FLAG_IMPLICIT_KEY = (UInt32)(1)
+# end enum ANONYMOUS_2
+
+typealias av_pixelutils_sad_fn Ptr{Void}
+
+immutable AVRC4
+    state::NTuple{256,UInt8}
+    x::Cint
+    y::Cint
+end
+
+immutable AVReplayGain
+    track_gain::Int32
+    track_peak::UInt32
+    album_gain::Int32
+    album_peak::UInt32
+end
+
+const AV_STEREO3D_FLAG_INVERT = 1 << 0
+
+# begin enum AVStereo3DType
+typealias AVStereo3DType UInt32
+const AV_STEREO3D_2D = (UInt32)(0)
+const AV_STEREO3D_SIDEBYSIDE = (UInt32)(1)
+const AV_STEREO3D_TOPBOTTOM = (UInt32)(2)
+const AV_STEREO3D_FRAMESEQUENCE = (UInt32)(3)
+const AV_STEREO3D_CHECKERBOARD = (UInt32)(4)
+const AV_STEREO3D_SIDEBYSIDE_QUINCUNX = (UInt32)(5)
+const AV_STEREO3D_LINES = (UInt32)(6)
+const AV_STEREO3D_COLUMNS = (UInt32)(7)
+# end enum AVStereo3DType
+
+immutable AVStereo3D
+    _type::AVStereo3DType
+    flags::Cint
+end
+
+typealias AVTEA Void
+typealias AVThreadMessageQueue Void
+
+# begin enum AVThreadMessageFlags
+typealias AVThreadMessageFlags UInt32
+const AV_THREAD_MESSAGE_NONBLOCK = (UInt32)(1)
+# end enum AVThreadMessageFlags
+
+const AV_TIMECODE_STR_SIZE = 16
+
+# begin enum AVTimecodeFlag
+typealias AVTimecodeFlag UInt32
+const AV_TIMECODE_FLAG_DROPFRAME = (UInt32)(1)
+const AV_TIMECODE_FLAG_24HOURSMAX = (UInt32)(2)
+const AV_TIMECODE_FLAG_ALLOWNEGATIVE = (UInt32)(4)
+# end enum AVTimecodeFlag
+
+immutable AVTimecode
+    start::Cint
+    flags::UInt32
+    rate::AVRational
+    fps::UInt32
+end
+
+typealias AVTreeNode Void
+typealias AVTWOFISH Void
+
+immutable AVXTEA
+    key::NTuple{16,UInt32}
+end
