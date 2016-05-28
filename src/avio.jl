@@ -510,10 +510,10 @@ have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 
 function seconds_to_timestamp(s::Float64, time_base::AVRational)
-    return Int64(s * Float64(time_base.den) / Float64(time_base.num))
+    return convert(Int64, s * time_base.den / time_base.num)
 end
 
-function seek(s::VideoReader, seconds::Float64;
+function seek(s::VideoReader, seconds::Float64, 
               seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
               video_stream::Int64=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
@@ -521,20 +521,21 @@ function seek(s::VideoReader, seconds::Float64;
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
-    seek(s.avin, seconds, seconds_min=seconds_min, seconds_max=seconds_max,
-         video_stream=video_stream, forward=forward)
+
+    seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
 
     avcodec_flush_buffers(pCodecContext)
 end
 
-function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64 ;
+
+function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
                                  seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
                                  video_stream::Int64 = 1, forward::Bool=true)
 
     #Using 10 seconds before and after the desired timestamp, since the seek function
     #seek to the nearest keyframe, and 10 seconds is the longest GOP length seen in
     #practical usage.
-    const max_interval = Float64(10.0)
+    const max_interval = 10.0
 
     # AVFormatContext
     fc = avin.apFormatContext[1]
@@ -571,13 +572,11 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64 ;
 end
 
 function seekstart(s::VideoReader, video_stream=1)
-    return seek(s, 0.0, seconds_min=0.0, seconds_max=0.0,
-                video_stream=video_stream, forward=false)
+    return seek(s, 0.0, 0.0, 0.0, video_stream, false)
 end
 
 function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
-    return seek(avin, 0.0, seconds_min=0.0, seconds_max=0.0,
-                video_stream=video_stream, forward=false)
+    return seek(avin, 0.0, 0.0, 0.0, video_stream, false)
 end
 
 ## This doesn't work...
