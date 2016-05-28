@@ -1,6 +1,6 @@
 # AVIO
 
-import Base: read, read!, show, close, eof, isopen, seekstart
+import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
@@ -509,18 +509,33 @@ have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i
 
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 
-function seekstart(s::VideoReader, video_stream=1)
+function seconds_to_timestamp(s::Float64, time_base::AVRational)
+    return Int64(s * Float64(time_base.den) / Float64(time_base.num))
+end
+
+function seek(s::VideoReader, seconds::Float64;
+              seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
+              video_stream::Int64=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
+    fc = s.avin.apFormatContext[1]
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
-    seekstart(s.avin, video_stream)
-    avcodec_flush_buffers(pCodecContext)
+    seek(s.avin, seconds, seconds_min=seconds_min, seconds_max=seconds_max,
+         video_stream=video_stream, forward=forward)
 
-    return s
+    avcodec_flush_buffers(pCodecContext)
 end
 
-function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
+function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64 ;
+                                 seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
+                                 video_stream::Int64 = 1, forward::Bool=true)
+
+    #Using 10 seconds before and after the desired timestamp, since the seek function
+    #seek to the nearest keyframe, and 10 seconds is the longest GOP length seen in
+    #practical usage.
+    const max_interval = Float64(10.0)
+
     # AVFormatContext
     fc = avin.apFormatContext[1]
 
@@ -529,13 +544,40 @@ function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
     seek_stream_index = stream_info.stream_index0
     stream = stream_info.stream
     first_dts = stream.first_dts
+    time_base = stream.time_base
+
+    #Timestamp calculations
+    if seconds_min < 0
+        seconds_min = max(seconds - max_interval, 0.0)
+    end
+
+    if seconds_max < 0
+        seconds_max = seconds + max_interval
+    end
+
+    dts = first_dts + seconds_to_timestamp(seconds, time_base)
+    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base)
+    max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
+
+    flags = 0
+    if !forward
+        flags = AVSEEK_FLAG_BACKWARD
+    end
 
     # Seek
-    ret = avformat_seek_file(fc, seek_stream_index, first_dts, first_dts, first_dts, AVSEEK_FLAG_BACKWARD)
-
-    ret < 0 && throw(ErrorException("Could not seek to start of stream"))
-
+    ret = avformat_seek_file(fc, seek_stream_index, min_dts, dts, max_dts, flags)
+    ret < 0 && throw(ErrorException("Could not seek in stream"))
     return avin
+end
+
+function seekstart(s::VideoReader, video_stream=1)
+    return seek(s, 0.0, seconds_min=0.0, seconds_max=0.0,
+                video_stream=video_stream, forward=false)
+end
+
+function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
+    return seek(avin, 0.0, seconds_min=0.0, seconds_max=0.0,
+                video_stream=video_stream, forward=false)
 end
 
 ## This doesn't work...
