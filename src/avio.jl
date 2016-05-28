@@ -513,7 +513,7 @@ function seconds_to_timestamp(s::Float64, time_base::AVRational)
     return convert(Int64, s * time_base.den / time_base.num)
 end
 
-function seek(s::VideoReader, seconds::Float64, 
+function seek(s::VideoReader, seconds::Float64,
               seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
               video_stream::Int64=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
@@ -521,12 +521,10 @@ function seek(s::VideoReader, seconds::Float64,
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
-
     seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
 
     avcodec_flush_buffers(pCodecContext)
 end
-
 
 function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
                                  seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
