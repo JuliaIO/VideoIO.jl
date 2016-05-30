@@ -510,7 +510,7 @@ have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 
 function seconds_to_timestamp(s::Float64, time_base::AVRational)
-    return convert(Int64, s * time_base.den / time_base.num)
+    return convert(Int64, round(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
 end
 
 function seek(s::VideoReader, seconds::Float64,
