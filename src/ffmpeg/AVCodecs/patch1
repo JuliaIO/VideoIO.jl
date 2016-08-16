@@ -41,7 +41,7 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
      codec_id::AVCodecID
      codec_tag::UInt32
 @@ -2632,68 +2632,68 @@
- const AV_LOCK_DESTROY = @compat UInt32(3)
+ const AV_LOCK_DESTROY = UInt32(3)
  # end enum AVLockOp
  
 -immutable vaapi_context

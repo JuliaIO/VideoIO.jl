@@ -70,7 +70,7 @@ diff -r -U3 ../../../util/libav-0.9/AVUtil/v52/libavutil_h.jl v52/libavutil_h.jl
 -# Skipping MacroDefinition: PIX_FMT_NE ( be , le ) AV_PIX_FMT_NE ( be , le )
 +
 +macro AV_PIX_FMT_NE(be,le)
-+    symbol("AV_PIX_FMT_",le)
++    Symbol("AV_PIX_FMT_",le)
 +end
 + 
 +const AV_PIX_FMT_RGB32 = @AV_PIX_FMT_NE(ARGB,BGRA)

@@ -34,7 +34,7 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
  type AVCodecContext
      av_class::Ptr{AVClass}
 @@ -2624,68 +2624,68 @@
- const AV_LOCK_DESTROY = @compat UInt32(3)
+ const AV_LOCK_DESTROY = UInt32(3)
  # end enum AVLockOp
  
 -type vaapi_context

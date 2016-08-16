@@ -32,14 +32,14 @@ function rewrite_fn(e::Expr)
             Expr(:(::), [sym, Expr(:curly, [:Ptr, :UInt8], _)], _) => 
                 begin 
                     orig_type = Expr(:curly, :Ptr, :UInt8)
-                    _sym = symbol(string("_", sym))
+                    _sym = Symbol(string("_", sym))
                     push!(parms,   :($_sym::Union{Ptr,ByteString}))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
             Expr(:(::), [sym, Expr(:curly, [:Ptr, target_type], _)], _) => 
                 begin 
                     orig_type = Expr(:curly, :Ptr, target_type)
-                    _sym = symbol(string("_", sym))
+                    _sym = Symbol(string("_", sym))
                     push!(parms,   :($_sym::Ptr))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end

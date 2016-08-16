@@ -292,12 +292,12 @@ end
 
 # begin enum AVStreamParseType
 typealias AVStreamParseType UInt32
-const AVSTREAM_PARSE_NONE = @compat UInt32(0)
-const AVSTREAM_PARSE_FULL = @compat UInt32(1)
-const AVSTREAM_PARSE_HEADERS = @compat UInt32(2)
-const AVSTREAM_PARSE_TIMESTAMPS = @compat UInt32(3)
-const AVSTREAM_PARSE_FULL_ONCE = @compat UInt32(4)
-const AVSTREAM_PARSE_FULL_RAW = @compat UInt32(1463898624)
+const AVSTREAM_PARSE_NONE = UInt32(0)
+const AVSTREAM_PARSE_FULL = UInt32(1)
+const AVSTREAM_PARSE_HEADERS = UInt32(2)
+const AVSTREAM_PARSE_TIMESTAMPS = UInt32(3)
+const AVSTREAM_PARSE_FULL_ONCE = UInt32(4)
+const AVSTREAM_PARSE_FULL_RAW = UInt32(1463898624)
 # end enum AVStreamParseType
 
 immutable AVPacketList
@@ -1476,9 +1476,9 @@ end
 
 # begin enum AVDurationEstimationMethod
 typealias AVDurationEstimationMethod UInt32
-const AVFMT_DURATION_FROM_PTS = @compat UInt32(0)
-const AVFMT_DURATION_FROM_STREAM = @compat UInt32(1)
-const AVFMT_DURATION_FROM_BITRATE = @compat UInt32(2)
+const AVFMT_DURATION_FROM_PTS = UInt32(0)
+const AVFMT_DURATION_FROM_STREAM = UInt32(1)
+const AVFMT_DURATION_FROM_BITRATE = UInt32(2)
 # end enum AVDurationEstimationMethod
 
 typealias AVFormatInternal Void
