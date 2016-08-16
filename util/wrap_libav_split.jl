@@ -2,19 +2,20 @@
 import Clang.wrap_c
 import DataStructures: DefaultDict
 import Base.Meta.isexpr
+import Compat: String
 using Match
 
 include("../src/init.jl")
 
 indexh         = joinpath(JULIA_HOME, "../include/clang-c/Index.h")
-#clang_includes = ASCIIString[joinpath(JULIA_HOME, "../lib/clang/3.7.0/include"), joinpath(dirname(indexh), "..")]
-clang_includes = ASCIIString[joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
+clang_includes = String[joinpath(JULIA_HOME, "../lib/clang/3.7.1/include"), joinpath(dirname(indexh), "..")]
+#clang_includes = String[joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
 
 strpack_structs = Set{Symbol}()
 
 # Allow root to be specified as the first argument
 if isempty(ARGS)
-    root = "/usr/include"
+    root = "/usr/local/include"
 else
     root = ARGS[1]
 end
@@ -33,17 +34,24 @@ const av_lib_ver = []
 for lib in av_libs
     try
         name = lib[4:end]
-        ver = eval(symbol("_"*name*"_version"))()
-        dir = eval(symbol(name*"_dir"))
+        ver = eval(Symbol("_"*name*"_version"))()
+        dir = eval(Symbol(name*"_dir"))
         push!(av_lib_ver, (lib,ver,dir))
     end
 end
 
 const av_hpath = [joinpath(root, lib) for (lib,ver,dir) in av_lib_ver]
 
-const ignore_header = DefaultDict(ASCIIString, Bool, false)
+const ignore_header = DefaultDict(String, Bool, false)
 
-for i in ["lzo.h", "md5.h", "parse.h", "sha.h", "vda.h", "bprint.h", "attributes.h", "crc.h", "adler32.h", "aes.h", "avassert.h", "avconfig.h", "avstring.h", "base64.h", "blowfish.h", "common.h", "cpu.h", "crc.h", "eval.h", "ffversion.h", "hmac.h", "intfloat.h", "intreadwrite.h", "intfloat_readwrite.h", "lfg.h", "macros.h", "mathematics.h", "murmur3.h", "parseutils.h", "random_seed.h", "ripemd.h", "sha512.h", "time.h", "timestamp.h", "bswap.h", "error.h", "old_codec_ids.h", "old_pix_fmts.h", "dxva2.h", "avfft.h"]
+for i in ["lzo.h", "md5.h", "parse.h", "sha.h", "vda.h", "bprint.h",
+          "attributes.h", "crc.h", "adler32.h", "aes.h", "avassert.h",
+          "avconfig.h", "avstring.h", "base64.h", "blowfish.h", "common.h",
+          "cpu.h", "crc.h", "eval.h", "ffversion.h", "hmac.h", "intfloat.h",
+          "intreadwrite.h", "intfloat_readwrite.h", "lfg.h", "macros.h",
+          "mathematics.h", "murmur3.h", "parseutils.h", "random_seed.h",
+          "ripemd.h", "sha512.h", "time.h", "timestamp.h", "bswap.h",
+          "error.h", "old_codec_ids.h", "old_pix_fmts.h", "dxva2.h", "avfft.h"]
     ignore_header[i] = true
 end
 
@@ -52,12 +60,8 @@ function wrap_library(library, path, outdir = ".")
         return
     end
 
-    av_headers = []
-    for file in sort(readdir(path))
-        if !ignore_header[file]
-            push!(av_headers, joinpath(path, file))
-        end
-    end
+    av_headers = filter(file -> !ignore_header[file], readdir(path))
+    av_headers = [joinpath(path, file) for file in av_headers]
 
     println("\nWrapping $library")
     println("==============")
@@ -94,17 +98,20 @@ function wrap_library(library, path, outdir = ".")
     return
 end
 
- 
+seen = Set{String}()
+current_path = ""
+
 # called to determine if cursor should be included
 function check_use_header(top_h, hpath)
-  b = basename(top_h)
-  ignore_header[b] && return false
-  #ignore_header[b] = true
-  hbase = av_hpath
-  for d in hbase
-      beginswith(hpath, d) && return true
-  end
-  return false
+    global current_path
+
+    b = basename(top_h)
+    ignore_header[b] && return false
+    if hpath == "" || (startswith(hpath, current_path) && basename(hpath) == b)
+        return true
+    end
+
+    return false
 end
 
 function get_header_outfile(hpath)
@@ -131,7 +138,7 @@ function rewrite_fn(e, fncall, body, use_strpack=false)
 
     global strpack_structs
 
-    # Add explicit conversions for Ptr & UInt32/Int32
+    # Add explicit conversions for Ptr, UInt32/Int32, and va_list
     for call_arg in fncall.args[2:end]
         @match call_arg begin
             # Don't type Ptr{x} types
@@ -139,6 +146,9 @@ function rewrite_fn(e, fncall, body, use_strpack=false)
 
             # Type all integers as Integer
             Expr(:(::), [sym, (:UInt32 || :Cuint || :Int32 || :Cint)], _) => (sym; push!(parms, :($sym::Integer)))
+
+            # va_list
+            Expr(:(::), [sym, :va_list], _) => push!(parms, sym)
 
             # Everything else is unchanged
             _ => push!(parms, call_arg)
@@ -171,11 +181,11 @@ function rewrite_struct(e::Expr)
     new_vars = []
     for arg in vars.args
         @match arg begin
-            Expr(:(::), [varname, vartype], _), if beginswith(string(vartype), "Array") end => 
+            Expr(:(::), [varname, vartype], _), if startswith(string(vartype), "Array") end =>
                 begin
                     @match string(vartype) r"Array_([0-9]+)_(.*)"(size_str, type_str)
                     size = Int(size_str)
-                    t = symbol(type_str)
+                    t = Symbol(type_str)
                     push!(new_vars, Expr(:(::), varname, :(Array{$t}($size))))
                 end
 
@@ -195,7 +205,7 @@ function rewrite_type(e::Expr)
             Expr(:type,     [_, name, Expr(:block, [], _)], _)      =>  return Expr(:typealias, name, :Void)
 
             #Expr(:type,     _, _)                                  =>  return rewrite_struct(e)
-            _                                                      =>  e
+            _                                                       =>  e
         end
     end
     return e
@@ -206,7 +216,7 @@ rewrite_type(s) = s
 function rewrite_fn(e::Expr)
     @match e begin
         Expr(:function, [fncall, body], _)  =>  rewrite_fn(e, fncall, body)
-        _                                 =>  e
+        _                                   =>  e
     end
 end
 
@@ -232,7 +242,7 @@ function rewrite(buf::Array)
     buf = Any[rewrite_fn(e) for e in buf]
     exports = [string(extract_name(e)) for e in filter(x->isa(x, Expr), buf)]
     have_zero = "zero" in exports
-    filter!(x -> x!="" && x!="zero" && !beginswith(x,"FF_"), exports)
+    filter!(x -> x!="" && x!="zero" && !startswith(x,"FF_"), exports)
     export_string = "export\n" * join(["    $name" for name in exports], ",\n")*"\n\n"
     header = have_zero ? ["import Base.zero","\n",export_string] : [export_string]
     splice!(buf, 1:0, header)
@@ -244,9 +254,11 @@ end
 # Do it!
 
 function doit()
+    global current_path
     for ((lib,ver,dir),path) in zip(av_lib_ver, av_hpath)
         dir = basename(dirname(dir))
         outdir = joinpath("$dir","v$(ver.major)")
+        current_path = path
         wrap_library(lib, path, outdir)
     end
 end

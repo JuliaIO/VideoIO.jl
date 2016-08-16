@@ -1,15 +1,6 @@
 diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.jl
 --- ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl	2014-07-20 18:38:56.922906753 -0700
 +++ AVCodec/v55/libavcodec_h.jl	2014-07-20 18:55:29.434888979 -0700
-@@ -924,7 +924,7 @@
-     AV_FIELD_BT,
-     AVProfile,
-     AVCodecDefault,
--    AVCodec,
-+    AVCodec_,
-     AVHWAccel,
-     AVFrame,
-     AVCodecContext,
 @@ -952,14 +952,14 @@
      AV_LOCK_CREATE,
      AV_LOCK_OBTAIN,
@@ -33,25 +24,7 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
  
  
  
-@@ -2217,7 +2217,7 @@
- 
- typealias AVCodecDefault Void
- 
--type AVCodec
-+type AVCodec_
-     name::Ptr{UInt8}
-     long_name::Ptr{UInt8}
-     _type::AVMediaType
-@@ -2232,7 +2232,7 @@
-     priv_class::Ptr{AVClass}
-     profiles::Ptr{AVProfile}
-     priv_data_size::Cint
--    next::Ptr{AVCodec}
-+    next::Ptr{AVCodec_}
-     init_thread_copy::Ptr{Void}
-     update_thread_context::Ptr{Void}
-     defaults::Ptr{AVCodecDefault}
-@@ -2259,13 +2259,13 @@
+@@ -2259,7 +2259,7 @@
      decode_mb::Ptr{Void}
  end
  
@@ -60,15 +33,8 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
  
  type AVCodecContext
      av_class::Ptr{AVClass}
-     log_level_offset::Cint
-     codec_type::AVMediaType
--    codec::Ptr{AVCodec}
-+    codec::Ptr{AVCodec_}
-     codec_name::Array_32_Uint8
-     codec_id::AVCodecID
-     codec_tag::UInt32
 @@ -2624,68 +2624,68 @@
- const AV_LOCK_DESTROY = @compat UInt32(3)
+ const AV_LOCK_DESTROY = UInt32(3)
  # end enum AVLockOp
  
 -type vaapi_context

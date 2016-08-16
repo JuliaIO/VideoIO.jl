@@ -157,7 +157,7 @@ diff -r -U3 ../../../util/libav-0.8/AVUtil/v51/libavutil_h.jl v51/libavutil_h.jl
 -    den::Cint
 +
 +macro PIX_FMT_NE(be,le)
-+    symbol("PIX_FMT_",le)
++    Symbol("PIX_FMT_",le)
  end
  
 +const PIX_FMT_RGB32 = @PIX_FMT_NE(ARGB,BGRA)

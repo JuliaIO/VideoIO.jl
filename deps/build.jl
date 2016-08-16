@@ -27,21 +27,21 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 #     push!(libav_libs, libswresample)
 # end
 
-@windows_only begin
+if is_windows()
     provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-2.2.3-win$WORD_SIZE-shared.7z"),
              libav_libs,
              os = :Windows,
              unpacked_dir="ffmpeg-2.2.3-win$WORD_SIZE-shared/bin")
 end
 
-@osx_only begin
+if is_apple()
     using Homebrew
     provides( Homebrew.HB, "ffmpeg", libav_libs, os = :Darwin )
 end
 
 
 # System Package Managers
-apt_packages = @compat Dict(
+apt_packages = Dict(
     "libavcodec-extra-53"   => libavcodec,
     "libavcodec53"          => libavcodec,
     "libavcodec-extra-54"   => libavcodec,
@@ -90,10 +90,10 @@ provides(AptGet,
          apt_packages)
 
 provides(Yum,
-         @compat Dict("ffmpeg" => libav_libs))
+         Dict("ffmpeg" => libav_libs))
 
 provides(Pacman,
-         @compat Dict("ffmpeg" => libav_libs))
+         Dict("ffmpeg" => libav_libs))
 
 provides(Sources,
          URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"),
@@ -101,7 +101,7 @@ provides(Sources,
 
 provides(BuildProcess, Autotools(configure_options=["--enable-gpl"]), libav_libs, os = :Unix)
 
-@BinDeps.install @compat Dict(
+@BinDeps.install Dict(
     :libavcodec => :libavcodec,
     :libavformat => :libavformat,
     :libavutil => :libavutil,

@@ -106,7 +106,7 @@ diff -rU 3 ../util/ffmpeg/AVUtil/v52/libavutil_h.jl AVUtil/v52/libavutil_h.jl
 -# Skipping MacroDefinition: AV_PIX_FMT_XYZ12 AV_PIX_FMT_NE ( XYZ12BE , XYZ12LE )
 -# Skipping MacroDefinition: AV_PIX_FMT_NV20 AV_PIX_FMT_NE ( NV20BE , NV20LE )
 +macro AV_PIX_FMT_NE (be, le) 
-+    symbol("AV_PIX_FMT_"*string(le))
++    Symbol("AV_PIX_FMT_"*string(le))
 +end
 +
 +const AV_PIX_FMT_RGB32 = @AV_PIX_FMT_NE(ARGB, BGRA)

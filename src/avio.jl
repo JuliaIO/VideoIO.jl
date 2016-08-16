@@ -1,6 +1,7 @@
 # AVIO
 
 import Base: read, read!, show, close, eof, isopen, seekstart
+import Compat: String, unsafe_wrap
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
@@ -13,17 +14,13 @@ end
 abstract StreamContext
 
 if isdefined(Main, :FixedPointNumbers)
-    if isdefined(Main.FixedPointNumbers, :Ufixed8)
-        UFixed8 = Main.FixedPointNumbers.Ufixed8
-    else
-        UFixed8 = Main.FixedPointNumbers.UFixed8
-    end
+    UFixed8 = Main.FixedPointNumbers.UFixed8
 end
 
 if isdefined(Main, :ColorTypes)
-    typealias EightBitTypes @compat(Union{UInt8, UFixed8, Main.ColorTypes.RGB{UFixed8}})
+    typealias EightBitTypes Union{UInt8, UFixed8, Main.ColorTypes.RGB{UFixed8}}
 elseif isdefined(Main, :FixedPointNumbers)
-    typealias EightBitTypes @compat(Union{UInt8, UFixed8})
+    typealias EightBitTypes Union{UInt8, UFixed8}
 else
     typealias EightBitTypes UInt8
 end
@@ -169,7 +166,7 @@ pump(r::StreamContext) = pump(r.avin)
 
 function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{UInt8}, buf_size::Cint)
     avin = unsafe_pointer_to_objref(pavin)
-    out = pointer_to_array(pbuf, (buf_size,))
+    out = unsafe_wrap(Array, pbuf, (buf_size,))
     convert(Cint, readbytes!(avin.io, out))
 end
 
@@ -223,7 +220,7 @@ function open_avinput(avin::AVInput, source::AbstractString, input_format=C_NULL
     nothing
 end
 
-function AVInput{T<:@compat(Union{IO, AbstractString})}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
+function AVInput{T<:Union{IO, AbstractString}}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
 
     # Register all codecs and formats
     av_register_all()
@@ -284,7 +281,7 @@ end
 function VideoReader(avin::AVInput, video_stream=1;
                      transcode::Bool=true,
                      transcode_interpolation=SWS_BILINEAR,
-                     target_format=PIX_FMT_RGB24)
+                     target_format=AV_PIX_FMT_RGB24)
 
     1 <= video_stream <= length(avin.video_info) || error("video stream $video_stream not found")
 
@@ -325,7 +322,7 @@ function VideoReader(avin::AVInput, video_stream=1;
         error("Unsupported format (bits_per_pixel = $bits_per_pixel)")
     end
 
-    N = @compat Int64(bits_per_pixel >> 3)
+    N = Int64(bits_per_pixel >> 3)
     target_buf = Array(UInt8, bits_per_pixel>>3, width, height)
 
     sws_context = sws_getContext(width, height, pix_fmt,
@@ -372,14 +369,14 @@ function VideoReader(avin::AVInput, video_stream=1;
     vr
 end
 
-VideoReader{T<:@compat(Union{IO, AbstractString})}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
+VideoReader{T<:Union{IO, AbstractString}}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
 
 function decode_packet(r::VideoReader, aPacket)
     # Do we already have a complete frame that hasn't been consumed?
     if have_decoded_frame(r)
         apSourceDataBuffers = reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data])
         sz = avpicture_get_size(r.format, r.width, r.height)
-        push!(r.frame_queue, copy(pointer_to_array(apSourceDataBuffers[1], sz)))
+        push!(r.frame_queue, copy(unsafe_wrap(Array, apSourceDataBuffers[1], sz)))
         reset_frame_flag!(r)
     end
 
@@ -600,7 +597,7 @@ if have_avdevice()
     AVDevice.avdevice_register_all()
 
     function get_camera_devices(ffmpeg, idev, idev_name)
-        CAMERA_DEVICES = UTF8String[]
+        CAMERA_DEVICES = String[]
 
         read_vid_devs = false
         out,err = readall_stdout_stderr(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
@@ -631,7 +628,7 @@ if have_avdevice()
         return CAMERA_DEVICES
     end
 
-    @windows_only begin
+    if is_windows()
         ffmpeg = joinpath(dirname(@__FILE__), "..", "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
@@ -640,18 +637,18 @@ if have_avdevice()
 
     end
 
-    @linux_only begin
+    if is_linux()
         import Glob
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
         CAMERA_DEVICES = Glob.glob("video*", "/dev")
         DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
     end
 
-    @osx_only begin
+    if is_apple()
         ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
-        global CAMERA_DEVICES = UTF8String[]
+        global CAMERA_DEVICES = String[]
         try
             CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
         catch
@@ -675,7 +672,7 @@ try
         # Define read and retrieve for Images
         global retrieve, retrieve!, read!, read
         for r in [:read, :retrieve]
-            r! = symbol("$(r)!")
+            r! = Symbol("$(r)!")
 
             @eval begin
                 # read!, retrieve!

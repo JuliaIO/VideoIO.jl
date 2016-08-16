@@ -5,7 +5,6 @@ module TestVideos
 using Compat
 
 import VideoIO
-import ZipFile
 import Base: download, show
 export testvideo
 
@@ -33,7 +32,7 @@ show(io::IO, v::VideoFile) = print(io, """\
 VideoFile(name, description, license, credit, source, download_url) = VideoFile{:raw}(name, description, license, credit, source, download_url)
 
 # Standard test videos
-const videofiles = @compat Dict(
+const videofiles = Dict(
                     "ladybird.mp4" => VideoFile("ladybird.mp4",
                                                 "Ladybird opening wings (slow motion)",
                                                 "Creative Commons: By Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/deed)",
@@ -100,25 +99,6 @@ function download(v::VideoFile)
     write_info(v)
     println(STDERR, "Downloading $(v.name) to $videodir")
     download(v.download_url, joinpath(videodir, v.name))
-end
-
-function download(v::VideoFile{:unzip})
-    write_info(v)
-    zipfile = basename(v.download_url)
-    zipfile_full = joinpath(videodir, zipfile)
-    println(STDERR, "Downloading $zipfile to $videodir")
-    download(v.download_url, zipfile_full)
-    println(STDERR, "Extracting $(v.name) from $zipfile")
-    reader = ZipFile.Reader(zipfile_full)
-    for file in reader.files
-        if file.name == v.name
-            open(joinpath(videodir, v.name), "w+") do f
-                write(f, readall(file))
-            end
-            break
-        end
-    end
-    rm(zipfile_full)
 end
 
 function available()

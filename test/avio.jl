@@ -30,7 +30,7 @@ else
 end
 
 for name in VideoIO.TestVideos.names()
-    @osx_only startswith(name, "crescent") && continue
+    is_apple() && startswith(name, "crescent") && continue
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
@@ -70,7 +70,7 @@ end
 
 println(STDERR, "Testing IO reading...")
 for name in VideoIO.TestVideos.names()
-    @osx_only startswith(name, "crescent") && continue
+    is_apple() && startswith(name, "crescent") && continue
     # TODO: fix me?
     (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 

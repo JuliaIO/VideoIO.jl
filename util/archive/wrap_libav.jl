@@ -28,7 +28,7 @@ av_lib_ver = {}
 for lib in av_libs
     try
         name = lib[4:end]
-        ver = eval(symbol(name*"_version"))()
+        ver = eval(Symbol(name*"_version"))()
         push!(av_lib_ver, (lib,ver))
     end
 end
@@ -95,26 +95,26 @@ function rewrite_fn(e, call, body)
             Expr(:(::), [sym, Expr(:curly, [:Ptr, :UInt8], _)], _) => 
                 begin 
                     orig_type = Expr(:curly, :Ptr, :UInt8)
-                    _sym = symbol(string("_", sym))
+                    _sym = Symbol(string("_", sym))
                     push!(parms,   :($_sym::Union{Ptr,ByteString}))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
             Expr(:(::), [sym, Expr(:curly, [:Ptr, target_type], _)], _) => 
                 begin 
                     orig_type = Expr(:curly, :Ptr, target_type)
-                    _sym = symbol(string("_", sym))
+                    _sym = Symbol(string("_", sym))
                     push!(parms,   :($_sym::Ptr))
                     push!(content, :($sym = convert($orig_type, $_sym)))
                 end
             Expr(:(::), [sym, (:UInt32 || :Cuint)], _) => 
                 begin
-                    _sym = symbol(string("_", sym))
+                    _sym = Symbol(string("_", sym))
                     push!(parms,   :($_sym::Integer))
                     push!(content, :($sym = uint32($_sym)))
                 end
             Expr(:(::), [sym, (:Int32 || :Cint)], _) => 
                 begin
-                    _sym = symbol(string("_", sym))
+                    _sym = Symbol(string("_", sym))
                     push!(parms,   :($_sym::Integer))
                     push!(content, :($sym = Int32($_sym)))
                 end

@@ -9,7 +9,7 @@ Currently, only video reading is supported, for the following
 library versions:
 
 * libav 0.8, 9, 10
-* ffmpeg 2.2, 2.3
+* ffmpeg 2.2 through 3.0
 
 Video images may be read as raw arrays, or optionally, `Image`
 objects (if `Images.jl` is installed and loaded first).

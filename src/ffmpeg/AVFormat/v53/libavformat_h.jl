@@ -292,11 +292,11 @@ end
 
 # begin enum AVStreamParseType
 typealias AVStreamParseType UInt32
-const AVSTREAM_PARSE_NONE = @compat UInt32(0)
-const AVSTREAM_PARSE_FULL = @compat UInt32(1)
-const AVSTREAM_PARSE_HEADERS = @compat UInt32(2)
-const AVSTREAM_PARSE_TIMESTAMPS = @compat UInt32(3)
-const AVSTREAM_PARSE_FULL_ONCE = @compat UInt32(4)
+const AVSTREAM_PARSE_NONE = UInt32(0)
+const AVSTREAM_PARSE_FULL = UInt32(1)
+const AVSTREAM_PARSE_HEADERS = UInt32(2)
+const AVSTREAM_PARSE_TIMESTAMPS = UInt32(3)
+const AVSTREAM_PARSE_FULL_ONCE = UInt32(4)
 # end enum AVStreamParseType
 
 immutable AVIndexEntry

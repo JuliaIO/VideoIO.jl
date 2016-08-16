@@ -1,6 +1,5 @@
 julia 0.3
-Compat
-ZipFile
+Compat 0.8.6
 BinDeps 0.3.4
 Images 0.4.4
 ImageView 0.1.4

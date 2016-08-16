@@ -30,7 +30,7 @@ export
     AVFilterBufferRefAudioProps,
     AVFilterBufferRefVideoProps,
     AVFilterBufferRef,
-    AVFilter_,
+    AVFilter,
     AVFilterInternal,
     AVFilterGraphInternal,
     AVFilterGraph,
@@ -145,7 +145,7 @@ immutable AVFilterBufferRef
     metadata::Ptr{AVDictionary}
 end
 
-immutable AVFilter_
+immutable AVFilter
     name::Ptr{UInt8}
     description::Ptr{UInt8}
     inputs::Ptr{AVFilterPad}
@@ -157,7 +157,7 @@ immutable AVFilter_
     uninit::Ptr{Void}
     query_formats::Ptr{Void}
     priv_size::Cint
-    next::Ptr{AVFilter_}
+    next::Ptr{AVFilter}
     process_command::Ptr{Void}
     init_opaque::Ptr{Void}
 end
@@ -185,8 +185,8 @@ end
 
 # begin enum ANONYMOUS_1
 typealias ANONYMOUS_1 Cint
-const AVFILTER_AUTO_CONVERT_ALL = @compat Int32(0)
-const AVFILTER_AUTO_CONVERT_NONE = @compat Int32(-1)
+const AVFILTER_AUTO_CONVERT_ALL = Int32(0)
+const AVFILTER_AUTO_CONVERT_NONE = Int32(-1)
 # end enum ANONYMOUS_1
 
 immutable AVFilterInOut
@@ -213,8 +213,8 @@ end
 
 # begin enum ANONYMOUS_2
 typealias ANONYMOUS_2 UInt32
-const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = @compat UInt32(1)
-const AV_BUFFERSRC_FLAG_NO_COPY = @compat UInt32(2)
-const AV_BUFFERSRC_FLAG_PUSH = @compat UInt32(4)
-const AV_BUFFERSRC_FLAG_KEEP_REF = @compat UInt32(8)
+const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = UInt32(1)
+const AV_BUFFERSRC_FLAG_NO_COPY = UInt32(2)
+const AV_BUFFERSRC_FLAG_PUSH = UInt32(4)
+const AV_BUFFERSRC_FLAG_KEEP_REF = UInt32(8)
 # end enum ANONYMOUS_2
