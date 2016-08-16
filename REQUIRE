@@ -1,5 +1,5 @@
 julia 0.4
-Compat 0.8.6
+Compat 0.8.7
 BinDeps 0.3.4
 Images 0.4.4
 ImageView 0.1.4
