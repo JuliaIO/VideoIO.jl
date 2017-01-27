@@ -23,14 +23,14 @@ end
 av_pointer_to_field(s::Array, name::Symbol) = av_pointer_to_field(pointer(s), name)
 
 function open_stdout_stderr(cmd::Cmd)
-    out = Base.Pipe(C_NULL)
-    err = Base.Pipe(C_NULL)
-    cmd_out = Base.Pipe(C_NULL)
-    cmd_err = Base.Pipe(C_NULL)
+    out = Base.PipeEndpoint()
+    err = Base.PipeEndpoint()
+    cmd_out = Base.PipeEndpoint()
+    cmd_err = Base.PipeEndpoint()
     Base.link_pipe(out, true, cmd_out, false)
     Base.link_pipe(err, true, cmd_err, false)
 
-    r = spawn(false, ignorestatus(cmd), (DevNull, cmd_out, cmd_err))
+    r = spawn(ignorestatus(cmd), (DevNull, cmd_out, cmd_err))
 
     Base.close_pipe_sync(cmd_out)
     Base.close_pipe_sync(cmd_err)
