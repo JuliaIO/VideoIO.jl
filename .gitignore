@@ -1,3 +1,4 @@
 deps/*
 !deps/build.jl
 .DS_Store
+videos/*
