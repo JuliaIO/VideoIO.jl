@@ -23,6 +23,7 @@ julia:
 notifications:
   email: false
 # uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("VideoIO2"); Pkg.test("VideoIO2"; coverage=true)'
+script:
+  - julia -e 'Pkg.clone(pwd())'
+  - julia -e 'Pkg.build("VideoIO")'
+  - if [ -f test/runtests.jl ]; then julia -e 'Pkg.test("VideoIO", coverage=true)'; fi
