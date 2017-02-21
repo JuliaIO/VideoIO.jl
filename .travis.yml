@@ -26,4 +26,5 @@ notifications:
 script:
   - julia -e 'Pkg.clone(pwd())'
   - julia -e 'Pkg.build("VideoIO")'
-  - if [ -f test/runtests.jl ]; then julia -e 'Pkg.test("VideoIO", coverage=true)'; fi
+  # coverage=true causes tests to hang, see pull request #92
+  - if [ -f test/runtests.jl ]; then julia -e 'Pkg.test("VideoIO", coverage=false)'; fi

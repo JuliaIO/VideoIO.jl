@@ -13,7 +13,7 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 println(STDERR, "Testing file reading...")
 
-function notblank(img)
+@noinline function notblank(img)
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
