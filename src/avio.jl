@@ -13,17 +13,12 @@ end
 
 abstract StreamContext
 
-if isdefined(Main, :FixedPointNumbers)
-    UFixed8 = Main.FixedPointNumbers.UFixed8
-end
+typealias EightBitTypes Union{UInt8, N0f8, Main.ColorTypes.RGB{N0f8}}
+typealias PermutedArray{T,N,perm,iperm,AA<:Array} Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
+typealias VidArray{T,N} Union{Array{T,N},PermutedArray{T,N}}
 
-if isdefined(Main, :ColorTypes)
-    typealias EightBitTypes Union{UInt8, UFixed8, Main.ColorTypes.RGB{UFixed8}}
-elseif isdefined(Main, :FixedPointNumbers)
-    typealias EightBitTypes Union{UInt8, UFixed8}
-else
-    typealias EightBitTypes UInt8
-end
+# TODO: move this to Base
+Base.unsafe_convert{T}(::Type{Ptr{T}}, A::PermutedArray{T}) = Base.unsafe_convert(Ptr{T}, parent(A))
 
 # An audio-visual input stream/file
 type AVInput{I}
@@ -405,9 +400,9 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     end
 
     if t.target_bits_per_pixel == 8
-        buf = Array(UInt8, r.width, r.height)
+        buf = permuteddimsview(Matrix{Gray{N0f8}}(r.width, r.height), (2,1))
     else
-        buf = Array(UInt8, t.target_bits_per_pixel>>3, r.width, r.height)
+        buf = permuteddimsview(Matrix{RGB{N0f8}}(r.width, r.height), (2,1))
     end
 
     retrieve!(r, buf)
@@ -428,7 +423,7 @@ function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
 end
 
 # Converts a grabbed frame to the correct format (RGB by default)
-function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::Array{T})
+function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::VidArray{T})
     while !have_frame(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
@@ -471,7 +466,7 @@ function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::Array{T})
     return buf
 end
 
-function retrieve!{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::Array{T})
+function retrieve!{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T})
     while !have_frame(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
@@ -496,9 +491,9 @@ isopen{I<:IO}(avin::AVInput{I}) = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
 isopen(r::VideoReader) = isopen(r.avin)
 
-bufsize_check{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::Array{T}) = (length(buf)*sizeof(T) == avpicture_get_size(r.format, r.width, r.height))
-bufsize_check{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::Array{T}) = bufsize_check(r.transcodeContext, buf)
-bufsize_check{T<:EightBitTypes}(t::VideoTranscodeContext, buf::Array{T}) = (length(buf)*sizeof(T) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
+bufsize_check{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}) = (length(buf)*sizeof(T) == avpicture_get_size(r.format, r.width, r.height))
+bufsize_check{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::VidArray{T}) = bufsize_check(r.transcodeContext, buf)
+bufsize_check{T<:EightBitTypes}(t::VideoTranscodeContext, buf::VidArray{T}) = (length(buf)*sizeof(T) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
 
 have_decoded_frame(r) = r.aFrameFinished[1] > 0  # TODO: make sure the last frame was made available
 have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
@@ -668,38 +663,17 @@ if have_avdevice()
 end
 
 try
-    if isa(Main.Images, Module)
-        # Define read and retrieve for Images
-        global retrieve, retrieve!, read!, read
-        for r in [:read, :retrieve]
-            r! = Symbol("$(r)!")
-
-            @eval begin
-                # read!, retrieve!
-                $r!(c::VideoReader, img::Main.Images.Image) = ($r!(c, Main.Images.data(img)); img)
-
-                # read, retrieve
-                function $r(c::VideoReader, ::Type{Main.Images.Image}, colorspace="RGB", colordim=1, spatialorder=["x","y"])
-                    img = Main.Images.colorim($r(c::VideoReader))
-                end
-            end
-        end
-    end
-end
-
-try
     if isa(Main.ImageView, Module)
         # Define read and retrieve for Images
         global playvideo, viewcam, play
 
         function play(f, flip=false)
-            img = read(f, Main.Images.Image)
-            canvas, _ = Main.ImageView.view(img, flipx=flip, interactive=false)
-            buf = Main.Images.data(img)
+            buf = read(f)
+            canvas, _ = Main.ImageView.imshow(buf, flipx=flip, interactive=false)
 
             while !eof(f)
                 read!(f, buf)
-                Main.ImageView.view(canvas, img, flipx=flip, interactive=false)
+                Main.ImageView.imshow(canvas, buf, flipx=flip, interactive=false)
                 sleep(1/f.framerate)
             end
         end

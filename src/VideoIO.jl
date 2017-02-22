@@ -1,6 +1,8 @@
+__precompile__(false)
+
 module VideoIO
 
-using Compat
+using FixedPointNumbers, ColorTypes, ImageCore
 
 include("init.jl")
 

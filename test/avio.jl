@@ -1,8 +1,6 @@
 using Base.Test
-using Compat
-using FixedPointNumbers
+using ColorTypes, FileIO, ImageCore
 
-import Images: Image
 import VideoIO
 
 testdir = dirname(@__FILE__)
@@ -15,18 +13,8 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 println(STDERR, "Testing file reading...")
 
-if !isdefined(Main, :UFixed8)
-    UFixed8 = Ufixed8
-end
-
-function notblank(img)
-    all(Images.green(img) .== 0x00uf8) || all(Images.blue(img) .== 0x00uf8) || all(Images.red(img) .== 0x00uf8) || maximum(reinterpret(UFixed8, img)) < 0xcfuf8
-end
-
-if isdefined(Images, :load)
-    imload = Images.load
-else
-    imload = Images.imread
+@noinline function notblank(img)
+    all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
 for name in VideoIO.TestVideos.names()
@@ -34,12 +22,16 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    first_frame = imload(first_frame_file) # comment line when creating png files
+    first_frame = load(first_frame_file) # comment line when creating png files
 
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
 
-    img = read(v, Image)
+    if size(first_frame, 1) > v.height
+        first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
+    end
+
+    img = read(v)
 
     # Find the first non-trivial image
     while notblank(img)
@@ -76,12 +68,16 @@ for name in VideoIO.TestVideos.names()
 
     println(STDERR, "   Testing $name...")
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    first_frame = imload(first_frame_file) # comment line when creating png files
+    first_frame = load(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
     v = VideoIO.openvideo(open(filename))
 
-    img = read(v, Image)
+    if size(first_frame, 1) > v.height
+        first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
+    end
+
+    img = read(v)
 
     # Find the first non-trivial image
     while notblank(img)

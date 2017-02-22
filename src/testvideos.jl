@@ -46,7 +46,7 @@ const videofiles = Dict(
                                                     "pubic_domain (US)",
                                                     "",
                                                     "http://commons.wikimedia.org/wiki/File:Annie_Oakley_shooting_glass_balls,_1894.ogg",
-                                                    "http://upload.wikimedia.org/wikipedia/commons/d/dd/Annie_Oakley_shooting_glass_balls%2C_1894.ogg"),
+                                                    "https://upload.wikimedia.org/wikipedia/commons/8/87/Annie_Oakley_shooting_glass_balls%2C_1894.ogv"),
 
                     "crescent-moon.ogv" => VideoFile("crescent-moon.ogv",
                                                      "Moonset (time-lapse).",
