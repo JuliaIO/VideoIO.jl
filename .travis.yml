@@ -1,6 +1,5 @@
 # Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
-sudo: false
 addons:
   apt:
     packages:
@@ -14,17 +13,22 @@ addons:
     - libavformat53
     - libavutil-extra-51
     - libswscale2
-os:
-  - linux
-#  - osx
-julia:
-  - 0.5
-  - nightly
+matrix:
+  include:
+    - os: linux
+      julia: 0.5
+      sudo: false
+    - os: linux
+      julia: nightly
+      sudo: false
+    - os: osx
+      julia: 0.5
+    - os: osx
+      julia: nightly
 notifications:
   email: false
-# uncomment the following lines to override the default test script
+before_script:
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("VideoIO")'
 script:
-  - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.build("VideoIO")'
   # coverage=true causes tests to hang, see pull request #92
-  - if [ -f test/runtests.jl ]; then julia -e 'Pkg.test("VideoIO", coverage=false)'; fi
+  - julia -e 'Pkg.test("VideoIO", coverage=false)'
