@@ -20,7 +20,7 @@ else
     root = ARGS[1]
 end
 
-const av_libs = ["libavutil"
+const av_libs  =  ["libavutil"
                  "libavcodec"
                  "libavdevice"
                  "libavfilter"
@@ -30,7 +30,7 @@ const av_libs = ["libavutil"
                  "libswresample"
                  "libswscale"]
 
-const av_lib_ver = []
+const av_lib_ver  =  []
 for lib in av_libs
     try
         name = lib[4:end]
@@ -40,9 +40,9 @@ for lib in av_libs
     end
 end
 
-const av_hpath = [joinpath(root, lib) for (lib,ver,dir) in av_lib_ver]
+const av_hpath  =  [joinpath(root, lib) for (lib,ver,dir) in av_lib_ver]
 
-const ignore_header = DefaultDict(String, Bool, false)
+const ignore_header  =  DefaultDict(String, Bool, false)
 
 for i in ["lzo.h", "md5.h", "parse.h", "sha.h", "vda.h", "bprint.h",
           "attributes.h", "crc.h", "adler32.h", "aes.h", "avassert.h",

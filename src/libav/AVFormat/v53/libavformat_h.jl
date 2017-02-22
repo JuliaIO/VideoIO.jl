@@ -180,7 +180,7 @@ immutable URLPollEntry
     revents::Cint
 end
 
-typealias ByteIOContext AVIOContext
+const ByteIOContext=AVIOContext
 
 const AV_METADATA_MATCH_CASE = AV_DICT_MATCH_CASE
 const AV_METADATA_IGNORE_SUFFIX = AV_DICT_IGNORE_SUFFIX
@@ -237,8 +237,8 @@ const AVSEEK_FLAG_BYTE = 2
 const AVSEEK_FLAG_ANY = 4
 const AVSEEK_FLAG_FRAME = 8
 
-typealias AVCodecTag Void
-typealias AVMetadataConv Void
+const AVCodecTag=Void
+const AVMetadataConv=Void
 
 immutable AVInputFormat
     name::Ptr{UInt8}
@@ -291,7 +291,7 @@ immutable AVFrac
 end
 
 # begin enum AVStreamParseType
-typealias AVStreamParseType UInt32
+const AVStreamParseType=UInt32
 const AVSTREAM_PARSE_NONE = UInt32(0)
 const AVSTREAM_PARSE_FULL = UInt32(1)
 const AVSTREAM_PARSE_HEADERS = UInt32(2)
@@ -1476,8 +1476,8 @@ immutable AVFormatContext
     interrupt_callback::AVIOInterruptCB
 end
 
-typealias AVMetadata AVDictionary
-typealias AVMetadataTag AVDictionaryEntry
+const AVMetadata=AVDictionary
+const AVMetadataTag=AVDictionaryEntry
 
 immutable AVFormatParameters
     time_base::AVRational

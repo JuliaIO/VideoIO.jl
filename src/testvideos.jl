@@ -30,7 +30,7 @@ show(io::IO, v::VideoFile) = print(io, """\
 VideoFile(name, description, license, credit, source, download_url) = VideoFile{:raw}(name, description, license, credit, source, download_url)
 
 # Standard test videos
-const videofiles = Dict(
+const videofiles  =  Dict(
                     "ladybird.mp4" => VideoFile("ladybird.mp4",
                                                 "Ladybird opening wings (slow motion)",
                                                 "Creative Commons: By Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/deed)",

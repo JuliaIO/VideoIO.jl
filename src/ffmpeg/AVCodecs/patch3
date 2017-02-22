@@ -26,13 +26,13 @@ diff -r ../util/ffmpeg2.4/AVCodecs/v56/libavcodec_h.jl ffmpeg/AVCodecs/v56/libav
 >     # AV_XVMC_ID,
 >     # xvmc_pix_fmt
 2260c2260
-< typealias AVFrame Void
+< const AVFrame = Void
 ---
-> # typealias AVFrame Void
+> # const AVFrame = Void
 2628c2628
-< const DV_PROFILE_BYTES = 6 * 80
+< const DV_PROFILE_BYTES  =  6 * 80
 ---
-> # const DV_PROFILE_BYTES = 6 * 80
+> # const DV_PROFILE_BYTES  =  6 * 80
 2630,2729c2630,2729
 < immutable Array_2_AVRational
 <     d1::AVRational
@@ -87,14 +87,14 @@ diff -r ../util/ffmpeg2.4/AVCodecs/v56/libavcodec_h.jl ffmpeg/AVCodecs/v56/libav
 <     slice_data_size::UInt32
 < end
 < 
-< const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-< const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+< const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
+< const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 < 
 < immutable AVVDPAUPictureInfo
 <     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
 < end
 < 
-< typealias AVVDPAU_Render2 Ptr{Void}
+< const AVVDPAU_Render2 = Ptr{Void}
 < 
 < immutable AVVDPAUContext
 <     decoder::VdpDecoder
@@ -115,7 +115,7 @@ diff -r ../util/ffmpeg2.4/AVCodecs/v56/libavcodec_h.jl ffmpeg/AVCodecs/v56/libav
 <     info::AVVDPAUPictureInfo
 < end
 < 
-< const AV_XVMC_ID = 0x1dc711c0
+< const AV_XVMC_ID  =  0x1dc711c0
 < 
 < immutable xvmc_pix_fmt
 <     xvmc_id::Cint
@@ -188,14 +188,14 @@ diff -r ../util/ffmpeg2.4/AVCodecs/v56/libavcodec_h.jl ffmpeg/AVCodecs/v56/libav
 > #     slice_data_size::UInt32
 > # end
 > 
-> # const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-> # const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+> # const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
+> # const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 > 
 > # immutable AVVDPAUPictureInfo
 > #     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
 > # end
 > 
-> # typealias AVVDPAU_Render2 Ptr{Void}
+> # const AVVDPAU_Render2 = Ptr{Void}
 > 
 > # immutable AVVDPAUContext
 > #     decoder::VdpDecoder
@@ -216,7 +216,7 @@ diff -r ../util/ffmpeg2.4/AVCodecs/v56/libavcodec_h.jl ffmpeg/AVCodecs/v56/libav
 > #     info::AVVDPAUPictureInfo
 > # end
 > 
-> # const AV_XVMC_ID = 0x1dc711c0
+> # const AV_XVMC_ID  =  0x1dc711c0
 > 
 > # immutable xvmc_pix_fmt
 > #     xvmc_id::Cint

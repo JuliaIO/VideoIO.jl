@@ -24,16 +24,16 @@ export
     AVFilterInOut
 
 
-const AV_PERM_READ = 0x01
-const AV_PERM_WRITE = 0x02
-const AV_PERM_PRESERVE = 0x04
-const AV_PERM_REUSE = 0x08
-const AV_PERM_REUSE2 = 0x10
-const AV_PERM_NEG_LINESIZES = 0x20
+const AV_PERM_READ  =  0x01
+const AV_PERM_WRITE  =  0x02
+const AV_PERM_PRESERVE  =  0x04
+const AV_PERM_REUSE  =  0x08
+const AV_PERM_REUSE2  =  0x10
+const AV_PERM_NEG_LINESIZES  =  0x20
 
-typealias AVFilterContext AVFilterContext
-typealias AVFilterLink AVFilterLink
-typealias AVFilterPad AVFilterPad
+const AVFilterContext = AVFilterContext
+const AVFilterLink = AVFilterLink
+const AVFilterPad = AVFilterPad
 
 immutable Array_8_Ptr
     d1::Ptr{UInt8}

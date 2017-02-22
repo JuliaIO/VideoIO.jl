@@ -4,6 +4,8 @@ import Base: read, read!, show, close, eof, isopen, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
+using Compat
+
 type StreamInfo
     stream_index0::Int             # zero-based
     stream::AVStream
@@ -12,9 +14,9 @@ end
 
 abstract StreamContext
 
-typealias EightBitTypes Union{UInt8, N0f8, Main.ColorTypes.RGB{N0f8}}
-typealias PermutedArray{T,N,perm,iperm,AA<:Array} Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
-typealias VidArray{T,N} Union{Array{T,N},PermutedArray{T,N}}
+const EightBitTypes = Union{UInt8, N0f8, Main.ColorTypes.RGB{N0f8}}
+@compat const PermutedArray{T,N,perm,iperm,AA<:Array} = Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
+@compat const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
 
 # TODO: move this to Base
 Base.unsafe_convert{T}(::Type{Ptr{T}}, A::PermutedArray{T}) = Base.unsafe_convert(Ptr{T}, parent(A))
@@ -66,8 +68,8 @@ type VideoTranscodeContext
     apTargetLineSizes::Vector{Cint}
 end
 
-const TRANSCODE=true
-const NO_TRANSCODE=false
+const TRANSCODE = true
+const NO_TRANSCODE = false
 
 type VideoReader{transcode} <: StreamContext
     avin::AVInput
@@ -164,7 +166,7 @@ function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{UInt8}, buf_size::Cint)
     convert(Cint, readbytes!(avin.io, out))
 end
 
-const read_packet = cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
+const read_packet  =  cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
 
 function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)

@@ -855,7 +855,7 @@ export
 
 
 # begin enum AVCodecID
-typealias AVCodecID UInt32
+const AVCodecID=UInt32
 const AV_CODEC_ID_NONE = UInt32(0)
 const AV_CODEC_ID_MPEG1VIDEO = UInt32(1)
 const AV_CODEC_ID_MPEG2VIDEO = UInt32(2)
@@ -1777,7 +1777,7 @@ immutable AVCodecDescriptor
 end
 
 # begin enum Motion_Est_ID
-typealias Motion_Est_ID UInt32
+const Motion_Est_ID=UInt32
 const ME_ZERO = UInt32(1)
 const ME_FULL = UInt32(2)
 const ME_LOG = UInt32(3)
@@ -1791,7 +1791,7 @@ const ME_TESA = UInt32(10)
 # end enum Motion_Est_ID
 
 # begin enum AVDiscard
-typealias AVDiscard Cint
+const AVDiscard=Cint
 const AVDISCARD_NONE = Int32(-16)
 const AVDISCARD_DEFAULT = Int32(0)
 const AVDISCARD_NONREF = Int32(8)
@@ -1801,7 +1801,7 @@ const AVDISCARD_ALL = Int32(48)
 # end enum AVDiscard
 
 # begin enum AVColorPrimaries
-typealias AVColorPrimaries UInt32
+const AVColorPrimaries=UInt32
 const AVCOL_PRI_BT709 = UInt32(1)
 const AVCOL_PRI_UNSPECIFIED = UInt32(2)
 const AVCOL_PRI_BT470M = UInt32(4)
@@ -1813,7 +1813,7 @@ const AVCOL_PRI_NB = UInt32(9)
 # end enum AVColorPrimaries
 
 # begin enum AVColorTransferCharacteristic
-typealias AVColorTransferCharacteristic UInt32
+const AVColorTransferCharacteristic=UInt32
 const AVCOL_TRC_BT709 = UInt32(1)
 const AVCOL_TRC_UNSPECIFIED = UInt32(2)
 const AVCOL_TRC_GAMMA22 = UInt32(4)
@@ -1823,7 +1823,7 @@ const AVCOL_TRC_NB = UInt32(8)
 # end enum AVColorTransferCharacteristic
 
 # begin enum AVColorSpace
-typealias AVColorSpace UInt32
+const AVColorSpace=UInt32
 const AVCOL_SPC_RGB = UInt32(0)
 const AVCOL_SPC_BT709 = UInt32(1)
 const AVCOL_SPC_UNSPECIFIED = UInt32(2)
@@ -1836,7 +1836,7 @@ const AVCOL_SPC_NB = UInt32(9)
 # end enum AVColorSpace
 
 # begin enum AVColorRange
-typealias AVColorRange UInt32
+const AVColorRange=UInt32
 const AVCOL_RANGE_UNSPECIFIED = UInt32(0)
 const AVCOL_RANGE_MPEG = UInt32(1)
 const AVCOL_RANGE_JPEG = UInt32(2)
@@ -1844,7 +1844,7 @@ const AVCOL_RANGE_NB = UInt32(3)
 # end enum AVColorRange
 
 # begin enum AVChromaLocation
-typealias AVChromaLocation UInt32
+const AVChromaLocation=UInt32
 const AVCHROMA_LOC_UNSPECIFIED = UInt32(0)
 const AVCHROMA_LOC_LEFT = UInt32(1)
 const AVCHROMA_LOC_CENTER = UInt32(2)
@@ -1856,7 +1856,7 @@ const AVCHROMA_LOC_NB = UInt32(7)
 # end enum AVChromaLocation
 
 # begin enum AVAudioServiceType
-typealias AVAudioServiceType UInt32
+const AVAudioServiceType=UInt32
 const AV_AUDIO_SERVICE_TYPE_MAIN = UInt32(0)
 const AV_AUDIO_SERVICE_TYPE_EFFECTS = UInt32(1)
 const AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED = UInt32(2)
@@ -1899,7 +1899,7 @@ immutable AVPanScan
 end
 
 # begin enum AVPacketSideDataType
-typealias AVPacketSideDataType UInt32
+const AVPacketSideDataType=UInt32
 const AV_PKT_DATA_PALETTE = UInt32(0)
 const AV_PKT_DATA_NEW_EXTRADATA = UInt32(1)
 const AV_PKT_DATA_PARAM_CHANGE = UInt32(2)
@@ -1923,7 +1923,7 @@ immutable AVPacket
 end
 
 # begin enum AVSideDataParamChangeFlags
-typealias AVSideDataParamChangeFlags UInt32
+const AVSideDataParamChangeFlags=UInt32
 const AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT = UInt32(1)
 const AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT = UInt32(2)
 const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE = UInt32(4)
@@ -1981,7 +1981,7 @@ immutable AVProfile
     name::Ptr{UInt8}
 end
 
-typealias AVCodecDefault Void
+const AVCodecDefault=Void
 
 immutable AVCodec
     name::Ptr{UInt8}
@@ -2048,10 +2048,10 @@ end
 
 zero(::Type{Array_32_Uint8}) = Array_32_Uint8(fill(zero(UInt8),32)...)
 
-typealias AVCodecInternal Void
+const AVCodecInternal=Void
 
 # begin enum AVFieldOrder
-typealias AVFieldOrder UInt32
+const AVFieldOrder=UInt32
 const AV_FIELD_UNKNOWN = UInt32(0)
 const AV_FIELD_PROGRESSIVE = UInt32(1)
 const AV_FIELD_TT = UInt32(2)
@@ -2321,7 +2321,7 @@ immutable AVPicture
 end
 
 # begin enum AVSubtitleType
-typealias AVSubtitleType UInt32
+const AVSubtitleType=UInt32
 const SUBTITLE_NONE = UInt32(0)
 const SUBTITLE_BITMAP = UInt32(1)
 const SUBTITLE_TEXT = UInt32(2)
@@ -2410,8 +2410,8 @@ immutable AVCodecParserContext
     duration::Cint
 end
 
-typealias ReSampleContext Void
-typealias AVResampleContext Void
+const ReSampleContext=Void
+const AVResampleContext=Void
 
 immutable AVBitStreamFilter
     name::Ptr{UInt8}
@@ -2429,7 +2429,7 @@ immutable AVBitStreamFilterContext
 end
 
 # begin enum AVLockOp
-typealias AVLockOp UInt32
+const AVLockOp=UInt32
 const AV_LOCK_CREATE = UInt32(0)
 const AV_LOCK_OBTAIN = UInt32(1)
 const AV_LOCK_RELEASE = UInt32(2)

@@ -19,7 +19,7 @@ diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_
  
  
 @@ -2436,52 +2436,52 @@
- const AV_LOCK_DESTROY = UInt32(3)
+ const AV_LOCK_DESTROY  =  UInt32(3)
  # end enum AVLockOp
  
 -immutable vaapi_context
@@ -40,8 +40,8 @@ diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_
 -    slice_data_size::UInt32
 -end
 -
--const FF_VDPAU_STATE_USED_FOR_RENDER = 1
--const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+-const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
+-const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 -
 -immutable vdpau_render_state
 -    surface::VdpVideoSurface
@@ -52,7 +52,7 @@ diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_
 -    bitstream_buffers::Ptr{VdpBitstreamBuffer}
 -end
 -
--const AV_XVMC_ID = 0x1dc711c0
+-const AV_XVMC_ID  =  0x1dc711c0
 -
 -immutable xvmc_pix_fmt
 -    xvmc_id::Cint
@@ -89,8 +89,8 @@ diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_
 +#     slice_data_size::UInt32
 +# end
 +
-+# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-+# const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
++# const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
++# const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 +
 +# immutable vdpau_render_state
 +#     surface::VdpVideoSurface
@@ -101,7 +101,7 @@ diff -r -U3 ../../../util/libav-0.9/AVCodecs/v54/libavcodec_h.jl v54/libavcodec_
 +#     bitstream_buffers::Ptr{VdpBitstreamBuffer}
 +# end
 +
-+# const AV_XVMC_ID = 0x1dc711c0
++# const AV_XVMC_ID  =  0x1dc711c0
 +
 +# immutable xvmc_pix_fmt
 +#     xvmc_id::Cint

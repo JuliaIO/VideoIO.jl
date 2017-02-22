@@ -1,4 +1,5 @@
 julia 0.5
+Compat v0.18.0
 BinDeps 0.3.4
 FixedPointNumbers 0.3.0
 ColorTypes

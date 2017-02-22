@@ -88,4 +88,4 @@ immutable SwsFilter
     chrV::Ptr{SwsVector}
 end
 
-typealias SwsContext Void
+const SwsContext=Void

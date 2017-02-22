@@ -41,10 +41,10 @@ const AVFILTER_FLAG_DYNAMIC_OUTPUTS = 1 << 1
 const AVFILTER_FLAG_SLICE_THREADS = 1 << 2
 const AVFILTER_THREAD_SLICE = 1 << 0
 
-typealias AVFilterContext AVFilterContext
-typealias AVFilterLink AVFilterLink
-typealias AVFilterPad AVFilterPad
-typealias AVFilterFormats Void
+const AVFilterContext=AVFilterContext
+const AVFilterLink=AVFilterLink
+const AVFilterPad=AVFilterPad
+const AVFilterFormats=Void
 
 immutable Array_8_Ptr
     d1::Ptr{UInt8}
@@ -130,8 +130,8 @@ immutable AVFilter
     next::Ptr{AVFilter}
 end
 
-typealias AVFilterInternal Void
-typealias AVFilterGraphInternal Void
+const AVFilterInternal=Void
+const AVFilterGraphInternal=Void
 
 immutable AVFilterGraph
     av_class::Ptr{AVClass}

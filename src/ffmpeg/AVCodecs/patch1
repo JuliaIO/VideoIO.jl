@@ -28,8 +28,8 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
      decode_mb::Ptr{Void}
  end
  
--typealias AVFrame Void
-+# typealias AVFrame Void
+-const AVFrame = Void
++# const AVFrame = Void
  
  immutable AVCodecContext
      av_class::Ptr{AVClass}
@@ -41,7 +41,7 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
      codec_id::AVCodecID
      codec_tag::UInt32
 @@ -2632,68 +2632,68 @@
- const AV_LOCK_DESTROY = UInt32(3)
+ const AV_LOCK_DESTROY  =  UInt32(3)
  # end enum AVLockOp
  
 -immutable vaapi_context
@@ -62,14 +62,14 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 -    slice_data_size::UInt32
 -end
 -
--const FF_VDPAU_STATE_USED_FOR_RENDER = 1
--const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+-const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
+-const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 -
 -immutable AVVDPAUPictureInfo
 -    _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
 -end
 -
--typealias AVVDPAU_Render2 Ptr{Void}
+-const AVVDPAU_Render2 = Ptr{Void}
 -
 -immutable AVVDPAUContext
 -    decoder::VdpDecoder
@@ -90,7 +90,7 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 -    info::AVVDPAUPictureInfo
 -end
 -
--const AV_XVMC_ID = 0x1dc711c0
+-const AV_XVMC_ID  =  0x1dc711c0
 -
 -immutable xvmc_pix_fmt
 -    xvmc_id::Cint
@@ -127,14 +127,14 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 +#     slice_data_size::UInt32
 +# end
 +
-+# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-+# const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
++# const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
++# const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 +
 +# immutable AVVDPAUPictureInfo
 +#     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
 +# end
 +
-+# typealias AVVDPAU_Render2 Ptr{Void}
++# const AVVDPAU_Render2 = Ptr{Void}
 +
 +# immutable AVVDPAUContext
 +#     decoder::VdpDecoder
@@ -155,7 +155,7 @@ diff -rU 3 ../util/ffmpeg/AVCodec/v55/libavcodec_h.jl AVCodec/v55/libavcodec_h.j
 +#     info::AVVDPAUPictureInfo
 +# end
 +
-+# const AV_XVMC_ID = 0x1dc711c0
++# const AV_XVMC_ID  =  0x1dc711c0
 +
 +# immutable xvmc_pix_fmt
 +#     xvmc_id::Cint

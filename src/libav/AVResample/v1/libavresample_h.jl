@@ -22,10 +22,10 @@ export
 
 const AVRESAMPLE_MAX_CHANNELS = 32
 
-typealias AVAudioResampleContext Void
+const AVAudioResampleContext=Void
 
 # begin enum AVMixCoeffType
-typealias AVMixCoeffType UInt32
+const AVMixCoeffType=UInt32
 const AV_MIX_COEFF_TYPE_Q8 = UInt32(0)
 const AV_MIX_COEFF_TYPE_Q15 = UInt32(1)
 const AV_MIX_COEFF_TYPE_FLT = UInt32(2)
@@ -33,14 +33,14 @@ const AV_MIX_COEFF_TYPE_NB = UInt32(3)
 # end enum AVMixCoeffType
 
 # begin enum AVResampleFilterType
-typealias AVResampleFilterType UInt32
+const AVResampleFilterType=UInt32
 const AV_RESAMPLE_FILTER_TYPE_CUBIC = UInt32(0)
 const AV_RESAMPLE_FILTER_TYPE_BLACKMAN_NUTTALL = UInt32(1)
 const AV_RESAMPLE_FILTER_TYPE_KAISER = UInt32(2)
 # end enum AVResampleFilterType
 
 # begin enum AVResampleDitherMethod
-typealias AVResampleDitherMethod UInt32
+const AVResampleDitherMethod=UInt32
 const AV_RESAMPLE_DITHER_NONE = UInt32(0)
 const AV_RESAMPLE_DITHER_RECTANGULAR = UInt32(1)
 const AV_RESAMPLE_DITHER_TRIANGULAR = UInt32(2)
