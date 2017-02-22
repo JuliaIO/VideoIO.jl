@@ -24,7 +24,7 @@ export
     AVIO_ENTRY_SHARE,
     AVIO_ENTRY_WORKGROUP,
     AVIODirEntry,
-#    AVIODirContext,
+    AVIODirContext,
     AVIOContext,
     AVBPrint,
     LIBAVFORMAT_VERSION_MAJOR,
@@ -175,9 +175,10 @@ immutable AVIODirEntry
     filemode::Int64
 end
 
-# immutable AVIODirContext
-#     url_context::Ptr{URLContext}
-# end
+immutable AVIODirContext
+#    url_context::Ptr{URLContext}
+    url_context::Ptr{Void}
+end
 
 immutable AVIOContext
     av_class::Ptr{AVClass}
