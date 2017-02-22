@@ -2,8 +2,6 @@
 
 module TestVideos
 
-using Compat
-
 import VideoIO
 import Base: download, show
 export testvideo

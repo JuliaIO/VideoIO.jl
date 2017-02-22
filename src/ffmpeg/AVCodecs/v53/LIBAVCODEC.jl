@@ -4,8 +4,6 @@ include("avcodec.jl")
 
 const AV_NOPTS_VALUE = reinterpret(Int64, 0x8000000000000000)
 
-using Compat
-
 function AVFrame()
     ns = fieldnames(AVFrame)
     ts = AVFrame.types

@@ -38,8 +38,6 @@ include("pixdesc.jl")
 #include("version.jl")
 #include("xtea.jl")
 
-using Compat
-
 function AVFrame()
     ns = fieldnames(AVFrame)
     ts = AVFrame.types

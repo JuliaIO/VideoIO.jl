@@ -2,8 +2,6 @@ include("libavcodec_h.jl")
 
 include("avcodec.jl")
 
-using Compat
-
 function AVFrame()
     ns = fieldnames(AVFrame)
     ts = AVFrame.types

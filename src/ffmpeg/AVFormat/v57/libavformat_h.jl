@@ -1,7 +1,5 @@
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-using Compat
-
 export
     OBJC_NEW_PROPERTIES,
     AVIO_SEEKABLE_NORMAL,

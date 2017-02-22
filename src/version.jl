@@ -1,5 +1,3 @@
-using Compat
-
 av_version(v) = VersionNumber(v>>16,(v>>8)&0xff,v&0xff)
 
 have_avcodec()    = Libdl.dlopen_e(libavcodec)    != C_NULL

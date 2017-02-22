@@ -1,7 +1,6 @@
 # AVIO
 
 import Base: read, read!, show, close, eof, isopen, seekstart
-import Compat: String, unsafe_wrap
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
