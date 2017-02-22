@@ -31,10 +31,10 @@ const AV_PERM_REUSE = 0x08
 const AV_PERM_REUSE2 = 0x10
 const AV_PERM_NEG_LINESIZES = 0x20
 
-typealias AVFilterContext AVFilterContext
-typealias AVFilterLink AVFilterLink
-typealias AVFilterPad AVFilterPad
-typealias AVFilterFormats Void
+const AVFilterContext=AVFilterContext
+const AVFilterLink=AVFilterLink
+const AVFilterPad=AVFilterPad
+const AVFilterFormats=Void
 
 immutable Array_8_Ptr
     d1::Ptr{UInt8}

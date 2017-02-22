@@ -1,7 +1,5 @@
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-using Compat
-
 export
     OBJC_NEW_PROPERTIES,
     AVFILTER_FLAG_DYNAMIC_INPUTS,
@@ -38,18 +36,18 @@ export
     AV_BUFFERSRC_FLAG_KEEP_REF
 
 
-const OBJC_NEW_PROPERTIES = 1
-const AVFILTER_FLAG_DYNAMIC_INPUTS = 1 << 0
-const AVFILTER_FLAG_DYNAMIC_OUTPUTS = 1 << 1
-const AVFILTER_FLAG_SLICE_THREADS = 1 << 2
-const AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC = 1 << 16
-const AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL = 1 << 17
-const AVFILTER_FLAG_SUPPORT_TIMELINE = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
-const AVFILTER_THREAD_SLICE = 1 << 0
-const AVFILTER_CMD_FLAG_ONE = 1
-const AVFILTER_CMD_FLAG_FAST = 2
+const OBJC_NEW_PROPERTIES  =  1
+const AVFILTER_FLAG_DYNAMIC_INPUTS  =  1 << 0
+const AVFILTER_FLAG_DYNAMIC_OUTPUTS  =  1 << 1
+const AVFILTER_FLAG_SLICE_THREADS  =  1 << 2
+const AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC  =  1 << 16
+const AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL  =  1 << 17
+const AVFILTER_FLAG_SUPPORT_TIMELINE  =  AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
+const AVFILTER_THREAD_SLICE  =  1 << 0
+const AVFILTER_CMD_FLAG_ONE  =  1
+const AVFILTER_CMD_FLAG_FAST  =  2
 
-typealias AVFilterPad Void
+const AVFilterPad = Void
 
 immutable AVFilter
     name::Cstring
@@ -68,7 +66,7 @@ immutable AVFilter
     init_opaque::Ptr{Void}
 end
 
-typealias AVFilterGraphInternal Void
+const AVFilterGraphInternal = Void
 
 immutable AVFilterGraph
     av_class::Ptr{AVClass}
@@ -87,7 +85,7 @@ immutable AVFilterGraph
     disable_auto_convert::UInt32
 end
 
-typealias AVFilterInternal Void
+const AVFilterInternal = Void
 
 immutable AVFilterContext
     av_class::Ptr{AVClass}
@@ -110,12 +108,12 @@ immutable AVFilterContext
     is_disabled::Cint
 end
 
-typealias AVFilterFormats Void
+const AVFilterFormats = Void
 
 # begin enum ANONYMOUS_1
-typealias ANONYMOUS_1 Cint
-const AVFILTER_AUTO_CONVERT_ALL = (Int32)(0)
-const AVFILTER_AUTO_CONVERT_NONE = (Int32)(-1)
+const ANONYMOUS_1 = Cint
+const AVFILTER_AUTO_CONVERT_ALL  =  (Int32)(0)
+const AVFILTER_AUTO_CONVERT_NONE  =  (Int32)(-1)
 # end enum ANONYMOUS_1
 
 immutable AVFilterInOut
@@ -125,14 +123,14 @@ immutable AVFilterInOut
     next::Ptr{AVFilterInOut}
 end
 
-const LIBAVFILTER_VERSION_MAJOR = 6
-const LIBAVFILTER_VERSION_MINOR = 31
-const LIBAVFILTER_VERSION_MICRO = 100
+const LIBAVFILTER_VERSION_MAJOR  =  6
+const LIBAVFILTER_VERSION_MINOR  =  31
+const LIBAVFILTER_VERSION_MICRO  =  100
 
 # Skipping MacroDefinition: LIBAVFILTER_VERSION_INT AV_VERSION_INT ( LIBAVFILTER_VERSION_MAJOR , LIBAVFILTER_VERSION_MINOR , LIBAVFILTER_VERSION_MICRO )
 # Skipping MacroDefinition: LIBAVFILTER_VERSION AV_VERSION ( LIBAVFILTER_VERSION_MAJOR , LIBAVFILTER_VERSION_MINOR , LIBAVFILTER_VERSION_MICRO )
 
-const LIBAVFILTER_BUILD = LIBAVFILTER_VERSION_INT
+const LIBAVFILTER_BUILD  =  LIBAVFILTER_VERSION_INT
 
 # Skipping MacroDefinition: LIBAVFILTER_IDENT "Lavfi" AV_STRINGIFY ( LIBAVFILTER_VERSION )
 # Skipping MacroDefinition: FF_API_OLD_FILTER_OPTS ( LIBAVFILTER_VERSION_MAJOR < 7 )
@@ -142,8 +140,8 @@ const LIBAVFILTER_BUILD = LIBAVFILTER_VERSION_INT
 # Skipping MacroDefinition: FF_API_OLD_FILTER_REGISTER ( LIBAVFILTER_VERSION_MAJOR < 7 )
 # Skipping MacroDefinition: FF_API_NOCONST_GET_NAME ( LIBAVFILTER_VERSION_MAJOR < 7 )
 
-const AV_BUFFERSINK_FLAG_PEEK = 1
-const AV_BUFFERSINK_FLAG_NO_REQUEST = 2
+const AV_BUFFERSINK_FLAG_PEEK  =  1
+const AV_BUFFERSINK_FLAG_NO_REQUEST  =  2
 
 immutable AVBufferSinkParams
     pixel_fmts::Ptr{AVPixelFormat}
@@ -158,8 +156,8 @@ immutable AVABufferSinkParams
 end
 
 # begin enum ANONYMOUS_2
-typealias ANONYMOUS_2 UInt32
-const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = (UInt32)(1)
-const AV_BUFFERSRC_FLAG_PUSH = (UInt32)(4)
-const AV_BUFFERSRC_FLAG_KEEP_REF = (UInt32)(8)
+const ANONYMOUS_2 = UInt32
+const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT  =  (UInt32)(1)
+const AV_BUFFERSRC_FLAG_PUSH  =  (UInt32)(4)
+const AV_BUFFERSRC_FLAG_KEEP_REF  =  (UInt32)(8)
 # end enum ANONYMOUS_2

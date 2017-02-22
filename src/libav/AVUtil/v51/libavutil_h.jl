@@ -368,7 +368,7 @@ end
 const AV_TIME_BASE_Q = AVRational( 1 , AV_TIME_BASE )
 
 # begin enum AVMediaType
-typealias AVMediaType Cint
+const AVMediaType=Cint
 const AVMEDIA_TYPE_UNKNOWN = Int32(-1)
 const AVMEDIA_TYPE_VIDEO = Int32(0)
 const AVMEDIA_TYPE_AUDIO = Int32(1)
@@ -379,7 +379,7 @@ const AVMEDIA_TYPE_NB = Int32(5)
 # end enum AVMediaType
 
 # begin enum AVPictureType
-typealias AVPictureType UInt32
+const AVPictureType=UInt32
 const AV_PICTURE_TYPE_I = UInt32(1)
 const AV_PICTURE_TYPE_P = UInt32(2)
 const AV_PICTURE_TYPE_B = UInt32(3)
@@ -401,7 +401,7 @@ immutable AVDictionaryEntry
     value::Ptr{UInt8}
 end
 
-typealias AVDictionary Void
+const AVDictionary=Void
 
 const AV_LOG_QUIET = -8
 const AV_LOG_PANIC = 0
@@ -417,7 +417,7 @@ const AV_LOG_DEBUG = 48
 const AV_LOG_SKIP_REPEATED = 1
 
 # begin enum AVOptionType
-typealias AVOptionType UInt32
+const AVOptionType=UInt32
 const AV_OPT_TYPE_FLAGS = UInt32(0)
 const AV_OPT_TYPE_INT = UInt32(1)
 const AV_OPT_TYPE_INT64 = UInt32(2)
@@ -481,7 +481,7 @@ const PIX_FMT_RGB = 32
 #     depth_minus1::UInt16
 # end
 
-typealias AVComponentDescriptor UInt16
+const AVComponentDescriptor=UInt16
 
 immutable Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
@@ -502,7 +502,7 @@ immutable AVPixFmtDescriptor
 end
 
 # begin enum PixelFormat
-typealias PixelFormat Cint
+const PixelFormat=Cint
 const PIX_FMT_NONE = Int32(-1)
 const PIX_FMT_YUV420P = Int32(0)
 const PIX_FMT_YUYV422 = Int32(1)
@@ -595,7 +595,7 @@ const PIX_FMT_GBRP16BE = Int32(87)
 const PIX_FMT_GBRP16LE = Int32(88)
 const PIX_FMT_NB = Int32(89)
 
-typealias AVPixelFormat Cint
+const AVPixelFormat=Cint
 const AV_PIX_FMT_NONE = Int32(-1)
 const AV_PIX_FMT_YUV420P = Int32(0)
 const AV_PIX_FMT_YUYV422 = Int32(1)
@@ -818,7 +818,7 @@ const AV_OPT_SEARCH_CHILDREN = 0x0001
 const AV_OPT_SEARCH_FAKE_OBJ = 0x0002
 
 # begin enum AVSampleFormat
-typealias AVSampleFormat Cint
+const AVSampleFormat=Cint
 const AV_SAMPLE_FMT_NONE = Int32(-1)
 const AV_SAMPLE_FMT_U8 = Int32(0)
 const AV_SAMPLE_FMT_S16 = Int32(1)

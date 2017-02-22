@@ -28,13 +28,13 @@ diff -rU 3 ../util/ffmpeg/AVCodecs/v55/libavcodec_h.jl AVCodecs/v55/libavcodec_h
      decode_mb::Ptr{Void}
  end
  
--typealias AVFrame Void
-+# typealias AVFrame Void
+-const AVFrame = Void
++# const AVFrame = Void
  
  immutable AVCodecContext
      av_class::Ptr{AVClass}
 @@ -2632,68 +2632,68 @@
- const AV_LOCK_DESTROY = UInt32(3)
+ const AV_LOCK_DESTROY  =  UInt32(3)
  # end enum AVLockOp
  
 -immutable vaapi_context
@@ -55,14 +55,14 @@ diff -rU 3 ../util/ffmpeg/AVCodecs/v55/libavcodec_h.jl AVCodecs/v55/libavcodec_h
 -    slice_data_size::UInt32
 -end
 -
--const FF_VDPAU_STATE_USED_FOR_RENDER = 1
--const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+-const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
+-const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 -
 -immutable AVVDPAUPictureInfo
 -    _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
 -end
 -
--typealias AVVDPAU_Render2 Ptr{Void}
+-const AVVDPAU_Render2 = Ptr{Void}
 -
 -immutable AVVDPAUContext
 -    decoder::VdpDecoder
@@ -83,7 +83,7 @@ diff -rU 3 ../util/ffmpeg/AVCodecs/v55/libavcodec_h.jl AVCodecs/v55/libavcodec_h
 -    info::AVVDPAUPictureInfo
 -end
 -
--const AV_XVMC_ID = 0x1dc711c0
+-const AV_XVMC_ID  =  0x1dc711c0
 -
 -immutable xvmc_pix_fmt
 -    xvmc_id::Cint
@@ -120,14 +120,14 @@ diff -rU 3 ../util/ffmpeg/AVCodecs/v55/libavcodec_h.jl AVCodecs/v55/libavcodec_h
 +#     slice_data_size::UInt32
 +# end
 +
-+# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-+# const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
++# const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
++# const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 +
 +# immutable AVVDPAUPictureInfo
 +#     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
 +# end
 +
-+# typealias AVVDPAU_Render2 Ptr{Void}
++# const AVVDPAU_Render2 = Ptr{Void}
 +
 +# immutable AVVDPAUContext
 +#     decoder::VdpDecoder
@@ -148,7 +148,7 @@ diff -rU 3 ../util/ffmpeg/AVCodecs/v55/libavcodec_h.jl AVCodecs/v55/libavcodec_h
 +#     info::AVVDPAUPictureInfo
 +# end
 +
-+# const AV_XVMC_ID = 0x1dc711c0
++# const AV_XVMC_ID  =  0x1dc711c0
 +
 +# immutable xvmc_pix_fmt
 +#     xvmc_id::Cint

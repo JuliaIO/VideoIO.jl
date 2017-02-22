@@ -21,7 +21,7 @@ diff -r -U3 ../../../util/libav-0.10/AVCodecs/v55/libavcodec_h.jl v55/libavcodec
 +    # xvmc_pix_fmt
  
  
- const AV_CODEC_PROP_INTRA_ONLY = 1 << 0
+ const AV_CODEC_PROP_INTRA_ONLY  =  1 << 0
 @@ -1802,63 +1802,63 @@
  
  immutable vaapi_context
@@ -42,8 +42,8 @@ diff -r -U3 ../../../util/libav-0.10/AVCodecs/v55/libavcodec_h.jl v55/libavcodec
 -    slice_data_size::UInt32
 -end
 -
--const FF_VDPAU_STATE_USED_FOR_RENDER = 1
--const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
+-const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
+-const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 -
 -immutable AVVDPAUPictureInfo
 -    _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
@@ -67,7 +67,7 @@ diff -r -U3 ../../../util/libav-0.10/AVCodecs/v55/libavcodec_h.jl v55/libavcodec
 -    bitstream_buffers::Ptr{VdpBitstreamBuffer}
 -end
 -
--const AV_XVMC_ID = 0x1dc711c0
+-const AV_XVMC_ID  =  0x1dc711c0
 -
 -immutable xvmc_pix_fmt
 -    xvmc_id::Cint
@@ -102,8 +102,8 @@ diff -r -U3 ../../../util/libav-0.10/AVCodecs/v55/libavcodec_h.jl v55/libavcodec
 +#     slice_data_size::UInt32
 +# end
 +
-+# const FF_VDPAU_STATE_USED_FOR_RENDER = 1
-+# const FF_VDPAU_STATE_USED_FOR_REFERENCE = 2
++# const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
++# const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 +
 +# immutable AVVDPAUPictureInfo
 +#     _AVVDPAUPictureInfo::VdpPictureInfoMPEG4Part2
@@ -127,7 +127,7 @@ diff -r -U3 ../../../util/libav-0.10/AVCodecs/v55/libavcodec_h.jl v55/libavcodec
 +#     bitstream_buffers::Ptr{VdpBitstreamBuffer}
 +# end
 +
-+# const AV_XVMC_ID = 0x1dc711c0
++# const AV_XVMC_ID  =  0x1dc711c0
 +
 +# immutable xvmc_pix_fmt
 +#     xvmc_id::Cint

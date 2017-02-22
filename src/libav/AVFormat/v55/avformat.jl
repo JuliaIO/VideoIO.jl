@@ -204,7 +204,7 @@ function av_guess_codec(fmt,short_name,filename,mime_type,_type::AVMediaType)
 end
 
 function av_hex_dump(f,buf,size::Integer)
-    ccall((:av_hex_dump,libavformat),Void,(Ptr{FILE},Ptr{UInt8},Cint),f,buf,size)
+    ccall((:av_hex_dump,libavformat),Void,(Ptr{Void},Ptr{UInt8},Cint),f,buf,size)
 end
 
 function av_hex_dump_log(avcl,level::Integer,buf,size::Integer)
@@ -212,7 +212,7 @@ function av_hex_dump_log(avcl,level::Integer,buf,size::Integer)
 end
 
 function av_pkt_dump2(f,pkt,dump_payload::Integer,st)
-    ccall((:av_pkt_dump2,libavformat),Void,(Ptr{FILE},Ptr{AVPacket},Cint,Ptr{AVStream}),f,pkt,dump_payload,st)
+    ccall((:av_pkt_dump2,libavformat),Void,(Ptr{Void},Ptr{AVPacket},Cint,Ptr{AVStream}),f,pkt,dump_payload,st)
 end
 
 function av_pkt_dump_log2(avcl,level::Integer,pkt,dump_payload::Integer,st)

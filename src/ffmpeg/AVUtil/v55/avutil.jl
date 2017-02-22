@@ -48,7 +48,7 @@ function av_int_list_length_for_size(elsize::Integer,list,term::UInt64)
 end
 
 function av_fopen_utf8(path,mode)
-    ccall((:av_fopen_utf8,libavutil),Ptr{FILE},(Cstring,Cstring),path,mode)
+    ccall((:av_fopen_utf8,libavutil),Ptr{Void},(Cstring,Cstring),path,mode)
 end
 
 function av_get_time_base_q()

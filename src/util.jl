@@ -1,7 +1,5 @@
 # Helpful utility functions
 
-using Compat
-
 # Set the value of a field of a pointer
 # Equivalent to s->name = value
 function av_setfield{T}(s::Ptr{T}, name::Symbol, value)

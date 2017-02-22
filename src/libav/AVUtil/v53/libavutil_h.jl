@@ -451,7 +451,7 @@ end
 const AV_TIME_BASE_Q = AVRational( 1 , AV_TIME_BASE )
 
 # begin enum AVMediaType
-typealias AVMediaType Cint
+const AVMediaType=Cint
 const AVMEDIA_TYPE_UNKNOWN = Int32(-1)
 const AVMEDIA_TYPE_VIDEO = Int32(0)
 const AVMEDIA_TYPE_AUDIO = Int32(1)
@@ -462,7 +462,7 @@ const AVMEDIA_TYPE_NB = Int32(5)
 # end enum AVMediaType
 
 # begin enum AVPictureType
-typealias AVPictureType UInt32
+const AVPictureType=UInt32
 const AV_PICTURE_TYPE_I = UInt32(1)
 const AV_PICTURE_TYPE_P = UInt32(2)
 const AV_PICTURE_TYPE_B = UInt32(3)
@@ -474,7 +474,7 @@ const AV_PICTURE_TYPE_BI = UInt32(7)
 
 const AV_BUFFER_FLAG_READONLY = 1 << 0
 
-typealias AVBuffer Void
+const AVBuffer=Void
 
 immutable AVBufferRef
     buffer::Ptr{AVBuffer}
@@ -482,7 +482,7 @@ immutable AVBufferRef
     size::Cint
 end
 
-typealias AVBufferPool Void
+const AVBufferPool=Void
 
 const AV_CH_FRONT_LEFT = 0x00000001
 const AV_CH_FRONT_RIGHT = 0x00000002
@@ -539,7 +539,7 @@ const AV_CH_LAYOUT_OCTAGONAL = ((AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_LEFT) | AV_CH
 const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
 
 # begin enum AVMatrixEncoding
-typealias AVMatrixEncoding UInt32
+const AVMatrixEncoding=UInt32
 const AV_MATRIX_ENCODING_NONE = UInt32(0)
 const AV_MATRIX_ENCODING_DOLBY = UInt32(1)
 const AV_MATRIX_ENCODING_DPLII = UInt32(2)
@@ -562,7 +562,7 @@ immutable AVDictionaryEntry
     value::Ptr{UInt8}
 end
 
-typealias AVDictionary Void
+const AVDictionary=Void
 
 immutable AVFifoBuffer
     buffer::Ptr{UInt8}
@@ -577,7 +577,7 @@ const AV_NUM_DATA_POINTERS = 8
 const AV_FRAME_FLAG_CORRUPT = 1 << 0
 
 # begin enum AVFrameSideDataType
-typealias AVFrameSideDataType UInt32
+const AVFrameSideDataType=UInt32
 const AV_FRAME_DATA_PANSCAN = UInt32(0)
 const AV_FRAME_DATA_A53_CC = UInt32(1)
 const AV_FRAME_DATA_STEREO3D = UInt32(2)
@@ -703,7 +703,7 @@ const AV_LOG_DEBUG = 48
 const AV_LOG_SKIP_REPEATED = 1
 
 # begin enum AVOptionType
-typealias AVOptionType UInt32
+const AVOptionType=UInt32
 const AV_OPT_TYPE_FLAGS = UInt32(0)
 const AV_OPT_TYPE_INT = UInt32(1)
 const AV_OPT_TYPE_INT64 = UInt32(2)
@@ -783,7 +783,7 @@ end
 
 
 # begin enum AVPixelFormat
-typealias AVPixelFormat Cint
+const AVPixelFormat=Cint
 const AV_PIX_FMT_NONE = Int32(-1)
 const AV_PIX_FMT_YUV420P = Int32(0)
 const AV_PIX_FMT_YUYV422 = Int32(1)
@@ -1054,7 +1054,7 @@ const PIX_FMT_GBRP10 = AV_PIX_FMT_GBRP10
 const PIX_FMT_GBRP16 = AV_PIX_FMT_GBRP16
 
 # begin enum AVSampleFormat
-typealias AVSampleFormat Cint
+const AVSampleFormat=Cint
 const AV_SAMPLE_FMT_NONE = Int32(-1)
 const AV_SAMPLE_FMT_U8 = Int32(0)
 const AV_SAMPLE_FMT_S16 = Int32(1)
@@ -1094,10 +1094,10 @@ const LIBAVUTIL_VERSION_MICRO = 0
 # Skipping MacroDefinition: FF_API_VDPAU ( LIBAVUTIL_VERSION_MAJOR < 54 )
 # Skipping MacroDefinition: FF_API_XVMC ( LIBAVUTIL_VERSION_MAJOR < 54 )
 
-typealias AVAudioFifo Void
+const AVAudioFifo=Void
 
 # begin enum AVDownmixType
-typealias AVDownmixType UInt32
+const AVDownmixType=UInt32
 const AV_DOWNMIX_TYPE_UNKNOWN = UInt32(0)
 const AV_DOWNMIX_TYPE_LORO = UInt32(1)
 const AV_DOWNMIX_TYPE_LTRT = UInt32(2)
@@ -1130,7 +1130,7 @@ const AV_OPT_SEARCH_FAKE_OBJ = 0x0002
 const AV_STEREO3D_FLAG_INVERT = 1 << 0
 
 # begin enum AVStereo3DType
-typealias AVStereo3DType UInt32
+const AVStereo3DType=UInt32
 const AV_STEREO3D_2D = UInt32(0)
 const AV_STEREO3D_SIDEBYSIDE = UInt32(1)
 const AV_STEREO3D_TOPBOTTOM = UInt32(2)

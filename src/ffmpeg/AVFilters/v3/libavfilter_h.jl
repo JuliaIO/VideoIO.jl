@@ -49,28 +49,28 @@ export
     AV_BUFFERSRC_FLAG_KEEP_REF
 
 
-const AV_PERM_READ = 0x01
-const AV_PERM_WRITE = 0x02
-const AV_PERM_PRESERVE = 0x04
-const AV_PERM_REUSE = 0x08
-const AV_PERM_REUSE2 = 0x10
-const AV_PERM_NEG_LINESIZES = 0x20
-const AV_PERM_ALIGN = 0x40
-const AVFILTER_ALIGN = 16
-const AVFILTER_FLAG_DYNAMIC_INPUTS = 1 << 0
-const AVFILTER_FLAG_DYNAMIC_OUTPUTS = 1 << 1
-const AVFILTER_FLAG_SLICE_THREADS = 1 << 2
-const AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC = 1 << 16
-const AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL = 1 << 17
-const AVFILTER_FLAG_SUPPORT_TIMELINE = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
-const AVFILTER_THREAD_SLICE = 1 << 0
-const AVFILTER_CMD_FLAG_ONE = 1
-const AVFILTER_CMD_FLAG_FAST = 2
+const AV_PERM_READ  =  0x01
+const AV_PERM_WRITE  =  0x02
+const AV_PERM_PRESERVE  =  0x04
+const AV_PERM_REUSE  =  0x08
+const AV_PERM_REUSE2  =  0x10
+const AV_PERM_NEG_LINESIZES  =  0x20
+const AV_PERM_ALIGN  =  0x40
+const AVFILTER_ALIGN  =  16
+const AVFILTER_FLAG_DYNAMIC_INPUTS  =  1 << 0
+const AVFILTER_FLAG_DYNAMIC_OUTPUTS  =  1 << 1
+const AVFILTER_FLAG_SLICE_THREADS  =  1 << 2
+const AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC  =  1 << 16
+const AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL  =  1 << 17
+const AVFILTER_FLAG_SUPPORT_TIMELINE  =  AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
+const AVFILTER_THREAD_SLICE  =  1 << 0
+const AVFILTER_CMD_FLAG_ONE  =  1
+const AVFILTER_CMD_FLAG_FAST  =  2
 
-typealias AVFilterContext AVFilterContext
-typealias AVFilterLink AVFilterLink
-typealias AVFilterPad AVFilterPad
-typealias AVFilterFormats Void
+const AVFilterContext = AVFilterContext
+const AVFilterLink = AVFilterLink
+const AVFilterPad = AVFilterPad
+const AVFilterFormats = Void
 
 immutable Array_8_Ptr
     d1::Ptr{UInt8}
@@ -162,8 +162,8 @@ immutable AVFilter
     init_opaque::Ptr{Void}
 end
 
-typealias AVFilterInternal Void
-typealias AVFilterGraphInternal Void
+const AVFilterInternal = Void
+const AVFilterGraphInternal = Void
 
 immutable AVFilterGraph
     av_class::Ptr{AVClass}
@@ -184,9 +184,9 @@ immutable AVFilterGraph
 end
 
 # begin enum ANONYMOUS_1
-typealias ANONYMOUS_1 Cint
-const AVFILTER_AUTO_CONVERT_ALL = Int32(0)
-const AVFILTER_AUTO_CONVERT_NONE = Int32(-1)
+const ANONYMOUS_1 = Cint
+const AVFILTER_AUTO_CONVERT_ALL  =  Int32(0)
+const AVFILTER_AUTO_CONVERT_NONE  =  Int32(-1)
 # end enum ANONYMOUS_1
 
 immutable AVFilterInOut
@@ -196,8 +196,8 @@ immutable AVFilterInOut
     next::Ptr{AVFilterInOut}
 end
 
-const AV_BUFFERSINK_FLAG_PEEK = 1
-const AV_BUFFERSINK_FLAG_NO_REQUEST = 2
+const AV_BUFFERSINK_FLAG_PEEK  =  1
+const AV_BUFFERSINK_FLAG_NO_REQUEST  =  2
 
 immutable AVBufferSinkParams
     pixel_fmts::Ptr{AVPixelFormat}
@@ -212,9 +212,9 @@ immutable AVABufferSinkParams
 end
 
 # begin enum ANONYMOUS_2
-typealias ANONYMOUS_2 UInt32
-const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = UInt32(1)
-const AV_BUFFERSRC_FLAG_NO_COPY = UInt32(2)
-const AV_BUFFERSRC_FLAG_PUSH = UInt32(4)
-const AV_BUFFERSRC_FLAG_KEEP_REF = UInt32(8)
+const ANONYMOUS_2 = UInt32
+const AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT  =  UInt32(1)
+const AV_BUFFERSRC_FLAG_NO_COPY  =  UInt32(2)
+const AV_BUFFERSRC_FLAG_PUSH  =  UInt32(4)
+const AV_BUFFERSRC_FLAG_KEEP_REF  =  UInt32(8)
 # end enum ANONYMOUS_2

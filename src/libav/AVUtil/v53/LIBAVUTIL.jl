@@ -19,8 +19,6 @@ include("pixdesc.jl")
 #include("stereo3d.jl")
 #include("xtea.jl")
 
-using Compat
-
 function AVFrame()
     ns = fieldnames(AVFrame)
     ts = AVFrame.types

@@ -177,7 +177,7 @@ const AVSEEK_FLAG_BYTE = 2
 const AVSEEK_FLAG_ANY = 4
 const AVSEEK_FLAG_FRAME = 8
 
-typealias AVCodecTag Void
+const AVCodecTag=Void
 
 immutable AVInputFormat
     name::Ptr{UInt8}
@@ -227,7 +227,7 @@ immutable AVFrac
 end
 
 # begin enum AVStreamParseType
-typealias AVStreamParseType UInt32
+const AVStreamParseType=UInt32
 const AVSTREAM_PARSE_NONE = UInt32(0)
 const AVSTREAM_PARSE_FULL = UInt32(1)
 const AVSTREAM_PARSE_HEADERS = UInt32(2)
@@ -1357,7 +1357,7 @@ immutable AVChapter
     metadata::Ptr{AVDictionary}
 end
 
-typealias AVFormatInternal Void
+const AVFormatInternal=Void
 
 immutable AVFormatContext
     av_class::Ptr{AVClass}
