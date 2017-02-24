@@ -46,7 +46,7 @@ ignore_header["vda.h"] = true
 av_headers = Array(ASCIIString, 0)
 for path in av_hpath
     !ispath(path) && continue
-    tmp = map(x->joinpath(path, x),split(readall(`ls $path` |> `sort`)) )
+    tmp = map(x->joinpath(path, x),split(readstring(`ls $path` |> `sort`)) )
     append!(av_headers, tmp)
 end
 for header in av_headers
