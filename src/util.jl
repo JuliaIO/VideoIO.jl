@@ -43,5 +43,5 @@ end
 
 function readall_stdout_stderr(cmd::Cmd)
     (out, err, proc) = open_stdout_stderr(cmd)
-    return (readall(out), readall(err))
+    return (readstring(out), readstring(err))
 end
