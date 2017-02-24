@@ -26,6 +26,8 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 #     push!(libav_libs, libswresample)
 # end
 
+WORD_SIZE = Sys.WORD_SIZE
+
 if is_windows()
     provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-2.2.3-win$WORD_SIZE-shared.7z"),
              libav_libs,

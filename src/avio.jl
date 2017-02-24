@@ -625,6 +625,7 @@ if have_avdevice()
     end
 
     if is_windows()
+        WORD_SIZE = Sys.WORD_SIZE
         ffmpeg = joinpath(dirname(@__FILE__), "..", "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
