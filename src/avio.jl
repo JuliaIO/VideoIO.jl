@@ -2,7 +2,7 @@
 
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
-export read, read!, pump, openvideo, opencamera, load
+export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
 using Compat, FileIO
 
@@ -486,11 +486,10 @@ function seek(s::VideoReader, seconds::Float64,
     stream = s.avin.video_info[video_stream].stream
     first_dts = stream.first_dts
     #actualTimestamp = first_dts
-    actualTimestamp = s.aVideoFrame[video_stream].best_effort_timestamp
+    actualTimestamp = av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
     frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
 
-    println(dts-frameskip)
     while actualTimestamp < (dts - frameskip)
         while !have_frame(s)
             idx = pump(s.avin)
@@ -498,10 +497,8 @@ function seek(s::VideoReader, seconds::Float64,
             idx == -1 && throw(EOFError())
         end
         reset_frame_flag!(s)
-        actualTimestamp = s.aVideoFrame[video_stream].best_effort_timestamp
-        println(actualTimestamp)
+        actualTimestamp = av_frame_get_best_effort_timestamp(s.aVideoFrame)
     end
-    println(actualTimestamp)
     return(s)
 end
 
@@ -688,20 +685,5 @@ if have_avdevice()
     end
 end
 
-function load(f::String;position=1.0,nframes=1)
-    s = openvideo(f)
-    seek(s,position)
-    out = load(s,nframes=nframes)
-    close(s)
-    out
-end
 
-function load(v::VideoReader;nframes=1)
-    firstFrame = read(v)
-    out = Array(eltype(firstFrame),size(firstFrame)...,nframes)
-    out[:,:,1] =  firstFrame[:,:]
-    for i in 2:nframes
-        out[:,:,i] = read(v)[:,:]
-    end
-    out
-end
+
