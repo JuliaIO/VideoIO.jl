@@ -2,7 +2,7 @@
 
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
-export read, read!, pump, openvideo, opencamera, load
+export read, read!, pump, openvideo, opencamera
 
 using Compat, FileIO
 
@@ -688,20 +688,4 @@ if have_avdevice()
     end
 end
 
-function load(f::String;position=1.0,nframes=1)
-    s = openvideo(f)
-    seek(s,position)
-    out = load(s,nframes=nframes)
-    close(s)
-    out
-end
 
-function load(v::VideoReader;nframes=1)
-    firstFrame = read(v)
-    out = Array(eltype(firstFrame),size(firstFrame)[2:3]...,nframes)
-    out[:,:,1] =  firstFrame[1,:,:]
-    for i in 2:nframes
-        out[:,:,i] = read(v)[1,:,:]
-    end
-    out
-end
