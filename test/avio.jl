@@ -22,7 +22,9 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
+    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png") 
     first_frame = load(first_frame_file) # comment line when creating png files
+    fiftieth_frame = load(fiftieth_frame_file) # comment line when creating png files
 
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
@@ -38,9 +40,19 @@ for name in VideoIO.TestVideos.names()
         read!(v, img)
     end
 
-    #imwrite(img, first_frame_file)        # uncomment line when creating png files
+    #save(first_frame_file,img)        # uncomment line when creating png files
 
     @test img == first_frame               # comment line when creating png files
+
+    
+    for i in 1:50
+        read!(v,img)
+    end
+    #save(fiftieth_frame_file,img)     # uncomment lines when creating png files
+    timebase = v.avin.video_info[1].stream.time_base
+    fiftytime = (v.aVideoFrame[1].best_effort_timestamp-v.avin.video_info[1].stream.first_dts)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
+  
+    @test img == fiftieth_frame
 
     while !eof(v)
         read!(v, img)
@@ -57,6 +69,12 @@ for name in VideoIO.TestVideos.names()
 
     @test img == first_frame
 
+    seek(v,float(fiftytime))
+
+    read!(v,img)
+
+    @test img == fiftieth_frame
+
     close(v)
 end
 
@@ -67,7 +85,7 @@ for name in VideoIO.TestVideos.names()
     (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 
     println(STDERR, "   Testing $name...")
-    first_frame_file = joinpath(testdir, swapext(name, ".png"))
+    first_frame_file = joinpath(testdir, swapext(name, ".png")) 
     first_frame = load(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
@@ -84,13 +102,14 @@ for name in VideoIO.TestVideos.names()
         read!(v, img)
     end
 
-    #imwrite(img, first_frame_file)        # uncomment line when creating png files
+    #save(first_frame_file,img)        # uncomment line when creating png files
 
-    @test img == first_frame               # comment line when creating png files
+    @test img == first_frame               # comment line when creating png files   
 
     while !eof(v)
         read!(v, img)
     end
+
 end
 
 VideoIO.testvideo("ladybird") # coverage testing

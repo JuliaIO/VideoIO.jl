@@ -1,10 +1,10 @@
 # AVIO
 
-import Base: read, read!, show, close, eof, isopen, seekstart
+import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
-export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
+export read, read!, pump, openvideo, opencamera, load
 
-using Compat
+using Compat, FileIO
 
 type StreamInfo
     stream_index0::Int             # zero-based
@@ -92,41 +92,6 @@ type VideoReader{transcode} <: StreamContext
 end
 
 show(io::IO, vr::VideoReader) = print(io, "VideoReader(...)")
-
-# type AudioContext <: StreamContext
-#     stream_index0::Int             # zero-based
-#     stream::AVStream
-#     codec_ctx::AVCodecContext
-
-#     sample_format::Int
-#     sample_rate::Int
-#     #sample_bits::Int
-#     channels::Int
-# end
-
-# type SubtitleContext <: StreamContext
-#     stream_index0::Int             # zero-based
-#     stream::AVStream
-#     codec_ctx::AVCodecContext
-# end
-
-# type DataContext <: StreamContext
-#     stream_index0::Int             # zero-based
-#     stream::AVStream
-#     codec_ctx::AVCodecContext
-# end
-
-# type AttachmentContext <: StreamContext
-#     stream_index0::Int             # zero-based
-#     stream::AVStream
-#     codec_ctx::AVCodecContext
-# end
-
-# type UnknownContext <: StreamContext
-#     stream_index0::Int             # zero-based
-#     stream::AVStream
-#     codec_ctx::AVCodecContext
-# end
 
 # Pump input for data
 function pump(c::AVInput)
@@ -501,19 +466,54 @@ have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
 have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i in avin.listening])
 
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
+function seconds_to_timestamp(s::Float64, time_base::AVRational)
+    return convert(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
+end
 
-function seekstart(s::VideoReader, video_stream=1)
+function seek(s::VideoReader, seconds::Float64,
+              seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
+              video_stream::Int64=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
+
+    fc = s.avin.apFormatContext[1]
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
-    seekstart(s.avin, video_stream)
+    seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
+    
     avcodec_flush_buffers(pCodecContext)
 
-    return s
+    stream = s.avin.video_info[video_stream].stream
+    first_dts = stream.first_dts
+    #actualTimestamp = first_dts
+    actualTimestamp = s.aVideoFrame[video_stream].best_effort_timestamp
+    dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
+    frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
+
+    println(dts-frameskip)
+    while actualTimestamp < (dts - frameskip)
+        while !have_frame(s)
+            idx = pump(s.avin)
+            idx == s.stream_index0 && break
+            idx == -1 && throw(EOFError())
+        end
+        reset_frame_flag!(s)
+        actualTimestamp = s.aVideoFrame[video_stream].best_effort_timestamp
+        println(actualTimestamp)
+    end
+    println(actualTimestamp)
+    return(s)
 end
 
-function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
+function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
+                                 seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
+                                 video_stream::Int64 = 1, forward::Bool=false)
+
+    #Using 10 seconds before and after the desired timestamp, since the seek function
+    #seek to the nearest keyframe, and 10 seconds is the longest GOP length seen in
+    #practical usage.
+    const max_interval = 10.0
+
     # AVFormatContext
     fc = avin.apFormatContext[1]
 
@@ -522,13 +522,38 @@ function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
     seek_stream_index = stream_info.stream_index0
     stream = stream_info.stream
     first_dts = stream.first_dts
+    time_base = stream.time_base
 
+    #Timestamp calculations
+    if seconds_min < 0
+        seconds_min = max(seconds - max_interval, 0.0)
+    end
+
+    if seconds_max < 0
+        seconds_max = seconds + max_interval
+    end
+
+    dts = first_dts + seconds_to_timestamp(seconds, time_base)
+    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base) 
+    #max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
+   
+    flags = AVSEEK_FLAG_ANY
+    if !forward
+        flags = AVSEEK_FLAG_BACKWARD
+    end
+   
     # Seek
-    ret = avformat_seek_file(fc, seek_stream_index, first_dts, first_dts, first_dts, AVSEEK_FLAG_BACKWARD)
-
-    ret < 0 && throw(ErrorException("Could not seek to start of stream"))
-
+    ret = avformat_seek_file(fc, seek_stream_index, min_dts, dts, dts, flags)
+    ret < 0 && throw(ErrorException("Could not seek in stream"))    
     return avin
+end
+
+function seekstart(s::VideoReader, video_stream=1)
+    return seek(s, 0.0, 0.0, 0.0, video_stream, false)
+end
+
+function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
+    return seek(avin, 0.0, 0.0, 0.0, video_stream, false)
 end
 
 ## This doesn't work...
@@ -663,42 +688,20 @@ if have_avdevice()
     end
 end
 
-try
-    if isa(Main.ImageView, Module)
-        # Define read and retrieve for Images
-        global playvideo, viewcam, play
+function load(f::String;position=1.0,nframes=1)
+    s = openvideo(f)
+    seek(s,position)
+    out = load(s,nframes=nframes)
+    close(s)
+    out
+end
 
-        function play(f, flip=false)
-            buf = read(f)
-            canvas, _ = Main.ImageView.imshow(buf, flipx=flip, interactive=false)
-
-            while !eof(f)
-                read!(f, buf)
-                Main.ImageView.imshow(canvas, buf, flipx=flip, interactive=false)
-                sleep(1/f.framerate)
-            end
-        end
-
-        function playvideo(video)
-            f = VideoIO.openvideo(video)
-            play(f)
-        end
-
-        if have_avdevice()
-            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-                camera = opencamera(device, format)
-                play(camera, true)
-            end
-        else
-            function viewcam()
-                error("libavdevice not present")
-            end
-        end
+function load(v::VideoReader;nframes=1)
+    firstFrame = read(v)
+    out = Array(eltype(firstFrame),size(firstFrame)...,nframes)
+    out[:,:,1] =  firstFrame[:,:]
+    for i in 2:nframes
+        out[:,:,i] = read(v)[:,:]
     end
-catch
-    global playvideo, viewcam, play
-    no_imageview() = error("Please load ImageView before VideoIO to enable play(...), playvideo(...) and viewcam()")
-    play() = no_imageview()
-    playvideo() = no_imageview()
-    viewcam() = no_imageview()
+    out
 end
