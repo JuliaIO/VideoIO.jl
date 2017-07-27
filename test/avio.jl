@@ -45,12 +45,11 @@ for name in VideoIO.TestVideos.names()
     @test img == first_frame               # comment line when creating png files
 
     
-    for i in 1:49
+    for i in 1:50
         read!(v,img)
     end
     #save(fiftieth_frame_file,img)     # uncomment lines when creating png files
     timebase = v.avin.video_info[1].stream.time_base
-   # println(v.avin.video_info[1].stream.cur_dts)
     fiftytime = (v.aVideoFrame[1].best_effort_timestamp-v.avin.video_info[1].stream.first_dts)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
   
     @test img == fiftieth_frame
@@ -74,7 +73,7 @@ for name in VideoIO.TestVideos.names()
 
     read!(v,img)
 
-  #  @test img == fiftieth_frame
+    @test img == fiftieth_frame
 
     close(v)
 end

@@ -485,10 +485,11 @@ function seek(s::VideoReader, seconds::Float64,
 
     stream = s.avin.video_info[video_stream].stream
     first_dts = stream.first_dts
-    actualTimestamp = first_dts
+    #actualTimestamp = first_dts
+    actualTimestamp = s.aVideoFrame[video_stream].best_effort_timestamp
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
     frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
-    println(frameskip)
+
     println(dts-frameskip)
     while actualTimestamp < (dts - frameskip)
         while !have_frame(s)
@@ -536,7 +537,7 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base) 
     #max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
    
-    flags = 0
+    flags = AVSEEK_FLAG_ANY
     if !forward
         flags = AVSEEK_FLAG_BACKWARD
     end
