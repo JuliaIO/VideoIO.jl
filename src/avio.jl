@@ -485,8 +485,8 @@ function seek(s::VideoReader, seconds::Float64,
 
     stream = s.avin.video_info[video_stream].stream
     first_dts = stream.first_dts
-    #actualTimestamp = first_dts
-    actualTimestamp = av_frame_get_best_effort_timestamp(s.aVideoFrame)
+    
+    actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
     frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
 
@@ -497,7 +497,7 @@ function seek(s::VideoReader, seconds::Float64,
             idx == -1 && throw(EOFError())
         end
         reset_frame_flag!(s)
-        actualTimestamp = av_frame_get_best_effort_timestamp(s.aVideoFrame)
+        actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     end
     return(s)
 end
