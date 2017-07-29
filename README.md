@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/kmsquire/VideoIO.jl.svg?branch=master)](https://travis-ci.org/kmsquire/VideoIO.jl) [![Coverage Status](https://coveralls.io/repos/kmsquire/VideoIO.jl/badge.png)](https://coveralls.io/r/kmsquire/VideoIO.jl)
+[![Build Status](https://travis-ci.org/kmsquire/VideoIO.jl.svg?branch=master)](https://travis-ci.org/kmsquire/VideoIO.jl)
+[![AppVeyorBuild status](https://ci.appveyor.com/api/projects/status/github/kmsquire/VideoIO.jl?svg=true&branch=master)](https://ci.appveyor.com/project/kmsquire/videoio-jl/branch/master)
+[![Coverage Status](https://coveralls.io/repos/kmsquire/VideoIO.jl/badge.png)](https://coveralls.io/r/kmsquire/VideoIO.jl)
 
 VideoIO.jl
 ==========
