@@ -27,7 +27,7 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 # end
 
 if is_windows()
-    provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-3.3.2-win$WORD_SIZE-shared.7z"),
+    provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-3.3.2-win$WORD_SIZE-shared.zip"),
              libav_libs,
              os = :Windows,
              unpacked_dir="ffmpeg-3.3.2-win$WORD_SIZE-shared/bin")
