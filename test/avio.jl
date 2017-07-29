@@ -4,7 +4,7 @@ using ColorTypes, FileIO, ImageCore
 import VideoIO
 
 testdir = dirname(@__FILE__)
-videodir = joinpath(testdir, "..", "videos")
+videodir = normpath(joinpath(testdir, "..", "videos"))
 
 VideoIO.TestVideos.available()
 VideoIO.TestVideos.download_all()

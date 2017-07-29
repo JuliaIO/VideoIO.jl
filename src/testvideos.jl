@@ -6,7 +6,7 @@ import VideoIO
 import Base: download, show
 export testvideo
 
-videodir = joinpath(dirname(@__FILE__), "..", "videos")
+videodir = normpath(joinpath((dirname(@__FILE__), "..", "videos")))
 
 type VideoFile{compression}
     name::AbstractString
