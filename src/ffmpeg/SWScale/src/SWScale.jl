@@ -1,5 +1,5 @@
 module SWScale
-  include(joinpath(dirname(@__FILE__),"..","..","..","init.jl"))
+  include(normpath(joinpath(dirname(@__FILE__),"..","..","..","init.jl")))
   w(f) = joinpath(swscale_dir, f)
 
   using AVUtil

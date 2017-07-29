@@ -1,5 +1,5 @@
 module AVCodecs
-  include(joinpath(dirname(@__FILE__),"..","..","..","init.jl"))
+  include(normpath(joinpath(dirname(@__FILE__),"..","..","..","init.jl")))
   w(f) = joinpath(avcodec_dir, f)
 
   using AVUtil
