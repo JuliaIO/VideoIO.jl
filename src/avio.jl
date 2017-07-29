@@ -685,5 +685,44 @@ if have_avdevice()
     end
 end
 
+try
+    if isa(Main.ImageView, Module)
+        # Define read and retrieve for Images
+        global playvideo, viewcam, play
+
+        function play(f, flip=false)
+            buf = read(f)
+            canvas, _ = Main.ImageView.imshow(buf, flipx=flip, interactive=false)
+
+            while !eof(f)
+                read!(f, buf)
+                Main.ImageView.imshow(canvas, buf, flipx=flip, interactive=false)
+                sleep(1/f.framerate)
+            end
+        end
+
+        function playvideo(video)
+            f = VideoIO.openvideo(video)
+            play(f)
+        end
+
+        if have_avdevice()
+            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
+                camera = opencamera(device, format)
+                play(camera, true)
+            end
+        else
+            function viewcam()
+                error("libavdevice not present")
+            end
+        end
+    end
+catch
+    global playvideo, viewcam, play
+    no_imageview() = error("Please load ImageView before VideoIO to enable play(...), playvideo(...) and viewcam()")
+    play() = no_imageview()
+    playvideo() = no_imageview()
+    viewcam() = no_imageview()
+end
 
 
