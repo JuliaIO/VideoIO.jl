@@ -93,6 +93,42 @@ for name in VideoIO.TestVideos.names()
     end
 end
 
+println(STDERR, "Testing seeking...")
+
+#First keyframe on or after 1s
+kfnext = Dict([
+      ("annie_oakley.ogg", 65),
+      ("black_hole.webm", 25),
+      ("crescent-moon.ogv", 65),
+      ("ladybird.mp4", 31)
+      ])
+
+for name in VideoIO.TestVideos.names()
+    !haskey(kfnext, name) && continue
+    println(STDERR, "   Testing $name for seeking")
+    filename = joinpath(videodir, name)
+    v = VideoIO.openvideo(filename)
+
+    first_frame = read(v, Image)
+    seek(v, 1.0)
+    seek_frame = read(v, Image)
+
+    seekstart(v)
+    first_frame2 = read(v, Image)
+
+    kfnum = kfnext[name]
+    iter_frame = read(v, Image)
+    seek(v, 0.0)
+    for i in 1:kfnum
+        iter_frame = read(v, Image)
+    end
+
+    @test first_frame == first_frame2
+    @test seek_frame == iter_frame
+    close(v)
+    
+end
+
 VideoIO.testvideo("ladybird") # coverage testing
 @test_throws ErrorException VideoIO.testvideo("rickroll")
 @test_throws ErrorException VideoIO.testvideo("")
