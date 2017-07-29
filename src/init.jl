@@ -6,7 +6,7 @@ using BinDeps,Compat
 #        libavcodec, libavformat, libavutil, libswscale, libavdevice, libavfilter, libavresample, libswresample,
 
 if !isdefined(:libavcodec)
-    include(joinpath(dirname(@__DIR__),"deps/deps.jl"))
+    include(joinpath(dirname(@__DIR__),"deps","deps.jl"))
 end
 
 INSTALL_ROOT = realpath(joinpath(splitdir(libavcodec)[1], ".."))
