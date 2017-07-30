@@ -4,7 +4,7 @@ import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
-using Compat, FileIO
+using Compat
 
 type StreamInfo
     stream_index0::Int             # zero-based
@@ -466,6 +466,7 @@ have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
 have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i in avin.listening])
 
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
+
 function seconds_to_timestamp(s::Float64, time_base::AVRational)
     return convert(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
 end
