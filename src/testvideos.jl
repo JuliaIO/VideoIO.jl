@@ -17,7 +17,7 @@ type VideoFile{compression}
     download_url::AbstractString
 end
 
-show(io::IO, v::VideoFile) = print(io, """\
+show(io::IO, v::VideoFile) = print(io, """
                                   VideoFile:
                                      name:         $(v.name)  $(isfile(joinpath(videodir, v.name)) ? "(Downloaded)" : "")
                                      description:  $(v.description)
