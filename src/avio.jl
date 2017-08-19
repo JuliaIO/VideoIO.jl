@@ -284,7 +284,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     end
 
     N = Int64(bits_per_pixel >> 3)
-    target_buf = Array(UInt8, bits_per_pixel>>3, width, height)
+    target_buf = Array{UInt8}(bits_per_pixel>>3, width, height)
 
     sws_context = sws_getContext(width, height, pix_fmt,
                                  width, height, target_format,
@@ -383,7 +383,7 @@ function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
 
     # TODO: set actual dimensions ?
     buf_sz = avpicture_get_size(r.format, r.width, r.height)
-    buf = Array(UInt8, buf_sz)
+    buf = Vector{UInt8}(buf_sz)
 
     retrieve!(r, buf)
 end
