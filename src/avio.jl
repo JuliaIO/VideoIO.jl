@@ -63,7 +63,7 @@ type VideoTranscodeContext
     height::Int
 
     target_buf::Array{UInt8,3}  # TODO: this needs to be more general
-    aTargetVideoFrame::Vector{AVFrame}
+    pTargetVideoFrame::Ptr{AVFrame}
     apTargetDataBuffers::Vector{Ptr{UInt8}}
     apTargetLineSizes::Vector{Cint}
 end
@@ -78,7 +78,7 @@ type VideoReader{transcode} <: StreamContext
     stream_index0::Int
     pVideoCodecContext::Ptr{AVCodecContext}
     pVideoCodec::Ptr{AVCodec}
-    aVideoFrame::Vector{AVFrame}   # Reusable frame
+    pVideoFrame::Ptr{AVFrame}   # Reusable frame
     aFrameFinished::Vector{Int32}
 
     format::Cint
@@ -269,10 +269,10 @@ function VideoReader(avin::AVInput, video_stream=1;
     # Open the decoder
     avcodec_open2(pVideoCodecContext, pVideoCodec, C_NULL) < 0 && error("Could not open codec")
 
-    aVideoFrame = [AVFrame()]
+    pVideoFrame = av_frame_alloc()
     aFrameFinished = Int32[0]
 
-    aTargetVideoFrame = [AVFrame()]
+    pTargetVideoFrame = av_frame_alloc()
 
     # Set up transcoding
     # TODO: this should be optional
@@ -290,9 +290,10 @@ function VideoReader(avin::AVInput, video_stream=1;
                                  width, height, target_format,
                                  transcode_interpolation, C_NULL, C_NULL, C_NULL)
 
-    avpicture_fill(pointer(aTargetVideoFrame), target_buf, target_format, width, height)
-    apTargetDataBuffers = reinterpret(Ptr{UInt8}, [aTargetVideoFrame[1].data])
-    apTargetLineSizes   = reinterpret(Cint,       [aTargetVideoFrame[1].linesize])
+    avpicture_fill(pTargetVideoFrame, target_buf, target_format, width, height)
+    targetVideoFrame = unsafe_load(pTargetVideoFrame);
+    apTargetDataBuffers = [targetVideoFrame.data...]
+    apTargetLineSizes   = [targetVideoFrame.linesize...]
 
     transcodeContext = VideoTranscodeContext(sws_context,
                                              transcode_interpolation,
@@ -301,7 +302,7 @@ function VideoReader(avin::AVInput, video_stream=1;
                                              width,
                                              height,
                                              target_buf,
-                                             aTargetVideoFrame,
+                                             pTargetVideoFrame,
                                              apTargetDataBuffers,
                                              apTargetLineSizes)
 
@@ -311,7 +312,7 @@ function VideoReader(avin::AVInput, video_stream=1;
                                 stream_info.stream_index0,
                                 pVideoCodecContext,
                                 pVideoCodec,
-                                aVideoFrame,
+                                pVideoFrame,
                                 aFrameFinished,
 
                                 pix_fmt,
@@ -335,14 +336,15 @@ VideoReader{T<:Union{IO, AbstractString}}(s::T, args...; kwargs...) = VideoReade
 function decode_packet(r::VideoReader, aPacket)
     # Do we already have a complete frame that hasn't been consumed?
     if have_decoded_frame(r)
-        apSourceDataBuffers = reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data])
+        frame = unsafe_load(r.pVideoFrame)
+        apSourceDataBuffers = frame.data
         sz = avpicture_get_size(r.format, r.width, r.height)
         push!(r.frame_queue, copy(unsafe_wrap(Array, apSourceDataBuffers[1], sz)))
         reset_frame_flag!(r)
     end
 
     avcodec_decode_video2(r.pVideoCodecContext,
-                          r.aVideoFrame,
+                          r.pVideoFrame,
                           r.aFrameFinished,
                           aPacket)
 
@@ -403,19 +405,22 @@ function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::VidArray{T}
     t = r.transcodeContext
 
     # Set up target buffer
-    if pointer(buf) != t.apTargetDataBuffers[1]
-        avpicture_fill(pointer(t.aTargetVideoFrame),
+    targetVideoFrame = unsafe_load(t.pTargetVideoFrame)
+    apTargetDataBuffers = targetVideoFrame.data
+    if pointer(buf) != apTargetDataBuffers[1]
+        avpicture_fill(t.pTargetVideoFrame,
                        buf,
                        t.target_pix_fmt,
                        r.width, r.height)
-        t.apTargetDataBuffers = reinterpret(Ptr{UInt8}, [t.aTargetVideoFrame[1].data])
-        t.apTargetLineSizes   = reinterpret(Cint,       [t.aTargetVideoFrame[1].linesize])
-
+        targetVideoFrame = unsafe_load(t.pTargetVideoFrame)
+        t.apTargetDataBuffers = [targetVideoFrame.data...]
+        t.apTargetLineSizes   = [targetVideoFrame.linesize...]
     end
 
-    apSourceDataBuffers = isempty(r.frame_queue) ? reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data]) :
-                                                   reinterpret(Ptr{UInt8}, [shift!(r.frame_queue)])
-    apSourceLineSizes   = reinterpret(Cint, [r.aVideoFrame[1].linesize])
+    frame = unsafe_load(r.pVideoFrame)
+    apSourceDataBuffers = isempty(r.frame_queue) ? [frame.data...] :
+                                                   shift!(r.frame_queue)
+    apSourceLineSizes   = [frame.linesize...]
 
     Base.sigatomic_begin()
     sws_scale(t.transcode_context,
@@ -487,7 +492,8 @@ function seek(s::VideoReader, seconds::Float64,
     stream = s.avin.video_info[video_stream].stream
     first_dts = stream.first_dts
     
-    actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
+    frame = unsafe_load(s.pVideoFrame)
+    actualTimestamp = frame.pkt_dts   #av_frame_get_best_effort_timestamp(s.pVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
     frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
 
@@ -498,7 +504,8 @@ function seek(s::VideoReader, seconds::Float64,
             idx == -1 && throw(EOFError())
         end
         reset_frame_flag!(s)
-        actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
+        frame = unsafe_load(s.pVideoFrame)
+        actualTimestamp = frame.pkt_dts   #av_frame_get_best_effort_timestamp(s.pVideoFrame)
     end
     return(s)
 end

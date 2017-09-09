@@ -49,7 +49,8 @@ for name in VideoIO.TestVideos.names()
     end
     fiftieth_frame = img
     timebase = v.avin.video_info[1].stream.time_base
-    tstamp = v.aVideoFrame[1].pkt_dts
+    frame = unsafe_load(v.pVideoFrame)
+    tstamp = frame.pkt_dts
     fiftytime = (tstamp-v.avin.video_info[1].stream.first_dts)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
 
     seek(v,float(fiftytime))
