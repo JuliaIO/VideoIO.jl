@@ -18,6 +18,7 @@ _avfilter_version()   = have_avfilter()   ? av_version(ccall((:avfilter_version,
 #_avresample_version() = have_avresample() ? av_version(ccall((:avresample_version, libavresample), UInt32, ())) : v"0"
 #_swresample_version() = have_swresample() ? av_version(ccall((:swresample_version, libswresample), UInt32, ())) : v"0"
 
+println(_avutil_version())
 ffmpeg_or_libav = _avutil_version().patch >= 100 ? "ffmpeg" : "libav"
 
 avcodec_dir    = joinpath(dirname(@__FILE__), ffmpeg_or_libav, "AVCodecs",   "v$(_avcodec_version().major)")
