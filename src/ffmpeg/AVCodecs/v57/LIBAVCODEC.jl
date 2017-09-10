@@ -12,3 +12,7 @@ include("avcodec.jl")
 #include("videotoolbox.jl")
 #include("vorbis_parser.jl")
 #include("xvmc.jl")
+
+function Base.unsafe_convert(::Type{Ptr{AVPicture}}, ptr::AVFramePtr)
+    return reinterpret(Ptr{AVPicture}, ptr.p)
+end

@@ -269,10 +269,10 @@ function VideoReader(avin::AVInput, video_stream=1;
     # Open the decoder
     avcodec_open2(pVideoCodecContext, pVideoCodec, C_NULL) < 0 && error("Could not open codec")
 
-    pVideoFrame = av_frame_alloc()
+    pVideoFrame = AVFramePtr()
     aFrameFinished = Int32[0]
 
-    pTargetVideoFrame = av_frame_alloc()
+    pTargetVideoFrame = AVFramePtr()
 
     # Set up transcoding
     # TODO: this should be optional

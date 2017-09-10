@@ -23,16 +23,41 @@ include("pixdesc.jl")
 #include("timecode.jl")
 #include("xtea.jl")
 
-function AVFrame()
-    ns = fieldnames(AVFrame)
-    ts = AVFrame.types
-    parms = [T<:Ptr ? C_NULL : zero(T) for T in ts]
+export AVFramePtr
 
-    fmt_pos = findfirst(ns, :format)
-    parms[fmt_pos] = -one(ts[fmt_pos])
+const AV_NOPTS_VALUE  =  reinterpret(Int64, 0x8000000000000000)
 
-    pts_pos = findfirst(ns, :pts)
-    parms[pts_pos] = AV_NOPTS_VALUE
+type AVFramePtr
+    p::Ptr{AVFrame}
 
-    AVFrame(parms...)
+    function AVFramePtr()
+        Base.sigatomic_begin()
+        av_frame_ptr = new(av_frame_alloc());
+        Base.sigatomic_end()
+        finalizer(av_frame_ptr, free_frame)
+
+        return av_frame_ptr
+    end
+end
+
+function free_frame(ptr::AVFramePtr)
+    if ptr.p == C_NULL return end
+
+    Base.sigatomic_begin()
+    av_frame_unref(ptr.p)
+    av_free(ptr.p)
+    ptr.p = C_NULL
+    Base.sigatomic_end()
+end
+
+function Base.convert(::Type{Ptr{AVFrame}}, ptr::AVFramePtr)
+    return ptr.p
+end
+
+function Base.unsafe_convert(::Type{Ptr{AVFrame}}, ptr::AVFramePtr)
+    return ptr.p
+end
+
+function Base.unsafe_load(ptr::AVFramePtr)
+    return unsafe_load(ptr.p)
 end
