@@ -119,10 +119,6 @@ export
     AV_AFD_16_9_SP_14_9,
     AV_AFD_SP_4_3,
     AVFrameSideData,
-    Array_8_Ptr,
-    Array_8_Cint,
-    Array_2_Ptr,
-    Array_8_Uint64,
     AV_NOPTS_VALUE,
     AVRational,
     AVColorRange,
@@ -271,7 +267,6 @@ export
     PIX_FMT_PSEUDOPAL,
     PIX_FMT_ALPHA,
     AVComponentDescriptor,
-    Array_4_AVComponentDescriptor,
     AVPixFmtDescriptor,
     AVPALETTE_SIZE,
     AVPALETTE_COUNT,
@@ -669,7 +664,6 @@ export
     AV_TIMECODE_FLAG_24HOURSMAX,
     AV_TIMECODE_FLAG_ALLOWNEGATIVE,
     AVTimecode,
-    Array_16_Uint32,
     AVXTEA
 
 
@@ -856,52 +850,6 @@ immutable AVFrameSideData
     metadata::Ptr{AVDictionary}
 end
 
-immutable Array_8_Ptr
-    d1::Ptr{UInt8}
-    d2::Ptr{UInt8}
-    d3::Ptr{UInt8}
-    d4::Ptr{UInt8}
-    d5::Ptr{UInt8}
-    d6::Ptr{UInt8}
-    d7::Ptr{UInt8}
-    d8::Ptr{UInt8}
-end
-
-zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
-
-immutable Array_8_Cint
-    d1::Cint
-    d2::Cint
-    d3::Cint
-    d4::Cint
-    d5::Cint
-    d6::Cint
-    d7::Cint
-    d8::Cint
-end
-
-zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
-
-immutable Array_2_Ptr
-    d1::Ptr{Void}
-    d2::Ptr{Void}
-end
-
-zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
-
-immutable Array_8_Uint64
-    d1::UInt64
-    d2::UInt64
-    d3::UInt64
-    d4::UInt64
-    d5::UInt64
-    d6::UInt64
-    d7::UInt64
-    d8::UInt64
-end
-
-zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(UInt64),8)...)
-
 # begin enum AVColorRange
 const AVColorRange = UInt32
 const AVCOL_RANGE_UNSPECIFIED  =  UInt32(0)
@@ -975,8 +923,8 @@ const AVCHROMA_LOC_NB  =  UInt32(7)
 # end enum AVChromaLocation
 
 immutable AVFrame
-    data::Array_8_Ptr
-    linesize::Array_8_Cint
+    data::NTuple{8,Ptr{UInt8}}
+    linesize::NTuple{8,Cint}
     extended_data::Ptr{Ptr{UInt8}}
     width::Cint
     height::Cint
@@ -984,7 +932,7 @@ immutable AVFrame
     format::Cint
     key_frame::Cint
     pict_type::AVPictureType
-    base::Array_8_Ptr
+    base::NTuple{8,Ptr{UInt8}}
     sample_aspect_ratio::AVRational
     pts::Int64
     pkt_pts::Int64
@@ -997,12 +945,12 @@ immutable AVFrame
     qstride::Cint
     qscale_type::Cint
     mbskip_table::Ptr{UInt8}
-    motion_val::Array_2_Ptr
+    motion_val::NTuple{2,Ptr{UInt8}}
     mb_type::Ptr{UInt32}
     dct_coeff::Ptr{Int16}
-    ref_index::Array_2_Ptr
+    ref_index::NTuple{2,Ptr{UInt8}}
     opaque::Ptr{Void}
-    error::Array_8_Uint64
+    error::NTuple{8,UInt64}
     _type::Cint
     repeat_pict::Cint
     interlaced_frame::Cint
@@ -1017,7 +965,7 @@ immutable AVFrame
     motion_subsample_log2::UInt8
     sample_rate::Cint
     channel_layout::UInt64
-    buf::Array_8_Ptr
+    buf::NTuple{8,Ptr{UInt8}}
     extended_buf::Ptr{Ptr{AVBufferRef}}
     nb_extended_buf::Cint
     side_data::Ptr{Ptr{AVFrameSideData}}
@@ -1208,22 +1156,13 @@ immutable AVComponentDescriptor
     depth_minus1::UInt16
 end
 
-immutable Array_4_AVComponentDescriptor
-    d1::AVComponentDescriptor
-    d2::AVComponentDescriptor
-    d3::AVComponentDescriptor
-    d4::AVComponentDescriptor
-end
-
-zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
-
 immutable AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
     log2_chroma_h::UInt8
     flags::UInt8
-    comp::Array_4_AVComponentDescriptor
+    comp::NTuple{4,AVComponentDescriptor}
     alias::Ptr{UInt8}
 end
 
@@ -1775,27 +1714,6 @@ immutable AVTimecode
     fps::UInt32
 end
 
-immutable Array_16_Uint32
-    d1::UInt32
-    d2::UInt32
-    d3::UInt32
-    d4::UInt32
-    d5::UInt32
-    d6::UInt32
-    d7::UInt32
-    d8::UInt32
-    d9::UInt32
-    d10::UInt32
-    d11::UInt32
-    d12::UInt32
-    d13::UInt32
-    d14::UInt32
-    d15::UInt32
-    d16::UInt32
-end
-
-zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(UInt32),16)...)
-
 immutable AVXTEA
-    key::Array_16_Uint32
+    key::NTuple{16,UInt32}
 end

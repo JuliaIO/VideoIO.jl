@@ -118,7 +118,6 @@ export
     PIX_FMT_PSEUDOPAL,
     PIX_FMT_ALPHA,
     AVComponentDescriptor,
-    Array_4_AVComponentDescriptor,
     AVPixFmtDescriptor,
     AVPixelFormat,
     AV_PIX_FMT_NONE,
@@ -376,7 +375,6 @@ export
     AV_OPT_FLAG_SUBTITLE_PARAM,
     AV_OPT_SEARCH_CHILDREN,
     AV_OPT_SEARCH_FAKE_OBJ,
-    Array_16_Uint32,
     AVXTEA
 
 
@@ -579,22 +577,13 @@ immutable AVComponentDescriptor
     depth_minus1::UInt16
 end
 
-immutable Array_4_AVComponentDescriptor
-    d1::AVComponentDescriptor
-    d2::AVComponentDescriptor
-    d3::AVComponentDescriptor
-    d4::AVComponentDescriptor
-end
-
-zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
-
 immutable AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
     log2_chroma_h::UInt8
     flags::UInt8
-    comp::Array_4_AVComponentDescriptor
+    comp::NTuple{4,AVComponentDescriptor}
 end
 
 # begin enum AVPixelFormat
@@ -911,27 +900,6 @@ const AV_OPT_FLAG_SUBTITLE_PARAM = 32
 const AV_OPT_SEARCH_CHILDREN = 0x0001
 const AV_OPT_SEARCH_FAKE_OBJ = 0x0002
 
-immutable Array_16_Uint32
-    d1::UInt32
-    d2::UInt32
-    d3::UInt32
-    d4::UInt32
-    d5::UInt32
-    d6::UInt32
-    d7::UInt32
-    d8::UInt32
-    d9::UInt32
-    d10::UInt32
-    d11::UInt32
-    d12::UInt32
-    d13::UInt32
-    d14::UInt32
-    d15::UInt32
-    d16::UInt32
-end
-
-zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(UInt32),16)...)
-
 immutable AVXTEA
-    key::Array_16_Uint32
+    key::NTuple{16,UInt32}
 end

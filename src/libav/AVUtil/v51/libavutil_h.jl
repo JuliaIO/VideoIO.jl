@@ -62,7 +62,6 @@ export
     PIX_FMT_PLANAR,
     PIX_FMT_RGB,
     AVComponentDescriptor,
-    Array_4_AVComponentDescriptor,
     AVPixFmtDescriptor,
     PixelFormat,
     AVPixelFormat,
@@ -483,22 +482,13 @@ const PIX_FMT_RGB = 32
 
 const AVComponentDescriptor=UInt16
 
-immutable Array_4_AVComponentDescriptor
-    d1::AVComponentDescriptor
-    d2::AVComponentDescriptor
-    d3::AVComponentDescriptor
-    d4::AVComponentDescriptor
-end
-
-zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
-
 immutable AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
     log2_chroma_h::UInt8
     flags::UInt8
-    comp::Array_4_AVComponentDescriptor
+    comp::NTuple{4,AVComponentDescriptor}
 end
 
 # begin enum PixelFormat

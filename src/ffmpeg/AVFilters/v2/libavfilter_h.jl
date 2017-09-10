@@ -12,8 +12,6 @@ export
     AVFilterContext,
     AVFilterLink,
     AVFilterPad,
-    Array_8_Ptr,
-    Array_8_Cint,
     AVFilterBuffer,
     AVFilterBufferRefAudioProps,
     AVFilterBufferRefVideoProps,
@@ -35,35 +33,9 @@ const AVFilterContext = AVFilterContext
 const AVFilterLink = AVFilterLink
 const AVFilterPad = AVFilterPad
 
-immutable Array_8_Ptr
-    d1::Ptr{UInt8}
-    d2::Ptr{UInt8}
-    d3::Ptr{UInt8}
-    d4::Ptr{UInt8}
-    d5::Ptr{UInt8}
-    d6::Ptr{UInt8}
-    d7::Ptr{UInt8}
-    d8::Ptr{UInt8}
-end
-
-zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
-
-immutable Array_8_Cint
-    d1::Cint
-    d2::Cint
-    d3::Cint
-    d4::Cint
-    d5::Cint
-    d6::Cint
-    d7::Cint
-    d8::Cint
-end
-
-zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
-
 immutable AVFilterBuffer
-    data::Array_8_Ptr
-    linesize::Array_8_Cint
+    data::NTuple{8,Ptr{UInt8}}
+    linesize::NTuple{8,Cint}
     refcount::UInt32
     priv::Ptr{Void}
     free::Ptr{Void}
@@ -92,8 +64,8 @@ end
 
 immutable AVFilterBufferRef
     buf::Ptr{AVFilterBuffer}
-    data::Array_8_Ptr
-    linesize::Array_8_Cint
+    data::NTuple{8,Ptr{UInt8}}
+    linesize::NTuple{8,Cint}
     format::Cint
     pts::Int64
     pos::Int64

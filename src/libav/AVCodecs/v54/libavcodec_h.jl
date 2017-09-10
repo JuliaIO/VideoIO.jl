@@ -793,8 +793,6 @@ export
     AV_AUDIO_SERVICE_TYPE_KARAOKE,
     AV_AUDIO_SERVICE_TYPE_NB,
     RcOverride,
-    Array_2_Int16,
-    Array_3_Array_2_Int16,
     AVPanScan,
     AVPacketSideDataType,
     AV_PKT_DATA_PALETTE,
@@ -807,14 +805,9 @@ export
     AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT,
     AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE,
     AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS,
-    Array_8_Ptr,
-    Array_8_Cint,
-    Array_2_Ptr,
-    Array_8_Uint64,
     AVProfile,
     AVCodecDefault,
     AVCodec,
-    Array_32_Uint8,
     AVCodecInternal,
     AVFieldOrder,
     AV_FIELD_UNKNOWN,
@@ -834,8 +827,6 @@ export
     SUBTITLE_ASS,
     AVSubtitleRect,
     AVSubtitle,
-    Array_4_Int64,
-    Array_5_Cint,
     AVCodecParser,
     AVCodecParserContext,
     ReSampleContext,
@@ -1876,26 +1867,11 @@ immutable RcOverride
     quality_factor::Cfloat
 end
 
-immutable Array_2_Int16
-    d1::Int16
-    d2::Int16
-end
-
-zero(::Type{Array_2_Int16}) = Array_2_Int16(fill(zero(Int16),2)...)
-
-immutable Array_3_Array_2_Int16
-    d1::Array_2_Int16
-    d2::Array_2_Int16
-    d3::Array_2_Int16
-end
-
-zero(::Type{Array_3_Array_2_Int16}) = Array_3_Array_2_Int16(fill(zero(Array_2_Int16),3)...)
-
 immutable AVPanScan
     id::Cint
     width::Cint
     height::Cint
-    position::Array_3_Array_2_Int16
+    position::NTuple{3,NTuple{2,Int16}}
 end
 
 # begin enum AVPacketSideDataType
@@ -1929,52 +1905,6 @@ const AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT = UInt32(2)
 const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE = UInt32(4)
 const AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS = UInt32(8)
 # end enum AVSideDataParamChangeFlags
-
-immutable Array_8_Ptr
-    d1::Ptr{UInt8}
-    d2::Ptr{UInt8}
-    d3::Ptr{UInt8}
-    d4::Ptr{UInt8}
-    d5::Ptr{UInt8}
-    d6::Ptr{UInt8}
-    d7::Ptr{UInt8}
-    d8::Ptr{UInt8}
-end
-
-zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
-
-immutable Array_8_Cint
-    d1::Cint
-    d2::Cint
-    d3::Cint
-    d4::Cint
-    d5::Cint
-    d6::Cint
-    d7::Cint
-    d8::Cint
-end
-
-zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
-
-immutable Array_2_Ptr
-    d1::Ptr{Void}
-    d2::Ptr{Void}
-end
-
-zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
-
-immutable Array_8_Uint64
-    d1::UInt64
-    d2::UInt64
-    d3::UInt64
-    d4::UInt64
-    d5::UInt64
-    d6::UInt64
-    d7::UInt64
-    d8::UInt64
-end
-
-zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(UInt64),8)...)
 
 immutable AVProfile
     profile::Cint
@@ -2011,43 +1941,6 @@ immutable AVCodec
     flush::Ptr{Void}
 end
 
-immutable Array_32_Uint8
-    d1::UInt8
-    d2::UInt8
-    d3::UInt8
-    d4::UInt8
-    d5::UInt8
-    d6::UInt8
-    d7::UInt8
-    d8::UInt8
-    d9::UInt8
-    d10::UInt8
-    d11::UInt8
-    d12::UInt8
-    d13::UInt8
-    d14::UInt8
-    d15::UInt8
-    d16::UInt8
-    d17::UInt8
-    d18::UInt8
-    d19::UInt8
-    d20::UInt8
-    d21::UInt8
-    d22::UInt8
-    d23::UInt8
-    d24::UInt8
-    d25::UInt8
-    d26::UInt8
-    d27::UInt8
-    d28::UInt8
-    d29::UInt8
-    d30::UInt8
-    d31::UInt8
-    d32::UInt8
-end
-
-zero(::Type{Array_32_Uint8}) = Array_32_Uint8(fill(zero(UInt8),32)...)
-
 const AVCodecInternal=Void
 
 # begin enum AVFieldOrder
@@ -2078,7 +1971,7 @@ immutable AVCodecContext
     log_level_offset::Cint
     codec_type::AVMediaType
     codec::Ptr{AVCodec}
-    codec_name::Array_32_Uint8
+    codec_name::NTuple{32,UInt8}
     codec_id::AVCodecID
     codec_tag::UInt32
     stream_codec_tag::UInt32
@@ -2242,7 +2135,7 @@ immutable AVCodecContext
     reordered_opaque::Int64
     hwaccel::Ptr{AVHWAccel}
     hwaccel_context::Ptr{Void}
-    error::Array_8_Uint64
+    error::NTuple{8,UInt64}
     dct_algo::Cint
     idct_algo::Cint
     dsp_mask::UInt32
@@ -2271,8 +2164,8 @@ immutable AVCodecContext
 end
 
 immutable AVFrame
-    data::Array_8_Ptr
-    linesize::Array_8_Cint
+    data::NTuple{8,Ptr{UInt8}}
+    linesize::NTuple{8,Cint}
     extended_data::Ptr{Ptr{UInt8}}
     width::Cint
     height::Cint
@@ -2280,7 +2173,7 @@ immutable AVFrame
     format::Cint
     key_frame::Cint
     pict_type::AVPictureType
-    base::Array_8_Ptr
+    base::NTuple{8,Ptr{UInt8}}
     sample_aspect_ratio::AVRational
     pts::Int64
     pkt_pts::Int64
@@ -2293,12 +2186,12 @@ immutable AVFrame
     qstride::Cint
     qscale_type::Cint
     mbskip_table::Ptr{UInt8}
-    motion_val::Array_2_Ptr
+    motion_val::NTuple{2,Ptr{UInt8}}
     mb_type::Ptr{UInt32}
     dct_coeff::Ptr{Int16}
-    ref_index::Array_2_Ptr
+    ref_index::NTuple{2,Ptr{UInt8}}
     opaque::Ptr{Void}
-    error::Array_8_Uint64
+    error::NTuple{8,UInt64}
     _type::Cint
     repeat_pict::Cint
     interlaced_frame::Cint
@@ -2316,8 +2209,8 @@ immutable AVFrame
 end
 
 immutable AVPicture
-    data::Array_8_Ptr
-    linesize::Array_8_Cint
+    data::NTuple{8,Ptr{UInt8}}
+    linesize::NTuple{8,Cint}
 end
 
 # begin enum AVSubtitleType
@@ -2350,27 +2243,8 @@ immutable AVSubtitle
     pts::Int64
 end
 
-immutable Array_4_Int64
-    d1::Int64
-    d2::Int64
-    d3::Int64
-    d4::Int64
-end
-
-zero(::Type{Array_4_Int64}) = Array_4_Int64(fill(zero(Int64),4)...)
-
-immutable Array_5_Cint
-    d1::Cint
-    d2::Cint
-    d3::Cint
-    d4::Cint
-    d5::Cint
-end
-
-zero(::Type{Array_5_Cint}) = Array_5_Cint(fill(zero(Cint),5)...)
-
 immutable AVCodecParser
-    codec_ids::Array_5_Cint
+    codec_ids::NTuple{5,Cint}
     priv_data_size::Cint
     parser_init::Ptr{Void}
     parser_parse::Ptr{Void}
@@ -2393,18 +2267,18 @@ immutable AVCodecParserContext
     last_dts::Int64
     fetch_timestamp::Cint
     cur_frame_start_index::Cint
-    cur_frame_offset::Array_4_Int64
-    cur_frame_pts::Array_4_Int64
-    cur_frame_dts::Array_4_Int64
+    cur_frame_offset::NTuple{4,Int64}
+    cur_frame_pts::NTuple{4,Int64}
+    cur_frame_dts::NTuple{4,Int64}
     flags::Cint
     offset::Int64
-    cur_frame_end::Array_4_Int64
+    cur_frame_end::NTuple{4,Int64}
     key_frame::Cint
     convergence_duration::Int64
     dts_sync_point::Cint
     dts_ref_dts_delta::Cint
     pts_dts_delta::Cint
-    cur_frame_pos::Array_4_Int64
+    cur_frame_pos::NTuple{4,Int64}
     pos::Int64
     last_pos::Int64
     duration::Cint

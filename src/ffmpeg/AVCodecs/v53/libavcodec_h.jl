@@ -539,8 +539,6 @@ export
     AV_AUDIO_SERVICE_TYPE_KARAOKE,
     AV_AUDIO_SERVICE_TYPE_NB,
     RcOverride,
-    Array_2_Int16,
-    Array_3_Array_2_Int16,
     AVPanScan,
     AVPacketSideDataType,
     AV_PKT_DATA_PALETTE,
@@ -552,15 +550,9 @@ export
     AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT,
     AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE,
     AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS,
-    Array_4_Ptr,
-    Array_4_Cint,
-    Array_2_Ptr,
-    Array_4_Uint64,
     AVProfile,
     AVCodecDefault,
     AVCodec,
-    Array_32_Uint8,
-    Array_256_Uint32,
     AVPaletteControl,
     AVHWAccel,
     AVCodecInternal,
@@ -583,8 +575,6 @@ export
     AVSubtitle,
     ReSampleContext,
     AVResampleContext,
-    Array_4_Int64,
-    Array_5_Cint,
     AVCodecParser,
     AVCodecParserContext,
     AVBitStreamFilter,
@@ -1384,26 +1374,11 @@ immutable RcOverride
     quality_factor::Cfloat
 end
 
-immutable Array_2_Int16
-    d1::Int16
-    d2::Int16
-end
-
-zero(::Type{Array_2_Int16}) = Array_2_Int16(fill(zero(Int16),2)...)
-
-immutable Array_3_Array_2_Int16
-    d1::Array_2_Int16
-    d2::Array_2_Int16
-    d3::Array_2_Int16
-end
-
-zero(::Type{Array_3_Array_2_Int16}) = Array_3_Array_2_Int16(fill(zero(Array_2_Int16),3)...)
-
 immutable AVPanScan
     id::Cint
     width::Cint
     height::Cint
-    position::Array_3_Array_2_Int16
+    position::NTuple{3,NTuple{2,Int16}}
 end
 
 # begin enum AVPacketSideDataType
@@ -1436,40 +1411,6 @@ const AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT  =  UInt32(2)
 const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE  =  UInt32(4)
 const AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS  =  UInt32(8)
 # end enum AVSideDataParamChangeFlags
-
-immutable Array_4_Ptr
-    d1::Ptr{UInt8}
-    d2::Ptr{UInt8}
-    d3::Ptr{UInt8}
-    d4::Ptr{UInt8}
-end
-
-zero(::Type{Array_4_Ptr}) = Array_4_Ptr(fill(C_NULL,4)...)
-
-immutable Array_4_Cint
-    d1::Cint
-    d2::Cint
-    d3::Cint
-    d4::Cint
-end
-
-zero(::Type{Array_4_Cint}) = Array_4_Cint(fill(zero(Cint),4)...)
-
-immutable Array_2_Ptr
-    d1::Ptr{Void}
-    d2::Ptr{Void}
-end
-
-zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
-
-immutable Array_4_Uint64
-    d1::UInt64
-    d2::UInt64
-    d3::UInt64
-    d4::UInt64
-end
-
-zero(::Type{Array_4_Uint64}) = Array_4_Uint64(fill(zero(UInt64),4)...)
 
 immutable AVProfile
     profile::Cint
@@ -1506,307 +1447,9 @@ immutable AVCodec
     encode2::Ptr{Void}
 end
 
-immutable Array_32_Uint8
-    d1::UInt8
-    d2::UInt8
-    d3::UInt8
-    d4::UInt8
-    d5::UInt8
-    d6::UInt8
-    d7::UInt8
-    d8::UInt8
-    d9::UInt8
-    d10::UInt8
-    d11::UInt8
-    d12::UInt8
-    d13::UInt8
-    d14::UInt8
-    d15::UInt8
-    d16::UInt8
-    d17::UInt8
-    d18::UInt8
-    d19::UInt8
-    d20::UInt8
-    d21::UInt8
-    d22::UInt8
-    d23::UInt8
-    d24::UInt8
-    d25::UInt8
-    d26::UInt8
-    d27::UInt8
-    d28::UInt8
-    d29::UInt8
-    d30::UInt8
-    d31::UInt8
-    d32::UInt8
-end
-
-zero(::Type{Array_32_Uint8}) = Array_32_Uint8(fill(zero(UInt8),32)...)
-
-immutable Array_256_Uint32
-    d1::UInt32
-    d2::UInt32
-    d3::UInt32
-    d4::UInt32
-    d5::UInt32
-    d6::UInt32
-    d7::UInt32
-    d8::UInt32
-    d9::UInt32
-    d10::UInt32
-    d11::UInt32
-    d12::UInt32
-    d13::UInt32
-    d14::UInt32
-    d15::UInt32
-    d16::UInt32
-    d17::UInt32
-    d18::UInt32
-    d19::UInt32
-    d20::UInt32
-    d21::UInt32
-    d22::UInt32
-    d23::UInt32
-    d24::UInt32
-    d25::UInt32
-    d26::UInt32
-    d27::UInt32
-    d28::UInt32
-    d29::UInt32
-    d30::UInt32
-    d31::UInt32
-    d32::UInt32
-    d33::UInt32
-    d34::UInt32
-    d35::UInt32
-    d36::UInt32
-    d37::UInt32
-    d38::UInt32
-    d39::UInt32
-    d40::UInt32
-    d41::UInt32
-    d42::UInt32
-    d43::UInt32
-    d44::UInt32
-    d45::UInt32
-    d46::UInt32
-    d47::UInt32
-    d48::UInt32
-    d49::UInt32
-    d50::UInt32
-    d51::UInt32
-    d52::UInt32
-    d53::UInt32
-    d54::UInt32
-    d55::UInt32
-    d56::UInt32
-    d57::UInt32
-    d58::UInt32
-    d59::UInt32
-    d60::UInt32
-    d61::UInt32
-    d62::UInt32
-    d63::UInt32
-    d64::UInt32
-    d65::UInt32
-    d66::UInt32
-    d67::UInt32
-    d68::UInt32
-    d69::UInt32
-    d70::UInt32
-    d71::UInt32
-    d72::UInt32
-    d73::UInt32
-    d74::UInt32
-    d75::UInt32
-    d76::UInt32
-    d77::UInt32
-    d78::UInt32
-    d79::UInt32
-    d80::UInt32
-    d81::UInt32
-    d82::UInt32
-    d83::UInt32
-    d84::UInt32
-    d85::UInt32
-    d86::UInt32
-    d87::UInt32
-    d88::UInt32
-    d89::UInt32
-    d90::UInt32
-    d91::UInt32
-    d92::UInt32
-    d93::UInt32
-    d94::UInt32
-    d95::UInt32
-    d96::UInt32
-    d97::UInt32
-    d98::UInt32
-    d99::UInt32
-    d100::UInt32
-    d101::UInt32
-    d102::UInt32
-    d103::UInt32
-    d104::UInt32
-    d105::UInt32
-    d106::UInt32
-    d107::UInt32
-    d108::UInt32
-    d109::UInt32
-    d110::UInt32
-    d111::UInt32
-    d112::UInt32
-    d113::UInt32
-    d114::UInt32
-    d115::UInt32
-    d116::UInt32
-    d117::UInt32
-    d118::UInt32
-    d119::UInt32
-    d120::UInt32
-    d121::UInt32
-    d122::UInt32
-    d123::UInt32
-    d124::UInt32
-    d125::UInt32
-    d126::UInt32
-    d127::UInt32
-    d128::UInt32
-    d129::UInt32
-    d130::UInt32
-    d131::UInt32
-    d132::UInt32
-    d133::UInt32
-    d134::UInt32
-    d135::UInt32
-    d136::UInt32
-    d137::UInt32
-    d138::UInt32
-    d139::UInt32
-    d140::UInt32
-    d141::UInt32
-    d142::UInt32
-    d143::UInt32
-    d144::UInt32
-    d145::UInt32
-    d146::UInt32
-    d147::UInt32
-    d148::UInt32
-    d149::UInt32
-    d150::UInt32
-    d151::UInt32
-    d152::UInt32
-    d153::UInt32
-    d154::UInt32
-    d155::UInt32
-    d156::UInt32
-    d157::UInt32
-    d158::UInt32
-    d159::UInt32
-    d160::UInt32
-    d161::UInt32
-    d162::UInt32
-    d163::UInt32
-    d164::UInt32
-    d165::UInt32
-    d166::UInt32
-    d167::UInt32
-    d168::UInt32
-    d169::UInt32
-    d170::UInt32
-    d171::UInt32
-    d172::UInt32
-    d173::UInt32
-    d174::UInt32
-    d175::UInt32
-    d176::UInt32
-    d177::UInt32
-    d178::UInt32
-    d179::UInt32
-    d180::UInt32
-    d181::UInt32
-    d182::UInt32
-    d183::UInt32
-    d184::UInt32
-    d185::UInt32
-    d186::UInt32
-    d187::UInt32
-    d188::UInt32
-    d189::UInt32
-    d190::UInt32
-    d191::UInt32
-    d192::UInt32
-    d193::UInt32
-    d194::UInt32
-    d195::UInt32
-    d196::UInt32
-    d197::UInt32
-    d198::UInt32
-    d199::UInt32
-    d200::UInt32
-    d201::UInt32
-    d202::UInt32
-    d203::UInt32
-    d204::UInt32
-    d205::UInt32
-    d206::UInt32
-    d207::UInt32
-    d208::UInt32
-    d209::UInt32
-    d210::UInt32
-    d211::UInt32
-    d212::UInt32
-    d213::UInt32
-    d214::UInt32
-    d215::UInt32
-    d216::UInt32
-    d217::UInt32
-    d218::UInt32
-    d219::UInt32
-    d220::UInt32
-    d221::UInt32
-    d222::UInt32
-    d223::UInt32
-    d224::UInt32
-    d225::UInt32
-    d226::UInt32
-    d227::UInt32
-    d228::UInt32
-    d229::UInt32
-    d230::UInt32
-    d231::UInt32
-    d232::UInt32
-    d233::UInt32
-    d234::UInt32
-    d235::UInt32
-    d236::UInt32
-    d237::UInt32
-    d238::UInt32
-    d239::UInt32
-    d240::UInt32
-    d241::UInt32
-    d242::UInt32
-    d243::UInt32
-    d244::UInt32
-    d245::UInt32
-    d246::UInt32
-    d247::UInt32
-    d248::UInt32
-    d249::UInt32
-    d250::UInt32
-    d251::UInt32
-    d252::UInt32
-    d253::UInt32
-    d254::UInt32
-    d255::UInt32
-    d256::UInt32
-end
-
-zero(::Type{Array_256_Uint32}) = Array_256_Uint32(fill(zero(UInt32),256)...)
-
 immutable AVPaletteControl
     palette_changed::Cint
-    palette::Array_256_Uint32
+    palette::NTuple{256,UInt32}
 end
 
 immutable AVHWAccel
@@ -1878,7 +1521,7 @@ immutable AVCodecContext
     misc_bits::Cint
     frame_bits::Cint
     opaque::Ptr{Void}
-    codec_name::Array_32_Uint8
+    codec_name::NTuple{32,UInt8}
     codec_type::AVMediaType
     codec_id::CodecID
     codec_tag::UInt32
@@ -1926,7 +1569,7 @@ immutable AVCodecContext
     coded_frame::Ptr{AVFrame}
     debug::Cint
     debug_mv::Cint
-    error::Array_4_Uint64
+    error::NTuple{4,UInt64}
     me_cmp::Cint
     me_sub_cmp::Cint
     mb_cmp::Cint
@@ -2061,9 +1704,9 @@ immutable AVCodecContext
 end
 
 immutable AVFrame
-    data::Array_4_Ptr
-    linesize::Array_4_Cint
-    base::Array_4_Ptr
+    data::NTuple{4,Ptr{UInt8}}
+    linesize::NTuple{4,Cint}
+    base::NTuple{4,Ptr{UInt8}}
     key_frame::Cint
     pict_type::AVPictureType
     pts::Int64
@@ -2075,11 +1718,11 @@ immutable AVFrame
     qscale_table::Ptr{Int8}
     qstride::Cint
     mbskip_table::Ptr{UInt8}
-    motion_val::Array_2_Ptr
+    motion_val::NTuple{2,Ptr{UInt8}}
     mb_type::Ptr{UInt32}
     motion_subsample_log2::UInt8
     opaque::Ptr{Void}
-    error::Array_4_Uint64
+    error::NTuple{4,UInt64}
     _type::Cint
     repeat_pict::Cint
     qscale_type::Cint
@@ -2089,7 +1732,7 @@ immutable AVFrame
     palette_has_changed::Cint
     buffer_hints::Cint
     dct_coeff::Ptr{Int16}
-    ref_index::Array_2_Ptr
+    ref_index::NTuple{2,Ptr{UInt8}}
     reordered_opaque::Int64
     hwaccel_picture_private::Ptr{Void}
     pkt_pts::Int64
@@ -2105,8 +1748,8 @@ immutable AVFrame
 end
 
 immutable AVPicture
-    data::Array_4_Ptr
-    linesize::Array_4_Cint
+    data::NTuple{4,Ptr{UInt8}}
+    linesize::NTuple{4,Cint}
 end
 
 # begin enum AVSubtitleType
@@ -2141,27 +1784,8 @@ end
 const ReSampleContext = Void
 const AVResampleContext = Void
 
-immutable Array_4_Int64
-    d1::Int64
-    d2::Int64
-    d3::Int64
-    d4::Int64
-end
-
-zero(::Type{Array_4_Int64}) = Array_4_Int64(fill(zero(Int64),4)...)
-
-immutable Array_5_Cint
-    d1::Cint
-    d2::Cint
-    d3::Cint
-    d4::Cint
-    d5::Cint
-end
-
-zero(::Type{Array_5_Cint}) = Array_5_Cint(fill(zero(Cint),5)...)
-
 immutable AVCodecParser
-    codec_ids::Array_5_Cint
+    codec_ids::NTuple{5,Cint}
     priv_data_size::Cint
     parser_init::Ptr{Void}
     parser_parse::Ptr{Void}
@@ -2184,18 +1808,18 @@ immutable AVCodecParserContext
     last_dts::Int64
     fetch_timestamp::Cint
     cur_frame_start_index::Cint
-    cur_frame_offset::Array_4_Int64
-    cur_frame_pts::Array_4_Int64
-    cur_frame_dts::Array_4_Int64
+    cur_frame_offset::NTuple{4,Int64}
+    cur_frame_pts::NTuple{4,Int64}
+    cur_frame_dts::NTuple{4,Int64}
     flags::Cint
     offset::Int64
-    cur_frame_end::Array_4_Int64
+    cur_frame_end::NTuple{4,Int64}
     key_frame::Cint
     convergence_duration::Int64
     dts_sync_point::Cint
     dts_ref_dts_delta::Cint
     pts_dts_delta::Cint
-    cur_frame_pos::Array_4_Int64
+    cur_frame_pos::NTuple{4,Int64}
     pos::Int64
     last_pos::Int64
 end
