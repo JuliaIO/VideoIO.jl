@@ -40,3 +40,7 @@ end
 function Base.unsafe_load(ptr::AVFramePtr)
     return unsafe_load(ptr.p)
 end
+
+function Base.unsafe_convert(::Type{Ptr{AVPicture}}, ptr::AVFramePtr)
+    return reinterpret(Ptr{AVPicture}, ptr.p)
+end
