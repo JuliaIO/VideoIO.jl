@@ -4,8 +4,6 @@ using BinDeps
 
 group = library_group("libav")
 
-#deps = [
-
 libavcodec = library_dependency("libavcodec", group = group, aliases=[
   ["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*
   ["53" "54" "55" "56" "57"]...])
@@ -24,8 +22,6 @@ libavfilter = library_dependency("libavfilter", group = group, aliases=[
 libavdevice = library_dependency("libavdevice", group = group, aliases=[
   ["libavdevice-ffmpeg.so.","libavdevice.","libavdevice.so.","libavdevice.ffmpeg.so.","avdevice-"].*
   ["53" "54" "55" "56" "57"]...])
-
-#]
 
 libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libavdevice]
 
@@ -57,22 +53,40 @@ end
 
 # System Package Managers
 apt_packages = Dict(
-    "libavcodec-extra-53"   => libavcodec,
-    "libavcodec53"          => libavcodec,
-    "libavcodec-extra-54"   => libavcodec,
-    "libavcodec54"          => libavcodec,
+    "libavcodec-extra-57"   => libavcodec,
+    "libavcodec57"          => libavcodec,
+    "libavcodec-extra-56"   => libavcodec,
+    "libavcodec56"          => libavcodec,
     "libavcodec-extra-55"   => libavcodec,
     "libavcodec55"          => libavcodec,
+    "libavcodec-extra-54"   => libavcodec,
+    "libavcodec54"          => libavcodec,
+    "libavcodec-extra-53"   => libavcodec,
+    "libavcodec53"          => libavcodec,
+    "libavdevice57"         => libavdevice,
+    "libavdevice56"         => libavdevice,
+    "libavdevice55"         => libavdevice,
+    "libavdevice54"         => libavdevice,
     "libavdevice53"         => libavdevice,
-    "libavfilter2"          => libavfilter,
-    "libavfilter3"          => libavfilter,
+    "libavfilter-extra6"    => libavfilter,
+    "libavfilter6"          => libavfilter,
+    "libavfilter5"          => libavfilter,
     "libavfilter4"          => libavfilter,
-    "libavformat53"         => libavformat,
-    "libavformat54"         => libavformat,
+    "libavfilter3"          => libavfilter,
+    "libavfilter2"          => libavfilter,
+    "libavformat57"         => libavformat,
+    "libavformat56"         => libavformat,
     "libavformat55"         => libavformat,
+    "libavformat54"         => libavformat,
+    "libavformat53"         => libavformat,
     #"libavresample1"        => libavresample,
-    "libavutil51"           => libavutil,
+    "libavutil55"           => libavutil,
+    "libavutil54"           => libavutil,
+    "libavutil53"           => libavutil,
     "libavutil52"           => libavutil,
+    "libavutil51"           => libavutil,
+    "libswscale4"           => libswscale,
+    "libswscale3"           => libswscale,
     "libswscale2"           => libswscale,
 
     ## Available from https://launchpad.net/~jon-severinsson/+archive/ubuntu/ffmpeg
