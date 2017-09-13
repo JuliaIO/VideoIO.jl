@@ -114,3 +114,8 @@ VideoIO.testvideo("ladybird") # coverage testing
 
 
 #VideoIO.TestVideos.remove_all()
+
+# tesing the duration and date & time functions:
+file = joinpath(videodir, "annie_oakley.ogg")
+@test VideoIO.get_duration(file) == Dates.Millisecond(24224200)
+@test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
