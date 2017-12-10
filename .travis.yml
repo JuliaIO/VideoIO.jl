@@ -8,7 +8,7 @@ addons:
     - tcl8.5
     - tk8.5
     - libcairo2
-    - libavcodec-extra-53
+    - libavcodec-extra-54
     - libavdevice53
     - libavfilter2
     - libavformat53
