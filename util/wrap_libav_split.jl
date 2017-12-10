@@ -2,7 +2,6 @@
 import Clang.wrap_c
 import DataStructures: DefaultDict
 import Base.Meta.isexpr
-import Compat: String
 using Match
 
 include("../src/init.jl")
