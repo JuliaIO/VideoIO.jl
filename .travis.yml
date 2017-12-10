@@ -10,9 +10,9 @@ addons:
     - libcairo2
     - libavcodec-extra-54
     - libavdevice53
-    - libavfilter2
-    - libavformat53
-    - libavutil-extra-51
+    - libavfilter3
+    - libavformat54
+    - libavutil-extra-52
     - libswscale2
 os:
   - linux
