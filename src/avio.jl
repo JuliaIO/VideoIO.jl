@@ -487,7 +487,7 @@ function seek(s::VideoReader, seconds::Float64,
     
     actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
-    frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
+    frameskip = round(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
 
     while actualTimestamp < (dts - frameskip)
         while !have_frame(s)
