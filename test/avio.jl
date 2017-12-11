@@ -28,6 +28,12 @@ for name in VideoIO.TestVideos.names()
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
 
+    # Verify that time base and framerate are finite and nonzero
+    @test v.stream_info.stream.time_base.num != 0
+    @test v.stream_info.stream.time_base.den != 0
+    @test v.stream_info.stream.r_frame_rate.num != 0
+    @test v.stream_info.stream.r_frame_rate.den != 0
+
     if size(first_frame, 1) > v.height
         first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
     end

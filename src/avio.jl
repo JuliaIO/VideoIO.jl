@@ -4,19 +4,17 @@ import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
-using Compat
-
 type StreamInfo
     stream_index0::Int             # zero-based
     stream::AVStream
     codec_ctx::AVCodecContext
 end
 
-abstract StreamContext
+abstract type StreamContext end
 
 const EightBitTypes = Union{UInt8, N0f8, Main.ColorTypes.RGB{N0f8}}
-@compat const PermutedArray{T,N,perm,iperm,AA<:Array} = Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
-@compat const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
+const PermutedArray{T,N,perm,iperm,AA<:Array} = Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
+const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
 
 # TODO: move this to Base
 Base.unsafe_convert{T}(::Type{Ptr{T}}, A::PermutedArray{T}) = Base.unsafe_convert(Ptr{T}, parent(A))
@@ -284,7 +282,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     end
 
     N = Int64(bits_per_pixel >> 3)
-    target_buf = Array(UInt8, bits_per_pixel>>3, width, height)
+    target_buf = Array{UInt8}(bits_per_pixel>>3, width, height)
 
     sws_context = sws_getContext(width, height, pix_fmt,
                                  width, height, target_format,
@@ -489,7 +487,7 @@ function seek(s::VideoReader, seconds::Float64,
     
     actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
-    frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
+    frameskip = round(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
 
     while actualTimestamp < (dts - frameskip)
         while !have_frame(s)
