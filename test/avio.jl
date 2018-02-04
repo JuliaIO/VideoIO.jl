@@ -22,9 +22,9 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png") 
+    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
     first_frame = load(first_frame_file) # comment line when creating png files
-   
+
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
 
@@ -43,7 +43,7 @@ for name in VideoIO.TestVideos.names()
 
     @test img == first_frame               # comment line when creating png files
 
-    
+
     for i in 1:50
         read!(v,img)
     end
@@ -54,7 +54,7 @@ for name in VideoIO.TestVideos.names()
 
     seek(v,float(fiftytime))
     read!(v,img)
-    
+
     @test img == fiftieth_frame
 
     while !eof(v)
@@ -81,7 +81,7 @@ for name in VideoIO.TestVideos.names()
     (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 
     println(STDERR, "   Testing $name...")
-    first_frame_file = joinpath(testdir, swapext(name, ".png")) 
+    first_frame_file = joinpath(testdir, swapext(name, ".png"))
     first_frame = load(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
@@ -100,7 +100,7 @@ for name in VideoIO.TestVideos.names()
 
     #save(first_frame_file,img)        # uncomment line when creating png files
 
-    @test img == first_frame               # comment line when creating png files   
+    @test img == first_frame               # comment line when creating png files
 
     while !eof(v)
         read!(v, img)
