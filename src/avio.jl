@@ -100,9 +100,10 @@ function pump(c::AVInput)
     while true
         !c.isopen && break
 
-        Base.sigatomic_begin()
-        av_read_frame(pFormatContext, pointer(c.aPacket)) < 0 && break
-        Base.sigatomic_end()
+        ret = Base.disable_sigint() do
+            av_read_frame(pFormatContext, pointer(c.aPacket))
+        end
+        ret < 0 && break
 
         packet = c.aPacket[1]
         stream_index = packet.stream_index
