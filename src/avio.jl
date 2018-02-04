@@ -183,11 +183,6 @@ function open_avinput(avin::AVInput, source::AbstractString, input_format=C_NULL
 end
 
 function AVInput{T<:Union{IO, AbstractString}}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
-
-    # Register all codecs and formats
-    av_register_all()
-    av_log_set_level(AVUtil.AV_LOG_ERROR)
-
     aPacket = [AVPacket()]
     apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
     apAVIOContext = Ptr{AVIOContext}[C_NULL]
