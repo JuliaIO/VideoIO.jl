@@ -477,12 +477,12 @@ function seek(s::VideoReader, seconds::Float64,
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
     seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
-    
+
     avcodec_flush_buffers(pCodecContext)
 
     stream = s.avin.video_info[video_stream].stream
     first_dts = stream.first_dts
-    
+
     actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
     frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
@@ -528,17 +528,17 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     end
 
     dts = first_dts + seconds_to_timestamp(seconds, time_base)
-    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base) 
+    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base)
     #max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
-   
+
     flags = AVSEEK_FLAG_ANY
     if !forward
         flags = AVSEEK_FLAG_BACKWARD
     end
-   
+
     # Seek
     ret = avformat_seek_file(fc, seek_stream_index, min_dts, dts, dts, flags)
-    ret < 0 && throw(ErrorException("Could not seek in stream"))    
+    ret < 0 && throw(ErrorException("Could not seek in stream"))
     return avin
 end
 
@@ -604,122 +604,45 @@ function close(avin::AVInput)
     Base.sigatomic_end()
 end
 
+# try
+#     if isa(Main.ImageView, Module)
+        # # Define read and retrieve for Images
+        # global playvideo, viewcam, play
 
-### Camera Functions
+        # function play(f, flip=false)
+        #     buf = read(f)
+        #     ret = Main.ImageView.imshow(buf)
+        #     canvas = ret["gui"]["canvas"]
 
-if have_avdevice()
-    import AVDevice
-    AVDevice.avdevice_register_all()
+        #     while !eof(f)
+        #         read!(f, buf)
+        #         Main.ImageView.imshow(canvas, buf)
+        #         sleep(1/f.framerate)
+        #     end
+        # end
 
-    function get_camera_devices(ffmpeg, idev, idev_name)
-        CAMERA_DEVICES = String[]
+        # function playvideo(video)
+        #     f = VideoIO.openvideo(video)
+        #     play(f)
+        # end
 
-        read_vid_devs = false
-        out,err = readall_stdout_stderr(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
-        buf = length(out) > 0 ? out : err
-        for line in eachline(IOBuffer(buf))
-            if contains(line, "video devices")
-                read_vid_devs = true
-                continue
-            elseif contains(line, "audio devices") || contains(line, "exit") || contains(line, "error")
-                read_vid_devs = false
-                continue
-            end
-
-            if read_vid_devs
-                m = match(r"""\[.*"(.*)".?""", line)
-                if m != nothing
-                    push!(CAMERA_DEVICES, m.captures[1])
-                end
-
-                # Alternative format (TODO: could be combined with the regex above)
-                m = match(r"""\[.*\] \[[0-9]\] (.*)""", line)
-                if m != nothing
-                    push!(CAMERA_DEVICES, m.captures[1])
-                end
-            end
-        end
-
-        return CAMERA_DEVICES
-    end
-
-    if is_windows()
-        ffmpeg = joinpath(dirname(@__FILE__), "..", "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
-
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
-        CAMERA_DEVICES = get_camera_devices(ffmpeg, "dshow", "dummy")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
-
-    end
-
-    if is_linux()
-        import Glob
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
-        CAMERA_DEVICES = Glob.glob("video*", "/dev")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
-    end
-
-    if is_apple()
-        ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
-
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
-        global CAMERA_DEVICES = String[]
-        try
-            CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
-        catch
-            try
-                CAMERA_DEVICES = get_camera_devices(ffmpeg, "qtkit", "\"\"")
-            end
-        end
-
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "FaceTime"
-        #DEFAULT_CAMERA_DEVICE = "Integrated"
-    end
-
-    function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)
-        camera = AVInput(device, format)
-        VideoReader(camera, args...; kwargs...)
-    end
-end
-
-try
-    if isa(Main.ImageView, Module)
-        # Define read and retrieve for Images
-        global playvideo, viewcam, play
-
-        function play(f, flip=false)
-            buf = read(f)
-            canvas, _ = Main.ImageView.imshow(buf, flipx=flip, interactive=false)
-
-            while !eof(f)
-                read!(f, buf)
-                Main.ImageView.imshow(canvas, buf, flipx=flip, interactive=false)
-                sleep(1/f.framerate)
-            end
-        end
-
-        function playvideo(video)
-            f = VideoIO.openvideo(video)
-            play(f)
-        end
-
-        if have_avdevice()
-            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-                camera = opencamera(device, format)
-                play(camera, true)
-            end
-        else
-            function viewcam()
-                error("libavdevice not present")
-            end
-        end
-    end
-catch
-    global playvideo, viewcam, play
-    no_imageview() = error("Please load ImageView before VideoIO to enable play(...), playvideo(...) and viewcam()")
-    play() = no_imageview()
-    playvideo() = no_imageview()
-    viewcam() = no_imageview()
-end
+        # if have_avdevice()
+        #     function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
+        #         camera = opencamera(device, format)
+        #         play(camera, true)
+        #     end
+        # else
+        #     function viewcam()
+        #         error("libavdevice not present")
+        #     end
+        # end
+    # end
+# catch
+#     global playvideo, viewcam, play
+#     no_imageview() = error("Please load ImageView before VideoIO to enable play(...), playvideo(...) and viewcam()")
+#     play() = no_imageview()
+#     playvideo() = no_imageview()
+#     viewcam() = no_imageview()
+# end
 
 
