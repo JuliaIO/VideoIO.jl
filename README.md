@@ -69,12 +69,12 @@ video frames from a supported video file, or from a camera device:
 
     # One can seek to an arbitrary position in the video
     seek(f,2.5)  ## The second parameter is the time in seconds and must be Float64
-    img = read(f, Image)
-    canvas, _ = ImageView.view(img)
+    img = read(f)
+    canvas=ImageView.imshow(img)["gui"]["canvas"]
     
     while !eof(f)
         read!(f, img)
-        ImageView.view(canvas, img)
+        ImageView.imshow(canvas, img)
         #sleep(1/30)
     end
 
