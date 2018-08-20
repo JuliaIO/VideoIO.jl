@@ -27,7 +27,7 @@ type AVInput{I}
     apFormatContext::Vector{Ptr{AVFormatContext}}
     apAVIOContext::Vector{Ptr{AVIOContext}}
     avio_ctx_buffer_size::UInt
-    aPacket::Vector{AVPacket}           # Reusable packet
+    apPacket::Vector{Ptr{AVPacket}}           # Reusable packet
 
     unknown_info::Vector{StreamInfo}
     video_info::Vector{StreamInfo}
@@ -101,22 +101,23 @@ function pump(c::AVInput)
         !c.isopen && break
 
         Base.sigatomic_begin()
-        av_read_frame(pFormatContext, pointer(c.aPacket)) < 0 && break
+        av_init_packet(c.apPacket[1])
+        av_read_frame(pFormatContext, c.apPacket[1]) < 0 && break
         Base.sigatomic_end()
 
-        packet = c.aPacket[1]
+        packet = unsafe_load(c.apPacket[1])
         stream_index = packet.stream_index
 
         # If we're not listening to this stream, skip it
         if stream_index in c.listening
             # Decode the packet, and check if the frame is complete
-            frameFinished = decode_packet(c.stream_contexts[stream_index+1], c.aPacket)
-            av_free_packet(pointer(c.aPacket))
+            frameFinished = decode_packet(c.stream_contexts[stream_index + 1], c.apPacket)
+            av_packet_unref(c.apPacket[1])
 
             # If the frame is complete, we're done
             frameFinished && return stream_index
         else
-            av_free_packet(pointer(c.aPacket))
+            av_packet_unref(c.apPacket[1])
         end
     end
 
@@ -187,13 +188,13 @@ function AVInput{T<:Union{IO, AbstractString}}(source::T, input_format=C_NULL; a
     av_register_all()
     av_log_set_level(AVUtil.AV_LOG_ERROR)
 
-    aPacket = [AVPacket()]
+    apPacket = Ptr{AVPacket}[av_packet_alloc()]
     apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
     apAVIOContext = Ptr{AVIOContext}[C_NULL]
 
     # Allocate this object (needed to pass into AVIOContext in open_avinput)
     avin = AVInput{T}(source, apFormatContext, apAVIOContext, avio_ctx_buffer_size,
-                      aPacket, [StreamInfo[] for i=1:6]..., Set(Int[]), StreamContext[], false)
+                      apPacket, [StreamInfo[] for i = 1:6]..., Set(Int[]), StreamContext[], false)
 
     # Make sure we deallocate everything on exit
     finalizer(avin, close)
@@ -333,7 +334,7 @@ end
 
 VideoReader{T<:Union{IO, AbstractString}}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
 
-function decode_packet(r::VideoReader, aPacket)
+function decode_packet(r::VideoReader, apPacket)
     # Do we already have a complete frame that hasn't been consumed?
     if have_decoded_frame(r)
         frame = unsafe_load(r.pVideoFrame)
@@ -346,7 +347,7 @@ function decode_packet(r::VideoReader, aPacket)
     avcodec_decode_video2(r.pVideoCodecContext,
                           r.pVideoFrame,
                           r.aFrameFinished,
-                          aPacket)
+                          apPacket[1])
 
     return have_decoded_frame(r)
 end
@@ -486,12 +487,12 @@ function seek(s::VideoReader, seconds::Float64,
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
     seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
-    
+
     avcodec_flush_buffers(pCodecContext)
 
     stream = s.avin.video_info[video_stream].stream
     first_dts = stream.first_dts
-    
+
     frame = unsafe_load(s.pVideoFrame)
     actualTimestamp = frame.pkt_dts   #av_frame_get_best_effort_timestamp(s.pVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
@@ -539,17 +540,17 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     end
 
     dts = first_dts + seconds_to_timestamp(seconds, time_base)
-    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base) 
+    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base)
     #max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
-   
+
     flags = AVSEEK_FLAG_ANY
     if !forward
         flags = AVSEEK_FLAG_BACKWARD
     end
-   
+
     # Seek
     ret = avformat_seek_file(fc, seek_stream_index, min_dts, dts, dts, flags)
-    ret < 0 && throw(ErrorException("Could not seek in stream"))    
+    ret < 0 && throw(ErrorException("Could not seek in stream"))
     return avin
 end
 
@@ -603,6 +604,7 @@ function close(avin::AVInput)
     Base.sigatomic_begin()
     if avin.apFormatContext[1] != C_NULL
         avformat_close_input(avin.apFormatContext)
+        avin.apFormatContext[1] = C_NULL
     end
     Base.sigatomic_end()
 
@@ -611,6 +613,14 @@ function close(avin::AVInput)
         p = av_pointer_to_field(avin.apAVIOContext[1], :buffer)
         p != C_NULL && av_freep(p)
         av_freep(avin.apAVIOContext)
+        avin.apAVIOContext[1] = C_NULL
+    end
+    Base.sigatomic_end()
+
+    Base.sigatomic_begin()
+    if avin.apPacket[1] != C_NULL
+        av_packet_free(avin.apPacket)
+        avin.apPacket[1] = C_NULL
     end
     Base.sigatomic_end()
 end
