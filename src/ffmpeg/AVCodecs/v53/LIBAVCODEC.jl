@@ -23,8 +23,9 @@ function free_frame(ptr::AVFramePtr)
     if ptr.p == C_NULL return end
 
     Base.sigatomic_begin()
-    av_frame_unref(ptr.p)
-    av_free(ptr.p)
+    av_frame_free(Ref(ptr.p))
+    # av_frame_unref(ptr.p)
+    # av_freep(Ref(ptr.p))
     ptr.p = C_NULL
     Base.sigatomic_end()
 end
