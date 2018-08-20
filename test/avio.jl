@@ -22,11 +22,13 @@ for name in VideoIO.TestVideos.names()
     println(STDERR, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png") 
+    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
     first_frame = load(first_frame_file) # comment line when creating png files
-   
+
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
+
+    println("Video opened")
 
     if size(first_frame, 1) > v.height
         first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
@@ -39,14 +41,19 @@ for name in VideoIO.TestVideos.names()
         read!(v, img)
     end
 
+    println("Found first non-blank image")
+
     #save(first_frame_file,img)        # uncomment line when creating png files)
 
     @test img == first_frame               # comment line when creating png files
 
-    
+
     for i in 1:50
         read!(v,img)
     end
+
+    println("Read 50th image")
+
     fiftieth_frame = img
     timebase = v.avin.video_info[1].stream.time_base
     frame = unsafe_load(v.pVideoFrame)
@@ -55,15 +62,21 @@ for name in VideoIO.TestVideos.names()
 
     seek(v,float(fiftytime))
     read!(v,img)
-    
+
     @test img == fiftieth_frame
+
+    println("Seeked to and read 50th image again")
 
     while !eof(v)
         read!(v, img)
     end
 
+    println("Ready remaining images")
+
     # read first frames again, and compare
     seekstart(v)
+
+    println("Seeked back to beginning")
 
     read!(v, img)
 
@@ -71,8 +84,12 @@ for name in VideoIO.TestVideos.names()
         read!(v, img)
     end
 
+    println("Read first image again")
+
     @test img == first_frame
     close(v)
+
+    println("Video file closed")
 end
 
 println(STDERR, "Testing IO reading...")
@@ -82,7 +99,7 @@ for name in VideoIO.TestVideos.names()
     (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 
     println(STDERR, "   Testing $name...")
-    first_frame_file = joinpath(testdir, swapext(name, ".png")) 
+    first_frame_file = joinpath(testdir, swapext(name, ".png"))
     first_frame = load(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
@@ -101,7 +118,7 @@ for name in VideoIO.TestVideos.names()
 
     #save(first_frame_file,img)        # uncomment line when creating png files
 
-    @test img == first_frame               # comment line when creating png files   
+    @test img == first_frame               # comment line when creating png files
 
     while !eof(v)
         read!(v, img)
