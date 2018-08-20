@@ -78,7 +78,7 @@ type VideoReader{transcode} <: StreamContext
     stream_index0::Int
     pVideoCodecContext::Ptr{AVCodecContext}
     pVideoCodec::Ptr{AVCodec}
-    pVideoFrame::Ptr{AVFrame}   # Reusable frame
+    pVideoFrame::AVFramePtr
     aFrameFinished::Vector{Int32}
 
     format::Cint
