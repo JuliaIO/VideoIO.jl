@@ -16,7 +16,7 @@ if !isdefined(:ffmpeg_or_libav)
 end
 
 av_load_path = joinpath(dirname(@__FILE__), ffmpeg_or_libav)
-!(av_load_path in LOAD_PATH) && unshift!(LOAD_PATH, av_load_path)
+!(av_load_path in LOAD_PATH) && pushfirst!(LOAD_PATH, av_load_path)
 
 
 

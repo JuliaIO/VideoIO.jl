@@ -6,8 +6,8 @@ using Match
 
 include("../src/init.jl")
 
-indexh         = joinpath(JULIA_HOME, "../include/clang-c/Index.h")
-clang_includes = String[joinpath(JULIA_HOME, "../lib/clang/3.7.1/include"), joinpath(dirname(indexh), "..")]
+indexh         = joinpath(Sys.BINDIR, "../include/clang-c/Index.h")
+clang_includes = String[joinpath(Sys.BINDIR, "../lib/clang/3.7.1/include"), joinpath(dirname(indexh), "..")]
 #clang_includes = String[joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
 
 strpack_structs = Set{Symbol}()

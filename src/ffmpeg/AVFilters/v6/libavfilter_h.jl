@@ -47,7 +47,7 @@ const AVFILTER_THREAD_SLICE  =  1 << 0
 const AVFILTER_CMD_FLAG_ONE  =  1
 const AVFILTER_CMD_FLAG_FAST  =  2
 
-const AVFilterPad = Void
+const AVFilterPad = Nothing
 
 struct AVFilter
     name::Cstring
@@ -56,17 +56,17 @@ struct AVFilter
     outputs::Ptr{AVFilterPad}
     priv_class::Ptr{AVClass}
     flags::Cint
-    init::Ptr{Void}
-    init_dict::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    init_dict::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     priv_size::Cint
     next::Ptr{AVFilter}
-    process_command::Ptr{Void}
-    init_opaque::Ptr{Void}
+    process_command::Ptr{Cvoid}
+    init_opaque::Ptr{Cvoid}
 end
 
-const AVFilterGraphInternal = Void
+const AVFilterGraphInternal = Nothing
 
 struct AVFilterGraph
     av_class::Ptr{AVClass}
@@ -77,7 +77,7 @@ struct AVFilterGraph
     thread_type::Cint
     nb_threads::Cint
     internal::Ptr{AVFilterGraphInternal}
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     execute::Ptr{avfilter_execute_func}
     aresample_swr_opts::Cstring
     sink_links::Ptr{Ptr{AVFilterLink}}
@@ -85,7 +85,7 @@ struct AVFilterGraph
     disable_auto_convert::UInt32
 end
 
-const AVFilterInternal = Void
+const AVFilterInternal = Nothing
 
 struct AVFilterContext
     av_class::Ptr{AVClass}
@@ -97,18 +97,18 @@ struct AVFilterContext
     output_pads::Ptr{AVFilterPad}
     outputs::Ptr{Ptr{AVFilterLink}}
     nb_outputs::UInt32
-    priv::Ptr{Void}
+    priv::Ptr{Cvoid}
     graph::Ptr{AVFilterGraph}
     thread_type::Cint
     internal::Ptr{AVFilterInternal}
     command_queue::Ptr{AVFilterCommand}
     enable_str::Cstring
-    enable::Ptr{Void}
+    enable::Ptr{Cvoid}
     var_values::Ptr{Cdouble}
     is_disabled::Cint
 end
 
-const AVFilterFormats = Void
+const AVFilterFormats = Nothing
 
 # begin enum ANONYMOUS_1
 const ANONYMOUS_1 = Cint

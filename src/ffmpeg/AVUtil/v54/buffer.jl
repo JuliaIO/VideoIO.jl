@@ -28,11 +28,11 @@ function av_buffer_allocz(size::Integer)
 end
 
 function av_buffer_create(data,size::Integer,free,opaque,flags::Integer)
-    ccall((:av_buffer_create,libavutil),Ptr{AVBufferRef},(Ptr{UInt8},Cint,Ptr{Void},Ptr{Void},Cint),data,size,free,opaque,flags)
+    ccall((:av_buffer_create,libavutil),Ptr{AVBufferRef},(Ptr{UInt8},Cint,Ptr{Cvoid},Ptr{Cvoid},Cint),data,size,free,opaque,flags)
 end
 
 function av_buffer_default_free(opaque,data)
-    ccall((:av_buffer_default_free,libavutil),Void,(Ptr{Void},Ptr{UInt8}),opaque,data)
+    ccall((:av_buffer_default_free,libavutil),Cvoid,(Ptr{Cvoid},Ptr{UInt8}),opaque,data)
 end
 
 function av_buffer_ref(buf)
@@ -40,7 +40,7 @@ function av_buffer_ref(buf)
 end
 
 function av_buffer_unref(buf)
-    ccall((:av_buffer_unref,libavutil),Void,(Ptr{Ptr{AVBufferRef}},),buf)
+    ccall((:av_buffer_unref,libavutil),Cvoid,(Ptr{Ptr{AVBufferRef}},),buf)
 end
 
 function av_buffer_is_writable(buf)
@@ -48,7 +48,7 @@ function av_buffer_is_writable(buf)
 end
 
 function av_buffer_get_opaque(buf)
-    ccall((:av_buffer_get_opaque,libavutil),Ptr{Void},(Ptr{AVBufferRef},),buf)
+    ccall((:av_buffer_get_opaque,libavutil),Ptr{Cvoid},(Ptr{AVBufferRef},),buf)
 end
 
 function av_buffer_get_ref_count(buf)
@@ -64,11 +64,11 @@ function av_buffer_realloc(buf,size::Integer)
 end
 
 function av_buffer_pool_init(size::Integer,alloc)
-    ccall((:av_buffer_pool_init,libavutil),Ptr{AVBufferPool},(Cint,Ptr{Void}),size,alloc)
+    ccall((:av_buffer_pool_init,libavutil),Ptr{AVBufferPool},(Cint,Ptr{Cvoid}),size,alloc)
 end
 
 function av_buffer_pool_uninit(pool)
-    ccall((:av_buffer_pool_uninit,libavutil),Void,(Ptr{Ptr{AVBufferPool}},),pool)
+    ccall((:av_buffer_pool_uninit,libavutil),Cvoid,(Ptr{Ptr{AVBufferPool}},),pool)
 end
 
 function av_buffer_pool_get(pool)

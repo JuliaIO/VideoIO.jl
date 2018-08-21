@@ -578,7 +578,7 @@ const AV_PICTURE_TYPE_BI  =  (UInt32)(7)
 
 const AV_BUFFER_FLAG_READONLY  =  1 << 0
 
-const AVBuffer = Void
+const AVBuffer = Nothing
 
 struct AVBufferRef
     buffer::Ptr{AVBuffer}
@@ -586,7 +586,7 @@ struct AVBufferRef
     size::Cint
 end
 
-const AVBufferPool = Void
+const AVBufferPool = Nothing
 
 const AV_DICT_MATCH_CASE  =  1
 const AV_DICT_IGNORE_SUFFIX  =  2
@@ -600,7 +600,7 @@ struct AVDictionaryEntry
     value::Cstring
 end
 
-const AVDictionary = Void
+const AVDictionary = Nothing
 
 struct AVFifoBuffer
     buffer::Ptr{UInt8}
@@ -752,7 +752,7 @@ struct AVFrame
     coded_picture_number::Cint
     display_picture_number::Cint
     quality::Cint
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     error::NTuple{8,UInt64}
     repeat_pict::Cint
     interlaced_frame::Cint
@@ -891,7 +891,7 @@ struct AVOption
     help::Cstring
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
@@ -900,16 +900,16 @@ end
 
 struct AVClass
     class_name::Cstring
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
     category::AVClassCategory
-    get_category::Ptr{Void}
-    query_ranges::Ptr{Void}
+    get_category::Ptr{Cvoid}
+    query_ranges::Ptr{Cvoid}
 end
 
 # Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v
@@ -1247,10 +1247,10 @@ const LIBAVUTIL_VERSION_MICRO  =  103
 const AES_CTR_KEY_SIZE  =  16
 const AES_CTR_IV_SIZE  =  8
 
-const AVAESCTR = Void
-const AVAudioFifo = Void
-const AVCAMELLIA = Void
-const AVCAST5 = Void
+const AVAESCTR = Nothing
+const AVAudioFifo = Nothing
+const AVCAMELLIA = Nothing
+const AVCAST5 = Nothing
 
 const AV_CH_FRONT_LEFT  =  0x00000001
 const AV_CH_FRONT_RIGHT  =  0x00000002
@@ -1319,7 +1319,7 @@ const AV_MATRIX_ENCODING_DOLBYHEADPHONE  =  (UInt32)(6)
 const AV_MATRIX_ENCODING_NB  =  (UInt32)(7)
 # end enum AVMatrixEncoding
 
-const AVBPrint = Void
+const AVBPrint = Nothing
 
 struct AVDES
     round_keys::NTuple{3,NTuple{16,UInt64}}
@@ -1346,7 +1346,7 @@ end
 
 const AV_HASH_MAX_SIZE  =  64
 
-const AVHashContext = Void
+const AVHashContext = Nothing
 
 struct AVMasteringDisplayMetadata
     display_primaries::NTuple{3,NTuple{2,AVRational}}
@@ -1426,7 +1426,7 @@ const ANONYMOUS_2 = UInt32
 const AV_OPT_FLAG_IMPLICIT_KEY  =  (UInt32)(1)
 # end enum ANONYMOUS_2
 
-const av_pixelutils_sad_fn = Ptr{Void}
+const av_pixelutils_sad_fn = Ptr{Cvoid}
 
 struct AVRC4
     state::NTuple{256,UInt8}
@@ -1460,8 +1460,8 @@ struct AVStereo3D
     flags::Cint
 end
 
-const AVTEA = Void
-const AVThreadMessageQueue = Void
+const AVTEA = Nothing
+const AVThreadMessageQueue = Nothing
 
 # begin enum AVThreadMessageFlags
 const AVThreadMessageFlags = UInt32
@@ -1484,8 +1484,8 @@ struct AVTimecode
     fps::UInt32
 end
 
-const AVTreeNode = Void
-const AVTWOFISH = Void
+const AVTreeNode = Nothing
+const AVTWOFISH = Nothing
 
 struct AVXTEA
     key::NTuple{16,UInt32}

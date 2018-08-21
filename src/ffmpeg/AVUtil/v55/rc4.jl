@@ -17,5 +17,5 @@ function av_rc4_init(d,key,key_bits::Integer,decrypt::Integer)
 end
 
 function av_rc4_crypt(d,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_rc4_crypt,libavutil),Void,(Ptr{AVRC4},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),d,dst,src,count,iv,decrypt)
+    ccall((:av_rc4_crypt,libavutil),Cvoid,(Ptr{AVRC4},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),d,dst,src,count,iv,decrypt)
 end

@@ -71,7 +71,7 @@ function avfilter_license()
 end
 
 function avfilter_copy_buffer_ref_props(dst,src)
-    ccall((:avfilter_copy_buffer_ref_props,libavfilter),Void,(Ptr{AVFilterBufferRef},Ptr{AVFilterBufferRef}),dst,src)
+    ccall((:avfilter_copy_buffer_ref_props,libavfilter),Cvoid,(Ptr{AVFilterBufferRef},Ptr{AVFilterBufferRef}),dst,src)
 end
 
 function avfilter_ref_buffer(ref,pmask::Integer)
@@ -79,7 +79,7 @@ function avfilter_ref_buffer(ref,pmask::Integer)
 end
 
 function avfilter_unref_buffer(ref)
-    ccall((:avfilter_unref_buffer,libavfilter),Void,(Ptr{AVFilterBufferRef},),ref)
+    ccall((:avfilter_unref_buffer,libavfilter),Cvoid,(Ptr{AVFilterBufferRef},),ref)
 end
 
 function avfilter_make_format_list(fmts)
@@ -99,31 +99,31 @@ function avfilter_merge_formats(a,b)
 end
 
 function avfilter_formats_ref(formats,ref)
-    ccall((:avfilter_formats_ref,libavfilter),Void,(Ptr{AVFilterFormats},Ptr{Ptr{AVFilterFormats}}),formats,ref)
+    ccall((:avfilter_formats_ref,libavfilter),Cvoid,(Ptr{AVFilterFormats},Ptr{Ptr{AVFilterFormats}}),formats,ref)
 end
 
 function avfilter_formats_unref(ref)
-    ccall((:avfilter_formats_unref,libavfilter),Void,(Ptr{Ptr{AVFilterFormats}},),ref)
+    ccall((:avfilter_formats_unref,libavfilter),Cvoid,(Ptr{Ptr{AVFilterFormats}},),ref)
 end
 
 function avfilter_formats_changeref(oldref,newref)
-    ccall((:avfilter_formats_changeref,libavfilter),Void,(Ptr{Ptr{AVFilterFormats}},Ptr{Ptr{AVFilterFormats}}),oldref,newref)
+    ccall((:avfilter_formats_changeref,libavfilter),Cvoid,(Ptr{Ptr{AVFilterFormats}},Ptr{Ptr{AVFilterFormats}}),oldref,newref)
 end
 
 function avfilter_default_start_frame(link,picref)
-    ccall((:avfilter_default_start_frame,libavfilter),Void,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,picref)
+    ccall((:avfilter_default_start_frame,libavfilter),Cvoid,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,picref)
 end
 
 function avfilter_default_draw_slice(link,y::Integer,h::Integer,slice_dir::Integer)
-    ccall((:avfilter_default_draw_slice,libavfilter),Void,(Ptr{AVFilterLink},Cint,Cint,Cint),link,y,h,slice_dir)
+    ccall((:avfilter_default_draw_slice,libavfilter),Cvoid,(Ptr{AVFilterLink},Cint,Cint,Cint),link,y,h,slice_dir)
 end
 
 function avfilter_default_end_frame(link)
-    ccall((:avfilter_default_end_frame,libavfilter),Void,(Ptr{AVFilterLink},),link)
+    ccall((:avfilter_default_end_frame,libavfilter),Cvoid,(Ptr{AVFilterLink},),link)
 end
 
 function avfilter_default_filter_samples(link,samplesref)
-    ccall((:avfilter_default_filter_samples,libavfilter),Void,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,samplesref)
+    ccall((:avfilter_default_filter_samples,libavfilter),Cvoid,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,samplesref)
 end
 
 function avfilter_default_config_output_link(link)
@@ -143,7 +143,7 @@ function avfilter_default_get_audio_buffer(link,perms::Integer,sample_fmt::AVSam
 end
 
 function avfilter_set_common_formats(ctx,formats)
-    ccall((:avfilter_set_common_formats,libavfilter),Void,(Ptr{AVFilterContext},Ptr{AVFilterFormats}),ctx,formats)
+    ccall((:avfilter_set_common_formats,libavfilter),Cvoid,(Ptr{AVFilterContext},Ptr{AVFilterFormats}),ctx,formats)
 end
 
 function avfilter_default_query_formats(ctx)
@@ -151,19 +151,19 @@ function avfilter_default_query_formats(ctx)
 end
 
 function avfilter_null_start_frame(link,picref)
-    ccall((:avfilter_null_start_frame,libavfilter),Void,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,picref)
+    ccall((:avfilter_null_start_frame,libavfilter),Cvoid,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,picref)
 end
 
 function avfilter_null_draw_slice(link,y::Integer,h::Integer,slice_dir::Integer)
-    ccall((:avfilter_null_draw_slice,libavfilter),Void,(Ptr{AVFilterLink},Cint,Cint,Cint),link,y,h,slice_dir)
+    ccall((:avfilter_null_draw_slice,libavfilter),Cvoid,(Ptr{AVFilterLink},Cint,Cint,Cint),link,y,h,slice_dir)
 end
 
 function avfilter_null_end_frame(link)
-    ccall((:avfilter_null_end_frame,libavfilter),Void,(Ptr{AVFilterLink},),link)
+    ccall((:avfilter_null_end_frame,libavfilter),Cvoid,(Ptr{AVFilterLink},),link)
 end
 
 function avfilter_null_filter_samples(link,samplesref)
-    ccall((:avfilter_null_filter_samples,libavfilter),Void,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,samplesref)
+    ccall((:avfilter_null_filter_samples,libavfilter),Cvoid,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,samplesref)
 end
 
 function avfilter_null_get_video_buffer(link,perms::Integer,w::Integer,h::Integer)
@@ -203,27 +203,27 @@ function avfilter_poll_frame(link)
 end
 
 function avfilter_start_frame(link,picref)
-    ccall((:avfilter_start_frame,libavfilter),Void,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,picref)
+    ccall((:avfilter_start_frame,libavfilter),Cvoid,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,picref)
 end
 
 function avfilter_end_frame(link)
-    ccall((:avfilter_end_frame,libavfilter),Void,(Ptr{AVFilterLink},),link)
+    ccall((:avfilter_end_frame,libavfilter),Cvoid,(Ptr{AVFilterLink},),link)
 end
 
 function avfilter_draw_slice(link,y::Integer,h::Integer,slice_dir::Integer)
-    ccall((:avfilter_draw_slice,libavfilter),Void,(Ptr{AVFilterLink},Cint,Cint,Cint),link,y,h,slice_dir)
+    ccall((:avfilter_draw_slice,libavfilter),Cvoid,(Ptr{AVFilterLink},Cint,Cint,Cint),link,y,h,slice_dir)
 end
 
 function avfilter_filter_samples(link,samplesref)
-    ccall((:avfilter_filter_samples,libavfilter),Void,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,samplesref)
+    ccall((:avfilter_filter_samples,libavfilter),Cvoid,(Ptr{AVFilterLink},Ptr{AVFilterBufferRef}),link,samplesref)
 end
 
 function avfilter_register_all()
-    ccall((:avfilter_register_all,libavfilter),Void,())
+    ccall((:avfilter_register_all,libavfilter),Cvoid,())
 end
 
 function avfilter_uninit()
-    ccall((:avfilter_uninit,libavfilter),Void,())
+    ccall((:avfilter_uninit,libavfilter),Cvoid,())
 end
 
 function avfilter_register(filter)
@@ -243,11 +243,11 @@ function avfilter_open(filter_ctx,filter,inst_name)
 end
 
 function avfilter_init_filter(filter,args,opaque)
-    ccall((:avfilter_init_filter,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{UInt8},Ptr{Void}),filter,args,opaque)
+    ccall((:avfilter_init_filter,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{UInt8},Ptr{Cvoid}),filter,args,opaque)
 end
 
 function avfilter_free(filter)
-    ccall((:avfilter_free,libavfilter),Void,(Ptr{AVFilterContext},),filter)
+    ccall((:avfilter_free,libavfilter),Cvoid,(Ptr{AVFilterContext},),filter)
 end
 
 function avfilter_insert_filter(link,filt,filt_srcpad_idx::Integer,filt_dstpad_idx::Integer)
@@ -255,15 +255,15 @@ function avfilter_insert_filter(link,filt,filt_srcpad_idx::Integer,filt_dstpad_i
 end
 
 function avfilter_insert_pad(idx::Integer,count,padidx_off::Csize_t,pads,links,newpad)
-    ccall((:avfilter_insert_pad,libavfilter),Void,(UInt32,Ptr{UInt32},Csize_t,Ptr{Ptr{AVFilterPad}},Ptr{Ptr{Ptr{AVFilterLink}}},Ptr{AVFilterPad}),idx,count,padidx_off,pads,links,newpad)
+    ccall((:avfilter_insert_pad,libavfilter),Cvoid,(UInt32,Ptr{UInt32},Csize_t,Ptr{Ptr{AVFilterPad}},Ptr{Ptr{Ptr{AVFilterLink}}},Ptr{AVFilterPad}),idx,count,padidx_off,pads,links,newpad)
 end
 
 function avfilter_insert_inpad(f,index::Integer,p)
-    ccall((:avfilter_insert_inpad,libavfilter),Void,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterPad}),f,index,p)
+    ccall((:avfilter_insert_inpad,libavfilter),Cvoid,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterPad}),f,index,p)
 end
 
 function avfilter_insert_outpad(f,index::Integer,p)
-    ccall((:avfilter_insert_outpad,libavfilter),Void,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterPad}),f,index,p)
+    ccall((:avfilter_insert_outpad,libavfilter),Cvoid,(Ptr{AVFilterContext},UInt32,Ptr{AVFilterPad}),f,index,p)
 end
 
 function avfilter_copy_frame_props(dst,src)

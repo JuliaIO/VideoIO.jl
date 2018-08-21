@@ -413,7 +413,7 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T<:EightBi
     end
 
     apSourceDataBuffers = isempty(r.frame_queue) ? reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data]) :
-                                                   reinterpret(Ptr{UInt8}, [shift!(r.frame_queue)])
+                                                   reinterpret(Ptr{UInt8}, [popfirst!(r.frame_queue)])
     apSourceLineSizes   = reinterpret(Cint, [r.aVideoFrame[1].linesize])
 
     Base.sigatomic_begin()
@@ -659,7 +659,7 @@ if have_avdevice()
         return CAMERA_DEVICES
     end
 
-    if is_windows()
+    if Sys.iswindows()
         ffmpeg = joinpath(dirname(@__FILE__), "..", "deps", "ffmpeg-2.2.3-win$WORD_SIZE-shared", "bin", "ffmpeg.exe")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
@@ -668,14 +668,14 @@ if have_avdevice()
 
     end
 
-    if is_linux()
+    if Sys.islinux()
         import Glob
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
         CAMERA_DEVICES = Glob.glob("video*", "/dev")
         DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
     end
 
-    if is_apple()
+    if Sys.isapple()
         ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
 
         DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")

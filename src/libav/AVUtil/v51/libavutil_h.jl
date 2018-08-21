@@ -401,7 +401,7 @@ struct AVDictionaryEntry
     value::Ptr{UInt8}
 end
 
-const AVDictionary=Void
+const AVDictionary=Nothing
 
 const AV_LOG_QUIET = -8
 const AV_LOG_PANIC = 0
@@ -443,7 +443,7 @@ struct AVOption
     help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
@@ -452,13 +452,13 @@ end
 
 struct AVClass
     class_name::Ptr{UInt8}
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
 end
 
 # Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v

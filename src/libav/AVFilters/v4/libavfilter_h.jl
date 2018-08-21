@@ -44,7 +44,7 @@ const AVFILTER_THREAD_SLICE = 1 << 0
 const AVFilterContext=AVFilterContext
 const AVFilterLink=AVFilterLink
 const AVFilterPad=AVFilterPad
-const AVFilterFormats=Void
+const AVFilterFormats=Nothing
 
 struct Array_8_Ptr
     d1::Ptr{UInt8}
@@ -76,8 +76,8 @@ struct AVFilterBuffer
     data::Array_8_Ptr
     extended_data::Ptr{Ptr{UInt8}}
     linesize::Array_8_Cint
-    priv::Ptr{Void}
-    free::Ptr{Void}
+    priv::Ptr{Cvoid}
+    free::Ptr{Cvoid}
     format::Cint
     w::Cint
     h::Cint
@@ -122,16 +122,16 @@ struct AVFilter
     outputs::Ptr{AVFilterPad}
     priv_class::Ptr{AVClass}
     flags::Cint
-    init::Ptr{Void}
-    init_dict::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    init_dict::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     priv_size::Cint
     next::Ptr{AVFilter}
 end
 
-const AVFilterInternal=Void
-const AVFilterGraphInternal=Void
+const AVFilterInternal=Nothing
+const AVFilterGraphInternal=Nothing
 
 struct AVFilterGraph
     av_class::Ptr{AVClass}
@@ -143,7 +143,7 @@ struct AVFilterGraph
     thread_type::Cint
     nb_threads::Cint
     internal::Ptr{AVFilterGraphInternal}
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     execute::Ptr{avfilter_execute_func}
 end
 

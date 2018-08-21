@@ -65,8 +65,8 @@ struct AVFilterBuffer
     data::Array_8_Ptr
     linesize::Array_8_Cint
     refcount::UInt32
-    priv::Ptr{Void}
-    free::Ptr{Void}
+    priv::Ptr{Cvoid}
+    free::Ptr{Cvoid}
     format::Cint
     w::Cint
     h::Cint
@@ -113,9 +113,9 @@ end
 struct AVFilter
     name::Ptr{UInt8}
     priv_size::Cint
-    init::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
     description::Ptr{UInt8}

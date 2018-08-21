@@ -18,9 +18,9 @@ function av_cast5_init(ctx,key,key_bits::Integer)
 end
 
 function av_cast5_crypt(ctx,dst,src,count::Integer,decrypt::Integer)
-    ccall((:av_cast5_crypt,libavutil),Void,(Ptr{AVCAST5},Ptr{UInt8},Ptr{UInt8},Cint,Cint),ctx,dst,src,count,decrypt)
+    ccall((:av_cast5_crypt,libavutil),Cvoid,(Ptr{AVCAST5},Ptr{UInt8},Ptr{UInt8},Cint,Cint),ctx,dst,src,count,decrypt)
 end
 
 function av_cast5_crypt2(ctx,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_cast5_crypt2,libavutil),Void,(Ptr{AVCAST5},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
+    ccall((:av_cast5_crypt2,libavutil),Cvoid,(Ptr{AVCAST5},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
 end

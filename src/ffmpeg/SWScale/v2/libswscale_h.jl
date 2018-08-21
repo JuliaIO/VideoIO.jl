@@ -90,4 +90,4 @@ struct SwsFilter
     chrV::Ptr{SwsVector}
 end
 
-const SwsContext = Void
+const SwsContext = Nothing

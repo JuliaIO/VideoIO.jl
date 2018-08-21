@@ -34,7 +34,7 @@ const AV_PERM_NEG_LINESIZES = 0x20
 const AVFilterContext=AVFilterContext
 const AVFilterLink=AVFilterLink
 const AVFilterPad=AVFilterPad
-const AVFilterFormats=Void
+const AVFilterFormats=Nothing
 
 struct Array_8_Ptr
     d1::Ptr{UInt8}
@@ -66,8 +66,8 @@ struct AVFilterBuffer
     data::Array_8_Ptr
     extended_data::Ptr{Ptr{UInt8}}
     linesize::Array_8_Cint
-    priv::Ptr{Void}
-    free::Ptr{Void}
+    priv::Ptr{Cvoid}
+    free::Ptr{Cvoid}
     format::Cint
     w::Cint
     h::Cint
@@ -110,9 +110,9 @@ struct AVFilter
     description::Ptr{UInt8}
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
-    init::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     priv_size::Cint
 end
 

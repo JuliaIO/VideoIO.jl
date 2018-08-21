@@ -23,7 +23,7 @@ function av_frame_alloc()
 end
 
 function av_frame_free(frame)
-    ccall((:av_frame_free,libavutil),Void,(Ptr{Ptr{AVFrame}},),frame)
+    ccall((:av_frame_free,libavutil),Cvoid,(Ptr{Ptr{AVFrame}},),frame)
 end
 
 function av_frame_ref(dst,src)
@@ -35,11 +35,11 @@ function av_frame_clone(src)
 end
 
 function av_frame_unref(frame)
-    ccall((:av_frame_unref,libavutil),Void,(Ptr{AVFrame},),frame)
+    ccall((:av_frame_unref,libavutil),Cvoid,(Ptr{AVFrame},),frame)
 end
 
 function av_frame_move_ref(dst,src)
-    ccall((:av_frame_move_ref,libavutil),Void,(Ptr{AVFrame},Ptr{AVFrame}),dst,src)
+    ccall((:av_frame_move_ref,libavutil),Cvoid,(Ptr{AVFrame},Ptr{AVFrame}),dst,src)
 end
 
 function av_frame_get_buffer(frame,align::Integer)

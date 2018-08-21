@@ -28,7 +28,7 @@ function open_stdout_stderr(cmd::Cmd)
     Base.link_pipe(out, true, cmd_out, false)
     Base.link_pipe(err, true, cmd_err, false)
 
-    r = spawn(ignorestatus(cmd), (DevNull, cmd_out, cmd_err))
+    r = spawn(ignorestatus(cmd), (devnull, cmd_out, cmd_err))
 
     Base.close_pipe_sync(cmd_out)
     Base.close_pipe_sync(cmd_err)
@@ -43,5 +43,5 @@ end
 
 function readall_stdout_stderr(cmd::Cmd)
     (out, err, proc) = open_stdout_stderr(cmd)
-    return (readstring(out), readstring(err))
+    return (read(out, String), read(err, String))
 end

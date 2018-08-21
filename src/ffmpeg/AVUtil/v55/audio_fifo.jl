@@ -16,7 +16,7 @@ export
 
 
 function av_audio_fifo_free(af)
-    ccall((:av_audio_fifo_free,libavutil),Void,(Ptr{AVAudioFifo},),af)
+    ccall((:av_audio_fifo_free,libavutil),Cvoid,(Ptr{AVAudioFifo},),af)
 end
 
 function av_audio_fifo_alloc(sample_fmt::AVSampleFormat,channels::Integer,nb_samples::Integer)
@@ -28,15 +28,15 @@ function av_audio_fifo_realloc(af,nb_samples::Integer)
 end
 
 function av_audio_fifo_write(af,data,nb_samples::Integer)
-    ccall((:av_audio_fifo_write,libavutil),Cint,(Ptr{AVAudioFifo},Ptr{Ptr{Void}},Cint),af,data,nb_samples)
+    ccall((:av_audio_fifo_write,libavutil),Cint,(Ptr{AVAudioFifo},Ptr{Ptr{Cvoid}},Cint),af,data,nb_samples)
 end
 
 function av_audio_fifo_peek(af,data,nb_samples::Integer)
-    ccall((:av_audio_fifo_peek,libavutil),Cint,(Ptr{AVAudioFifo},Ptr{Ptr{Void}},Cint),af,data,nb_samples)
+    ccall((:av_audio_fifo_peek,libavutil),Cint,(Ptr{AVAudioFifo},Ptr{Ptr{Cvoid}},Cint),af,data,nb_samples)
 end
 
 function av_audio_fifo_read(af,data,nb_samples::Integer)
-    ccall((:av_audio_fifo_read,libavutil),Cint,(Ptr{AVAudioFifo},Ptr{Ptr{Void}},Cint),af,data,nb_samples)
+    ccall((:av_audio_fifo_read,libavutil),Cint,(Ptr{AVAudioFifo},Ptr{Ptr{Cvoid}},Cint),af,data,nb_samples)
 end
 
 function av_audio_fifo_drain(af,nb_samples::Integer)
@@ -44,7 +44,7 @@ function av_audio_fifo_drain(af,nb_samples::Integer)
 end
 
 function av_audio_fifo_reset(af)
-    ccall((:av_audio_fifo_reset,libavutil),Void,(Ptr{AVAudioFifo},),af)
+    ccall((:av_audio_fifo_reset,libavutil),Cvoid,(Ptr{AVAudioFifo},),af)
 end
 
 function av_audio_fifo_size(af)

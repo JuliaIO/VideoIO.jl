@@ -40,15 +40,15 @@ function swr_is_initialized(s)
 end
 
 function swr_alloc_set_opts(s,out_ch_layout::Int64,out_sample_fmt::AVSampleFormat,out_sample_rate::Integer,in_ch_layout::Int64,in_sample_fmt::AVSampleFormat,in_sample_rate::Integer,log_offset::Integer,log_ctx)
-    ccall((:swr_alloc_set_opts,libswresample),Ptr{SwrContext},(Ptr{SwrContext},Int64,AVSampleFormat,Cint,Int64,AVSampleFormat,Cint,Cint,Ptr{Void}),s,out_ch_layout,out_sample_fmt,out_sample_rate,in_ch_layout,in_sample_fmt,in_sample_rate,log_offset,log_ctx)
+    ccall((:swr_alloc_set_opts,libswresample),Ptr{SwrContext},(Ptr{SwrContext},Int64,AVSampleFormat,Cint,Int64,AVSampleFormat,Cint,Cint,Ptr{Cvoid}),s,out_ch_layout,out_sample_fmt,out_sample_rate,in_ch_layout,in_sample_fmt,in_sample_rate,log_offset,log_ctx)
 end
 
 function swr_free(s)
-    ccall((:swr_free,libswresample),Void,(Ptr{Ptr{SwrContext}},),s)
+    ccall((:swr_free,libswresample),Cvoid,(Ptr{Ptr{SwrContext}},),s)
 end
 
 function swr_close(s)
-    ccall((:swr_close,libswresample),Void,(Ptr{SwrContext},),s)
+    ccall((:swr_close,libswresample),Cvoid,(Ptr{SwrContext},),s)
 end
 
 function swr_convert(s,out,out_count::Integer,_in,in_count::Integer)

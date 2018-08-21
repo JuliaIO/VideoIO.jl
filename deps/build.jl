@@ -26,14 +26,14 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 #     push!(libav_libs, libswresample)
 # end
 
-if is_windows()
+if Sys.iswindows()
     provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-2.2.3-win$WORD_SIZE-shared.7z"),
              libav_libs,
              os = :Windows,
              unpacked_dir="ffmpeg-2.2.3-win$WORD_SIZE-shared/bin")
 end
 
-if is_apple()
+if Sys.isapple()
     using Homebrew
     provides( Homebrew.HB, "ffmpeg", libav_libs, os = :Darwin )
 end

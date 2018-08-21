@@ -95,7 +95,7 @@ end
 
 function download(v::VideoFile)
     write_info(v)
-    println(STDERR, "Downloading $(v.name) to $videodir")
+    println(stderr, "Downloading $(v.name) to $videodir")
     download(v.download_url, joinpath(videodir, v.name))
 end
 
