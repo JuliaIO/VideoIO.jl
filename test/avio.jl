@@ -57,7 +57,9 @@ for name in VideoIO.TestVideos.names()
         read!(v, img)
     end
 
-    if video_tstamp == VideoIO.AV_NOPTS_VALUE || _avformat_version().major < 54 || ffmpeg_or_libav == "libav"
+    if (video_tstamp == VideoIO.AV_NOPTS_VALUE ||
+        VideoIO._avformat_version().major < 54 ||
+        VideoIO.ffmpeg_or_libav == "libav")
         println("Skipping seek tests")
     else
 
