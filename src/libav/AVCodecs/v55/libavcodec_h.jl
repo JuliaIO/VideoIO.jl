@@ -1169,7 +1169,7 @@ const AV_CODEC_ID_MPEG4SYSTEMS = UInt32(131073)
 const AV_CODEC_ID_FFMETADATA = UInt32(135168)
 # end enum AVCodecID
 
-immutable AVCodecDescriptor
+struct AVCodecDescriptor
     id::AVCodecID
     _type::AVMediaType
     name::Ptr{UInt8}
@@ -1281,21 +1281,21 @@ const AV_AUDIO_SERVICE_TYPE_KARAOKE = UInt32(8)
 const AV_AUDIO_SERVICE_TYPE_NB = UInt32(9)
 # end enum AVAudioServiceType
 
-immutable RcOverride
+struct RcOverride
     start_frame::Cint
     end_frame::Cint
     qscale::Cint
     quality_factor::Cfloat
 end
 
-immutable Array_2_Int16
+struct Array_2_Int16
     d1::Int16
     d2::Int16
 end
 
 zero(::Type{Array_2_Int16}) = Array_2_Int16(fill(zero(Int16),2)...)
 
-immutable Array_3_Array_2_Int16
+struct Array_3_Array_2_Int16
     d1::Array_2_Int16
     d2::Array_2_Int16
     d3::Array_2_Int16
@@ -1303,7 +1303,7 @@ end
 
 zero(::Type{Array_3_Array_2_Int16}) = Array_3_Array_2_Int16(fill(zero(Array_2_Int16),3)...)
 
-immutable AVPanScan
+struct AVPanScan
     id::Cint
     width::Cint
     height::Cint
@@ -1318,7 +1318,7 @@ const AV_PKT_DATA_PARAM_CHANGE = UInt32(2)
 const AV_PKT_DATA_H263_MB_INFO = UInt32(3)
 # end enum AVPacketSideDataType
 
-immutable AVPacket
+struct AVPacket
     buf::Ptr{AVBufferRef}
     pts::Int64
     dts::Int64
@@ -1355,7 +1355,7 @@ const AV_FIELD_TB = UInt32(4)
 const AV_FIELD_BT = UInt32(5)
 # end enum AVFieldOrder
 
-immutable Array_32_Uint8
+struct Array_32_Uint8
     d1::UInt8
     d2::UInt8
     d3::UInt8
@@ -1392,7 +1392,7 @@ end
 
 zero(::Type{Array_32_Uint8}) = Array_32_Uint8(fill(zero(UInt8),32)...)
 
-immutable Array_8_Uint64
+struct Array_8_Uint64
     d1::UInt64
     d2::UInt64
     d3::UInt64
@@ -1405,14 +1405,14 @@ end
 
 zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(UInt64),8)...)
 
-immutable AVProfile
+struct AVProfile
     profile::Cint
     name::Ptr{UInt8}
 end
 
 const AVCodecDefault=Void
 
-immutable AVCodec
+struct AVCodec
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     _type::AVMediaType
@@ -1440,7 +1440,7 @@ immutable AVCodec
     flush::Ptr{Void}
 end
 
-immutable AVHWAccel
+struct AVHWAccel
     name::Ptr{UInt8}
     _type::AVMediaType
     id::AVCodecID
@@ -1453,7 +1453,7 @@ immutable AVHWAccel
     priv_data_size::Cint
 end
 
-immutable AVCodecContext
+struct AVCodecContext
     av_class::Ptr{AVClass}
     log_level_offset::Cint
     codec_type::AVMediaType
@@ -1645,7 +1645,7 @@ immutable AVCodecContext
     vbv_delay::UInt64
 end
 
-immutable Array_8_Ptr
+struct Array_8_Ptr
     d1::Ptr{UInt8}
     d2::Ptr{UInt8}
     d3::Ptr{UInt8}
@@ -1658,7 +1658,7 @@ end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
 
-immutable Array_8_Cint
+struct Array_8_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -1671,7 +1671,7 @@ end
 
 zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
-immutable AVPicture
+struct AVPicture
     data::Array_8_Ptr
     linesize::Array_8_Cint
 end
@@ -1684,7 +1684,7 @@ const SUBTITLE_TEXT = UInt32(2)
 const SUBTITLE_ASS = UInt32(3)
 # end enum AVSubtitleType
 
-immutable AVSubtitleRect
+struct AVSubtitleRect
     x::Cint
     y::Cint
     w::Cint
@@ -1697,7 +1697,7 @@ immutable AVSubtitleRect
     flags::Cint
 end
 
-immutable AVSubtitle
+struct AVSubtitle
     format::UInt16
     start_display_time::UInt32
     end_display_time::UInt32
@@ -1714,7 +1714,7 @@ const AV_PICTURE_STRUCTURE_BOTTOM_FIELD = UInt32(2)
 const AV_PICTURE_STRUCTURE_FRAME = UInt32(3)
 # end enum AVPictureStructure
 
-immutable Array_4_Int64
+struct Array_4_Int64
     d1::Int64
     d2::Int64
     d3::Int64
@@ -1723,7 +1723,7 @@ end
 
 zero(::Type{Array_4_Int64}) = Array_4_Int64(fill(zero(Int64),4)...)
 
-immutable Array_5_Cint
+struct Array_5_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -1733,7 +1733,7 @@ end
 
 zero(::Type{Array_5_Cint}) = Array_5_Cint(fill(zero(Cint),5)...)
 
-immutable AVCodecParser
+struct AVCodecParser
     codec_ids::Array_5_Cint
     priv_data_size::Cint
     parser_init::Ptr{Void}
@@ -1743,7 +1743,7 @@ immutable AVCodecParser
     next::Ptr{AVCodecParser}
 end
 
-immutable AVCodecParserContext
+struct AVCodecParserContext
     priv_data::Ptr{Void}
     parser::Ptr{AVCodecParser}
     frame_offset::Int64
@@ -1777,7 +1777,7 @@ immutable AVCodecParserContext
     output_picture_number::Cint
 end
 
-immutable AVBitStreamFilter
+struct AVBitStreamFilter
     name::Ptr{UInt8}
     priv_data_size::Cint
     filter::Ptr{Void}
@@ -1785,7 +1785,7 @@ immutable AVBitStreamFilter
     next::Ptr{AVBitStreamFilter}
 end
 
-immutable AVBitStreamFilterContext
+struct AVBitStreamFilterContext
     priv_data::Ptr{Void}
     filter::Ptr{AVBitStreamFilter}
     parser::Ptr{AVCodecParserContext}

@@ -142,7 +142,7 @@ const AVIO_FLAG_READ_WRITE  =  AVIO_FLAG_READ | AVIO_FLAG_WRITE
 const AVIO_FLAG_NONBLOCK  =  8
 const AVIO_FLAG_DIRECT  =  0x8000
 
-immutable AVIOInterruptCB
+struct AVIOInterruptCB
     callback::Ptr{Void}
     opaque::Ptr{Void}
 end
@@ -162,7 +162,7 @@ const AVIO_ENTRY_SHARE  =  (UInt32)(9)
 const AVIO_ENTRY_WORKGROUP  =  (UInt32)(10)
 # end enum AVIODirEntryType
 
-immutable AVIODirEntry
+struct AVIODirEntry
     name::Cstring
     _type::Cint
     utf8::Cint
@@ -175,12 +175,12 @@ immutable AVIODirEntry
     filemode::Int64
 end
 
-immutable AVIODirContext
+struct AVIODirContext
 #    url_context::Ptr{URLContext}
     url_context::Ptr{Void}
 end
 
-immutable AVIOContext
+struct AVIOContext
     av_class::Ptr{AVClass}
     buffer::Ptr{Cuchar}
     buffer_size::Cint
@@ -308,7 +308,7 @@ const AVSEEK_FLAG_FRAME  =  8
 
 const AVCodecTag = Void
 
-immutable AVInputFormat
+struct AVInputFormat
     name::Cstring
     long_name::Cstring
     flags::Cint
@@ -333,7 +333,7 @@ immutable AVInputFormat
     free_device_capabilities::Ptr{Void}
 end
 
-immutable AVOutputFormat
+struct AVOutputFormat
     name::Cstring
     long_name::Cstring
     mime_type::Cstring
@@ -363,7 +363,7 @@ immutable AVOutputFormat
     check_bitstream::Ptr{Void}
 end
 
-immutable AVFrac
+struct AVFrac
     val::Int64
     num::Int64
     den::Int64
@@ -379,19 +379,19 @@ const AVSTREAM_PARSE_FULL_ONCE  =  (UInt32)(4)
 const AVSTREAM_PARSE_FULL_RAW  =  (UInt32)(1463898624)
 # end enum AVStreamParseType
 
-immutable AVPacketList
+struct AVPacketList
     pkt::AVPacket
     next::Ptr{AVPacketList}
 end
 
-immutable AVProbeData
+struct AVProbeData
     filename::Cstring
     buf::Ptr{Cuchar}
     buf_size::Cint
     mime_type::Cstring
 end
 
-immutable AVIndexEntry
+struct AVIndexEntry
     pos::Int64
     timestamp::Int64
     flags::Cint
@@ -401,7 +401,7 @@ end
 
 const AVStreamInternal = Void
 
-immutable AVStream
+struct AVStream
     index::Cint
     id::Cint
     codec::Ptr{AVCodecContext}
@@ -463,7 +463,7 @@ immutable AVStream
     internal::Ptr{AVStreamInternal}
 end
 
-immutable AVProgram
+struct AVProgram
     id::Cint
     flags::Cint
     discard::AVDiscard
@@ -479,7 +479,7 @@ immutable AVProgram
     pts_wrap_behavior::Cint
 end
 
-immutable AVChapter
+struct AVChapter
     id::Cint
     time_base::AVRational
     start::Int64
@@ -497,7 +497,7 @@ const AVFMT_DURATION_FROM_BITRATE  =  (UInt32)(2)
 const AVFormatInternal = Void
 const av_format_control_message = Ptr{Void}
 
-immutable AVFormatContext
+struct AVFormatContext
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}

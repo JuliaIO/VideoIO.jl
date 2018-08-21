@@ -1377,21 +1377,21 @@ const AV_AUDIO_SERVICE_TYPE_KARAOKE  =  UInt32(8)
 const AV_AUDIO_SERVICE_TYPE_NB  =  UInt32(9)
 # end enum AVAudioServiceType
 
-immutable RcOverride
+struct RcOverride
     start_frame::Cint
     end_frame::Cint
     qscale::Cint
     quality_factor::Cfloat
 end
 
-immutable Array_2_Int16
+struct Array_2_Int16
     d1::Int16
     d2::Int16
 end
 
 zero(::Type{Array_2_Int16}) = Array_2_Int16(fill(zero(Int16),2)...)
 
-immutable Array_3_Array_2_Int16
+struct Array_3_Array_2_Int16
     d1::Array_2_Int16
     d2::Array_2_Int16
     d3::Array_2_Int16
@@ -1399,7 +1399,7 @@ end
 
 zero(::Type{Array_3_Array_2_Int16}) = Array_3_Array_2_Int16(fill(zero(Array_2_Int16),3)...)
 
-immutable AVPanScan
+struct AVPanScan
     id::Cint
     width::Cint
     height::Cint
@@ -1413,7 +1413,7 @@ const AV_PKT_DATA_NEW_EXTRADATA  =  UInt32(1)
 const AV_PKT_DATA_PARAM_CHANGE  =  UInt32(2)
 # end enum AVPacketSideDataType
 
-immutable AVPacket
+struct AVPacket
     pts::Int64
     dts::Int64
     data::Ptr{UInt8}
@@ -1437,7 +1437,7 @@ const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE  =  UInt32(4)
 const AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS  =  UInt32(8)
 # end enum AVSideDataParamChangeFlags
 
-immutable Array_4_Ptr
+struct Array_4_Ptr
     d1::Ptr{UInt8}
     d2::Ptr{UInt8}
     d3::Ptr{UInt8}
@@ -1446,7 +1446,7 @@ end
 
 zero(::Type{Array_4_Ptr}) = Array_4_Ptr(fill(C_NULL,4)...)
 
-immutable Array_4_Cint
+struct Array_4_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -1455,14 +1455,14 @@ end
 
 zero(::Type{Array_4_Cint}) = Array_4_Cint(fill(zero(Cint),4)...)
 
-immutable Array_2_Ptr
+struct Array_2_Ptr
     d1::Ptr{Void}
     d2::Ptr{Void}
 end
 
 zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
 
-immutable Array_4_Uint64
+struct Array_4_Uint64
     d1::UInt64
     d2::UInt64
     d3::UInt64
@@ -1471,14 +1471,14 @@ end
 
 zero(::Type{Array_4_Uint64}) = Array_4_Uint64(fill(zero(UInt64),4)...)
 
-immutable AVProfile
+struct AVProfile
     profile::Cint
     name::Ptr{UInt8}
 end
 
 const AVCodecDefault = Void
 
-immutable AVCodec
+struct AVCodec
     name::Ptr{UInt8}
     _type::AVMediaType
     id::CodecID
@@ -1506,7 +1506,7 @@ immutable AVCodec
     encode2::Ptr{Void}
 end
 
-immutable Array_32_Uint8
+struct Array_32_Uint8
     d1::UInt8
     d2::UInt8
     d3::UInt8
@@ -1543,7 +1543,7 @@ end
 
 zero(::Type{Array_32_Uint8}) = Array_32_Uint8(fill(zero(UInt8),32)...)
 
-immutable Array_256_Uint32
+struct Array_256_Uint32
     d1::UInt32
     d2::UInt32
     d3::UInt32
@@ -1804,12 +1804,12 @@ end
 
 zero(::Type{Array_256_Uint32}) = Array_256_Uint32(fill(zero(UInt32),256)...)
 
-immutable AVPaletteControl
+struct AVPaletteControl
     palette_changed::Cint
     palette::Array_256_Uint32
 end
 
-immutable AVHWAccel
+struct AVHWAccel
     name::Ptr{UInt8}
     _type::AVMediaType
     id::CodecID
@@ -1834,7 +1834,7 @@ const AV_FIELD_TB  =  UInt32(4)
 const AV_FIELD_BT  =  UInt32(5)
 # end enum AVFieldOrder
 
-immutable AVCodecContext
+struct AVCodecContext
     av_class::Ptr{AVClass}
     bit_rate::Cint
     bit_rate_tolerance::Cint
@@ -2060,7 +2060,7 @@ immutable AVCodecContext
     field_order::AVFieldOrder
 end
 
-immutable AVFrame
+struct AVFrame
     data::Array_4_Ptr
     linesize::Array_4_Cint
     base::Array_4_Ptr
@@ -2104,7 +2104,7 @@ immutable AVFrame
     format::Cint
 end
 
-immutable AVPicture
+struct AVPicture
     data::Array_4_Ptr
     linesize::Array_4_Cint
 end
@@ -2117,7 +2117,7 @@ const SUBTITLE_TEXT  =  UInt32(2)
 const SUBTITLE_ASS  =  UInt32(3)
 # end enum AVSubtitleType
 
-immutable AVSubtitleRect
+struct AVSubtitleRect
     x::Cint
     y::Cint
     w::Cint
@@ -2129,7 +2129,7 @@ immutable AVSubtitleRect
     ass::Ptr{UInt8}
 end
 
-immutable AVSubtitle
+struct AVSubtitle
     format::UInt16
     start_display_time::UInt32
     end_display_time::UInt32
@@ -2141,7 +2141,7 @@ end
 const ReSampleContext = Void
 const AVResampleContext = Void
 
-immutable Array_4_Int64
+struct Array_4_Int64
     d1::Int64
     d2::Int64
     d3::Int64
@@ -2150,7 +2150,7 @@ end
 
 zero(::Type{Array_4_Int64}) = Array_4_Int64(fill(zero(Int64),4)...)
 
-immutable Array_5_Cint
+struct Array_5_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -2160,7 +2160,7 @@ end
 
 zero(::Type{Array_5_Cint}) = Array_5_Cint(fill(zero(Cint),5)...)
 
-immutable AVCodecParser
+struct AVCodecParser
     codec_ids::Array_5_Cint
     priv_data_size::Cint
     parser_init::Ptr{Void}
@@ -2170,7 +2170,7 @@ immutable AVCodecParser
     next::Ptr{AVCodecParser}
 end
 
-immutable AVCodecParserContext
+struct AVCodecParserContext
     priv_data::Ptr{Void}
     parser::Ptr{AVCodecParser}
     frame_offset::Int64
@@ -2200,7 +2200,7 @@ immutable AVCodecParserContext
     last_pos::Int64
 end
 
-immutable AVBitStreamFilter
+struct AVBitStreamFilter
     name::Ptr{UInt8}
     priv_data_size::Cint
     filter::Ptr{Void}
@@ -2208,7 +2208,7 @@ immutable AVBitStreamFilter
     next::Ptr{AVBitStreamFilter}
 end
 
-immutable AVBitStreamFilterContext
+struct AVBitStreamFilterContext
     priv_data::Ptr{Void}
     filter::Ptr{AVBitStreamFilter}
     parser::Ptr{AVCodecParserContext}

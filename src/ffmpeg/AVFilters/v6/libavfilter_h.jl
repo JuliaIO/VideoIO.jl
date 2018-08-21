@@ -49,7 +49,7 @@ const AVFILTER_CMD_FLAG_FAST  =  2
 
 const AVFilterPad = Void
 
-immutable AVFilter
+struct AVFilter
     name::Cstring
     description::Cstring
     inputs::Ptr{AVFilterPad}
@@ -68,7 +68,7 @@ end
 
 const AVFilterGraphInternal = Void
 
-immutable AVFilterGraph
+struct AVFilterGraph
     av_class::Ptr{AVClass}
     filters::Ptr{Ptr{AVFilterContext}}
     nb_filters::UInt32
@@ -87,7 +87,7 @@ end
 
 const AVFilterInternal = Void
 
-immutable AVFilterContext
+struct AVFilterContext
     av_class::Ptr{AVClass}
     filter::Ptr{AVFilter}
     name::Cstring
@@ -116,7 +116,7 @@ const AVFILTER_AUTO_CONVERT_ALL  =  (Int32)(0)
 const AVFILTER_AUTO_CONVERT_NONE  =  (Int32)(-1)
 # end enum ANONYMOUS_1
 
-immutable AVFilterInOut
+struct AVFilterInOut
     name::Cstring
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint
@@ -143,11 +143,11 @@ const LIBAVFILTER_BUILD  =  LIBAVFILTER_VERSION_INT
 const AV_BUFFERSINK_FLAG_PEEK  =  1
 const AV_BUFFERSINK_FLAG_NO_REQUEST  =  2
 
-immutable AVBufferSinkParams
+struct AVBufferSinkParams
     pixel_fmts::Ptr{AVPixelFormat}
 end
 
-immutable AVABufferSinkParams
+struct AVABufferSinkParams
     sample_fmts::Ptr{AVSampleFormat}
     channel_layouts::Ptr{Int64}
     channel_counts::Ptr{Cint}

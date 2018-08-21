@@ -94,12 +94,12 @@ const AVIO_FLAG_WRITE = 2
 const AVIO_FLAG_READ_WRITE = AVIO_FLAG_READ | AVIO_FLAG_WRITE
 const AVIO_FLAG_NONBLOCK = 8
 
-immutable AVIOInterruptCB
+struct AVIOInterruptCB
     callback::Ptr{Void}
     opaque::Ptr{Void}
 end
 
-immutable AVIOContext
+struct AVIOContext
     av_class::Ptr{AVClass}
     buffer::Ptr{Cuchar}
     buffer_size::Cint
@@ -179,7 +179,7 @@ const AVSEEK_FLAG_FRAME = 8
 
 const AVCodecTag=Void
 
-immutable AVInputFormat
+struct AVInputFormat
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     flags::Cint
@@ -200,7 +200,7 @@ immutable AVInputFormat
     read_seek2::Ptr{Void}
 end
 
-immutable AVOutputFormat
+struct AVOutputFormat
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     mime_type::Ptr{UInt8}
@@ -220,7 +220,7 @@ immutable AVOutputFormat
     query_codec::Ptr{Void}
 end
 
-immutable AVFrac
+struct AVFrac
     val::Int64
     num::Int64
     den::Int64
@@ -235,18 +235,18 @@ const AVSTREAM_PARSE_TIMESTAMPS = UInt32(3)
 const AVSTREAM_PARSE_FULL_ONCE = UInt32(4)
 # end enum AVStreamParseType
 
-immutable AVPacketList
+struct AVPacketList
     pkt::AVPacket
     next::Ptr{AVPacketList}
 end
 
-immutable AVProbeData
+struct AVProbeData
     filename::Ptr{UInt8}
     buf::Ptr{Cuchar}
     buf_size::Cint
 end
 
-immutable Array_17_Int64
+struct Array_17_Int64
     d1::Int64
     d2::Int64
     d3::Int64
@@ -268,7 +268,7 @@ end
 
 zero(::Type{Array_17_Int64}) = Array_17_Int64(fill(zero(Int64),17)...)
 
-immutable AVIndexEntry
+struct AVIndexEntry
     pos::Int64
     timestamp::Int64
     flags::Cint
@@ -276,7 +276,7 @@ immutable AVIndexEntry
     min_distance::Cint
 end
 
-immutable AVStream
+struct AVStream
     index::Cint
     id::Cint
     codec::Ptr{AVCodecContext}
@@ -311,7 +311,7 @@ immutable AVStream
     index_entries_allocated_size::UInt32
 end
 
-immutable Array_1024_Uint8
+struct Array_1024_Uint8
     d1::UInt8
     d2::UInt8
     d3::UInt8
@@ -1340,7 +1340,7 @@ end
 
 zero(::Type{Array_1024_Uint8}) = Array_1024_Uint8(fill(zero(UInt8),1024)...)
 
-immutable AVProgram
+struct AVProgram
     id::Cint
     flags::Cint
     discard::AVDiscard
@@ -1349,7 +1349,7 @@ immutable AVProgram
     metadata::Ptr{AVDictionary}
 end
 
-immutable AVChapter
+struct AVChapter
     id::Cint
     time_base::AVRational
     start::Int64
@@ -1359,7 +1359,7 @@ end
 
 const AVFormatInternal=Void
 
-immutable AVFormatContext
+struct AVFormatContext
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}

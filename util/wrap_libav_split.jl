@@ -36,6 +36,7 @@ for lib in av_libs
         ver = eval(Symbol("_"*name*"_version"))()
         dir = eval(Symbol(name*"_dir"))
         push!(av_lib_ver, (lib,ver,dir))
+    catch
     end
 end
 
@@ -206,6 +207,7 @@ function rewrite_type(e::Expr)
             #Expr(:type,     _, _)                                  =>  return rewrite_struct(e)
             _                                                       =>  e
         end
+    catch
     end
     return e
 end
