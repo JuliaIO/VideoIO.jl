@@ -683,7 +683,7 @@ const AV_NOPTS_VALUE  =  reinterpret(Int64, 0x8000000000000000)
 
 const AV_TIME_BASE  =  1000000
 
-immutable AVRational
+struct AVRational
     num::Cint
     den::Cint
 end
@@ -720,7 +720,7 @@ const AV_BUFFER_FLAG_READONLY  =  1 << 0
 
 const AVBuffer = Void
 
-immutable AVBufferRef
+struct AVBufferRef
     buffer::Ptr{AVBuffer}
     data::Ptr{UInt8}
     size::Cint
@@ -803,14 +803,14 @@ const AV_DICT_DONT_STRDUP_VAL  =  8
 const AV_DICT_DONT_OVERWRITE  =  16
 const AV_DICT_APPEND  =  32
 
-immutable AVDictionaryEntry
+struct AVDictionaryEntry
     key::Ptr{UInt8}
     value::Ptr{UInt8}
 end
 
 const AVDictionary = Void
 
-immutable AVFifoBuffer
+struct AVFifoBuffer
     buffer::Ptr{UInt8}
     rptr::Ptr{UInt8}
     wptr::Ptr{UInt8}
@@ -849,14 +849,14 @@ const AV_AFD_16_9_SP_14_9  =  UInt32(14)
 const AV_AFD_SP_4_3  =  UInt32(15)
 # end enum AVActiveFormatDescription
 
-immutable AVFrameSideData
+struct AVFrameSideData
     _type::AVFrameSideDataType
     data::Ptr{UInt8}
     size::Cint
     metadata::Ptr{AVDictionary}
 end
 
-immutable Array_8_Ptr
+struct Array_8_Ptr
     d1::Ptr{UInt8}
     d2::Ptr{UInt8}
     d3::Ptr{UInt8}
@@ -869,7 +869,7 @@ end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
 
-immutable Array_8_Cint
+struct Array_8_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -882,14 +882,14 @@ end
 
 zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
-immutable Array_2_Ptr
+struct Array_2_Ptr
     d1::Ptr{Void}
     d2::Ptr{Void}
 end
 
 zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
 
-immutable Array_8_Uint64
+struct Array_8_Uint64
     d1::UInt64
     d2::UInt64
     d3::UInt64
@@ -974,7 +974,7 @@ const AVCHROMA_LOC_BOTTOM  =  UInt32(6)
 const AVCHROMA_LOC_NB  =  UInt32(7)
 # end enum AVChromaLocation
 
-immutable AVFrame
+struct AVFrame
     data::Array_8_Ptr
     linesize::Array_8_Cint
     extended_data::Ptr{Ptr{UInt8}}
@@ -1101,7 +1101,7 @@ const AV_CLASS_CATEGORY_DEVICE_INPUT  =  UInt32(45)
 const AV_CLASS_CATEGORY_NB  =  UInt32(46)
 # end enum AVClassCategory
 
-immutable AVOptionRange
+struct AVOptionRange
     str::Ptr{UInt8}
     value_min::Cdouble
     value_max::Cdouble
@@ -1110,7 +1110,7 @@ immutable AVOptionRange
     is_range::Cint
 end
 
-immutable AVOptionRanges
+struct AVOptionRanges
     range::Ptr{Ptr{AVOptionRange}}
     nb_ranges::Cint
     nb_components::Cint
@@ -1146,7 +1146,7 @@ const FF_OPT_TYPE_BINARY  =  UInt32(7)
 const FF_OPT_TYPE_CONST  =  UInt32(128)
 # end enum AVOptionType
 
-immutable AVOption
+struct AVOption
     name::Ptr{UInt8}
     help::Ptr{UInt8}
     offset::Cint
@@ -1158,7 +1158,7 @@ immutable AVOption
     unit::Ptr{UInt8}
 end
 
-immutable AVClass
+struct AVClass
     class_name::Ptr{UInt8}
     item_name::Ptr{Void}
     option::Ptr{AVOption}
@@ -1200,7 +1200,7 @@ const FF_LOSS_ALPHA  =  0x0008
 const FF_LOSS_COLORQUANT  =  0x0010
 const FF_LOSS_CHROMA  =  0x0020
 
-immutable AVComponentDescriptor
+struct AVComponentDescriptor
     plane::UInt16
     step_minus1::UInt16
     offset_plus1::UInt16
@@ -1208,7 +1208,7 @@ immutable AVComponentDescriptor
     depth_minus1::UInt16
 end
 
-immutable Array_4_AVComponentDescriptor
+struct Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
     d2::AVComponentDescriptor
     d3::AVComponentDescriptor
@@ -1217,7 +1217,7 @@ end
 
 zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
 
-immutable AVPixFmtDescriptor
+struct AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
@@ -1680,7 +1680,7 @@ const AV_DOWNMIX_TYPE_DPLII  =  UInt32(3)
 const AV_DOWNMIX_TYPE_NB  =  UInt32(4)
 # end enum AVDownmixType
 
-immutable AVDownmixInfo
+struct AVDownmixInfo
     preferred_downmix_type::AVDownmixType
     center_mix_level::Cdouble
     center_mix_level_ltrt::Cdouble
@@ -1693,7 +1693,7 @@ const AV_HASH_MAX_SIZE  =  64
 
 const AVHashContext = Void
 
-immutable AVMotionVector
+struct AVMotionVector
     source::Int32
     w::UInt8
     h::UInt8
@@ -1726,7 +1726,7 @@ const AV_OPT_FLAG_IMPLICIT_KEY  =  UInt32(1)
 
 const av_pixelutils_sad_fn = Ptr{Void}
 
-immutable AVReplayGain
+struct AVReplayGain
     track_gain::Int32
     track_peak::UInt32
     album_gain::Int32
@@ -1747,7 +1747,7 @@ const AV_STEREO3D_LINES  =  UInt32(6)
 const AV_STEREO3D_COLUMNS  =  UInt32(7)
 # end enum AVStereo3DType
 
-immutable AVStereo3D
+struct AVStereo3D
     _type::AVStereo3DType
     flags::Cint
 end
@@ -1768,14 +1768,14 @@ const AV_TIMECODE_FLAG_24HOURSMAX  =  UInt32(2)
 const AV_TIMECODE_FLAG_ALLOWNEGATIVE  =  UInt32(4)
 # end enum AVTimecodeFlag
 
-immutable AVTimecode
+struct AVTimecode
     start::Cint
     flags::UInt32
     rate::AVRational
     fps::UInt32
 end
 
-immutable Array_16_Uint32
+struct Array_16_Uint32
     d1::UInt32
     d2::UInt32
     d3::UInt32
@@ -1796,6 +1796,6 @@ end
 
 zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(UInt32),16)...)
 
-immutable AVXTEA
+struct AVXTEA
     key::Array_16_Uint32
 end

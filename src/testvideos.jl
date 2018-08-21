@@ -8,7 +8,7 @@ export testvideo
 
 videodir = joinpath(dirname(@__FILE__), "..", "videos")
 
-type VideoFile{compression}
+mutable struct VideoFile{compression}
     name::AbstractString
     description::AbstractString
     license::AbstractString

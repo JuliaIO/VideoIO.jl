@@ -4,25 +4,24 @@ import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
-using Compat
-
-type StreamInfo
+mutable struct StreamInfo
     stream_index0::Int             # zero-based
+    pStream::Ptr{AVStream}
     stream::AVStream
     codec_ctx::AVCodecContext
 end
 
-abstract StreamContext
+abstract type StreamContext end
 
 const EightBitTypes = Union{UInt8, N0f8, Main.ColorTypes.RGB{N0f8}}
-@compat const PermutedArray{T,N,perm,iperm,AA<:Array} = Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
-@compat const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
+const PermutedArray{T,N,perm,iperm,AA<:Array} = Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
+const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
 
 # TODO: move this to Base
-Base.unsafe_convert{T}(::Type{Ptr{T}}, A::PermutedArray{T}) = Base.unsafe_convert(Ptr{T}, parent(A))
+Base.unsafe_convert(::Type{Ptr{T}}, A::PermutedArray{T}) where {T} = Base.unsafe_convert(Ptr{T}, parent(A))
 
 # An audio-visual input stream/file
-type AVInput{I}
+mutable struct AVInput{I}
     io::I
     apFormatContext::Vector{Ptr{AVFormatContext}}
     apAVIOContext::Vector{Ptr{AVIOContext}}
@@ -53,7 +52,7 @@ function show(io::IO, avin::AVInput)
     (len = length(avin.unknown_info))    > 0 && println(io, "  $len unknown stream(s)")
 end
 
-type VideoTranscodeContext
+mutable struct VideoTranscodeContext
     transcode_context::Ptr{SwsContext}
 
     transcode_interp::Cint
@@ -71,7 +70,7 @@ end
 const TRANSCODE = true
 const NO_TRANSCODE = false
 
-type VideoReader{transcode} <: StreamContext
+mutable struct VideoReader{transcode} <: StreamContext
     avin::AVInput
     stream_info::StreamInfo
 
@@ -181,7 +180,7 @@ function open_avinput(avin::AVInput, source::AbstractString, input_format=C_NULL
     nothing
 end
 
-function AVInput{T<:Union{IO, AbstractString}}(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536)
+function AVInput(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536) where T<:Union{IO, AbstractString}
 
     # Register all codecs and formats
     av_register_all()
@@ -216,7 +215,7 @@ function AVInput{T<:Union{IO, AbstractString}}(source::T, input_format=C_NULL; a
         codec_ctx = unsafe_load(stream.codec)
         codec_type = codec_ctx.codec_type
 
-        stream_info = StreamInfo(i-1, stream, codec_ctx)
+        stream_info = StreamInfo(i-1, pStream, stream, codec_ctx)
 
         if codec_type == AVMEDIA_TYPE_VIDEO
             push!(avin.video_info, stream_info)
@@ -284,7 +283,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     end
 
     N = Int64(bits_per_pixel >> 3)
-    target_buf = Array(UInt8, bits_per_pixel>>3, width, height)
+    target_buf = Array{UInt8}(bits_per_pixel>>3, width, height)
 
     sws_context = sws_getContext(width, height, pix_fmt,
                                  width, height, target_format,
@@ -330,7 +329,7 @@ function VideoReader(avin::AVInput, video_stream=1;
     vr
 end
 
-VideoReader{T<:Union{IO, AbstractString}}(s::T, args...; kwargs...) = VideoReader(AVInput(s), args...; kwargs... )
+VideoReader(s::T, args...; kwargs...) where {T<:Union{IO, AbstractString}} = VideoReader(AVInput(s), args...; kwargs... )
 
 function decode_packet(r::VideoReader, aPacket)
     # Do we already have a complete frame that hasn't been consumed?
@@ -389,7 +388,7 @@ function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
 end
 
 # Converts a grabbed frame to the correct format (RGB by default)
-function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::VidArray{T})
+function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T<:EightBitTypes
     while !have_frame(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
@@ -432,7 +431,7 @@ function retrieve!{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::VidArray{T}
     return buf
 end
 
-function retrieve!{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T})
+function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}) where T<:EightBitTypes
     while !have_frame(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
@@ -451,15 +450,15 @@ open(filename::AbstractString) = AVInput(filename)
 openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
 read(r::VideoReader) = retrieve(r)
-read!{T<:EightBitTypes}(r::VideoReader, buf::AbstractArray{T}) = retrieve!(r, buf)
+read!(r::VideoReader, buf::AbstractArray{T}) where {T<:EightBitTypes} = retrieve!(r, buf)
 
-isopen{I<:IO}(avin::AVInput{I}) = isopen(avin.io)
+isopen(avin::AVInput{I}) where {I<:IO} = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
 isopen(r::VideoReader) = isopen(r.avin)
 
-bufsize_check{T<:EightBitTypes}(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}) = (length(buf)*sizeof(T) == avpicture_get_size(r.format, r.width, r.height))
-bufsize_check{T<:EightBitTypes}(r::VideoReader{TRANSCODE}, buf::VidArray{T}) = bufsize_check(r.transcodeContext, buf)
-bufsize_check{T<:EightBitTypes}(t::VideoTranscodeContext, buf::VidArray{T}) = (length(buf)*sizeof(T) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
+bufsize_check(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}) where {T<:EightBitTypes} = (length(buf)*sizeof(T) == avpicture_get_size(r.format, r.width, r.height))
+bufsize_check(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where {T<:EightBitTypes} = bufsize_check(r.transcodeContext, buf)
+bufsize_check(t::VideoTranscodeContext, buf::VidArray{T}) where {T<:EightBitTypes} = (length(buf)*sizeof(T) == avpicture_get_size(t.target_pix_fmt, t.width, t.height))
 
 have_decoded_frame(r) = r.aFrameFinished[1] > 0  # TODO: make sure the last frame was made available
 have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
@@ -468,7 +467,7 @@ have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 
 function seconds_to_timestamp(s::Float64, time_base::AVRational)
-    return convert(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
+    return round(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
 end
 
 function seek(s::VideoReader, seconds::Float64,
@@ -476,20 +475,28 @@ function seek(s::VideoReader, seconds::Float64,
               video_stream::Int64=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
 
+    @static if _avformat_version().major < 54 || ffmpeg_or_libav == "libav"
+        # We're unable to get the frame rate on these platforms
+        throw(ErrorException("Seeking does not work on libav or early versions of ffmpeg"))
+    end
+
     fc = s.avin.apFormatContext[1]
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
     seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
-    
     avcodec_flush_buffers(pCodecContext)
 
-    stream = s.avin.video_info[video_stream].stream
+    stream_info = s.avin.video_info[video_stream]
+    stream = stream_info.stream
     first_dts = stream.first_dts
-    
+
     actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
-    frameskip = convert(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
+
+    pStream = stream_info.pStream
+    frame_rate = av_stream_get_r_frame_rate(pStream)
+    frameskip = round(Int64,(stream.time_base.den/stream.time_base.num)/(frame_rate.num/frame_rate.den))
 
     while actualTimestamp < (dts - frameskip)
         while !have_frame(s)
@@ -503,14 +510,14 @@ function seek(s::VideoReader, seconds::Float64,
     return(s)
 end
 
-function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
-                                 seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
-                                 video_stream::Int64 = 1, forward::Bool=false)
+function seek(avin::AVInput{T}, seconds::Float64,
+              seconds_min::Float64 = -1.0,  seconds_max::Float64 = -1.0,
+              video_stream::Int64 = 1, forward::Bool=false) where T<:AbstractString
 
     #Using 10 seconds before and after the desired timestamp, since the seek function
     #seek to the nearest keyframe, and 10 seconds is the longest GOP length seen in
     #practical usage.
-    const max_interval = 10.0
+    max_interval = 10.0
 
     # AVFormatContext
     fc = avin.apFormatContext[1]
@@ -522,6 +529,10 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     first_dts = stream.first_dts
     time_base = stream.time_base
 
+    if first_dts == AV_NOPTS_VALUE
+        throw(ErrorException("Unable to seek (no DTS value received from container)."))
+    end
+
     #Timestamp calculations
     if seconds_min < 0
         seconds_min = max(seconds - max_interval, 0.0)
@@ -532,17 +543,18 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     end
 
     dts = first_dts + seconds_to_timestamp(seconds, time_base)
-    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base) 
+    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base)
     #max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
-   
+
     flags = AVSEEK_FLAG_ANY
     if !forward
         flags = AVSEEK_FLAG_BACKWARD
     end
-   
+
     # Seek
     ret = avformat_seek_file(fc, seek_stream_index, min_dts, dts, dts, flags)
-    ret < 0 && throw(ErrorException("Could not seek in stream"))    
+    ret < 0 && throw(ErrorException("Could not seek in stream"))
+
     return avin
 end
 
@@ -550,13 +562,13 @@ function seekstart(s::VideoReader, video_stream=1)
     return seek(s, 0.0, 0.0, 0.0, video_stream, false)
 end
 
-function seekstart{T<:AbstractString}(avin::AVInput{T}, video_stream = 1)
+function seekstart(avin::AVInput{T}, video_stream = 1) where T<:AbstractString
     return seek(avin, 0.0, 0.0, 0.0, video_stream, false)
 end
 
 ## This doesn't work...
 #seekstart{T<:IO}(avin::AVInput{T}, video_stream = 1) = seekstart(avin.io)
-seekstart{T<:IO}(avin::AVInput{T}, video_stream = 1) = throw(ErrorException("Sorry, Seeking is not supported from IO streams"))
+seekstart(avin::AVInput{T}, video_stream = 1) where {T<:IO} = throw(ErrorException("Sorry, Seeking is not supported from IO streams"))
 
 
 function eof(avin::AVInput)
@@ -566,7 +578,7 @@ function eof(avin::AVInput)
     return !got_frame
 end
 
-function eof{I<:IO}(avin::AVInput{I})
+function eof(avin::AVInput{I}) where I<:IO
     !isopen(avin) && return true
     have_frame(avin) && return false
     return eof(avin.io)
@@ -673,6 +685,7 @@ if have_avdevice()
         catch
             try
                 CAMERA_DEVICES = get_camera_devices(ffmpeg, "qtkit", "\"\"")
+            catch
             end
         end
 
