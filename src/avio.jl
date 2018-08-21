@@ -6,6 +6,7 @@ export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
 
 type StreamInfo
     stream_index0::Int             # zero-based
+    pStream::Ptr{AVStream}
     stream::AVStream
     codec_ctx::AVCodecContext
 end
@@ -214,7 +215,7 @@ function AVInput{T<:Union{IO, AbstractString}}(source::T, input_format=C_NULL; a
         codec_ctx = unsafe_load(stream.codec)
         codec_type = codec_ctx.codec_type
 
-        stream_info = StreamInfo(i-1, stream, codec_ctx)
+        stream_info = StreamInfo(i-1, pStream, stream, codec_ctx)
 
         if codec_type == AVMEDIA_TYPE_VIDEO
             push!(avin.video_info, stream_info)
@@ -466,7 +467,7 @@ have_frame(avin::AVInput) = any(Bool[have_frame(avin.stream_contexts[i+1]) for i
 reset_frame_flag!(r) = (r.aFrameFinished[1] = 0)
 
 function seconds_to_timestamp(s::Float64, time_base::AVRational)
-    return convert(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
+    return round(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
 end
 
 function seek(s::VideoReader, seconds::Float64,
@@ -474,20 +475,28 @@ function seek(s::VideoReader, seconds::Float64,
               video_stream::Int64=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
 
+    @static if _avformat_version().major < 54 || ffmpeg_or_libav == "libav"
+        # We're unable to get the frame rate on these platforms
+        throw(ErrorException("Seeking does not work on libav or early versions of ffmpeg"))
+    end
+
     fc = s.avin.apFormatContext[1]
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
 
     seek(s.avin, seconds, seconds_min, seconds_max, video_stream, forward)
-    
     avcodec_flush_buffers(pCodecContext)
 
-    stream = s.avin.video_info[video_stream].stream
+    stream_info = s.avin.video_info[video_stream]
+    stream = stream_info.stream
     first_dts = stream.first_dts
-    
+
     actualTimestamp = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     dts = first_dts + seconds_to_timestamp(seconds, stream.time_base)
-    frameskip = round(Int64,(stream.time_base.den/stream.time_base.num)/(stream.r_frame_rate.num/stream.r_frame_rate.den))
+
+    pStream = stream_info.pStream
+    frame_rate = av_stream_get_r_frame_rate(pStream)
+    frameskip = round(Int64,(stream.time_base.den/stream.time_base.num)/(frame_rate.num/frame_rate.den))
 
     while actualTimestamp < (dts - frameskip)
         while !have_frame(s)
@@ -520,6 +529,10 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     first_dts = stream.first_dts
     time_base = stream.time_base
 
+    if first_dts == AV_NOPTS_VALUE
+        throw(ErrorException("Unable to seek (no DTS value received from container)."))
+    end
+
     #Timestamp calculations
     if seconds_min < 0
         seconds_min = max(seconds - max_interval, 0.0)
@@ -530,17 +543,18 @@ function seek{T<:AbstractString}(avin::AVInput{T}, seconds::Float64,
     end
 
     dts = first_dts + seconds_to_timestamp(seconds, time_base)
-    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base) 
+    min_dts = first_dts + seconds_to_timestamp(seconds_min, time_base)
     #max_dts = first_dts + seconds_to_timestamp(seconds_max, time_base)
-   
+
     flags = AVSEEK_FLAG_ANY
     if !forward
         flags = AVSEEK_FLAG_BACKWARD
     end
-   
+
     # Seek
     ret = avformat_seek_file(fc, seek_stream_index, min_dts, dts, dts, flags)
-    ret < 0 && throw(ErrorException("Could not seek in stream"))    
+    ret < 0 && throw(ErrorException("Could not seek in stream"))
+
     return avin
 end
 
