@@ -6,8 +6,8 @@ have_avutil()     = Libdl.dlopen_e(libavutil)     != C_NULL
 have_swscale()    = Libdl.dlopen_e(libswscale)    != C_NULL
 have_avdevice()   = Libdl.dlopen_e(libavdevice)   != C_NULL
 have_avfilter()   = Libdl.dlopen_e(libavfilter)   != C_NULL
-#have_avresample() = isdefined(:libavresample) && Libdl.dlopen_e(libavresample) != C_NULL
-#have_swresample() = isdefined(:libswresample) && Libdl.dlopen_e(libswresample) != C_NULL
+#have_avresample() = @isdefined(libavresample) && Libdl.dlopen_e(libavresample) != C_NULL
+#have_swresample() = @isdefined(libswresample) && Libdl.dlopen_e(libswresample) != C_NULL
 
 _avcodec_version()    = have_avcodec()    ? av_version(ccall((:avcodec_version,    libavcodec),    UInt32, ())) : v"0"
 _avformat_version()   = have_avformat()   ? av_version(ccall((:avformat_version,   libavformat),   UInt32, ())) : v"0"
