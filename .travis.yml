@@ -15,6 +15,7 @@ addons:
     - libavutil-extra-52
     - libswscale2
     - libgtk-3-dev
+    - zlib1g-dev
 os:
   - linux
 #  - osx
