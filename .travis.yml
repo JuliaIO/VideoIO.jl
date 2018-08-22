@@ -21,7 +21,7 @@ os:
 julia:
   - 0.6
   - nightly
-matrix:	
+matrix:
   allow_failures:
     - julia: nightly
 notifications:
