@@ -1,5 +1,5 @@
 using Test
-using ColorTypes, FileIO, ImageCore
+using ColorTypes, FileIO, ImageCore, ImageMagick
 
 import VideoIO
 
