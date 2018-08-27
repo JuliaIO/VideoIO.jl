@@ -22,7 +22,7 @@ include("testvideos.jl")
 using .TestVideos
 
 function __init__()
-    @require ImageView="86fae568-95e7-573e-a6b2-d8a6b900c9ef" begin
+    @require ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef" begin
         # Define read and retrieve for Images
         function play(f, flip=false)
             buf = read(f)
@@ -31,7 +31,7 @@ function __init__()
             while !eof(f)
                 read!(f, buf)
                 ImageView.imshow(canvas, buf, flipx=flip, interactive=false)
-                sleep(1/f.framerate)
+                sleep(1 / f.framerate)
             end
         end
 

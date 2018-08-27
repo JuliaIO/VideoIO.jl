@@ -7,8 +7,8 @@ function av_setfield(s::Ptr{T}, name::Symbol, value) where T
     byteoffset = fieldoffset(T, field)
     S = T.types[field]
 
-    p = convert(Ptr{S}, s+byteoffset)
-    a = unsafe_wrap(Array, p,1)
+    p = convert(Ptr{S}, s + byteoffset)
+    a = unsafe_wrap(Array, p, 1)
     a[1] = convert(S, value)
 end
 
