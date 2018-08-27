@@ -365,9 +365,9 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     end
 
     if t.target_bits_per_pixel == 8
-        buf = permuteddimsview(Matrix{Gray{N0f8}}(r.width, r.height), (2,1))
+        buf = permuteddimsview(Matrix{Gray{N0f8}}(undef, r.width, r.height), (2, 1))
     else
-        buf = permuteddimsview(Matrix{RGB{N0f8}}(r.width, r.height), (2,1))
+        buf = permuteddimsview(Matrix{RGB{N0f8}}(undef, r.width, r.height), (2, 1))
     end
 
     retrieve!(r, buf)

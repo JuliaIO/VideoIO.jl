@@ -1,3 +1,4 @@
+include("../../../util.jl")
 include("libavutil_h.jl")
 
 #include("audio_fifo.jl")
@@ -23,15 +24,15 @@ include("pixdesc.jl")
 #include("timecode.jl")
 #include("xtea.jl")
 
+
 function AVFrame()
-    ns = fieldnames(AVFrame)
     ts = AVFrame.types
     parms = [T <: Ptr ? C_NULL : zero(T) for T in ts]
 
-    fmt_pos = findfirst(ns, :format)
+    fmt_pos = fieldposition(AVFrame, :format)
     parms[fmt_pos] = -one(ts[fmt_pos])
 
-    pts_pos = findfirst(ns, :pts)
+    pts_pos = fieldposition(AVFrame, :pts)
     parms[pts_pos] = AV_NOPTS_VALUE
 
     AVFrame(parms...)
