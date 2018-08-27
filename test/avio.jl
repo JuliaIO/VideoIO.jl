@@ -13,7 +13,7 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 println(stderr, "Testing file reading...")
 
-@noinline function notblank(img)
+@noinline function isblank(img)
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
@@ -35,7 +35,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v)
 
     # Find the first non-trivial image
-    while notblank(img)
+    while isblank(img)
         read!(v, img)
     end
 
@@ -73,7 +73,7 @@ for name in VideoIO.TestVideos.names()
 
         read!(v, img)
 
-        while notblank(img)
+        while isblank(img)
             read!(v, img)
         end
 
@@ -103,7 +103,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v)
 
     # Find the first non-trivial image
-    while notblank(img)
+    while isblank(img)
         read!(v, img)
     end
 
