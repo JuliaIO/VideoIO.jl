@@ -4,15 +4,14 @@ using BinDeps
 
 group = library_group("libav")
 
-deps = [
-    libavcodec = library_dependency("libavcodec", aliases=[["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*["53" "54" "55" "56"]...], group = group)
-    libavformat = library_dependency("libavformat", aliases=[["libavformat-ffmpeg.so.","libavformat.","libavformat.so.","libavformat.ffmpeg.so.","avformat-"].*["53" "54" "55" "56"]...], group = group)
-    libavutil = library_dependency("libavutil", aliases=[["libavutil-ffmpeg.so.", "libavutil.","libavutil.so.", "libavutil.ffmpeg.so.", "avutil-"].*["51" "52" "54"]...], group = group)
-    libswscale = library_dependency("libswscale", aliases=[["libswscale-ffmpeg.so.","libswscale.","libswscale.so.","libswscale.ffmpeg.so.","swscale-"].*["2" "3"]...], group = group)
-    libavfilter = library_dependency("libavfilter", aliases=[["libavfilter-ffmpeg.so.","libavfilter.","libavfilter.so.","libavfilter.ffmpeg.so.","avfilter-"].*["2" "3" "4" "5"]...], group = group)
-    libavdevice = library_dependency("libavdevice", aliases=[["libavdevice-ffmpeg.so.","libavdevice.","libavdevice.so.","libavdevice.ffmpeg.so.","avdevice-"].*["53" "54" "55" "56"]...], group = group)
-]
+libavcodec = library_dependency("libavcodec", aliases=[["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*["53" "54" "55" "56"]...], group = group)
+libavformat = library_dependency("libavformat", aliases=[["libavformat-ffmpeg.so.","libavformat.","libavformat.so.","libavformat.ffmpeg.so.","avformat-"].*["53" "54" "55" "56"]...], group = group)
+libavutil = library_dependency("libavutil", aliases=[["libavutil-ffmpeg.so.", "libavutil.","libavutil.so.", "libavutil.ffmpeg.so.", "avutil-"].*["51" "52" "54"]...], group = group)
+libswscale = library_dependency("libswscale", aliases=[["libswscale-ffmpeg.so.","libswscale.","libswscale.so.","libswscale.ffmpeg.so.","swscale-"].*["2" "3"]...], group = group)
+libavfilter = library_dependency("libavfilter", aliases=[["libavfilter-ffmpeg.so.","libavfilter.","libavfilter.so.","libavfilter.ffmpeg.so.","avfilter-"].*["2" "3" "4" "5"]...], group = group)
+libavdevice = library_dependency("libavdevice", aliases=[["libavdevice-ffmpeg.so.","libavdevice.","libavdevice.so.","libavdevice.ffmpeg.so.","avdevice-"].*["53" "54" "55" "56"]...], group = group)
 
+deps = [libavcodec, libavformat, libavutil, libswscale, libavfilter, libavdevice]
 libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libavdevice]
 
 # if (have_avresample = dlopen_e("libavresample") != C_NULL)
