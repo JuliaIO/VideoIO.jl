@@ -173,7 +173,7 @@ function url_get_max_packet_size(h)
 end
 
 function url_get_filename(h,buf,buf_size::Integer)
-    ccall((:url_get_filename,libavformat),Void,(Ptr{URLContext},Ptr{UInt8},Cint),h,buf,buf_size)
+    ccall((:url_get_filename,libavformat),Cvoid,(Ptr{URLContext},Ptr{UInt8},Cint),h,buf,buf_size)
 end
 
 function av_url_read_pause(h,pause::Integer)
@@ -185,7 +185,7 @@ function av_url_read_seek(h,stream_index::Integer,timestamp::Int64,flags::Intege
 end
 
 function url_set_interrupt_cb(interrupt_cb)
-    ccall((:url_set_interrupt_cb,libavformat),Void,(Ptr{Void},),interrupt_cb)
+    ccall((:url_set_interrupt_cb,libavformat),Cvoid,(Ptr{Cvoid},),interrupt_cb)
 end
 
 function av_protocol_next(p)
@@ -197,11 +197,11 @@ function av_register_protocol2(protocol,size::Integer)
 end
 
 function init_put_byte(s,buffer,buffer_size::Integer,write_flag::Integer,opaque,read_packet,write_packet,seek)
-    ccall((:init_put_byte,libavformat),Cint,(Ptr{AVIOContext},Ptr{Cuchar},Cint,Cint,Ptr{Void},Ptr{Void},Ptr{Void},Ptr{Void}),s,buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
+    ccall((:init_put_byte,libavformat),Cint,(Ptr{AVIOContext},Ptr{Cuchar},Cint,Cint,Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid}),s,buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
 end
 
 function av_alloc_put_byte(buffer,buffer_size::Integer,write_flag::Integer,opaque,read_packet,write_packet,seek)
-    ccall((:av_alloc_put_byte,libavformat),Ptr{AVIOContext},(Ptr{Cuchar},Cint,Cint,Ptr{Void},Ptr{Void},Ptr{Void},Ptr{Void}),buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
+    ccall((:av_alloc_put_byte,libavformat),Ptr{AVIOContext},(Ptr{Cuchar},Cint,Cint,Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid}),buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
 end
 
 function get_buffer(s,buf,size::Integer)
@@ -249,51 +249,51 @@ function get_be64(s)
 end
 
 function put_byte(s,b::Integer)
-    ccall((:put_byte,libavformat),Void,(Ptr{AVIOContext},Cint),s,b)
+    ccall((:put_byte,libavformat),Cvoid,(Ptr{AVIOContext},Cint),s,b)
 end
 
 function put_nbyte(s,b::Integer,count::Integer)
-    ccall((:put_nbyte,libavformat),Void,(Ptr{AVIOContext},Cint,Cint),s,b,count)
+    ccall((:put_nbyte,libavformat),Cvoid,(Ptr{AVIOContext},Cint,Cint),s,b,count)
 end
 
 function put_buffer(s,buf,size::Integer)
-    ccall((:put_buffer,libavformat),Void,(Ptr{AVIOContext},Ptr{Cuchar},Cint),s,buf,size)
+    ccall((:put_buffer,libavformat),Cvoid,(Ptr{AVIOContext},Ptr{Cuchar},Cint),s,buf,size)
 end
 
 function put_le64(s,val::UInt64)
-    ccall((:put_le64,libavformat),Void,(Ptr{AVIOContext},UInt64),s,val)
+    ccall((:put_le64,libavformat),Cvoid,(Ptr{AVIOContext},UInt64),s,val)
 end
 
 function put_be64(s,val::UInt64)
-    ccall((:put_be64,libavformat),Void,(Ptr{AVIOContext},UInt64),s,val)
+    ccall((:put_be64,libavformat),Cvoid,(Ptr{AVIOContext},UInt64),s,val)
 end
 
 function put_le32(s,val::Integer)
-    ccall((:put_le32,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:put_le32,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function put_be32(s,val::Integer)
-    ccall((:put_be32,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:put_be32,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function put_le24(s,val::Integer)
-    ccall((:put_le24,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:put_le24,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function put_be24(s,val::Integer)
-    ccall((:put_be24,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:put_be24,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function put_le16(s,val::Integer)
-    ccall((:put_le16,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:put_le16,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function put_be16(s,val::Integer)
-    ccall((:put_be16,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:put_be16,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function put_tag(s,tag)
-    ccall((:put_tag,libavformat),Void,(Ptr{AVIOContext},Ptr{UInt8}),s,tag)
+    ccall((:put_tag,libavformat),Cvoid,(Ptr{AVIOContext},Ptr{UInt8}),s,tag)
 end
 
 function av_url_read_fpause(h,pause::Integer)
@@ -337,7 +337,7 @@ function url_setbufsize(s,buf_size::Integer)
 end
 
 function put_flush_packet(s)
-    ccall((:put_flush_packet,libavformat),Void,(Ptr{AVIOContext},),s)
+    ccall((:put_flush_packet,libavformat),Cvoid,(Ptr{AVIOContext},),s)
 end
 
 function url_open_dyn_buf(s)
@@ -373,7 +373,7 @@ function udp_get_local_port(h)
 end
 
 function init_checksum(s,update_checksum,checksum::Culong)
-    ccall((:init_checksum,libavformat),Void,(Ptr{AVIOContext},Ptr{Void},Culong),s,update_checksum,checksum)
+    ccall((:init_checksum,libavformat),Cvoid,(Ptr{AVIOContext},Ptr{Cvoid},Culong),s,update_checksum,checksum)
 end
 
 function get_checksum(s)
@@ -381,7 +381,7 @@ function get_checksum(s)
 end
 
 function put_strz(s,buf)
-    ccall((:put_strz,libavformat),Void,(Ptr{AVIOContext},Ptr{UInt8}),s,buf)
+    ccall((:put_strz,libavformat),Cvoid,(Ptr{AVIOContext},Ptr{UInt8}),s,buf)
 end
 
 function url_fgets(s,buf,buf_size::Integer)
@@ -421,51 +421,51 @@ function avio_check(url,flags::Integer)
 end
 
 function avio_set_interrupt_cb(interrupt_cb)
-    ccall((:avio_set_interrupt_cb,libavformat),Void,(Ptr{Void},),interrupt_cb)
+    ccall((:avio_set_interrupt_cb,libavformat),Cvoid,(Ptr{Cvoid},),interrupt_cb)
 end
 
 function avio_alloc_context(buffer,buffer_size::Integer,write_flag::Integer,opaque,read_packet,write_packet,seek)
-    ccall((:avio_alloc_context,libavformat),Ptr{AVIOContext},(Ptr{Cuchar},Cint,Cint,Ptr{Void},Ptr{Void},Ptr{Void},Ptr{Void}),buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
+    ccall((:avio_alloc_context,libavformat),Ptr{AVIOContext},(Ptr{Cuchar},Cint,Cint,Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid}),buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
 end
 
 function avio_w8(s,b::Integer)
-    ccall((:avio_w8,libavformat),Void,(Ptr{AVIOContext},Cint),s,b)
+    ccall((:avio_w8,libavformat),Cvoid,(Ptr{AVIOContext},Cint),s,b)
 end
 
 function avio_write(s,buf,size::Integer)
-    ccall((:avio_write,libavformat),Void,(Ptr{AVIOContext},Ptr{Cuchar},Cint),s,buf,size)
+    ccall((:avio_write,libavformat),Cvoid,(Ptr{AVIOContext},Ptr{Cuchar},Cint),s,buf,size)
 end
 
 function avio_wl64(s,val::UInt64)
-    ccall((:avio_wl64,libavformat),Void,(Ptr{AVIOContext},UInt64),s,val)
+    ccall((:avio_wl64,libavformat),Cvoid,(Ptr{AVIOContext},UInt64),s,val)
 end
 
 function avio_wb64(s,val::UInt64)
-    ccall((:avio_wb64,libavformat),Void,(Ptr{AVIOContext},UInt64),s,val)
+    ccall((:avio_wb64,libavformat),Cvoid,(Ptr{AVIOContext},UInt64),s,val)
 end
 
 function avio_wl32(s,val::Integer)
-    ccall((:avio_wl32,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wl32,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wb32(s,val::Integer)
-    ccall((:avio_wb32,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wb32,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wl24(s,val::Integer)
-    ccall((:avio_wl24,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wl24,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wb24(s,val::Integer)
-    ccall((:avio_wb24,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wb24,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wl16(s,val::Integer)
-    ccall((:avio_wl16,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wl16,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wb16(s,val::Integer)
-    ccall((:avio_wb16,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wb16,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_put_str(s,str)
@@ -493,7 +493,7 @@ function avio_size(s)
 end
 
 function avio_flush(s)
-    ccall((:avio_flush,libavformat),Void,(Ptr{AVIOContext},),s)
+    ccall((:avio_flush,libavformat),Cvoid,(Ptr{AVIOContext},),s)
 end
 
 function avio_read(s,buf,size::Integer)
@@ -569,7 +569,7 @@ function avio_close_dyn_buf(s,pbuffer)
 end
 
 function avio_enum_protocols(opaque,output::Integer)
-    ccall((:avio_enum_protocols,libavformat),Ptr{UInt8},(Ptr{Ptr{Void}},Cint),opaque,output)
+    ccall((:avio_enum_protocols,libavformat),Ptr{UInt8},(Ptr{Ptr{Cvoid}},Cint),opaque,output)
 end
 
 function avio_pause(h,pause::Integer)

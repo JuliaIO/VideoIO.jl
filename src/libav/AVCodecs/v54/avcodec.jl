@@ -127,11 +127,11 @@ function avcodec_license()
 end
 
 function avcodec_register(codec)
-    ccall((:avcodec_register,libavcodec),Void,(Ptr{AVCodec},),codec)
+    ccall((:avcodec_register,libavcodec),Cvoid,(Ptr{AVCodec},),codec)
 end
 
 function avcodec_register_all()
-    ccall((:avcodec_register_all,libavcodec),Void,())
+    ccall((:avcodec_register_all,libavcodec),Cvoid,())
 end
 
 function avcodec_alloc_context3(codec)
@@ -155,11 +155,11 @@ function avcodec_alloc_frame()
 end
 
 function avcodec_get_frame_defaults(frame)
-    ccall((:avcodec_get_frame_defaults,libavcodec),Void,(Ptr{AVFrame},),frame)
+    ccall((:avcodec_get_frame_defaults,libavcodec),Cvoid,(Ptr{AVFrame},),frame)
 end
 
 function avcodec_free_frame(frame)
-    ccall((:avcodec_free_frame,libavcodec),Void,(Ptr{Ptr{AVFrame}},),frame)
+    ccall((:avcodec_free_frame,libavcodec),Cvoid,(Ptr{Ptr{AVFrame}},),frame)
 end
 
 function avcodec_open2(avctx,codec,options)
@@ -171,15 +171,15 @@ function avcodec_close(avctx)
 end
 
 function avsubtitle_free(sub)
-    ccall((:avsubtitle_free,libavcodec),Void,(Ptr{AVSubtitle},),sub)
+    ccall((:avsubtitle_free,libavcodec),Cvoid,(Ptr{AVSubtitle},),sub)
 end
 
 function av_destruct_packet(pkt)
-    ccall((:av_destruct_packet,libavcodec),Void,(Ptr{AVPacket},),pkt)
+    ccall((:av_destruct_packet,libavcodec),Cvoid,(Ptr{AVPacket},),pkt)
 end
 
 function av_init_packet(pkt)
-    ccall((:av_init_packet,libavcodec),Void,(Ptr{AVPacket},),pkt)
+    ccall((:av_init_packet,libavcodec),Cvoid,(Ptr{AVPacket},),pkt)
 end
 
 function av_new_packet(pkt,size::Integer)
@@ -187,7 +187,7 @@ function av_new_packet(pkt,size::Integer)
 end
 
 function av_shrink_packet(pkt,size::Integer)
-    ccall((:av_shrink_packet,libavcodec),Void,(Ptr{AVPacket},Cint),pkt,size)
+    ccall((:av_shrink_packet,libavcodec),Cvoid,(Ptr{AVPacket},Cint),pkt,size)
 end
 
 function av_grow_packet(pkt,grow_by::Integer)
@@ -199,7 +199,7 @@ function av_dup_packet(pkt)
 end
 
 function av_free_packet(pkt)
-    ccall((:av_free_packet,libavcodec),Void,(Ptr{AVPacket},),pkt)
+    ccall((:av_free_packet,libavcodec),Cvoid,(Ptr{AVPacket},),pkt)
 end
 
 function av_packet_new_side_data(pkt,_type::AVPacketSideDataType,size::Integer)
@@ -227,7 +227,7 @@ function avcodec_default_get_buffer(s,pic)
 end
 
 function avcodec_default_release_buffer(s,pic)
-    ccall((:avcodec_default_release_buffer,libavcodec),Void,(Ptr{AVCodecContext},Ptr{AVFrame}),s,pic)
+    ccall((:avcodec_default_release_buffer,libavcodec),Cvoid,(Ptr{AVCodecContext},Ptr{AVFrame}),s,pic)
 end
 
 function avcodec_default_reget_buffer(s,pic)
@@ -239,11 +239,11 @@ function avcodec_get_edge_width()
 end
 
 function avcodec_align_dimensions(s,width,height)
-    ccall((:avcodec_align_dimensions,libavcodec),Void,(Ptr{AVCodecContext},Ptr{Cint},Ptr{Cint}),s,width,height)
+    ccall((:avcodec_align_dimensions,libavcodec),Cvoid,(Ptr{AVCodecContext},Ptr{Cint},Ptr{Cint}),s,width,height)
 end
 
 function avcodec_align_dimensions2(s,width,height,linesize_align)
-    ccall((:avcodec_align_dimensions2,libavcodec),Void,(Ptr{AVCodecContext},Ptr{Cint},Ptr{Cint},Ptr{Cint}),s,width,height,linesize_align)
+    ccall((:avcodec_align_dimensions2,libavcodec),Cvoid,(Ptr{AVCodecContext},Ptr{Cint},Ptr{Cint},Ptr{Cint}),s,width,height,linesize_align)
 end
 
 function avcodec_decode_audio3(avctx,samples,frame_size_ptr,avpkt)
@@ -267,7 +267,7 @@ function av_parser_next(c)
 end
 
 function av_register_codec_parser(parser)
-    ccall((:av_register_codec_parser,libavcodec),Void,(Ptr{AVCodecParser},),parser)
+    ccall((:av_register_codec_parser,libavcodec),Cvoid,(Ptr{AVCodecParser},),parser)
 end
 
 function av_parser_init(codec_id::Integer)
@@ -283,7 +283,7 @@ function av_parser_change(s,avctx,poutbuf,poutbuf_size,buf,buf_size::Integer,key
 end
 
 function av_parser_close(s)
-    ccall((:av_parser_close,libavcodec),Void,(Ptr{AVCodecParserContext},),s)
+    ccall((:av_parser_close,libavcodec),Cvoid,(Ptr{AVCodecParserContext},),s)
 end
 
 function avcodec_find_encoder(id::AVCodecID)
@@ -323,7 +323,7 @@ function audio_resample(s,output,input,nb_samples::Integer)
 end
 
 function audio_resample_close(s)
-    ccall((:audio_resample_close,libavcodec),Void,(Ptr{ReSampleContext},),s)
+    ccall((:audio_resample_close,libavcodec),Cvoid,(Ptr{ReSampleContext},),s)
 end
 
 function av_resample_init(out_rate::Integer,in_rate::Integer,filter_length::Integer,log2_phase_count::Integer,linear::Integer,cutoff::Cdouble)
@@ -335,11 +335,11 @@ function av_resample(c,dst,src,consumed,src_size::Integer,dst_size::Integer,upda
 end
 
 function av_resample_compensate(c,sample_delta::Integer,compensation_distance::Integer)
-    ccall((:av_resample_compensate,libavcodec),Void,(Ptr{AVResampleContext},Cint,Cint),c,sample_delta,compensation_distance)
+    ccall((:av_resample_compensate,libavcodec),Cvoid,(Ptr{AVResampleContext},Cint,Cint),c,sample_delta,compensation_distance)
 end
 
 function av_resample_close(c)
-    ccall((:av_resample_close,libavcodec),Void,(Ptr{AVResampleContext},),c)
+    ccall((:av_resample_close,libavcodec),Cvoid,(Ptr{AVResampleContext},),c)
 end
 
 function avpicture_alloc(picture,pix_fmt::AVPixelFormat,width::Integer,height::Integer)
@@ -347,7 +347,7 @@ function avpicture_alloc(picture,pix_fmt::AVPixelFormat,width::Integer,height::I
 end
 
 function avpicture_free(picture)
-    ccall((:avpicture_free,libavcodec),Void,(Ptr{AVPicture},),picture)
+    ccall((:avpicture_free,libavcodec),Cvoid,(Ptr{AVPicture},),picture)
 end
 
 function avpicture_fill(picture,ptr,pix_fmt::AVPixelFormat,width::Integer,height::Integer)
@@ -367,7 +367,7 @@ function avpicture_deinterlace(dst,src,pix_fmt::AVPixelFormat,width::Integer,hei
 end
 
 function av_picture_copy(dst,src,pix_fmt::AVPixelFormat,width::Integer,height::Integer)
-    ccall((:av_picture_copy,libavcodec),Void,(Ptr{AVPicture},Ptr{AVPicture},AVPixelFormat,Cint,Cint),dst,src,pix_fmt,width,height)
+    ccall((:av_picture_copy,libavcodec),Cvoid,(Ptr{AVPicture},Ptr{AVPicture},AVPixelFormat,Cint,Cint),dst,src,pix_fmt,width,height)
 end
 
 function av_picture_crop(dst,src,pix_fmt::AVPixelFormat,top_band::Integer,left_band::Integer)
@@ -379,7 +379,7 @@ function av_picture_pad(dst,src,height::Integer,width::Integer,pix_fmt::AVPixelF
 end
 
 function avcodec_get_chroma_sub_sample(pix_fmt::AVPixelFormat,h_shift,v_shift)
-    ccall((:avcodec_get_chroma_sub_sample,libavcodec),Void,(AVPixelFormat,Ptr{Cint},Ptr{Cint}),pix_fmt,h_shift,v_shift)
+    ccall((:avcodec_get_chroma_sub_sample,libavcodec),Cvoid,(AVPixelFormat,Ptr{Cint},Ptr{Cint}),pix_fmt,h_shift,v_shift)
 end
 
 function avcodec_pix_fmt_to_codec_tag(pix_fmt::AVPixelFormat)
@@ -403,7 +403,7 @@ function avcodec_default_get_format(s,fmt)
 end
 
 function avcodec_set_dimensions(s,width::Integer,height::Integer)
-    ccall((:avcodec_set_dimensions,libavcodec),Void,(Ptr{AVCodecContext},Cint,Cint),s,width,height)
+    ccall((:avcodec_set_dimensions,libavcodec),Cvoid,(Ptr{AVCodecContext},Cint,Cint),s,width,height)
 end
 
 function av_get_codec_tag_string(buf,buf_size::Csize_t,codec_tag::Integer)
@@ -411,7 +411,7 @@ function av_get_codec_tag_string(buf,buf_size::Csize_t,codec_tag::Integer)
 end
 
 function avcodec_string(buf,buf_size::Integer,enc,encode::Integer)
-    ccall((:avcodec_string,libavcodec),Void,(Ptr{UInt8},Cint,Ptr{AVCodecContext},Cint),buf,buf_size,enc,encode)
+    ccall((:avcodec_string,libavcodec),Cvoid,(Ptr{UInt8},Cint,Ptr{AVCodecContext},Cint),buf,buf_size,enc,encode)
 end
 
 function av_get_profile_name(codec,profile::Integer)
@@ -419,11 +419,11 @@ function av_get_profile_name(codec,profile::Integer)
 end
 
 function avcodec_default_execute(c,func,arg,ret,count::Integer,size::Integer)
-    ccall((:avcodec_default_execute,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{Void},Ptr{Void},Ptr{Cint},Cint,Cint),c,func,arg,ret,count,size)
+    ccall((:avcodec_default_execute,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cint},Cint,Cint),c,func,arg,ret,count,size)
 end
 
 function avcodec_default_execute2(c,func,arg,ret,count::Integer)
-    ccall((:avcodec_default_execute2,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{Void},Ptr{Void},Ptr{Cint},Cint),c,func,arg,ret,count)
+    ccall((:avcodec_default_execute2,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cint},Cint),c,func,arg,ret,count)
 end
 
 function avcodec_fill_audio_frame(frame,nb_channels::Integer,sample_fmt::AVSampleFormat,buf,buf_size::Integer,align::Integer)
@@ -431,11 +431,11 @@ function avcodec_fill_audio_frame(frame,nb_channels::Integer,sample_fmt::AVSampl
 end
 
 function avcodec_flush_buffers(avctx)
-    ccall((:avcodec_flush_buffers,libavcodec),Void,(Ptr{AVCodecContext},),avctx)
+    ccall((:avcodec_flush_buffers,libavcodec),Cvoid,(Ptr{AVCodecContext},),avctx)
 end
 
 function avcodec_default_free_buffers(s)
-    ccall((:avcodec_default_free_buffers,libavcodec),Void,(Ptr{AVCodecContext},),s)
+    ccall((:avcodec_default_free_buffers,libavcodec),Cvoid,(Ptr{AVCodecContext},),s)
 end
 
 function av_get_bits_per_sample(codec_id::AVCodecID)
@@ -451,7 +451,7 @@ function av_get_audio_frame_duration(avctx,frame_bytes::Integer)
 end
 
 function av_register_bitstream_filter(bsf)
-    ccall((:av_register_bitstream_filter,libavcodec),Void,(Ptr{AVBitStreamFilter},),bsf)
+    ccall((:av_register_bitstream_filter,libavcodec),Cvoid,(Ptr{AVBitStreamFilter},),bsf)
 end
 
 function av_bitstream_filter_init(name)
@@ -463,7 +463,7 @@ function av_bitstream_filter_filter(bsfc,avctx,args,poutbuf,poutbuf_size,buf,buf
 end
 
 function av_bitstream_filter_close(bsf)
-    ccall((:av_bitstream_filter_close,libavcodec),Void,(Ptr{AVBitStreamFilterContext},),bsf)
+    ccall((:av_bitstream_filter_close,libavcodec),Cvoid,(Ptr{AVBitStreamFilterContext},),bsf)
 end
 
 function av_bitstream_filter_next(f)
@@ -471,15 +471,15 @@ function av_bitstream_filter_next(f)
 end
 
 function av_fast_realloc(ptr,size,min_size::Csize_t)
-    ccall((:av_fast_realloc,libavcodec),Ptr{Void},(Ptr{Void},Ptr{UInt32},Csize_t),ptr,size,min_size)
+    ccall((:av_fast_realloc,libavcodec),Ptr{Cvoid},(Ptr{Cvoid},Ptr{UInt32},Csize_t),ptr,size,min_size)
 end
 
 function av_fast_malloc(ptr,size,min_size::Csize_t)
-    ccall((:av_fast_malloc,libavcodec),Void,(Ptr{Void},Ptr{UInt32},Csize_t),ptr,size,min_size)
+    ccall((:av_fast_malloc,libavcodec),Cvoid,(Ptr{Cvoid},Ptr{UInt32},Csize_t),ptr,size,min_size)
 end
 
 function av_fast_padded_malloc(ptr,size,min_size::Csize_t)
-    ccall((:av_fast_padded_malloc,libavcodec),Void,(Ptr{Void},Ptr{UInt32},Csize_t),ptr,size,min_size)
+    ccall((:av_fast_padded_malloc,libavcodec),Cvoid,(Ptr{Cvoid},Ptr{UInt32},Csize_t),ptr,size,min_size)
 end
 
 function av_xiphlacing(s,v::Integer)
@@ -487,11 +487,11 @@ function av_xiphlacing(s,v::Integer)
 end
 
 function av_log_missing_feature(avc,feature,want_sample::Integer)
-    ccall((:av_log_missing_feature,libavcodec),Void,(Ptr{Void},Ptr{UInt8},Cint),avc,feature,want_sample)
+    ccall((:av_log_missing_feature,libavcodec),Cvoid,(Ptr{Cvoid},Ptr{UInt8},Cint),avc,feature,want_sample)
 end
 
 function av_register_hwaccel(hwaccel)
-    ccall((:av_register_hwaccel,libavcodec),Void,(Ptr{AVHWAccel},),hwaccel)
+    ccall((:av_register_hwaccel,libavcodec),Cvoid,(Ptr{AVHWAccel},),hwaccel)
 end
 
 function av_hwaccel_next(hwaccel)
@@ -499,7 +499,7 @@ function av_hwaccel_next(hwaccel)
 end
 
 function av_lockmgr_register(cb)
-    ccall((:av_lockmgr_register,libavcodec),Cint,(Ptr{Void},),cb)
+    ccall((:av_lockmgr_register,libavcodec),Cint,(Ptr{Cvoid},),cb)
 end
 
 function avcodec_get_type(codec_id::AVCodecID)

@@ -1326,11 +1326,11 @@ struct AVPacket
     size::Cint
     stream_index::Cint
     flags::Cint
-    side_data::Ptr{Void}
+    side_data::Ptr{Cvoid}
     side_data_elems::Cint
     duration::Cint
-    destruct::Ptr{Void}
-    priv::Ptr{Void}
+    destruct::Ptr{Cvoid}
+    priv::Ptr{Cvoid}
     pos::Int64
     convergence_duration::Int64
 end
@@ -1343,7 +1343,7 @@ const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE = UInt32(4)
 const AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS = UInt32(8)
 # end enum AVSideDataParamChangeFlags
 
-const AVCodecInternal=Void
+const AVCodecInternal=Nothing
 
 # begin enum AVFieldOrder
 const AVFieldOrder=UInt32
@@ -1410,7 +1410,7 @@ struct AVProfile
     name::Ptr{UInt8}
 end
 
-const AVCodecDefault=Void
+const AVCodecDefault=Nothing
 
 struct AVCodec
     name::Ptr{UInt8}
@@ -1428,16 +1428,16 @@ struct AVCodec
     profiles::Ptr{AVProfile}
     priv_data_size::Cint
     next::Ptr{AVCodec}
-    init_thread_copy::Ptr{Void}
-    update_thread_context::Ptr{Void}
+    init_thread_copy::Ptr{Cvoid}
+    update_thread_context::Ptr{Cvoid}
     defaults::Ptr{AVCodecDefault}
-    init_static_data::Ptr{Void}
-    init::Ptr{Void}
-    encode_sub::Ptr{Void}
-    encode2::Ptr{Void}
-    decode::Ptr{Void}
-    close::Ptr{Void}
-    flush::Ptr{Void}
+    init_static_data::Ptr{Cvoid}
+    init::Ptr{Cvoid}
+    encode_sub::Ptr{Cvoid}
+    encode2::Ptr{Cvoid}
+    decode::Ptr{Cvoid}
+    close::Ptr{Cvoid}
+    flush::Ptr{Cvoid}
 end
 
 struct AVHWAccel
@@ -1447,9 +1447,9 @@ struct AVHWAccel
     pix_fmt::AVPixelFormat
     capabilities::Cint
     next::Ptr{AVHWAccel}
-    start_frame::Ptr{Void}
-    decode_slice::Ptr{Void}
-    end_frame::Ptr{Void}
+    start_frame::Ptr{Cvoid}
+    decode_slice::Ptr{Cvoid}
+    end_frame::Ptr{Cvoid}
     priv_data_size::Cint
 end
 
@@ -1462,9 +1462,9 @@ struct AVCodecContext
     codec_id::AVCodecID
     codec_tag::UInt32
     stream_codec_tag::UInt32
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     internal::Ptr{AVCodecInternal}
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     bit_rate::Cint
     bit_rate_tolerance::Cint
     global_quality::Cint
@@ -1483,8 +1483,8 @@ struct AVCodecContext
     gop_size::Cint
     pix_fmt::AVPixelFormat
     me_method::Cint
-    draw_horiz_band::Ptr{Void}
-    get_format::Ptr{Void}
+    draw_horiz_band::Ptr{Cvoid}
+    get_format::Ptr{Cvoid}
     max_b_frames::Cint
     b_quant_factor::Cfloat
     rc_strategy::Cint
@@ -1560,10 +1560,10 @@ struct AVCodecContext
     request_channel_layout::UInt64
     audio_service_type::AVAudioServiceType
     request_sample_fmt::AVSampleFormat
-    get_buffer::Ptr{Void}
-    release_buffer::Ptr{Void}
-    reget_buffer::Ptr{Void}
-    get_buffer2::Ptr{Void}
+    get_buffer::Ptr{Cvoid}
+    release_buffer::Ptr{Cvoid}
+    reget_buffer::Ptr{Cvoid}
+    get_buffer2::Ptr{Cvoid}
     refcounted_frames::Cint
     qcompress::Cfloat
     qblur::Cfloat
@@ -1596,7 +1596,7 @@ struct AVCodecContext
     min_prediction_order::Cint
     max_prediction_order::Cint
     timecode_frame_start::Int64
-    rtp_callback::Ptr{Void}
+    rtp_callback::Ptr{Cvoid}
     rtp_payload_size::Cint
     mv_bits::Cint
     header_bits::Cint
@@ -1617,7 +1617,7 @@ struct AVCodecContext
     err_recognition::Cint
     reordered_opaque::Int64
     hwaccel::Ptr{AVHWAccel}
-    hwaccel_context::Ptr{Void}
+    hwaccel_context::Ptr{Cvoid}
     error::Array_8_Uint64
     dct_algo::Cint
     idct_algo::Cint
@@ -1629,9 +1629,9 @@ struct AVCodecContext
     thread_type::Cint
     active_thread_type::Cint
     thread_safe_callbacks::Cint
-    execute::Ptr{Void}
-    execute2::Ptr{Void}
-    thread_opaque::Ptr{Void}
+    execute::Ptr{Cvoid}
+    execute2::Ptr{Cvoid}
+    thread_opaque::Ptr{Cvoid}
     nsse_weight::Cint
     profile::Cint
     level::Cint
@@ -1736,15 +1736,15 @@ zero(::Type{Array_5_Cint}) = Array_5_Cint(fill(zero(Cint),5)...)
 struct AVCodecParser
     codec_ids::Array_5_Cint
     priv_data_size::Cint
-    parser_init::Ptr{Void}
-    parser_parse::Ptr{Void}
-    parser_close::Ptr{Void}
-    split::Ptr{Void}
+    parser_init::Ptr{Cvoid}
+    parser_parse::Ptr{Cvoid}
+    parser_close::Ptr{Cvoid}
+    split::Ptr{Cvoid}
     next::Ptr{AVCodecParser}
 end
 
 struct AVCodecParserContext
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     parser::Ptr{AVCodecParser}
     frame_offset::Int64
     cur_offset::Int64
@@ -1780,13 +1780,13 @@ end
 struct AVBitStreamFilter
     name::Ptr{UInt8}
     priv_data_size::Cint
-    filter::Ptr{Void}
-    close::Ptr{Void}
+    filter::Ptr{Cvoid}
+    close::Ptr{Cvoid}
     next::Ptr{AVBitStreamFilter}
 end
 
 struct AVBitStreamFilterContext
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     filter::Ptr{AVBitStreamFilter}
     parser::Ptr{AVCodecParserContext}
     next::Ptr{AVBitStreamFilterContext}

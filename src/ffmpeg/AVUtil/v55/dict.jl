@@ -38,7 +38,7 @@ function av_dict_copy(dst,src,flags::Integer)
 end
 
 function av_dict_free(m)
-    ccall((:av_dict_free,libavutil),Void,(Ptr{Ptr{AVDictionary}},),m)
+    ccall((:av_dict_free,libavutil),Cvoid,(Ptr{Ptr{AVDictionary}},),m)
 end
 
 function av_dict_get_string(m,buffer,key_val_sep::UInt8,pairs_sep::UInt8)

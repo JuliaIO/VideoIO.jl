@@ -61,4 +61,4 @@ const SWR_FILTER_TYPE_BLACKMAN_NUTTALL  =  UInt32(1)
 const SWR_FILTER_TYPE_KAISER  =  UInt32(2)
 # end enum SwrFilterType
 
-const SwrContext = Void
+const SwrContext = Nothing

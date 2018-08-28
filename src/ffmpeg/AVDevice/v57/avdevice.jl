@@ -34,7 +34,7 @@ function avdevice_license()
 end
 
 function avdevice_register_all()
-    ccall((:avdevice_register_all,libavdevice),Void,())
+    ccall((:avdevice_register_all,libavdevice),Cvoid,())
 end
 
 function av_input_audio_device_next(d)
@@ -54,11 +54,11 @@ function av_output_video_device_next(d)
 end
 
 function avdevice_app_to_dev_control_message(s,_type::AVAppToDevMessageType,data,data_size::Csize_t)
-    ccall((:avdevice_app_to_dev_control_message,libavdevice),Cint,(Ptr{AVFormatContext},AVAppToDevMessageType,Ptr{Void},Csize_t),s,_type,data,data_size)
+    ccall((:avdevice_app_to_dev_control_message,libavdevice),Cint,(Ptr{AVFormatContext},AVAppToDevMessageType,Ptr{Cvoid},Csize_t),s,_type,data,data_size)
 end
 
 function avdevice_dev_to_app_control_message(s,_type::AVDevToAppMessageType,data,data_size::Csize_t)
-    ccall((:avdevice_dev_to_app_control_message,libavdevice),Cint,(Ptr{AVFormatContext},AVDevToAppMessageType,Ptr{Void},Csize_t),s,_type,data,data_size)
+    ccall((:avdevice_dev_to_app_control_message,libavdevice),Cint,(Ptr{AVFormatContext},AVDevToAppMessageType,Ptr{Cvoid},Csize_t),s,_type,data,data_size)
 end
 
 function avdevice_capabilities_create(caps,s,device_options)
@@ -66,7 +66,7 @@ function avdevice_capabilities_create(caps,s,device_options)
 end
 
 function avdevice_capabilities_free(caps,s)
-    ccall((:avdevice_capabilities_free,libavdevice),Void,(Ptr{Ptr{AVDeviceCapabilitiesQuery}},Ptr{AVFormatContext}),caps,s)
+    ccall((:avdevice_capabilities_free,libavdevice),Cvoid,(Ptr{Ptr{AVDeviceCapabilitiesQuery}},Ptr{AVFormatContext}),caps,s)
 end
 
 function avdevice_list_devices(s,device_list)
@@ -74,7 +74,7 @@ function avdevice_list_devices(s,device_list)
 end
 
 function avdevice_free_list_devices(device_list)
-    ccall((:avdevice_free_list_devices,libavdevice),Void,(Ptr{Ptr{AVDeviceInfoList}},),device_list)
+    ccall((:avdevice_free_list_devices,libavdevice),Cvoid,(Ptr{Ptr{AVDeviceInfoList}},),device_list)
 end
 
 function avdevice_list_input_sources(device,device_name,device_options,device_list)

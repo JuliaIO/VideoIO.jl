@@ -22,5 +22,5 @@ function av_videotoolbox_default_init2(avctx,vtctx)
 end
 
 function av_videotoolbox_default_free(avctx)
-    ccall((:av_videotoolbox_default_free,libavcodec),Void,(Ptr{AVCodecContext},),avctx)
+    ccall((:av_videotoolbox_default_free,libavcodec),Cvoid,(Ptr{AVCodecContext},),avctx)
 end

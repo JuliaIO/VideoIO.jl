@@ -13,9 +13,9 @@ function av_display_rotation_get(matrix)
 end
 
 function av_display_rotation_set(matrix,angle::Cdouble)
-    ccall((:av_display_rotation_set,libavutil),Void,(Ptr{Int32},Cdouble),matrix,angle)
+    ccall((:av_display_rotation_set,libavutil),Cvoid,(Ptr{Int32},Cdouble),matrix,angle)
 end
 
 function av_display_matrix_flip(matrix,hflip::Integer,vflip::Integer)
-    ccall((:av_display_matrix_flip,libavutil),Void,(Ptr{Int32},Cint,Cint),matrix,hflip,vflip)
+    ccall((:av_display_matrix_flip,libavutil),Cvoid,(Ptr{Int32},Cint,Cint),matrix,hflip,vflip)
 end

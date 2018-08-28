@@ -16,21 +16,21 @@ function av_thread_message_queue_alloc(mq,nelem::Integer,elsize::Integer)
 end
 
 function av_thread_message_queue_free(mq)
-    ccall((:av_thread_message_queue_free,libavutil),Void,(Ptr{Ptr{AVThreadMessageQueue}},),mq)
+    ccall((:av_thread_message_queue_free,libavutil),Cvoid,(Ptr{Ptr{AVThreadMessageQueue}},),mq)
 end
 
 function av_thread_message_queue_send(mq,msg,flags::Integer)
-    ccall((:av_thread_message_queue_send,libavutil),Cint,(Ptr{AVThreadMessageQueue},Ptr{Void},UInt32),mq,msg,flags)
+    ccall((:av_thread_message_queue_send,libavutil),Cint,(Ptr{AVThreadMessageQueue},Ptr{Cvoid},UInt32),mq,msg,flags)
 end
 
 function av_thread_message_queue_recv(mq,msg,flags::Integer)
-    ccall((:av_thread_message_queue_recv,libavutil),Cint,(Ptr{AVThreadMessageQueue},Ptr{Void},UInt32),mq,msg,flags)
+    ccall((:av_thread_message_queue_recv,libavutil),Cint,(Ptr{AVThreadMessageQueue},Ptr{Cvoid},UInt32),mq,msg,flags)
 end
 
 function av_thread_message_queue_set_err_send(mq,err::Integer)
-    ccall((:av_thread_message_queue_set_err_send,libavutil),Void,(Ptr{AVThreadMessageQueue},Cint),mq,err)
+    ccall((:av_thread_message_queue_set_err_send,libavutil),Cvoid,(Ptr{AVThreadMessageQueue},Cint),mq,err)
 end
 
 function av_thread_message_queue_set_err_recv(mq,err::Integer)
-    ccall((:av_thread_message_queue_set_err_recv,libavutil),Void,(Ptr{AVThreadMessageQueue},Cint),mq,err)
+    ccall((:av_thread_message_queue_set_err_recv,libavutil),Cvoid,(Ptr{AVThreadMessageQueue},Cint),mq,err)
 end

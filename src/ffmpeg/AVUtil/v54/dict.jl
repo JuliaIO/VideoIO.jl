@@ -33,9 +33,9 @@ function av_dict_parse_string(pm,str,key_val_sep,pairs_sep,flags::Integer)
 end
 
 function av_dict_copy(dst,src,flags::Integer)
-    ccall((:av_dict_copy,libavutil),Void,(Ptr{Ptr{AVDictionary}},Ptr{AVDictionary},Cint),dst,src,flags)
+    ccall((:av_dict_copy,libavutil),Cvoid,(Ptr{Ptr{AVDictionary}},Ptr{AVDictionary},Cint),dst,src,flags)
 end
 
 function av_dict_free(m)
-    ccall((:av_dict_free,libavutil),Void,(Ptr{Ptr{AVDictionary}},),m)
+    ccall((:av_dict_free,libavutil),Cvoid,(Ptr{Ptr{AVDictionary}},),m)
 end

@@ -718,7 +718,7 @@ const AV_PICTURE_TYPE_BI  =  UInt32(7)
 
 const AV_BUFFER_FLAG_READONLY  =  1 << 0
 
-const AVBuffer = Void
+const AVBuffer = Nothing
 
 struct AVBufferRef
     buffer::Ptr{AVBuffer}
@@ -726,7 +726,7 @@ struct AVBufferRef
     size::Cint
 end
 
-const AVBufferPool = Void
+const AVBufferPool = Nothing
 
 const AV_CH_FRONT_LEFT  =  0x00000001
 const AV_CH_FRONT_RIGHT  =  0x00000002
@@ -794,7 +794,7 @@ const AV_MATRIX_ENCODING_DOLBYHEADPHONE  =  UInt32(6)
 const AV_MATRIX_ENCODING_NB  =  UInt32(7)
 # end enum AVMatrixEncoding
 
-const AVBPrint = Void
+const AVBPrint = Nothing
 
 const AV_DICT_MATCH_CASE  =  1
 const AV_DICT_IGNORE_SUFFIX  =  2
@@ -808,7 +808,7 @@ struct AVDictionaryEntry
     value::Ptr{UInt8}
 end
 
-const AVDictionary = Void
+const AVDictionary = Nothing
 
 struct AVFifoBuffer
     buffer::Ptr{UInt8}
@@ -883,8 +883,8 @@ end
 zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
 struct Array_2_Ptr
-    d1::Ptr{Void}
-    d2::Ptr{Void}
+    d1::Ptr{Cvoid}
+    d2::Ptr{Cvoid}
 end
 
 zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
@@ -1001,7 +1001,7 @@ struct AVFrame
     mb_type::Ptr{UInt32}
     dct_coeff::Ptr{Int16}
     ref_index::Array_2_Ptr
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     error::Array_8_Uint64
     _type::Cint
     repeat_pict::Cint
@@ -1009,11 +1009,11 @@ struct AVFrame
     top_field_first::Cint
     palette_has_changed::Cint
     buffer_hints::Cint
-    pan_scan::Ptr{Void}   # Ptr{AVPanScan}
+    pan_scan::Ptr{Cvoid}   # Ptr{AVPanScan}
     reordered_opaque::Int64
-    hwaccel_picture_private::Ptr{Void}
-    owner::Ptr{Void}  #Ptr{AVCodecContext}
-    thread_opaque::Ptr{Void}
+    hwaccel_picture_private::Ptr{Cvoid}
+    owner::Ptr{Cvoid}  #Ptr{AVCodecContext}
+    thread_opaque::Ptr{Cvoid}
     motion_subsample_log2::UInt8
     sample_rate::Cint
     channel_layout::UInt64
@@ -1151,7 +1151,7 @@ struct AVOption
     help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
@@ -1160,16 +1160,16 @@ end
 
 struct AVClass
     class_name::Ptr{UInt8}
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
     category::AVClassCategory
-    get_category::Ptr{Void}
-    query_ranges::Ptr{Void}
+    get_category::Ptr{Cvoid}
+    query_ranges::Ptr{Cvoid}
 end
 
 # Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v
@@ -1669,7 +1669,7 @@ const LIBAVUTIL_VERSION_MICRO  =  100
 # Skipping MacroDefinition: FF_API_XVMC ( LIBAVUTIL_VERSION_MAJOR < 55 )
 # Skipping MacroDefinition: FF_API_OPT_TYPE_METADATA ( LIBAVUTIL_VERSION_MAJOR < 55 )
 
-const AVAudioFifo = Void
+const AVAudioFifo = Nothing
 
 # begin enum AVDownmixType
 const AVDownmixType = UInt32
@@ -1691,7 +1691,7 @@ end
 
 const AV_HASH_MAX_SIZE  =  64
 
-const AVHashContext = Void
+const AVHashContext = Nothing
 
 struct AVMotionVector
     source::Int32
@@ -1724,7 +1724,7 @@ const ANONYMOUS_2 = UInt32
 const AV_OPT_FLAG_IMPLICIT_KEY  =  UInt32(1)
 # end enum ANONYMOUS_2
 
-const av_pixelutils_sad_fn = Ptr{Void}
+const av_pixelutils_sad_fn = Ptr{Cvoid}
 
 struct AVReplayGain
     track_gain::Int32
@@ -1752,7 +1752,7 @@ struct AVStereo3D
     flags::Cint
 end
 
-const AVThreadMessageQueue = Void
+const AVThreadMessageQueue = Nothing
 
 # begin enum AVThreadMessageFlags
 const AVThreadMessageFlags = UInt32

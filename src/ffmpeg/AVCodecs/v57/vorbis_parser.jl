@@ -15,7 +15,7 @@ function av_vorbis_parse_init(extradata,extradata_size::Integer)
 end
 
 function av_vorbis_parse_free(s)
-    ccall((:av_vorbis_parse_free,libavcodec),Void,(Ptr{Ptr{AVVorbisParseContext}},),s)
+    ccall((:av_vorbis_parse_free,libavcodec),Cvoid,(Ptr{Ptr{AVVorbisParseContext}},),s)
 end
 
 function av_vorbis_parse_frame_flags(s,buf,buf_size::Integer,flags)
@@ -27,5 +27,5 @@ function av_vorbis_parse_frame(s,buf,buf_size::Integer)
 end
 
 function av_vorbis_parse_reset(s)
-    ccall((:av_vorbis_parse_reset,libavcodec),Void,(Ptr{AVVorbisParseContext},),s)
+    ccall((:av_vorbis_parse_reset,libavcodec),Cvoid,(Ptr{AVVorbisParseContext},),s)
 end

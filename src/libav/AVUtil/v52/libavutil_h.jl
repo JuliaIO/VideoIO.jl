@@ -502,7 +502,7 @@ struct AVDictionaryEntry
     value::Ptr{UInt8}
 end
 
-const AVDictionary=Void
+const AVDictionary=Nothing
 
 struct AVFifoBuffer
     buffer::Ptr{UInt8}
@@ -544,7 +544,7 @@ struct AVOption
     help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
@@ -553,13 +553,13 @@ end
 
 struct AVClass
     class_name::Ptr{UInt8}
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
 end
 
 const PIX_FMT_BE = 1
@@ -895,7 +895,7 @@ const LIBAVUTIL_VERSION_MICRO = 0
 # Skipping MacroDefinition: FF_API_AUDIOCONVERT ( LIBAVUTIL_VERSION_MAJOR < 53 )
 # Skipping MacroDefinition: FF_API_CPU_FLAG_MMX2 ( LIBAVUTIL_VERSION_MAJOR < 53 )
 
-const AVAudioFifo=Void
+const AVAudioFifo=Nothing
 
 # Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v
 # Skipping MacroDefinition: DECLARE_ASM_CONST ( n , t , v ) static const t av_used __attribute__ ( ( aligned ( n ) ) ) v

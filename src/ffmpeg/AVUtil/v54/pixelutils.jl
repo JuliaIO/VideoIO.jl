@@ -7,5 +7,5 @@ export
 
 
 function av_pixelutils_get_sad_fn(w_bits::Integer,h_bits::Integer,aligned::Integer,log_ctx)
-    ccall((:av_pixelutils_get_sad_fn,libavutil),av_pixelutils_sad_fn,(Cint,Cint,Cint,Ptr{Void}),w_bits,h_bits,aligned,log_ctx)
+    ccall((:av_pixelutils_get_sad_fn,libavutil),av_pixelutils_sad_fn,(Cint,Cint,Cint,Ptr{Cvoid}),w_bits,h_bits,aligned,log_ctx)
 end

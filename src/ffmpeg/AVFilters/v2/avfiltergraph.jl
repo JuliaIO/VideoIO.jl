@@ -25,17 +25,17 @@ function avfilter_graph_add_filter(graphctx,filter)
 end
 
 function avfilter_graph_create_filter(filt_ctx,filt,name,args,opaque,graph_ctx)
-    ccall((:avfilter_graph_create_filter,libavfilter),Cint,(Ptr{Ptr{AVFilterContext}},Ptr{AVFilter},Ptr{UInt8},Ptr{UInt8},Ptr{Void},Ptr{AVFilterGraph}),filt_ctx,filt,name,args,opaque,graph_ctx)
+    ccall((:avfilter_graph_create_filter,libavfilter),Cint,(Ptr{Ptr{AVFilterContext}},Ptr{AVFilter},Ptr{UInt8},Ptr{UInt8},Ptr{Cvoid},Ptr{AVFilterGraph}),filt_ctx,filt,name,args,opaque,graph_ctx)
 end
 
 function avfilter_graph_config(graphctx,log_ctx)
-    ccall((:avfilter_graph_config,libavfilter),Cint,(Ptr{AVFilterGraph},Ptr{Void}),graphctx,log_ctx)
+    ccall((:avfilter_graph_config,libavfilter),Cint,(Ptr{AVFilterGraph},Ptr{Cvoid}),graphctx,log_ctx)
 end
 
 function avfilter_graph_free(graph)
-    ccall((:avfilter_graph_free,libavfilter),Void,(Ptr{Ptr{AVFilterGraph}},),graph)
+    ccall((:avfilter_graph_free,libavfilter),Cvoid,(Ptr{Ptr{AVFilterGraph}},),graph)
 end
 
 function avfilter_graph_parse(graph,filters,inputs,outputs,log_ctx)
-    ccall((:avfilter_graph_parse,libavfilter),Cint,(Ptr{AVFilterGraph},Ptr{UInt8},Ptr{AVFilterInOut},Ptr{AVFilterInOut},Ptr{Void}),graph,filters,inputs,outputs,log_ctx)
+    ccall((:avfilter_graph_parse,libavfilter),Cint,(Ptr{AVFilterGraph},Ptr{UInt8},Ptr{AVFilterInOut},Ptr{AVFilterInOut},Ptr{Cvoid}),graph,filters,inputs,outputs,log_ctx)
 end

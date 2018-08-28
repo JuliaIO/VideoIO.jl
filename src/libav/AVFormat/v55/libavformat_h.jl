@@ -95,8 +95,8 @@ const AVIO_FLAG_READ_WRITE = AVIO_FLAG_READ | AVIO_FLAG_WRITE
 const AVIO_FLAG_NONBLOCK = 8
 
 struct AVIOInterruptCB
-    callback::Ptr{Void}
-    opaque::Ptr{Void}
+    callback::Ptr{Cvoid}
+    opaque::Ptr{Cvoid}
 end
 
 struct AVIOContext
@@ -105,10 +105,10 @@ struct AVIOContext
     buffer_size::Cint
     buf_ptr::Ptr{Cuchar}
     buf_end::Ptr{Cuchar}
-    opaque::Ptr{Void}
-    read_packet::Ptr{Void}
-    write_packet::Ptr{Void}
-    seek::Ptr{Void}
+    opaque::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    seek::Ptr{Cvoid}
     pos::Int64
     must_flush::Cint
     eof_reached::Cint
@@ -116,10 +116,10 @@ struct AVIOContext
     max_packet_size::Cint
     checksum::Culong
     checksum_ptr::Ptr{Cuchar}
-    update_checksum::Ptr{Void}
+    update_checksum::Ptr{Cvoid}
     error::Cint
-    read_pause::Ptr{Void}
-    read_seek::Ptr{Void}
+    read_pause::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
     seekable::Cint
 end
 
@@ -177,7 +177,7 @@ const AVSEEK_FLAG_BYTE = 2
 const AVSEEK_FLAG_ANY = 4
 const AVSEEK_FLAG_FRAME = 8
 
-const AVCodecTag=Void
+const AVCodecTag=Nothing
 
 struct AVInputFormat
     name::Ptr{UInt8}
@@ -189,15 +189,15 @@ struct AVInputFormat
     next::Ptr{AVInputFormat}
     raw_codec_id::Cint
     priv_data_size::Cint
-    read_probe::Ptr{Void}
-    read_header::Ptr{Void}
-    read_packet::Ptr{Void}
-    read_close::Ptr{Void}
-    read_seek::Ptr{Void}
-    read_timestamp::Ptr{Void}
-    read_play::Ptr{Void}
-    read_pause::Ptr{Void}
-    read_seek2::Ptr{Void}
+    read_probe::Ptr{Cvoid}
+    read_header::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    read_close::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
+    read_timestamp::Ptr{Cvoid}
+    read_play::Ptr{Cvoid}
+    read_pause::Ptr{Cvoid}
+    read_seek2::Ptr{Cvoid}
 end
 
 struct AVOutputFormat
@@ -213,11 +213,11 @@ struct AVOutputFormat
     priv_class::Ptr{AVClass}
     next::Ptr{AVOutputFormat}
     priv_data_size::Cint
-    write_header::Ptr{Void}
-    write_packet::Ptr{Void}
-    write_trailer::Ptr{Void}
-    interleave_packet::Ptr{Void}
-    query_codec::Ptr{Void}
+    write_header::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    write_trailer::Ptr{Cvoid}
+    interleave_packet::Ptr{Cvoid}
+    query_codec::Ptr{Cvoid}
 end
 
 struct AVFrac
@@ -280,7 +280,7 @@ struct AVStream
     index::Cint
     id::Cint
     codec::Ptr{AVCodecContext}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pts::AVFrac
     time_base::AVRational
     start_time::Int64
@@ -292,7 +292,7 @@ struct AVStream
     metadata::Ptr{AVDictionary}
     avg_frame_rate::AVRational
     attached_pic::AVPacket
-    info::Ptr{Void}
+    info::Ptr{Cvoid}
     pts_wrap_bits::Cint
     do_not_use::Int64
     first_dts::Int64
@@ -1357,13 +1357,13 @@ struct AVChapter
     metadata::Ptr{AVDictionary}
 end
 
-const AVFormatInternal=Void
+const AVFormatInternal=Nothing
 
 struct AVFormatContext
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pb::Ptr{AVIOContext}
     ctx_flags::Cint
     nb_streams::UInt32

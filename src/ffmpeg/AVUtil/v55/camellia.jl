@@ -17,5 +17,5 @@ function av_camellia_init(ctx,key,key_bits::Integer)
 end
 
 function av_camellia_crypt(ctx,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_camellia_crypt,libavutil),Void,(Ptr{AVCAMELLIA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
+    ccall((:av_camellia_crypt,libavutil),Cvoid,(Ptr{AVCAMELLIA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
 end

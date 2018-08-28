@@ -1,5 +1,5 @@
-using Base.Test
-using ColorTypes, FileIO, ImageCore
+using Test
+using ColorTypes, FileIO, ImageCore, ImageMagick
 
 import VideoIO
 
@@ -11,15 +11,15 @@ VideoIO.TestVideos.download_all()
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
-println(STDERR, "Testing file reading...")
+println(stderr, "Testing file reading...")
 
-@noinline function notblank(img)
+@noinline function isblank(img)
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
 for name in VideoIO.TestVideos.names()
-    is_apple() && startswith(name, "crescent") && continue
-    println(STDERR, "   Testing $name...")
+    Sys.isapple() && startswith(name, "crescent") && continue
+    println(stderr, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
     fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
@@ -35,7 +35,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v)
 
     # Find the first non-trivial image
-    while notblank(img)
+    while isblank(img)
         read!(v, img)
     end
 
@@ -73,7 +73,7 @@ for name in VideoIO.TestVideos.names()
 
         read!(v, img)
 
-        while notblank(img)
+        while isblank(img)
             read!(v, img)
         end
 
@@ -83,13 +83,13 @@ for name in VideoIO.TestVideos.names()
     close(v)
 end
 
-println(STDERR, "Testing IO reading...")
+println(stderr, "Testing IO reading...")
 for name in VideoIO.TestVideos.names()
-    is_apple() && startswith(name, "crescent") && continue
+    Sys.isapple() && startswith(name, "crescent") && continue
     # TODO: fix me?
     (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 
-    println(STDERR, "   Testing $name...")
+    println(stderr, "   Testing $name...")
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
     first_frame = load(first_frame_file) # comment line when creating png files
 
@@ -103,7 +103,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v)
 
     # Find the first non-trivial image
-    while notblank(img)
+    while isblank(img)
         read!(v, img)
     end
 
