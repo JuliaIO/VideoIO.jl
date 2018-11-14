@@ -651,7 +651,7 @@ export
     LIBAVCODEC_VERSION_MAJOR,
     LIBAVCODEC_VERSION_MINOR,
     LIBAVCODEC_VERSION_MICRO,
-    LIBAVCODEC_BUILD,
+    # LIBAVCODEC_BUILD,
     AV_AAC_ADTS_HEADER_SIZE,
     AVDCT,
     AVD3D11VAContext,
@@ -681,9 +681,9 @@ export
     MediaCodecBuffer,
     AVMediaCodecBuffer,
     AVQSVContext,
-    AVVDPAU_Render2,
-    AVVDPAUContext,
-    Picture,
+    # AVVDPAU_Render2,
+    # AVVDPAUContext,
+    # Picture,
     AVVideotoolboxContext,
     VORBIS_FLAG_HEADER,
     VORBIS_FLAG_COMMENT,
@@ -1598,7 +1598,8 @@ struct AVCodec
     flush::Ptr{Cvoid}
     caps_internal::Cint
     bsfs::Cstring
-    hw_configs::Ptr{Ptr{AVCodecHWConfigInternal}}
+    # hw_configs::Ptr{Ptr{AVCodecHWConfigInternal}}
+    hw_configs::Ptr{Cvoid}
 end
 
 struct AVHWAccel
@@ -1621,8 +1622,8 @@ struct AVHWAccel
     frame_params::Ptr{Cvoid}
 end
 
-struct AVFrame
-end
+# struct AVFrame
+# end
 
 struct AVCodecContext
     av_class::Ptr{AVClass}
@@ -2011,7 +2012,7 @@ const LIBAVCODEC_VERSION_MICRO = 100
 # Skipping MacroDefinition: LIBAVCODEC_VERSION_INT AV_VERSION_INT ( LIBAVCODEC_VERSION_MAJOR , LIBAVCODEC_VERSION_MINOR , LIBAVCODEC_VERSION_MICRO )
 # Skipping MacroDefinition: LIBAVCODEC_VERSION AV_VERSION ( LIBAVCODEC_VERSION_MAJOR , LIBAVCODEC_VERSION_MINOR , LIBAVCODEC_VERSION_MICRO )
 
-const LIBAVCODEC_BUILD = LIBAVCODEC_VERSION_INT
+# const LIBAVCODEC_BUILD = LIBAVCODEC_VERSION_INT
 
 # Skipping MacroDefinition: LIBAVCODEC_IDENT "Lavc" AV_STRINGIFY ( LIBAVCODEC_VERSION )
 # Skipping MacroDefinition: FF_API_LOWRES ( LIBAVCODEC_VERSION_MAJOR < 59 )
@@ -2165,15 +2166,15 @@ struct AVQSVContext
     opaque_alloc_type::Cint
 end
 
-const AVVDPAU_Render2 = Ptr{Cvoid}
+# const AVVDPAU_Render2 = Ptr{Cvoid}
 
-struct AVVDPAUContext
-    decoder::VdpDecoder
-    render::Ptr{VdpDecoderRender}
-    render2::AVVDPAU_Render2
-end
+# struct AVVDPAUContext
+#     decoder::VdpDecoder
+#     render::Ptr{VdpDecoderRender}
+#     render2::AVVDPAU_Render2
+# end
 
-const Picture = QuickdrawPicture
+# const Picture = QuickdrawPicture
 
 struct AVVideotoolboxContext
     session::Cint

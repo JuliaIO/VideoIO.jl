@@ -2,7 +2,7 @@ include("libavcodec_h.jl")
 
 #include("ac3_parser.jl")
 #include("adts_parser.jl")
-#include("avcodec.jl")
+include("avcodec.jl")
 #include("avdct.jl")
 #include("d3d11va.jl")
 #include("dirac.jl")

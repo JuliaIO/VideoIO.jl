@@ -1,3 +1,4 @@
+include("../../../util.jl")
 include("libavutil_h.jl")
 
 #include("aes_ctr.jl")
@@ -27,12 +28,12 @@ include("libavutil_h.jl")
 #include("hwcontext_vdpau.jl")
 #include("hwcontext_videotoolbox.jl")
 #include("imgutils.jl")
-#include("log.jl")
+include("log.jl")
 #include("mastering_display_metadata.jl")
-#include("mem.jl")
+include("mem.jl")
 #include("motion_vector.jl")
 #include("opt.jl")
-#include("pixdesc.jl")
+include("pixdesc.jl")
 #include("pixelutils.jl")
 #include("pixfmt.jl")
 #include("rational.jl")
@@ -48,3 +49,16 @@ include("libavutil_h.jl")
 #include("twofish.jl")
 #include("version.jl")
 #include("xtea.jl")
+
+function AVFrame()
+  ts = AVFrame.types
+  parms = [T <: Ptr ? C_NULL : zero(T) for T in ts]
+
+  fmt_pos = fieldposition(AVFrame, :format)
+  parms[fmt_pos] = -one(ts[fmt_pos])
+
+  pts_pos = fieldposition(AVFrame, :pts)
+  parms[pts_pos] = AV_NOPTS_VALUE
+
+  AVFrame(parms...)
+end
