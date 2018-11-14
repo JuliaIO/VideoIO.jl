@@ -12,9 +12,26 @@ clang_includes = String[joinpath(Sys.BINDIR, "../lib/clang/7.0.0/include"), join
 
 strpack_structs = Set{Symbol}()
 
-import Clang.cindex, Clang.wrap_c.repr_jl
+import Clang.cindex, Clang.wrap_c.repr_jl, Clang.wrap_c.largestfield
 function repr_jl(t::cindex.FunctionProto)
   :Cvoid
+end
+function repr_jl(t::Union{cindex.Enum, cindex.CXType_Elaborated})
+    decl = cindex.getTypeDeclaration(t)
+    r = cindex.spelling(decl)
+    if r != ""
+        Symbol(r)
+    elseif isa(decl, cindex.EnumDecl)
+        :Cint
+    elseif isa(decl, cindex.UnionDecl)
+        maxelem = largestfield(decl)
+        return repr_jl(cindex.cu_type(maxelem))
+    elseif isa(decl, cindex.StructDecl)
+        println("warn: treat StructDecl as Cvoid")
+        :Cvoid
+    else
+        error("unknown decl: ", decl)
+    end
 end
 
 # Allow root to be specified as the first argument
@@ -222,7 +239,7 @@ rewrite_type(s) = s
 function rewrite_fn(e::Expr)
     @match e begin
         Expr(:function, [fncall, body])  =>  rewrite_fn(e, fncall, body)
-        _                                   =>  e
+        _                                =>  e
     end
 end
 
