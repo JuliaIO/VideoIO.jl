@@ -17,8 +17,8 @@ function av_spherical_tile_bounds(map, width::Csize_t, height::Csize_t, left, to
     ccall((:av_spherical_tile_bounds, libavutil), Cvoid, (Ptr{AVSphericalMapping}, Csize_t, Csize_t, Ptr{Csize_t}, Ptr{Csize_t}, Ptr{Csize_t}, Ptr{Csize_t}), map, width, height, left, top, right, bottom)
 end
 
-function av_spherical_projection_name(projection::Cvoid)
-    ccall((:av_spherical_projection_name, libavutil), Cstring, (Cvoid,), projection)
+function av_spherical_projection_name(projection::AVSphericalProjection)
+    ccall((:av_spherical_projection_name, libavutil), Cstring, (AVSphericalProjection,), projection)
 end
 
 function av_spherical_from_name(name)

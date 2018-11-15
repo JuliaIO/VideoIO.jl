@@ -137,7 +137,7 @@ function av_stream_set_recommended_encoder_configuration(s, configuration)
 end
 
 function av_stream_get_parser(s)
-    ccall((:av_stream_get_parser, libavformat), Ptr{Cvoid}, (Ptr{AVStream},), s)
+    ccall((:av_stream_get_parser, libavformat), Ptr{AVCodecParserContext}, (Ptr{AVStream},), s)
 end
 
 function av_stream_get_end_pts(st)
@@ -217,7 +217,7 @@ function av_format_inject_global_side_data(s)
 end
 
 function av_fmt_ctx_get_duration_estimation_method(ctx)
-    ccall((:av_fmt_ctx_get_duration_estimation_method, libavformat), Cvoid, (Ptr{AVFormatContext},), ctx)
+    ccall((:av_fmt_ctx_get_duration_estimation_method, libavformat), AVDurationEstimationMethod, (Ptr{AVFormatContext},), ctx)
 end
 
 function avformat_version()
@@ -284,16 +284,16 @@ function avformat_new_stream(s, c)
     ccall((:avformat_new_stream, libavformat), Ptr{AVStream}, (Ptr{AVFormatContext}, Ptr{AVCodec}), s, c)
 end
 
-function av_stream_add_side_data(st, _type::Cvoid, data, size::Csize_t)
-    ccall((:av_stream_add_side_data, libavformat), Cint, (Ptr{AVStream}, Cvoid, Ptr{UInt8}, Csize_t), st, _type, data, size)
+function av_stream_add_side_data(st, _type::AVPacketSideDataType, data, size::Csize_t)
+    ccall((:av_stream_add_side_data, libavformat), Cint, (Ptr{AVStream}, AVPacketSideDataType, Ptr{UInt8}, Csize_t), st, _type, data, size)
 end
 
-function av_stream_new_side_data(stream, _type::Cvoid, size::Integer)
-    ccall((:av_stream_new_side_data, libavformat), Ptr{UInt8}, (Ptr{AVStream}, Cvoid, Cint), stream, _type, size)
+function av_stream_new_side_data(stream, _type::AVPacketSideDataType, size::Integer)
+    ccall((:av_stream_new_side_data, libavformat), Ptr{UInt8}, (Ptr{AVStream}, AVPacketSideDataType, Cint), stream, _type, size)
 end
 
-function av_stream_get_side_data(stream, _type::Cvoid, size)
-    ccall((:av_stream_get_side_data, libavformat), Ptr{UInt8}, (Ptr{AVStream}, Cvoid, Ptr{Cint}), stream, _type, size)
+function av_stream_get_side_data(stream, _type::AVPacketSideDataType, size)
+    ccall((:av_stream_get_side_data, libavformat), Ptr{UInt8}, (Ptr{AVStream}, AVPacketSideDataType, Ptr{Cint}), stream, _type, size)
 end
 
 function av_new_program(s, id::Integer)
@@ -348,8 +348,8 @@ function av_program_add_stream_index(ac, progid::Integer, idx::Integer)
     ccall((:av_program_add_stream_index, libavformat), Cvoid, (Ptr{AVFormatContext}, Cint, UInt32), ac, progid, idx)
 end
 
-function av_find_best_stream(ic, _type::Cvoid, wanted_stream_nb::Integer, related_stream::Integer, decoder_ret, flags::Integer)
-    ccall((:av_find_best_stream, libavformat), Cint, (Ptr{AVFormatContext}, Cvoid, Cint, Cint, Ptr{Ptr{AVCodec}}, Cint), ic, _type, wanted_stream_nb, related_stream, decoder_ret, flags)
+function av_find_best_stream(ic, _type::AVMediaType, wanted_stream_nb::Integer, related_stream::Integer, decoder_ret, flags::Integer)
+    ccall((:av_find_best_stream, libavformat), Cint, (Ptr{AVFormatContext}, AVMediaType, Cint, Cint, Ptr{Ptr{AVCodec}}, Cint), ic, _type, wanted_stream_nb, related_stream, decoder_ret, flags)
 end
 
 function av_read_frame(s, pkt)
@@ -416,12 +416,12 @@ function av_guess_format(short_name, filename, mime_type)
     ccall((:av_guess_format, libavformat), Ptr{AVOutputFormat}, (Cstring, Cstring, Cstring), short_name, filename, mime_type)
 end
 
-function av_guess_codec(fmt, short_name, filename, mime_type, _type::Cvoid)
-    ccall((:av_guess_codec, libavformat), Cvoid, (Ptr{AVOutputFormat}, Cstring, Cstring, Cstring, Cvoid), fmt, short_name, filename, mime_type, _type)
+function av_guess_codec(fmt, short_name, filename, mime_type, _type::AVMediaType)
+    ccall((:av_guess_codec, libavformat), AVCodecID, (Ptr{AVOutputFormat}, Cstring, Cstring, Cstring, AVMediaType), fmt, short_name, filename, mime_type, _type)
 end
 
 function av_get_output_timestamp(s, stream::Integer, dts, wall)
-    ccall((:av_get_output_timestamp, libavformat), Cint, (Ptr{Cvoid}, Cint, Ptr{Int64}, Ptr{Int64}), s, stream, dts, wall)
+    ccall((:av_get_output_timestamp, libavformat), Cint, (Ptr{AVFormatContext}, Cint, Ptr{Int64}, Ptr{Int64}), s, stream, dts, wall)
 end
 
 function av_hex_dump(f, buf, size::Integer)
@@ -441,15 +441,15 @@ function av_pkt_dump_log2(avcl, level::Integer, pkt, dump_payload::Integer, st)
 end
 
 function av_codec_get_id(tags, tag::Integer)
-    ccall((:av_codec_get_id, libavformat), Cvoid, (Ptr{Ptr{Cvoid}}, UInt32), tags, tag)
+    ccall((:av_codec_get_id, libavformat), AVCodecID, (Ptr{Ptr{AVCodecTag}}, UInt32), tags, tag)
 end
 
-function av_codec_get_tag(tags, id::Cvoid)
-    ccall((:av_codec_get_tag, libavformat), UInt32, (Ptr{Ptr{Cvoid}}, Cvoid), tags, id)
+function av_codec_get_tag(tags, id::AVCodecID)
+    ccall((:av_codec_get_tag, libavformat), UInt32, (Ptr{Ptr{AVCodecTag}}, AVCodecID), tags, id)
 end
 
-function av_codec_get_tag2(tags, id::Cvoid, tag)
-    ccall((:av_codec_get_tag2, libavformat), Cint, (Ptr{Ptr{Cvoid}}, Cvoid, Ptr{UInt32}), tags, id, tag)
+function av_codec_get_tag2(tags, id::AVCodecID, tag)
+    ccall((:av_codec_get_tag2, libavformat), Cint, (Ptr{Ptr{AVCodecTag}}, AVCodecID, Ptr{UInt32}), tags, id, tag)
 end
 
 function av_find_default_stream_index(s)
@@ -492,24 +492,24 @@ function av_match_ext(filename, extensions)
     ccall((:av_match_ext, libavformat), Cint, (Cstring, Cstring), filename, extensions)
 end
 
-function avformat_query_codec(ofmt, codec_id::Cvoid, std_compliance::Integer)
-    ccall((:avformat_query_codec, libavformat), Cint, (Ptr{AVOutputFormat}, Cvoid, Cint), ofmt, codec_id, std_compliance)
+function avformat_query_codec(ofmt, codec_id::AVCodecID, std_compliance::Integer)
+    ccall((:avformat_query_codec, libavformat), Cint, (Ptr{AVOutputFormat}, AVCodecID, Cint), ofmt, codec_id, std_compliance)
 end
 
 function avformat_get_riff_video_tags()
-    ccall((:avformat_get_riff_video_tags, libavformat), Ptr{Cvoid}, ())
+    ccall((:avformat_get_riff_video_tags, libavformat), Ptr{AVCodecTag}, ())
 end
 
 function avformat_get_riff_audio_tags()
-    ccall((:avformat_get_riff_audio_tags, libavformat), Ptr{Cvoid}, ())
+    ccall((:avformat_get_riff_audio_tags, libavformat), Ptr{AVCodecTag}, ())
 end
 
 function avformat_get_mov_video_tags()
-    ccall((:avformat_get_mov_video_tags, libavformat), Ptr{Cvoid}, ())
+    ccall((:avformat_get_mov_video_tags, libavformat), Ptr{AVCodecTag}, ())
 end
 
 function avformat_get_mov_audio_tags()
-    ccall((:avformat_get_mov_audio_tags, libavformat), Ptr{Cvoid}, ())
+    ccall((:avformat_get_mov_audio_tags, libavformat), Ptr{AVCodecTag}, ())
 end
 
 function av_guess_sample_aspect_ratio(format, stream, frame)
@@ -532,8 +532,8 @@ function av_apply_bitstream_filters(codec, pkt, bsfc)
     ccall((:av_apply_bitstream_filters, libavformat), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Ptr{AVBitStreamFilterContext}), codec, pkt, bsfc)
 end
 
-function avformat_transfer_internal_stream_timing_info(ofmt, ost, ist, copy_tb::Cvoid)
-    ccall((:avformat_transfer_internal_stream_timing_info, libavformat), Cint, (Ptr{AVOutputFormat}, Ptr{AVStream}, Ptr{AVStream}, Cvoid), ofmt, ost, ist, copy_tb)
+function avformat_transfer_internal_stream_timing_info(ofmt, ost, ist, copy_tb::AVTimebaseSource)
+    ccall((:avformat_transfer_internal_stream_timing_info, libavformat), Cint, (Ptr{AVOutputFormat}, Ptr{AVStream}, Ptr{AVStream}, AVTimebaseSource), ofmt, ost, ist, copy_tb)
 end
 
 function av_stream_get_codec_timebase(st)

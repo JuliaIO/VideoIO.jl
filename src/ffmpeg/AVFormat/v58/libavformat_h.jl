@@ -117,20 +117,9 @@ export
     AVSTREAM_INIT_IN_WRITE_HEADER,
     AVSTREAM_INIT_IN_INIT_OUTPUT,
     AV_FRAME_FILENAME_FLAGS_MULTIPLE,
-    AVProbeData,
-    AVIndexEntry,
-    AVStreamInternal,
-    AVStream,
-    AVProgram,
-    AVChapter,
-    AVFormatInternal,
-    av_format_control_message,
-    AVFormatContext,
-    AVDeviceInfoList,
-    AVDeviceCapabilitiesQuery,
     AVCodecTag,
-    AVOutputFormat,
     AVInputFormat,
+    AVOutputFormat,
     AVStreamParseType,
     AVSTREAM_PARSE_NONE,
     AVSTREAM_PARSE_FULL,
@@ -138,12 +127,23 @@ export
     AVSTREAM_PARSE_TIMESTAMPS,
     AVSTREAM_PARSE_FULL_ONCE,
     AVSTREAM_PARSE_FULL_RAW,
-    AVOpenCallback,
+    AVPacketList,
+    AVProbeData,
+    AVIndexEntry,
+    AVStreamInternal,
+    AVStream,
+    AVProgram,
+    AVChapter,
     AVDurationEstimationMethod,
     AVFMT_DURATION_FROM_PTS,
     AVFMT_DURATION_FROM_STREAM,
     AVFMT_DURATION_FROM_BITRATE,
-    AVPacketList,
+    AVFormatInternal,
+    av_format_control_message,
+    AVFormatContext,
+    AVDeviceInfoList,
+    AVDeviceCapabilitiesQuery,
+    AVOpenCallback,
     AVTimebaseSource,
     AVFMT_TBCF_AUTO,
     AVFMT_TBCF_DECODER,
@@ -201,7 +201,7 @@ struct AVIODirEntry
 end
 
 struct AVIODirContext
-    url_context::Ptr{Cvoid}
+    url_context::Ptr{URLContext}
 end
 
 # begin enum AVIODataMarkerType
@@ -246,7 +246,7 @@ struct AVIOContext
     protocol_blacklist::Cstring
     write_data_type::Ptr{Cvoid}
     ignore_boundary_point::Cint
-    current_type::Cvoid
+    current_type::AVIODataMarkerType
     last_time::Int64
     short_seek_get::Ptr{Cvoid}
     written::Int64
@@ -339,6 +339,79 @@ const AVSTREAM_INIT_IN_WRITE_HEADER = 0
 const AVSTREAM_INIT_IN_INIT_OUTPUT = 1
 const AV_FRAME_FILENAME_FLAGS_MULTIPLE = 1
 
+struct AVCodecTag
+end
+
+struct AVInputFormat
+    name::Cstring
+    long_name::Cstring
+    flags::Cint
+    extensions::Cstring
+    codec_tag::Ptr{Ptr{AVCodecTag}}
+    priv_class::Ptr{AVClass}
+    mime_type::Cstring
+    next::Ptr{AVInputFormat}
+    raw_codec_id::Cint
+    priv_data_size::Cint
+    read_probe::Ptr{Cvoid}
+    read_header::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    read_close::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
+    read_timestamp::Ptr{Cvoid}
+    read_play::Ptr{Cvoid}
+    read_pause::Ptr{Cvoid}
+    read_seek2::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
+end
+
+struct AVOutputFormat
+    name::Cstring
+    long_name::Cstring
+    mime_type::Cstring
+    extensions::Cstring
+    audio_codec::AVCodecID
+    video_codec::AVCodecID
+    subtitle_codec::AVCodecID
+    flags::Cint
+    codec_tag::Ptr{Ptr{AVCodecTag}}
+    priv_class::Ptr{AVClass}
+    next::Ptr{AVOutputFormat}
+    priv_data_size::Cint
+    write_header::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    write_trailer::Ptr{Cvoid}
+    interleave_packet::Ptr{Cvoid}
+    query_codec::Ptr{Cvoid}
+    get_output_timestamp::Ptr{Cvoid}
+    control_message::Ptr{Cvoid}
+    write_uncoded_frame::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
+    data_codec::AVCodecID
+    init::Ptr{Cvoid}
+    deinit::Ptr{Cvoid}
+    check_bitstream::Ptr{Cvoid}
+end
+
+# begin enum AVStreamParseType
+const AVStreamParseType = UInt32
+const AVSTREAM_PARSE_NONE = 0 |> UInt32
+const AVSTREAM_PARSE_FULL = 1 |> UInt32
+const AVSTREAM_PARSE_HEADERS = 2 |> UInt32
+const AVSTREAM_PARSE_TIMESTAMPS = 3 |> UInt32
+const AVSTREAM_PARSE_FULL_ONCE = 4 |> UInt32
+const AVSTREAM_PARSE_FULL_RAW = 5 |> UInt32
+# end enum AVStreamParseType
+
+struct AVPacketList
+    pkt::AVPacket
+    next::Ptr{AVPacketList}
+end
+
 struct AVProbeData
     filename::Cstring
     buf::Ptr{Cuchar}
@@ -367,7 +440,7 @@ struct AVStream
     duration::Int64
     nb_frames::Int64
     disposition::Cint
-    discard::Cvoid
+    discard::AVDiscard
     sample_aspect_ratio::AVRational
     metadata::Ptr{AVDictionary}
     avg_frame_rate::AVRational
@@ -378,7 +451,7 @@ struct AVStream
     r_frame_rate::AVRational
     recommended_encoder_configuration::Cstring
     codecpar::Ptr{AVCodecParameters}
-    info::Ptr{Cvoid}
+    info::Ptr{}
     pts_wrap_bits::Cint
     first_dts::Int64
     cur_dts::Int64
@@ -386,9 +459,9 @@ struct AVStream
     last_IP_duration::Cint
     probe_packets::Cint
     codec_info_nb_frames::Cint
-    need_parsing::Cvoid
-    parser::Ptr{Cvoid}
-    last_in_packet_buffer::Ptr{Cvoid}
+    need_parsing::AVStreamParseType
+    parser::Ptr{AVCodecParserContext}
+    last_in_packet_buffer::Ptr{AVPacketList}
     probe_data::AVProbeData
     pts_buffer::NTuple{17, Int64}
     index_entries::Ptr{AVIndexEntry}
@@ -424,7 +497,7 @@ end
 struct AVProgram
     id::Cint
     flags::Cint
-    discard::Cvoid
+    discard::AVDiscard
     stream_index::Ptr{UInt32}
     nb_stream_indexes::UInt32
     metadata::Ptr{AVDictionary}
@@ -446,6 +519,13 @@ struct AVChapter
     metadata::Ptr{AVDictionary}
 end
 
+# begin enum AVDurationEstimationMethod
+const AVDurationEstimationMethod = UInt32
+const AVFMT_DURATION_FROM_PTS = 0 |> UInt32
+const AVFMT_DURATION_FROM_STREAM = 1 |> UInt32
+const AVFMT_DURATION_FROM_BITRATE = 2 |> UInt32
+# end enum AVDurationEstimationMethod
+
 struct AVFormatInternal
 end
 
@@ -453,8 +533,8 @@ const av_format_control_message = Ptr{Cvoid}
 
 struct AVFormatContext
     av_class::Ptr{AVClass}
-    iformat::Ptr{Cvoid}
-    oformat::Ptr{Cvoid}
+    iformat::Ptr{AVInputFormat}
+    oformat::Ptr{AVOutputFormat}
     priv_data::Ptr{Cvoid}
     pb::Ptr{AVIOContext}
     ctx_flags::Cint
@@ -474,9 +554,9 @@ struct AVFormatContext
     keylen::Cint
     nb_programs::UInt32
     programs::Ptr{Ptr{AVProgram}}
-    video_codec_id::Cvoid
-    audio_codec_id::Cvoid
-    subtitle_codec_id::Cvoid
+    video_codec_id::AVCodecID
+    audio_codec_id::AVCodecID
+    subtitle_codec_id::AVCodecID
     max_index_size::UInt32
     max_picture_buffer::UInt32
     nb_chapters::UInt32
@@ -498,7 +578,7 @@ struct AVFormatContext
     max_chunk_size::Cint
     use_wallclock_as_timestamps::Cint
     avio_flags::Cint
-    duration_estimation_method::Cvoid
+    duration_estimation_method::AVDurationEstimationMethod
     skip_initial_bytes::Int64
     correct_ts_overflow::UInt32
     seek2any::Cint
@@ -518,7 +598,7 @@ struct AVFormatContext
     control_message_cb::av_format_control_message
     output_ts_offset::Int64
     dump_separator::Ptr{UInt8}
-    data_codec_id::Cvoid
+    data_codec_id::AVCodecID
     open_cb::Ptr{Cvoid}
     protocol_whitelist::Cstring
     io_open::Ptr{Cvoid}
@@ -534,87 +614,7 @@ end
 struct AVDeviceCapabilitiesQuery
 end
 
-struct AVCodecTag
-end
-
-struct AVOutputFormat
-    name::Cstring
-    long_name::Cstring
-    mime_type::Cstring
-    extensions::Cstring
-    audio_codec::Cvoid
-    video_codec::Cvoid
-    subtitle_codec::Cvoid
-    flags::Cint
-    codec_tag::Ptr{Ptr{Cvoid}}
-    priv_class::Ptr{AVClass}
-    next::Ptr{Cvoid}
-    priv_data_size::Cint
-    write_header::Ptr{Cvoid}
-    write_packet::Ptr{Cvoid}
-    write_trailer::Ptr{Cvoid}
-    interleave_packet::Ptr{Cvoid}
-    query_codec::Ptr{Cvoid}
-    get_output_timestamp::Ptr{Cvoid}
-    control_message::Ptr{Cvoid}
-    write_uncoded_frame::Ptr{Cvoid}
-    get_device_list::Ptr{Cvoid}
-    create_device_capabilities::Ptr{Cvoid}
-    free_device_capabilities::Ptr{Cvoid}
-    data_codec::Cvoid
-    init::Ptr{Cvoid}
-    deinit::Ptr{Cvoid}
-    check_bitstream::Ptr{Cvoid}
-end
-
-struct AVInputFormat
-    name::Cstring
-    long_name::Cstring
-    flags::Cint
-    extensions::Cstring
-    codec_tag::Ptr{Ptr{Cvoid}}
-    priv_class::Ptr{AVClass}
-    mime_type::Cstring
-    next::Ptr{Cvoid}
-    raw_codec_id::Cint
-    priv_data_size::Cint
-    read_probe::Ptr{Cvoid}
-    read_header::Ptr{Cvoid}
-    read_packet::Ptr{Cvoid}
-    read_close::Ptr{Cvoid}
-    read_seek::Ptr{Cvoid}
-    read_timestamp::Ptr{Cvoid}
-    read_play::Ptr{Cvoid}
-    read_pause::Ptr{Cvoid}
-    read_seek2::Ptr{Cvoid}
-    get_device_list::Ptr{Cvoid}
-    create_device_capabilities::Ptr{Cvoid}
-    free_device_capabilities::Ptr{Cvoid}
-end
-
-# begin enum AVStreamParseType
-const AVStreamParseType = UInt32
-const AVSTREAM_PARSE_NONE = 0 |> UInt32
-const AVSTREAM_PARSE_FULL = 1 |> UInt32
-const AVSTREAM_PARSE_HEADERS = 2 |> UInt32
-const AVSTREAM_PARSE_TIMESTAMPS = 3 |> UInt32
-const AVSTREAM_PARSE_FULL_ONCE = 4 |> UInt32
-const AVSTREAM_PARSE_FULL_RAW = 5 |> UInt32
-# end enum AVStreamParseType
-
 const AVOpenCallback = Ptr{Cvoid}
-
-# begin enum AVDurationEstimationMethod
-const AVDurationEstimationMethod = UInt32
-const AVFMT_DURATION_FROM_PTS = 0 |> UInt32
-const AVFMT_DURATION_FROM_STREAM = 1 |> UInt32
-const AVFMT_DURATION_FROM_BITRATE = 2 |> UInt32
-# end enum AVDurationEstimationMethod
-
-struct AVPacketList
-    pkt::AVPacket
-    next::Ptr{Cvoid}
-end
 
 # begin enum AVTimebaseSource
 const AVTimebaseSource = Cint

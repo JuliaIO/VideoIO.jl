@@ -20,8 +20,8 @@ function av_audio_fifo_free(af)
     ccall((:av_audio_fifo_free, libavutil), Cvoid, (Ptr{AVAudioFifo},), af)
 end
 
-function av_audio_fifo_alloc(sample_fmt::Cvoid, channels::Integer, nb_samples::Integer)
-    ccall((:av_audio_fifo_alloc, libavutil), Ptr{AVAudioFifo}, (Cvoid, Cint, Cint), sample_fmt, channels, nb_samples)
+function av_audio_fifo_alloc(sample_fmt::AVSampleFormat, channels::Integer, nb_samples::Integer)
+    ccall((:av_audio_fifo_alloc, libavutil), Ptr{AVAudioFifo}, (AVSampleFormat, Cint, Cint), sample_fmt, channels, nb_samples)
 end
 
 function av_audio_fifo_realloc(af, nb_samples::Integer)

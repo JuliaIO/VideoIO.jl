@@ -23,31 +23,31 @@ export
 
 
 function av_hwdevice_find_type_by_name(name)
-    ccall((:av_hwdevice_find_type_by_name, libavutil), Cvoid, (Cstring,), name)
+    ccall((:av_hwdevice_find_type_by_name, libavutil), AVHWDeviceType, (Cstring,), name)
 end
 
-function av_hwdevice_get_type_name(_type::Cvoid)
-    ccall((:av_hwdevice_get_type_name, libavutil), Cstring, (Cvoid,), _type)
+function av_hwdevice_get_type_name(_type::AVHWDeviceType)
+    ccall((:av_hwdevice_get_type_name, libavutil), Cstring, (AVHWDeviceType,), _type)
 end
 
-function av_hwdevice_iterate_types(prev::Cvoid)
-    ccall((:av_hwdevice_iterate_types, libavutil), Cvoid, (Cvoid,), prev)
+function av_hwdevice_iterate_types(prev::AVHWDeviceType)
+    ccall((:av_hwdevice_iterate_types, libavutil), AVHWDeviceType, (AVHWDeviceType,), prev)
 end
 
-function av_hwdevice_ctx_alloc(_type::Cvoid)
-    ccall((:av_hwdevice_ctx_alloc, libavutil), Ptr{AVBufferRef}, (Cvoid,), _type)
+function av_hwdevice_ctx_alloc(_type::AVHWDeviceType)
+    ccall((:av_hwdevice_ctx_alloc, libavutil), Ptr{AVBufferRef}, (AVHWDeviceType,), _type)
 end
 
 function av_hwdevice_ctx_init(ref)
     ccall((:av_hwdevice_ctx_init, libavutil), Cint, (Ptr{AVBufferRef},), ref)
 end
 
-function av_hwdevice_ctx_create(device_ctx, _type::Cvoid, device, opts, flags::Integer)
-    ccall((:av_hwdevice_ctx_create, libavutil), Cint, (Ptr{Ptr{AVBufferRef}}, Cvoid, Cstring, Ptr{AVDictionary}, Cint), device_ctx, _type, device, opts, flags)
+function av_hwdevice_ctx_create(device_ctx, _type::AVHWDeviceType, device, opts, flags::Integer)
+    ccall((:av_hwdevice_ctx_create, libavutil), Cint, (Ptr{Ptr{AVBufferRef}}, AVHWDeviceType, Cstring, Ptr{AVDictionary}, Cint), device_ctx, _type, device, opts, flags)
 end
 
-function av_hwdevice_ctx_create_derived(dst_ctx, _type::Cvoid, src_ctx, flags::Integer)
-    ccall((:av_hwdevice_ctx_create_derived, libavutil), Cint, (Ptr{Ptr{AVBufferRef}}, Cvoid, Ptr{AVBufferRef}, Cint), dst_ctx, _type, src_ctx, flags)
+function av_hwdevice_ctx_create_derived(dst_ctx, _type::AVHWDeviceType, src_ctx, flags::Integer)
+    ccall((:av_hwdevice_ctx_create_derived, libavutil), Cint, (Ptr{Ptr{AVBufferRef}}, AVHWDeviceType, Ptr{AVBufferRef}, Cint), dst_ctx, _type, src_ctx, flags)
 end
 
 function av_hwframe_ctx_alloc(device_ctx)
@@ -66,8 +66,8 @@ function av_hwframe_transfer_data(dst, src, flags::Integer)
     ccall((:av_hwframe_transfer_data, libavutil), Cint, (Ptr{AVFrame}, Ptr{AVFrame}, Cint), dst, src, flags)
 end
 
-function av_hwframe_transfer_get_formats(hwframe_ctx, dir::Cvoid, formats, flags::Integer)
-    ccall((:av_hwframe_transfer_get_formats, libavutil), Cint, (Ptr{AVBufferRef}, Cvoid, Ptr{Ptr{Cvoid}}, Cint), hwframe_ctx, dir, formats, flags)
+function av_hwframe_transfer_get_formats(hwframe_ctx, dir::AVHWFrameTransferDirection, formats, flags::Integer)
+    ccall((:av_hwframe_transfer_get_formats, libavutil), Cint, (Ptr{AVBufferRef}, AVHWFrameTransferDirection, Ptr{Ptr{AVPixelFormat}}, Cint), hwframe_ctx, dir, formats, flags)
 end
 
 function av_hwdevice_hwconfig_alloc(device_ctx)
@@ -86,6 +86,6 @@ function av_hwframe_map(dst, src, flags::Integer)
     ccall((:av_hwframe_map, libavutil), Cint, (Ptr{AVFrame}, Ptr{AVFrame}, Cint), dst, src, flags)
 end
 
-function av_hwframe_ctx_create_derived(derived_frame_ctx, format::Cvoid, derived_device_ctx, source_frame_ctx, flags::Integer)
-    ccall((:av_hwframe_ctx_create_derived, libavutil), Cint, (Ptr{Ptr{AVBufferRef}}, Cvoid, Ptr{AVBufferRef}, Ptr{AVBufferRef}, Cint), derived_frame_ctx, format, derived_device_ctx, source_frame_ctx, flags)
+function av_hwframe_ctx_create_derived(derived_frame_ctx, format::AVPixelFormat, derived_device_ctx, source_frame_ctx, flags::Integer)
+    ccall((:av_hwframe_ctx_create_derived, libavutil), Cint, (Ptr{Ptr{AVBufferRef}}, AVPixelFormat, Ptr{AVBufferRef}, Ptr{AVBufferRef}, Cint), derived_frame_ctx, format, derived_device_ctx, source_frame_ctx, flags)
 end

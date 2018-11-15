@@ -64,7 +64,7 @@ function avfilter_pad_get_name(pads, pad_idx::Integer)
 end
 
 function avfilter_pad_get_type(pads, pad_idx::Integer)
-    ccall((:avfilter_pad_get_type, libavfilter), Cvoid, (Ptr{AVFilterPad}, Cint), pads, pad_idx)
+    ccall((:avfilter_pad_get_type, libavfilter), AVMediaType, (Ptr{AVFilterPad}, Cint), pads, pad_idx)
 end
 
 function avfilter_link(src, srcpad::Integer, dst, dstpad::Integer)

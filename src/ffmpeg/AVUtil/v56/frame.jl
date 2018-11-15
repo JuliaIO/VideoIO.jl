@@ -129,23 +129,23 @@ function av_frame_set_qp_table(f, buf, stride::Integer, _type::Integer)
 end
 
 function av_frame_get_colorspace(frame)
-    ccall((:av_frame_get_colorspace, libavutil), Cvoid, (Ptr{AVFrame},), frame)
+    ccall((:av_frame_get_colorspace, libavutil), AVColorSpace, (Ptr{AVFrame},), frame)
 end
 
-function av_frame_set_colorspace(frame, val::Cvoid)
-    ccall((:av_frame_set_colorspace, libavutil), Cvoid, (Ptr{AVFrame}, Cvoid), frame, val)
+function av_frame_set_colorspace(frame, val::AVColorSpace)
+    ccall((:av_frame_set_colorspace, libavutil), Cvoid, (Ptr{AVFrame}, AVColorSpace), frame, val)
 end
 
 function av_frame_get_color_range(frame)
-    ccall((:av_frame_get_color_range, libavutil), Cvoid, (Ptr{AVFrame},), frame)
+    ccall((:av_frame_get_color_range, libavutil), AVColorRange, (Ptr{AVFrame},), frame)
 end
 
-function av_frame_set_color_range(frame, val::Cvoid)
-    ccall((:av_frame_set_color_range, libavutil), Cvoid, (Ptr{AVFrame}, Cvoid), frame, val)
+function av_frame_set_color_range(frame, val::AVColorRange)
+    ccall((:av_frame_set_color_range, libavutil), Cvoid, (Ptr{AVFrame}, AVColorRange), frame, val)
 end
 
-function av_get_colorspace_name(val::Cvoid)
-    ccall((:av_get_colorspace_name, libavutil), Cstring, (Cvoid,), val)
+function av_get_colorspace_name(val::AVColorSpace)
+    ccall((:av_get_colorspace_name, libavutil), Cstring, (AVColorSpace,), val)
 end
 
 function av_frame_alloc()
@@ -196,26 +196,26 @@ function av_frame_get_plane_buffer(frame, plane::Integer)
     ccall((:av_frame_get_plane_buffer, libavutil), Ptr{AVBufferRef}, (Ptr{AVFrame}, Cint), frame, plane)
 end
 
-function av_frame_new_side_data(frame, _type::Cvoid, size::Integer)
-    ccall((:av_frame_new_side_data, libavutil), Ptr{AVFrameSideData}, (Ptr{AVFrame}, Cvoid, Cint), frame, _type, size)
+function av_frame_new_side_data(frame, _type::AVFrameSideDataType, size::Integer)
+    ccall((:av_frame_new_side_data, libavutil), Ptr{AVFrameSideData}, (Ptr{AVFrame}, AVFrameSideDataType, Cint), frame, _type, size)
 end
 
-function av_frame_new_side_data_from_buf(frame, _type::Cvoid, buf)
-    ccall((:av_frame_new_side_data_from_buf, libavutil), Ptr{AVFrameSideData}, (Ptr{AVFrame}, Cvoid, Ptr{AVBufferRef}), frame, _type, buf)
+function av_frame_new_side_data_from_buf(frame, _type::AVFrameSideDataType, buf)
+    ccall((:av_frame_new_side_data_from_buf, libavutil), Ptr{AVFrameSideData}, (Ptr{AVFrame}, AVFrameSideDataType, Ptr{AVBufferRef}), frame, _type, buf)
 end
 
-function av_frame_get_side_data(frame, _type::Cvoid)
-    ccall((:av_frame_get_side_data, libavutil), Ptr{AVFrameSideData}, (Ptr{AVFrame}, Cvoid), frame, _type)
+function av_frame_get_side_data(frame, _type::AVFrameSideDataType)
+    ccall((:av_frame_get_side_data, libavutil), Ptr{AVFrameSideData}, (Ptr{AVFrame}, AVFrameSideDataType), frame, _type)
 end
 
-function av_frame_remove_side_data(frame, _type::Cvoid)
-    ccall((:av_frame_remove_side_data, libavutil), Cvoid, (Ptr{AVFrame}, Cvoid), frame, _type)
+function av_frame_remove_side_data(frame, _type::AVFrameSideDataType)
+    ccall((:av_frame_remove_side_data, libavutil), Cvoid, (Ptr{AVFrame}, AVFrameSideDataType), frame, _type)
 end
 
 function av_frame_apply_cropping(frame, flags::Integer)
     ccall((:av_frame_apply_cropping, libavutil), Cint, (Ptr{AVFrame}, Cint), frame, flags)
 end
 
-function av_frame_side_data_name(_type::Cvoid)
-    ccall((:av_frame_side_data_name, libavutil), Cstring, (Cvoid,), _type)
+function av_frame_side_data_name(_type::AVFrameSideDataType)
+    ccall((:av_frame_side_data_name, libavutil), Cstring, (AVFrameSideDataType,), _type)
 end

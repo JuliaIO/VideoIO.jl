@@ -9,13 +9,13 @@ export
 
 
 function av_camellia_alloc()
-    ccall((:av_camellia_alloc, libavutil), Ptr{Cvoid}, ())
+    ccall((:av_camellia_alloc, libavutil), Ptr{AVCAMELLIA}, ())
 end
 
 function av_camellia_init(ctx, key, key_bits::Integer)
-    ccall((:av_camellia_init, libavutil), Cint, (Ptr{Cvoid}, Ptr{UInt8}, Cint), ctx, key, key_bits)
+    ccall((:av_camellia_init, libavutil), Cint, (Ptr{AVCAMELLIA}, Ptr{UInt8}, Cint), ctx, key, key_bits)
 end
 
 function av_camellia_crypt(ctx, dst, src, count::Integer, iv, decrypt::Integer)
-    ccall((:av_camellia_crypt, libavutil), Cvoid, (Ptr{Cvoid}, Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}, Cint), ctx, dst, src, count, iv, decrypt)
+    ccall((:av_camellia_crypt, libavutil), Cvoid, (Ptr{AVCAMELLIA}, Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}, Cint), ctx, dst, src, count, iv, decrypt)
 end

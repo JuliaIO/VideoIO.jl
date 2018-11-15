@@ -32,12 +32,12 @@ function avutil_license()
     ccall((:avutil_license, libavutil), Cstring, ())
 end
 
-function av_get_media_type_string(media_type::Cvoid)
-    ccall((:av_get_media_type_string, libavutil), Cstring, (Cvoid,), media_type)
+function av_get_media_type_string(media_type::AVMediaType)
+    ccall((:av_get_media_type_string, libavutil), Cstring, (AVMediaType,), media_type)
 end
 
-function av_get_picture_type_char(pict_type::Cvoid)
-    ccall((:av_get_picture_type_char, libavutil), UInt8, (Cvoid,), pict_type)
+function av_get_picture_type_char(pict_type::AVPictureType)
+    ccall((:av_get_picture_type_char, libavutil), UInt8, (AVPictureType,), pict_type)
 end
 
 function av_x_if_null(p, x)

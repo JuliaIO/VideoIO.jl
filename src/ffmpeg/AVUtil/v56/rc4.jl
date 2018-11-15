@@ -13,9 +13,9 @@ function av_rc4_alloc()
 end
 
 function av_rc4_init(d, key, key_bits::Integer, decrypt::Integer)
-    ccall((:av_rc4_init, libavutil), Cint, (Ptr{Cvoid}, Ptr{UInt8}, Cint, Cint), d, key, key_bits, decrypt)
+    ccall((:av_rc4_init, libavutil), Cint, (Ptr{AVRC4}, Ptr{UInt8}, Cint, Cint), d, key, key_bits, decrypt)
 end
 
 function av_rc4_crypt(d, dst, src, count::Integer, iv, decrypt::Integer)
-    ccall((:av_rc4_crypt, libavutil), Cvoid, (Ptr{Cvoid}, Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}, Cint), d, dst, src, count, iv, decrypt)
+    ccall((:av_rc4_crypt, libavutil), Cvoid, (Ptr{AVRC4}, Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}, Cint), d, dst, src, count, iv, decrypt)
 end

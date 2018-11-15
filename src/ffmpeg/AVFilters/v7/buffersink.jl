@@ -39,7 +39,7 @@ function av_buffersink_set_frame_size(ctx, frame_size::Integer)
 end
 
 function av_buffersink_get_type(ctx)
-    ccall((:av_buffersink_get_type, libavfilter), Cvoid, (Ptr{AVFilterContext},), ctx)
+    ccall((:av_buffersink_get_type, libavfilter), AVMediaType, (Ptr{AVFilterContext},), ctx)
 end
 
 function av_buffersink_get_time_base(ctx)

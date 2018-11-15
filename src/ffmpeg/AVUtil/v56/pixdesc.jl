@@ -40,8 +40,8 @@ function av_get_padded_bits_per_pixel(pixdesc)
     ccall((:av_get_padded_bits_per_pixel, libavutil), Cint, (Ptr{AVPixFmtDescriptor},), pixdesc)
 end
 
-function av_pix_fmt_desc_get(pix_fmt::Cvoid)
-    ccall((:av_pix_fmt_desc_get, libavutil), Ptr{AVPixFmtDescriptor}, (Cvoid,), pix_fmt)
+function av_pix_fmt_desc_get(pix_fmt::AVPixelFormat)
+    ccall((:av_pix_fmt_desc_get, libavutil), Ptr{AVPixFmtDescriptor}, (AVPixelFormat,), pix_fmt)
 end
 
 function av_pix_fmt_desc_next(prev)
@@ -49,51 +49,51 @@ function av_pix_fmt_desc_next(prev)
 end
 
 function av_pix_fmt_desc_get_id(desc)
-    ccall((:av_pix_fmt_desc_get_id, libavutil), Cvoid, (Ptr{AVPixFmtDescriptor},), desc)
+    ccall((:av_pix_fmt_desc_get_id, libavutil), AVPixelFormat, (Ptr{AVPixFmtDescriptor},), desc)
 end
 
-function av_pix_fmt_get_chroma_sub_sample(pix_fmt::Cvoid, h_shift, v_shift)
-    ccall((:av_pix_fmt_get_chroma_sub_sample, libavutil), Cint, (Cvoid, Ptr{Cint}, Ptr{Cint}), pix_fmt, h_shift, v_shift)
+function av_pix_fmt_get_chroma_sub_sample(pix_fmt::AVPixelFormat, h_shift, v_shift)
+    ccall((:av_pix_fmt_get_chroma_sub_sample, libavutil), Cint, (AVPixelFormat, Ptr{Cint}, Ptr{Cint}), pix_fmt, h_shift, v_shift)
 end
 
-function av_pix_fmt_count_planes(pix_fmt::Cvoid)
-    ccall((:av_pix_fmt_count_planes, libavutil), Cint, (Cvoid,), pix_fmt)
+function av_pix_fmt_count_planes(pix_fmt::AVPixelFormat)
+    ccall((:av_pix_fmt_count_planes, libavutil), Cint, (AVPixelFormat,), pix_fmt)
 end
 
-function av_color_range_name(range::Cvoid)
-    ccall((:av_color_range_name, libavutil), Cstring, (Cvoid,), range)
+function av_color_range_name(range::AVColorRange)
+    ccall((:av_color_range_name, libavutil), Cstring, (AVColorRange,), range)
 end
 
 function av_color_range_from_name(name)
     ccall((:av_color_range_from_name, libavutil), Cint, (Cstring,), name)
 end
 
-function av_color_primaries_name(primaries::Cvoid)
-    ccall((:av_color_primaries_name, libavutil), Cstring, (Cvoid,), primaries)
+function av_color_primaries_name(primaries::AVColorPrimaries)
+    ccall((:av_color_primaries_name, libavutil), Cstring, (AVColorPrimaries,), primaries)
 end
 
 function av_color_primaries_from_name(name)
     ccall((:av_color_primaries_from_name, libavutil), Cint, (Cstring,), name)
 end
 
-function av_color_transfer_name(transfer::Cvoid)
-    ccall((:av_color_transfer_name, libavutil), Cstring, (Cvoid,), transfer)
+function av_color_transfer_name(transfer::AVColorTransferCharacteristic)
+    ccall((:av_color_transfer_name, libavutil), Cstring, (AVColorTransferCharacteristic,), transfer)
 end
 
 function av_color_transfer_from_name(name)
     ccall((:av_color_transfer_from_name, libavutil), Cint, (Cstring,), name)
 end
 
-function av_color_space_name(space::Cvoid)
-    ccall((:av_color_space_name, libavutil), Cstring, (Cvoid,), space)
+function av_color_space_name(space::AVColorSpace)
+    ccall((:av_color_space_name, libavutil), Cstring, (AVColorSpace,), space)
 end
 
 function av_color_space_from_name(name)
     ccall((:av_color_space_from_name, libavutil), Cint, (Cstring,), name)
 end
 
-function av_chroma_location_name(location::Cvoid)
-    ccall((:av_chroma_location_name, libavutil), Cstring, (Cvoid,), location)
+function av_chroma_location_name(location::AVChromaLocation)
+    ccall((:av_chroma_location_name, libavutil), Cstring, (AVChromaLocation,), location)
 end
 
 function av_chroma_location_from_name(name)
@@ -101,15 +101,15 @@ function av_chroma_location_from_name(name)
 end
 
 function av_get_pix_fmt(name)
-    ccall((:av_get_pix_fmt, libavutil), Cvoid, (Cstring,), name)
+    ccall((:av_get_pix_fmt, libavutil), AVPixelFormat, (Cstring,), name)
 end
 
-function av_get_pix_fmt_name(pix_fmt::Cvoid)
-    ccall((:av_get_pix_fmt_name, libavutil), Cstring, (Cvoid,), pix_fmt)
+function av_get_pix_fmt_name(pix_fmt::AVPixelFormat)
+    ccall((:av_get_pix_fmt_name, libavutil), Cstring, (AVPixelFormat,), pix_fmt)
 end
 
-function av_get_pix_fmt_string(buf, buf_size::Integer, pix_fmt::Cvoid)
-    ccall((:av_get_pix_fmt_string, libavutil), Cstring, (Cstring, Cint, Cvoid), buf, buf_size, pix_fmt)
+function av_get_pix_fmt_string(buf, buf_size::Integer, pix_fmt::AVPixelFormat)
+    ccall((:av_get_pix_fmt_string, libavutil), Cstring, (Cstring, Cint, AVPixelFormat), buf, buf_size, pix_fmt)
 end
 
 function av_read_image_line2(dst, data::NTuple{4, Ptr{UInt8}}, linesize::NTuple{4, Cint}, desc, x::Integer, y::Integer, c::Integer, w::Integer, read_pal_component::Integer, dst_element_size::Integer)
@@ -128,14 +128,14 @@ function av_write_image_line(src, data::NTuple{4, Ptr{UInt8}}, linesize::NTuple{
     ccall((:av_write_image_line, libavutil), Cvoid, (Ptr{UInt16}, NTuple{4, Ptr{UInt8}}, NTuple{4, Cint}, Ptr{AVPixFmtDescriptor}, Cint, Cint, Cint, Cint), src, data, linesize, desc, x, y, c, w)
 end
 
-function av_pix_fmt_swap_endianness(pix_fmt::Cvoid)
-    ccall((:av_pix_fmt_swap_endianness, libavutil), Cvoid, (Cvoid,), pix_fmt)
+function av_pix_fmt_swap_endianness(pix_fmt::AVPixelFormat)
+    ccall((:av_pix_fmt_swap_endianness, libavutil), AVPixelFormat, (AVPixelFormat,), pix_fmt)
 end
 
-function av_get_pix_fmt_loss(dst_pix_fmt::Cvoid, src_pix_fmt::Cvoid, has_alpha::Integer)
-    ccall((:av_get_pix_fmt_loss, libavutil), Cint, (Cvoid, Cvoid, Cint), dst_pix_fmt, src_pix_fmt, has_alpha)
+function av_get_pix_fmt_loss(dst_pix_fmt::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer)
+    ccall((:av_get_pix_fmt_loss, libavutil), Cint, (AVPixelFormat, AVPixelFormat, Cint), dst_pix_fmt, src_pix_fmt, has_alpha)
 end
 
-function av_find_best_pix_fmt_of_2(dst_pix_fmt1::Cvoid, dst_pix_fmt2::Cvoid, src_pix_fmt::Cvoid, has_alpha::Integer, loss_ptr)
-    ccall((:av_find_best_pix_fmt_of_2, libavutil), Cvoid, (Cvoid, Cvoid, Cvoid, Cint, Ptr{Cint}), dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
+function av_find_best_pix_fmt_of_2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
+    ccall((:av_find_best_pix_fmt_of_2, libavutil), AVPixelFormat, (AVPixelFormat, AVPixelFormat, AVPixelFormat, Cint, Ptr{Cint}), dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
 end

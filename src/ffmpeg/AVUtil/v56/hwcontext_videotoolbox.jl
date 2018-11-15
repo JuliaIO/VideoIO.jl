@@ -8,9 +8,9 @@ export
 
 
 function av_map_videotoolbox_format_to_pixfmt(cv_fmt::Integer)
-    ccall((:av_map_videotoolbox_format_to_pixfmt, libavutil), Cvoid, (UInt32,), cv_fmt)
+    ccall((:av_map_videotoolbox_format_to_pixfmt, libavutil), AVPixelFormat, (UInt32,), cv_fmt)
 end
 
-function av_map_videotoolbox_format_from_pixfmt(pix_fmt::Cvoid)
-    ccall((:av_map_videotoolbox_format_from_pixfmt, libavutil), UInt32, (Cvoid,), pix_fmt)
+function av_map_videotoolbox_format_from_pixfmt(pix_fmt::AVPixelFormat)
+    ccall((:av_map_videotoolbox_format_from_pixfmt, libavutil), UInt32, (AVPixelFormat,), pix_fmt)
 end

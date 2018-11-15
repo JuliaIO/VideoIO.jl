@@ -154,8 +154,8 @@ function avio_put_str16be(s, str)
     ccall((:avio_put_str16be, libavformat), Cint, (Ptr{AVIOContext}, Cstring), s, str)
 end
 
-function avio_write_marker(s, time::Int64, _type::Cvoid)
-    ccall((:avio_write_marker, libavformat), Cvoid, (Ptr{AVIOContext}, Int64, Cvoid), s, time, _type)
+function avio_write_marker(s, time::Int64, _type::AVIODataMarkerType)
+    ccall((:avio_write_marker, libavformat), Cvoid, (Ptr{AVIOContext}, Int64, AVIODataMarkerType), s, time, _type)
 end
 
 function avio_seek(s, offset::Int64, whence::Integer)
@@ -279,7 +279,7 @@ function avio_seek_time(h, stream_index::Integer, timestamp::Int64, flags::Integ
 end
 
 function avio_read_to_bprint(h, pb, max_size::Csize_t)
-    ccall((:avio_read_to_bprint, libavformat), Cint, (Ptr{AVIOContext}, Ptr{Cvoid}, Csize_t), h, pb, max_size)
+    ccall((:avio_read_to_bprint, libavformat), Cint, (Ptr{AVIOContext}, Ptr{AVBPrint}, Csize_t), h, pb, max_size)
 end
 
 function avio_accept(s, c)

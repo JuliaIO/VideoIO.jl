@@ -54,44 +54,44 @@ function sws_getCoefficients(colorspace::Integer)
     ccall((:sws_getCoefficients, libswscale), Ptr{Cint}, (Cint,), colorspace)
 end
 
-function sws_isSupportedInput(pix_fmt::Cvoid)
-    ccall((:sws_isSupportedInput, libswscale), Cint, (Cvoid,), pix_fmt)
+function sws_isSupportedInput(pix_fmt::AVPixelFormat)
+    ccall((:sws_isSupportedInput, libswscale), Cint, (AVPixelFormat,), pix_fmt)
 end
 
-function sws_isSupportedOutput(pix_fmt::Cvoid)
-    ccall((:sws_isSupportedOutput, libswscale), Cint, (Cvoid,), pix_fmt)
+function sws_isSupportedOutput(pix_fmt::AVPixelFormat)
+    ccall((:sws_isSupportedOutput, libswscale), Cint, (AVPixelFormat,), pix_fmt)
 end
 
-function sws_isSupportedEndiannessConversion(pix_fmt::Cvoid)
-    ccall((:sws_isSupportedEndiannessConversion, libswscale), Cint, (Cvoid,), pix_fmt)
+function sws_isSupportedEndiannessConversion(pix_fmt::AVPixelFormat)
+    ccall((:sws_isSupportedEndiannessConversion, libswscale), Cint, (AVPixelFormat,), pix_fmt)
 end
 
 function sws_alloc_context()
-    ccall((:sws_alloc_context, libswscale), Ptr{Cvoid}, ())
+    ccall((:sws_alloc_context, libswscale), Ptr{SwsContext}, ())
 end
 
 function sws_init_context(sws_context, srcFilter, dstFilter)
-    ccall((:sws_init_context, libswscale), Cint, (Ptr{Cvoid}, Ptr{SwsFilter}, Ptr{SwsFilter}), sws_context, srcFilter, dstFilter)
+    ccall((:sws_init_context, libswscale), Cint, (Ptr{SwsContext}, Ptr{SwsFilter}, Ptr{SwsFilter}), sws_context, srcFilter, dstFilter)
 end
 
 function sws_freeContext(swsContext)
-    ccall((:sws_freeContext, libswscale), Cvoid, (Ptr{Cvoid},), swsContext)
+    ccall((:sws_freeContext, libswscale), Cvoid, (Ptr{SwsContext},), swsContext)
 end
 
-function sws_getContext(srcW::Integer, srcH::Integer, srcFormat::Cvoid, dstW::Integer, dstH::Integer, dstFormat::Cvoid, flags::Integer, srcFilter, dstFilter, param)
-    ccall((:sws_getContext, libswscale), Ptr{Cvoid}, (Cint, Cint, Cvoid, Cint, Cint, Cvoid, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+function sws_getContext(srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+    ccall((:sws_getContext, libswscale), Ptr{SwsContext}, (Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
 end
 
 function sws_scale(c, srcSlice, srcStride, srcSliceY::Integer, srcSliceH::Integer, dst, dstStride)
-    ccall((:sws_scale, libswscale), Cint, (Ptr{Cvoid}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Cint, Cint, Ptr{Ptr{UInt8}}, Ptr{Cint}), c, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride)
+    ccall((:sws_scale, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Cint, Cint, Ptr{Ptr{UInt8}}, Ptr{Cint}), c, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride)
 end
 
 function sws_setColorspaceDetails(c, inv_table::NTuple{4, Cint}, srcRange::Integer, table::NTuple{4, Cint}, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
-    ccall((:sws_setColorspaceDetails, libswscale), Cint, (Ptr{Cvoid}, NTuple{4, Cint}, Cint, NTuple{4, Cint}, Cint, Cint, Cint, Cint), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+    ccall((:sws_setColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, NTuple{4, Cint}, Cint, NTuple{4, Cint}, Cint, Cint, Cint, Cint), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
 end
 
 function sws_getColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
-    ccall((:sws_getColorspaceDetails, libswscale), Cint, (Ptr{Cvoid}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+    ccall((:sws_getColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
 end
 
 function sws_allocVec(length::Integer)
@@ -154,8 +154,8 @@ function sws_freeFilter(filter)
     ccall((:sws_freeFilter, libswscale), Cvoid, (Ptr{SwsFilter},), filter)
 end
 
-function sws_getCachedContext(context, srcW::Integer, srcH::Integer, srcFormat::Cvoid, dstW::Integer, dstH::Integer, dstFormat::Cvoid, flags::Integer, srcFilter, dstFilter, param)
-    ccall((:sws_getCachedContext, libswscale), Ptr{Cvoid}, (Ptr{Cvoid}, Cint, Cint, Cvoid, Cint, Cint, Cvoid, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), context, srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+function sws_getCachedContext(context, srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+    ccall((:sws_getCachedContext, libswscale), Ptr{SwsContext}, (Ptr{SwsContext}, Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), context, srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
 end
 
 function sws_convertPalette8ToPacked32(src, dst, num_pixels::Integer, palette)

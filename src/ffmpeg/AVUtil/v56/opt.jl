@@ -84,11 +84,11 @@ function av_opt_flag_is_set(obj, field_name, flag_name)
 end
 
 function av_opt_set_dict(obj, options)
-    ccall((:av_opt_set_dict, libavutil), Cint, (Ptr{Cvoid}, Ptr{Ptr{Cvoid}}), obj, options)
+    ccall((:av_opt_set_dict, libavutil), Cint, (Ptr{Cvoid}, Ptr{Ptr{AVDictionary}}), obj, options)
 end
 
 function av_opt_set_dict2(obj, options, search_flags::Integer)
-    ccall((:av_opt_set_dict2, libavutil), Cint, (Ptr{Cvoid}, Ptr{Ptr{Cvoid}}, Cint), obj, options, search_flags)
+    ccall((:av_opt_set_dict2, libavutil), Cint, (Ptr{Cvoid}, Ptr{Ptr{AVDictionary}}, Cint), obj, options, search_flags)
 end
 
 function av_opt_get_key_value(ropts, key_val_sep, pairs_sep, flags::Integer, rkey, rval)
@@ -163,12 +163,12 @@ function av_opt_set_image_size(obj, name, w::Integer, h::Integer, search_flags::
     ccall((:av_opt_set_image_size, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Cint, Cint), obj, name, w, h, search_flags)
 end
 
-function av_opt_set_pixel_fmt(obj, name, fmt::Cvoid, search_flags::Integer)
-    ccall((:av_opt_set_pixel_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cvoid, Cint), obj, name, fmt, search_flags)
+function av_opt_set_pixel_fmt(obj, name, fmt::AVPixelFormat, search_flags::Integer)
+    ccall((:av_opt_set_pixel_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, AVPixelFormat, Cint), obj, name, fmt, search_flags)
 end
 
-function av_opt_set_sample_fmt(obj, name, fmt::Cvoid, search_flags::Integer)
-    ccall((:av_opt_set_sample_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cvoid, Cint), obj, name, fmt, search_flags)
+function av_opt_set_sample_fmt(obj, name, fmt::AVSampleFormat, search_flags::Integer)
+    ccall((:av_opt_set_sample_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, AVSampleFormat, Cint), obj, name, fmt, search_flags)
 end
 
 function av_opt_set_video_rate(obj, name, val::AVRational, search_flags::Integer)
@@ -204,11 +204,11 @@ function av_opt_get_image_size(obj, name, search_flags::Integer, w_out, h_out)
 end
 
 function av_opt_get_pixel_fmt(obj, name, search_flags::Integer, out_fmt)
-    ccall((:av_opt_get_pixel_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Ptr{Cvoid}), obj, name, search_flags, out_fmt)
+    ccall((:av_opt_get_pixel_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Ptr{AVPixelFormat}), obj, name, search_flags, out_fmt)
 end
 
 function av_opt_get_sample_fmt(obj, name, search_flags::Integer, out_fmt)
-    ccall((:av_opt_get_sample_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Ptr{Cvoid}), obj, name, search_flags, out_fmt)
+    ccall((:av_opt_get_sample_fmt, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Ptr{AVSampleFormat}), obj, name, search_flags, out_fmt)
 end
 
 function av_opt_get_video_rate(obj, name, search_flags::Integer, out_val)

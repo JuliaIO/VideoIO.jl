@@ -70,6 +70,78 @@ export
     AV_AFD_SP_4_3,
     AVFrameSideData,
     AVRational,
+    AVColorRange,
+    AVCOL_RANGE_UNSPECIFIED,
+    AVCOL_RANGE_MPEG,
+    AVCOL_RANGE_JPEG,
+    AVCOL_RANGE_NB,
+    AVColorPrimaries,
+    AVCOL_PRI_RESERVED0,
+    AVCOL_PRI_BT709,
+    AVCOL_PRI_UNSPECIFIED,
+    AVCOL_PRI_RESERVED,
+    AVCOL_PRI_BT470M,
+    AVCOL_PRI_BT470BG,
+    AVCOL_PRI_SMPTE170M,
+    AVCOL_PRI_SMPTE240M,
+    AVCOL_PRI_FILM,
+    AVCOL_PRI_BT2020,
+    AVCOL_PRI_SMPTE428,
+    AVCOL_PRI_SMPTEST428_1,
+    AVCOL_PRI_SMPTE431,
+    AVCOL_PRI_SMPTE432,
+    AVCOL_PRI_JEDEC_P22,
+    AVCOL_PRI_NB,
+    AVColorTransferCharacteristic,
+    AVCOL_TRC_RESERVED0,
+    AVCOL_TRC_BT709,
+    AVCOL_TRC_UNSPECIFIED,
+    AVCOL_TRC_RESERVED,
+    AVCOL_TRC_GAMMA22,
+    AVCOL_TRC_GAMMA28,
+    AVCOL_TRC_SMPTE170M,
+    AVCOL_TRC_SMPTE240M,
+    AVCOL_TRC_LINEAR,
+    AVCOL_TRC_LOG,
+    AVCOL_TRC_LOG_SQRT,
+    AVCOL_TRC_IEC61966_2_4,
+    AVCOL_TRC_BT1361_ECG,
+    AVCOL_TRC_IEC61966_2_1,
+    AVCOL_TRC_BT2020_10,
+    AVCOL_TRC_BT2020_12,
+    AVCOL_TRC_SMPTE2084,
+    AVCOL_TRC_SMPTEST2084,
+    AVCOL_TRC_SMPTE428,
+    AVCOL_TRC_SMPTEST428_1,
+    AVCOL_TRC_ARIB_STD_B67,
+    AVCOL_TRC_NB,
+    AVColorSpace,
+    AVCOL_SPC_RGB,
+    AVCOL_SPC_BT709,
+    AVCOL_SPC_UNSPECIFIED,
+    AVCOL_SPC_RESERVED,
+    AVCOL_SPC_FCC,
+    AVCOL_SPC_BT470BG,
+    AVCOL_SPC_SMPTE170M,
+    AVCOL_SPC_SMPTE240M,
+    AVCOL_SPC_YCGCO,
+    AVCOL_SPC_YCOCG,
+    AVCOL_SPC_BT2020_NCL,
+    AVCOL_SPC_BT2020_CL,
+    AVCOL_SPC_SMPTE2085,
+    AVCOL_SPC_CHROMA_DERIVED_NCL,
+    AVCOL_SPC_CHROMA_DERIVED_CL,
+    AVCOL_SPC_ICTCP,
+    AVCOL_SPC_NB,
+    AVChromaLocation,
+    AVCHROMA_LOC_UNSPECIFIED,
+    AVCHROMA_LOC_LEFT,
+    AVCHROMA_LOC_CENTER,
+    AVCHROMA_LOC_TOPLEFT,
+    AVCHROMA_LOC_TOP,
+    AVCHROMA_LOC_BOTTOMLEFT,
+    AVCHROMA_LOC_BOTTOM,
+    AVCHROMA_LOC_NB,
     AVFrame,
     ANONYMOUS_1,
     AV_FRAME_CROP_UNALIGNED,
@@ -107,6 +179,27 @@ export
     AVClassCategory,
     AVOptionRange,
     AVOptionRanges,
+    AVOptionType,
+    AV_OPT_TYPE_FLAGS,
+    AV_OPT_TYPE_INT,
+    AV_OPT_TYPE_INT64,
+    AV_OPT_TYPE_DOUBLE,
+    AV_OPT_TYPE_FLOAT,
+    AV_OPT_TYPE_STRING,
+    AV_OPT_TYPE_RATIONAL,
+    AV_OPT_TYPE_BINARY,
+    AV_OPT_TYPE_DICT,
+    AV_OPT_TYPE_UINT64,
+    AV_OPT_TYPE_CONST,
+    AV_OPT_TYPE_IMAGE_SIZE,
+    AV_OPT_TYPE_PIXEL_FMT,
+    AV_OPT_TYPE_SAMPLE_FMT,
+    AV_OPT_TYPE_VIDEO_RATE,
+    AV_OPT_TYPE_DURATION,
+    AV_OPT_TYPE_COLOR,
+    AV_OPT_TYPE_CHANNEL_LAYOUT,
+    AV_OPT_TYPE_BOOL,
+    AVOption,
     AVClass,
     AV_PIX_FMT_FLAG_BE,
     AV_PIX_FMT_FLAG_PAL,
@@ -316,78 +409,6 @@ export
     AV_PIX_FMT_GRAYF32BE,
     AV_PIX_FMT_GRAYF32LE,
     AV_PIX_FMT_NB,
-    AVColorPrimaries,
-    AVCOL_PRI_RESERVED0,
-    AVCOL_PRI_BT709,
-    AVCOL_PRI_UNSPECIFIED,
-    AVCOL_PRI_RESERVED,
-    AVCOL_PRI_BT470M,
-    AVCOL_PRI_BT470BG,
-    AVCOL_PRI_SMPTE170M,
-    AVCOL_PRI_SMPTE240M,
-    AVCOL_PRI_FILM,
-    AVCOL_PRI_BT2020,
-    AVCOL_PRI_SMPTE428,
-    AVCOL_PRI_SMPTEST428_1,
-    AVCOL_PRI_SMPTE431,
-    AVCOL_PRI_SMPTE432,
-    AVCOL_PRI_JEDEC_P22,
-    AVCOL_PRI_NB,
-    AVColorTransferCharacteristic,
-    AVCOL_TRC_RESERVED0,
-    AVCOL_TRC_BT709,
-    AVCOL_TRC_UNSPECIFIED,
-    AVCOL_TRC_RESERVED,
-    AVCOL_TRC_GAMMA22,
-    AVCOL_TRC_GAMMA28,
-    AVCOL_TRC_SMPTE170M,
-    AVCOL_TRC_SMPTE240M,
-    AVCOL_TRC_LINEAR,
-    AVCOL_TRC_LOG,
-    AVCOL_TRC_LOG_SQRT,
-    AVCOL_TRC_IEC61966_2_4,
-    AVCOL_TRC_BT1361_ECG,
-    AVCOL_TRC_IEC61966_2_1,
-    AVCOL_TRC_BT2020_10,
-    AVCOL_TRC_BT2020_12,
-    AVCOL_TRC_SMPTE2084,
-    AVCOL_TRC_SMPTEST2084,
-    AVCOL_TRC_SMPTE428,
-    AVCOL_TRC_SMPTEST428_1,
-    AVCOL_TRC_ARIB_STD_B67,
-    AVCOL_TRC_NB,
-    AVColorSpace,
-    AVCOL_SPC_RGB,
-    AVCOL_SPC_BT709,
-    AVCOL_SPC_UNSPECIFIED,
-    AVCOL_SPC_RESERVED,
-    AVCOL_SPC_FCC,
-    AVCOL_SPC_BT470BG,
-    AVCOL_SPC_SMPTE170M,
-    AVCOL_SPC_SMPTE240M,
-    AVCOL_SPC_YCGCO,
-    AVCOL_SPC_YCOCG,
-    AVCOL_SPC_BT2020_NCL,
-    AVCOL_SPC_BT2020_CL,
-    AVCOL_SPC_SMPTE2085,
-    AVCOL_SPC_CHROMA_DERIVED_NCL,
-    AVCOL_SPC_CHROMA_DERIVED_CL,
-    AVCOL_SPC_ICTCP,
-    AVCOL_SPC_NB,
-    AVColorRange,
-    AVCOL_RANGE_UNSPECIFIED,
-    AVCOL_RANGE_MPEG,
-    AVCOL_RANGE_JPEG,
-    AVCOL_RANGE_NB,
-    AVChromaLocation,
-    AVCHROMA_LOC_UNSPECIFIED,
-    AVCHROMA_LOC_LEFT,
-    AVCHROMA_LOC_CENTER,
-    AVCHROMA_LOC_TOPLEFT,
-    AVCHROMA_LOC_TOP,
-    AVCHROMA_LOC_BOTTOMLEFT,
-    AVCHROMA_LOC_BOTTOM,
-    AVCHROMA_LOC_NB,
     AVSampleFormat,
     AV_SAMPLE_FMT_NONE,
     AV_SAMPLE_FMT_U8,
@@ -560,27 +581,6 @@ export
     AV_OPT_MULTI_COMPONENT_RANGE,
     AV_OPT_SERIALIZE_SKIP_DEFAULTS,
     AV_OPT_SERIALIZE_OPT_FLAGS_EXACT,
-    AVOptionType,
-    AV_OPT_TYPE_FLAGS,
-    AV_OPT_TYPE_INT,
-    AV_OPT_TYPE_INT64,
-    AV_OPT_TYPE_DOUBLE,
-    AV_OPT_TYPE_FLOAT,
-    AV_OPT_TYPE_STRING,
-    AV_OPT_TYPE_RATIONAL,
-    AV_OPT_TYPE_BINARY,
-    AV_OPT_TYPE_DICT,
-    AV_OPT_TYPE_UINT64,
-    AV_OPT_TYPE_CONST,
-    AV_OPT_TYPE_IMAGE_SIZE,
-    AV_OPT_TYPE_PIXEL_FMT,
-    AV_OPT_TYPE_SAMPLE_FMT,
-    AV_OPT_TYPE_VIDEO_RATE,
-    AV_OPT_TYPE_DURATION,
-    AV_OPT_TYPE_COLOR,
-    AV_OPT_TYPE_CHANNEL_LAYOUT,
-    AV_OPT_TYPE_BOOL,
-    AVOption,
     ANONYMOUS_6,
     AV_OPT_FLAG_IMPLICIT_KEY,
     av_pixelutils_sad_fn,
@@ -743,7 +743,7 @@ const AV_AFD_SP_4_3 = 15 |> UInt32
 # end enum AVActiveFormatDescription
 
 struct AVFrameSideData
-    _type::Cvoid
+    _type::AVFrameSideDataType
     data::Ptr{UInt8}
     size::Cint
     metadata::Ptr{AVDictionary}
@@ -755,6 +755,93 @@ struct AVRational
     den::Cint
 end
 
+# begin enum AVColorRange
+const AVColorRange = UInt32
+const AVCOL_RANGE_UNSPECIFIED = 0 |> UInt32
+const AVCOL_RANGE_MPEG = 1 |> UInt32
+const AVCOL_RANGE_JPEG = 2 |> UInt32
+const AVCOL_RANGE_NB = 3 |> UInt32
+# end enum AVColorRange
+
+# begin enum AVColorPrimaries
+const AVColorPrimaries = UInt32
+const AVCOL_PRI_RESERVED0 = 0 |> UInt32
+const AVCOL_PRI_BT709 = 1 |> UInt32
+const AVCOL_PRI_UNSPECIFIED = 2 |> UInt32
+const AVCOL_PRI_RESERVED = 3 |> UInt32
+const AVCOL_PRI_BT470M = 4 |> UInt32
+const AVCOL_PRI_BT470BG = 5 |> UInt32
+const AVCOL_PRI_SMPTE170M = 6 |> UInt32
+const AVCOL_PRI_SMPTE240M = 7 |> UInt32
+const AVCOL_PRI_FILM = 8 |> UInt32
+const AVCOL_PRI_BT2020 = 9 |> UInt32
+const AVCOL_PRI_SMPTE428 = 10 |> UInt32
+const AVCOL_PRI_SMPTEST428_1 = 10 |> UInt32
+const AVCOL_PRI_SMPTE431 = 11 |> UInt32
+const AVCOL_PRI_SMPTE432 = 12 |> UInt32
+const AVCOL_PRI_JEDEC_P22 = 22 |> UInt32
+const AVCOL_PRI_NB = 23 |> UInt32
+# end enum AVColorPrimaries
+
+# begin enum AVColorTransferCharacteristic
+const AVColorTransferCharacteristic = UInt32
+const AVCOL_TRC_RESERVED0 = 0 |> UInt32
+const AVCOL_TRC_BT709 = 1 |> UInt32
+const AVCOL_TRC_UNSPECIFIED = 2 |> UInt32
+const AVCOL_TRC_RESERVED = 3 |> UInt32
+const AVCOL_TRC_GAMMA22 = 4 |> UInt32
+const AVCOL_TRC_GAMMA28 = 5 |> UInt32
+const AVCOL_TRC_SMPTE170M = 6 |> UInt32
+const AVCOL_TRC_SMPTE240M = 7 |> UInt32
+const AVCOL_TRC_LINEAR = 8 |> UInt32
+const AVCOL_TRC_LOG = 9 |> UInt32
+const AVCOL_TRC_LOG_SQRT = 10 |> UInt32
+const AVCOL_TRC_IEC61966_2_4 = 11 |> UInt32
+const AVCOL_TRC_BT1361_ECG = 12 |> UInt32
+const AVCOL_TRC_IEC61966_2_1 = 13 |> UInt32
+const AVCOL_TRC_BT2020_10 = 14 |> UInt32
+const AVCOL_TRC_BT2020_12 = 15 |> UInt32
+const AVCOL_TRC_SMPTE2084 = 16 |> UInt32
+const AVCOL_TRC_SMPTEST2084 = 16 |> UInt32
+const AVCOL_TRC_SMPTE428 = 17 |> UInt32
+const AVCOL_TRC_SMPTEST428_1 = 17 |> UInt32
+const AVCOL_TRC_ARIB_STD_B67 = 18 |> UInt32
+const AVCOL_TRC_NB = 19 |> UInt32
+# end enum AVColorTransferCharacteristic
+
+# begin enum AVColorSpace
+const AVColorSpace = UInt32
+const AVCOL_SPC_RGB = 0 |> UInt32
+const AVCOL_SPC_BT709 = 1 |> UInt32
+const AVCOL_SPC_UNSPECIFIED = 2 |> UInt32
+const AVCOL_SPC_RESERVED = 3 |> UInt32
+const AVCOL_SPC_FCC = 4 |> UInt32
+const AVCOL_SPC_BT470BG = 5 |> UInt32
+const AVCOL_SPC_SMPTE170M = 6 |> UInt32
+const AVCOL_SPC_SMPTE240M = 7 |> UInt32
+const AVCOL_SPC_YCGCO = 8 |> UInt32
+const AVCOL_SPC_YCOCG = 8 |> UInt32
+const AVCOL_SPC_BT2020_NCL = 9 |> UInt32
+const AVCOL_SPC_BT2020_CL = 10 |> UInt32
+const AVCOL_SPC_SMPTE2085 = 11 |> UInt32
+const AVCOL_SPC_CHROMA_DERIVED_NCL = 12 |> UInt32
+const AVCOL_SPC_CHROMA_DERIVED_CL = 13 |> UInt32
+const AVCOL_SPC_ICTCP = 14 |> UInt32
+const AVCOL_SPC_NB = 15 |> UInt32
+# end enum AVColorSpace
+
+# begin enum AVChromaLocation
+const AVChromaLocation = UInt32
+const AVCHROMA_LOC_UNSPECIFIED = 0 |> UInt32
+const AVCHROMA_LOC_LEFT = 1 |> UInt32
+const AVCHROMA_LOC_CENTER = 2 |> UInt32
+const AVCHROMA_LOC_TOPLEFT = 3 |> UInt32
+const AVCHROMA_LOC_TOP = 4 |> UInt32
+const AVCHROMA_LOC_BOTTOMLEFT = 5 |> UInt32
+const AVCHROMA_LOC_BOTTOM = 6 |> UInt32
+const AVCHROMA_LOC_NB = 7 |> UInt32
+# end enum AVChromaLocation
+
 struct AVFrame
     data::NTuple{8, Ptr{UInt8}}
     linesize::NTuple{8, Cint}
@@ -764,7 +851,7 @@ struct AVFrame
     nb_samples::Cint
     format::Cint
     key_frame::Cint
-    pict_type::Cvoid
+    pict_type::AVPictureType
     sample_aspect_ratio::AVRational
     pts::Int64
     pkt_pts::Int64
@@ -787,11 +874,11 @@ struct AVFrame
     side_data::Ptr{Ptr{AVFrameSideData}}
     nb_side_data::Cint
     flags::Cint
-    color_range::Cvoid
-    color_primaries::Cvoid
-    color_trc::Cvoid
-    colorspace::Cvoid
-    chroma_location::Cvoid
+    color_range::AVColorRange
+    color_primaries::AVColorPrimaries
+    color_trc::AVColorTransferCharacteristic
+    colorspace::AVColorSpace
+    chroma_location::AVChromaLocation
     best_effort_timestamp::Int64
     pkt_pos::Int64
     pkt_duration::Int64
@@ -858,7 +945,7 @@ const AV_CLASS_CATEGORY_DEVICE_INPUT = 45 |> UInt32
 const AV_CLASS_CATEGORY_NB = 46 |> UInt32
 # end enum ANONYMOUS_2
 
-const AVClassCategory = Cvoid
+const AVClassCategory = Cint
 
 struct AVOptionRange
     str::Cstring
@@ -875,10 +962,45 @@ struct AVOptionRanges
     nb_components::Cint
 end
 
+# begin enum AVOptionType
+const AVOptionType = UInt32
+const AV_OPT_TYPE_FLAGS = 0 |> UInt32
+const AV_OPT_TYPE_INT = 1 |> UInt32
+const AV_OPT_TYPE_INT64 = 2 |> UInt32
+const AV_OPT_TYPE_DOUBLE = 3 |> UInt32
+const AV_OPT_TYPE_FLOAT = 4 |> UInt32
+const AV_OPT_TYPE_STRING = 5 |> UInt32
+const AV_OPT_TYPE_RATIONAL = 6 |> UInt32
+const AV_OPT_TYPE_BINARY = 7 |> UInt32
+const AV_OPT_TYPE_DICT = 8 |> UInt32
+const AV_OPT_TYPE_UINT64 = 9 |> UInt32
+const AV_OPT_TYPE_CONST = 10 |> UInt32
+const AV_OPT_TYPE_IMAGE_SIZE = 11 |> UInt32
+const AV_OPT_TYPE_PIXEL_FMT = 12 |> UInt32
+const AV_OPT_TYPE_SAMPLE_FMT = 13 |> UInt32
+const AV_OPT_TYPE_VIDEO_RATE = 14 |> UInt32
+const AV_OPT_TYPE_DURATION = 15 |> UInt32
+const AV_OPT_TYPE_COLOR = 16 |> UInt32
+const AV_OPT_TYPE_CHANNEL_LAYOUT = 17 |> UInt32
+const AV_OPT_TYPE_BOOL = 18 |> UInt32
+# end enum AVOptionType
+
+struct AVOption
+    name::Cstring
+    help::Cstring
+    offset::Cint
+    _type::AVOptionType
+    default_val::Int64
+    min::Cdouble
+    max::Cdouble
+    flags::Cint
+    unit::Cstring
+end
+
 struct AVClass
     class_name::Cstring
     item_name::Ptr{Cvoid}
-    option::Ptr{Cvoid}
+    option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
@@ -1203,93 +1325,6 @@ const AV_PIX_FMT_GRAYF32LE = 186 |> Int32
 const AV_PIX_FMT_NB = 187 |> Int32
 # end enum AVPixelFormat
 
-# begin enum AVColorPrimaries
-const AVColorPrimaries = UInt32
-const AVCOL_PRI_RESERVED0 = 0 |> UInt32
-const AVCOL_PRI_BT709 = 1 |> UInt32
-const AVCOL_PRI_UNSPECIFIED = 2 |> UInt32
-const AVCOL_PRI_RESERVED = 3 |> UInt32
-const AVCOL_PRI_BT470M = 4 |> UInt32
-const AVCOL_PRI_BT470BG = 5 |> UInt32
-const AVCOL_PRI_SMPTE170M = 6 |> UInt32
-const AVCOL_PRI_SMPTE240M = 7 |> UInt32
-const AVCOL_PRI_FILM = 8 |> UInt32
-const AVCOL_PRI_BT2020 = 9 |> UInt32
-const AVCOL_PRI_SMPTE428 = 10 |> UInt32
-const AVCOL_PRI_SMPTEST428_1 = 10 |> UInt32
-const AVCOL_PRI_SMPTE431 = 11 |> UInt32
-const AVCOL_PRI_SMPTE432 = 12 |> UInt32
-const AVCOL_PRI_JEDEC_P22 = 22 |> UInt32
-const AVCOL_PRI_NB = 23 |> UInt32
-# end enum AVColorPrimaries
-
-# begin enum AVColorTransferCharacteristic
-const AVColorTransferCharacteristic = UInt32
-const AVCOL_TRC_RESERVED0 = 0 |> UInt32
-const AVCOL_TRC_BT709 = 1 |> UInt32
-const AVCOL_TRC_UNSPECIFIED = 2 |> UInt32
-const AVCOL_TRC_RESERVED = 3 |> UInt32
-const AVCOL_TRC_GAMMA22 = 4 |> UInt32
-const AVCOL_TRC_GAMMA28 = 5 |> UInt32
-const AVCOL_TRC_SMPTE170M = 6 |> UInt32
-const AVCOL_TRC_SMPTE240M = 7 |> UInt32
-const AVCOL_TRC_LINEAR = 8 |> UInt32
-const AVCOL_TRC_LOG = 9 |> UInt32
-const AVCOL_TRC_LOG_SQRT = 10 |> UInt32
-const AVCOL_TRC_IEC61966_2_4 = 11 |> UInt32
-const AVCOL_TRC_BT1361_ECG = 12 |> UInt32
-const AVCOL_TRC_IEC61966_2_1 = 13 |> UInt32
-const AVCOL_TRC_BT2020_10 = 14 |> UInt32
-const AVCOL_TRC_BT2020_12 = 15 |> UInt32
-const AVCOL_TRC_SMPTE2084 = 16 |> UInt32
-const AVCOL_TRC_SMPTEST2084 = 16 |> UInt32
-const AVCOL_TRC_SMPTE428 = 17 |> UInt32
-const AVCOL_TRC_SMPTEST428_1 = 17 |> UInt32
-const AVCOL_TRC_ARIB_STD_B67 = 18 |> UInt32
-const AVCOL_TRC_NB = 19 |> UInt32
-# end enum AVColorTransferCharacteristic
-
-# begin enum AVColorSpace
-const AVColorSpace = UInt32
-const AVCOL_SPC_RGB = 0 |> UInt32
-const AVCOL_SPC_BT709 = 1 |> UInt32
-const AVCOL_SPC_UNSPECIFIED = 2 |> UInt32
-const AVCOL_SPC_RESERVED = 3 |> UInt32
-const AVCOL_SPC_FCC = 4 |> UInt32
-const AVCOL_SPC_BT470BG = 5 |> UInt32
-const AVCOL_SPC_SMPTE170M = 6 |> UInt32
-const AVCOL_SPC_SMPTE240M = 7 |> UInt32
-const AVCOL_SPC_YCGCO = 8 |> UInt32
-const AVCOL_SPC_YCOCG = 8 |> UInt32
-const AVCOL_SPC_BT2020_NCL = 9 |> UInt32
-const AVCOL_SPC_BT2020_CL = 10 |> UInt32
-const AVCOL_SPC_SMPTE2085 = 11 |> UInt32
-const AVCOL_SPC_CHROMA_DERIVED_NCL = 12 |> UInt32
-const AVCOL_SPC_CHROMA_DERIVED_CL = 13 |> UInt32
-const AVCOL_SPC_ICTCP = 14 |> UInt32
-const AVCOL_SPC_NB = 15 |> UInt32
-# end enum AVColorSpace
-
-# begin enum AVColorRange
-const AVColorRange = UInt32
-const AVCOL_RANGE_UNSPECIFIED = 0 |> UInt32
-const AVCOL_RANGE_MPEG = 1 |> UInt32
-const AVCOL_RANGE_JPEG = 2 |> UInt32
-const AVCOL_RANGE_NB = 3 |> UInt32
-# end enum AVColorRange
-
-# begin enum AVChromaLocation
-const AVChromaLocation = UInt32
-const AVCHROMA_LOC_UNSPECIFIED = 0 |> UInt32
-const AVCHROMA_LOC_LEFT = 1 |> UInt32
-const AVCHROMA_LOC_CENTER = 2 |> UInt32
-const AVCHROMA_LOC_TOPLEFT = 3 |> UInt32
-const AVCHROMA_LOC_TOP = 4 |> UInt32
-const AVCHROMA_LOC_BOTTOMLEFT = 5 |> UInt32
-const AVCHROMA_LOC_BOTTOM = 6 |> UInt32
-const AVCHROMA_LOC_NB = 7 |> UInt32
-# end enum AVChromaLocation
-
 # begin enum AVSampleFormat
 const AVSampleFormat = Cint
 const AV_SAMPLE_FMT_NONE = -1 |> Int32
@@ -1434,7 +1469,7 @@ const AV_DOWNMIX_TYPE_NB = 4 |> UInt32
 # end enum AVDownmixType
 
 struct AVDownmixInfo
-    preferred_downmix_type::Cvoid
+    preferred_downmix_type::AVDownmixType
     center_mix_level::Cdouble
     center_mix_level_ltrt::Cdouble
     surround_mix_level::Cdouble
@@ -1467,7 +1502,7 @@ struct AVEncryptionInitInfo
     key_id_size::UInt32
     data::Ptr{UInt8}
     data_size::UInt32
-    next::Ptr{Cvoid}
+    next::Ptr{AVEncryptionInitInfo}
 end
 
 const AV_HASH_MAX_SIZE = 64
@@ -1496,7 +1531,7 @@ end
 struct AVHWDeviceContext
     av_class::Ptr{AVClass}
     internal::Ptr{AVHWDeviceInternal}
-    _type::Cvoid
+    _type::AVHWDeviceType
     hwctx::Ptr{Cvoid}
     free::Ptr{Cvoid}
     user_opaque::Ptr{Cvoid}
@@ -1515,8 +1550,8 @@ struct AVHWFramesContext
     user_opaque::Ptr{Cvoid}
     pool::Ptr{AVBufferPool}
     initial_pool_size::Cint
-    format::Cvoid
-    sw_format::Cvoid
+    format::AVPixelFormat
+    sw_format::AVPixelFormat
     width::Cint
     height::Cint
 end
@@ -1528,8 +1563,8 @@ const AV_HWFRAME_TRANSFER_DIRECTION_TO = 1 |> UInt32
 # end enum AVHWFrameTransferDirection
 
 struct AVHWFramesConstraints
-    valid_hw_formats::Ptr{Cvoid}
-    valid_sw_formats::Ptr{Cvoid}
+    valid_hw_formats::Ptr{AVPixelFormat}
+    valid_sw_formats::Ptr{AVPixelFormat}
     min_width::Cint
     min_height::Cint
     max_width::Cint
@@ -1710,41 +1745,6 @@ const AV_OPT_MULTI_COMPONENT_RANGE = 1 << 12
 const AV_OPT_SERIALIZE_SKIP_DEFAULTS = 0x00000001
 const AV_OPT_SERIALIZE_OPT_FLAGS_EXACT = 0x00000002
 
-# begin enum AVOptionType
-const AVOptionType = UInt32
-const AV_OPT_TYPE_FLAGS = 0 |> UInt32
-const AV_OPT_TYPE_INT = 1 |> UInt32
-const AV_OPT_TYPE_INT64 = 2 |> UInt32
-const AV_OPT_TYPE_DOUBLE = 3 |> UInt32
-const AV_OPT_TYPE_FLOAT = 4 |> UInt32
-const AV_OPT_TYPE_STRING = 5 |> UInt32
-const AV_OPT_TYPE_RATIONAL = 6 |> UInt32
-const AV_OPT_TYPE_BINARY = 7 |> UInt32
-const AV_OPT_TYPE_DICT = 8 |> UInt32
-const AV_OPT_TYPE_UINT64 = 9 |> UInt32
-const AV_OPT_TYPE_CONST = 10 |> UInt32
-const AV_OPT_TYPE_IMAGE_SIZE = 11 |> UInt32
-const AV_OPT_TYPE_PIXEL_FMT = 12 |> UInt32
-const AV_OPT_TYPE_SAMPLE_FMT = 13 |> UInt32
-const AV_OPT_TYPE_VIDEO_RATE = 14 |> UInt32
-const AV_OPT_TYPE_DURATION = 15 |> UInt32
-const AV_OPT_TYPE_COLOR = 16 |> UInt32
-const AV_OPT_TYPE_CHANNEL_LAYOUT = 17 |> UInt32
-const AV_OPT_TYPE_BOOL = 18 |> UInt32
-# end enum AVOptionType
-
-struct AVOption
-    name::Cstring
-    help::Cstring
-    offset::Cint
-    _type::Cvoid
-    default_val::Cvoid
-    min::Cdouble
-    max::Cdouble
-    flags::Cint
-    unit::Cstring
-end
-
 # begin enum ANONYMOUS_6
 const ANONYMOUS_6 = UInt32
 const AV_OPT_FLAG_IMPLICIT_KEY = 1 |> UInt32
@@ -1773,7 +1773,7 @@ const AV_SPHERICAL_EQUIRECTANGULAR_TILE = 2 |> UInt32
 # end enum AVSphericalProjection
 
 struct AVSphericalMapping
-    projection::Cvoid
+    projection::AVSphericalProjection
     yaw::Int32
     pitch::Int32
     roll::Int32
@@ -1806,9 +1806,9 @@ const AV_STEREO3D_VIEW_RIGHT = 2 |> UInt32
 # end enum AVStereo3DView
 
 struct AVStereo3D
-    _type::Cvoid
+    _type::AVStereo3DType
     flags::Cint
-    view::Cvoid
+    view::AVStereo3DView
 end
 
 struct AVTEA
@@ -1831,7 +1831,7 @@ const AV_TIMECODE_FLAG_24HOURSMAX = 2 |> UInt32
 const AV_TIMECODE_FLAG_ALLOWNEGATIVE = 4 |> UInt32
 # end enum AVTimecodeFlag
 
-const AVTimecode = Cvoid
+const AVTimecode = 
 
 struct AVTreeNode
 end

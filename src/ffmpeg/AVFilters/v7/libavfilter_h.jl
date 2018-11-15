@@ -15,11 +15,11 @@ export
     AVFILTER_CMD_FLAG_FAST,
     AVFilterPad,
     AVFilter,
+    AVFilterGraphInternal,
+    AVFilterGraph,
     AVFilterInternal,
     AVFilterContext,
     AVFilterFormats,
-    AVFilterGraphInternal,
-    AVFilterGraph,
     ANONYMOUS_1,
     AVFILTER_AUTO_CONVERT_ALL,
     AVFILTER_AUTO_CONVERT_NONE,
@@ -68,41 +68,10 @@ struct AVFilter
     query_formats::Ptr{Cvoid}
     priv_size::Cint
     flags_internal::Cint
-    next::Ptr{Cvoid}
+    next::Ptr{AVFilter}
     process_command::Ptr{Cvoid}
     init_opaque::Ptr{Cvoid}
     activate::Ptr{Cvoid}
-end
-
-struct AVFilterInternal
-end
-
-struct AVFilterContext
-    av_class::Ptr{AVClass}
-    filter::Ptr{AVFilter}
-    name::Cstring
-    input_pads::Ptr{AVFilterPad}
-    inputs::Ptr{Ptr{AVFilterLink}}
-    nb_inputs::UInt32
-    output_pads::Ptr{AVFilterPad}
-    outputs::Ptr{Ptr{AVFilterLink}}
-    nb_outputs::UInt32
-    priv::Ptr{Cvoid}
-    graph::Ptr{Cvoid}
-    thread_type::Cint
-    internal::Ptr{AVFilterInternal}
-    command_queue::Ptr{Cvoid}
-    enable_str::Cstring
-    enable::Ptr{Cvoid}
-    var_values::Ptr{Cdouble}
-    is_disabled::Cint
-    hw_device_ctx::Ptr{AVBufferRef}
-    nb_threads::Cint
-    ready::UInt32
-    extra_hw_frames::Cint
-end
-
-struct AVFilterFormats
 end
 
 struct AVFilterGraphInternal
@@ -125,6 +94,37 @@ struct AVFilterGraph
     disable_auto_convert::UInt32
 end
 
+struct AVFilterInternal
+end
+
+struct AVFilterContext
+    av_class::Ptr{AVClass}
+    filter::Ptr{AVFilter}
+    name::Cstring
+    input_pads::Ptr{AVFilterPad}
+    inputs::Ptr{Ptr{AVFilterLink}}
+    nb_inputs::UInt32
+    output_pads::Ptr{AVFilterPad}
+    outputs::Ptr{Ptr{AVFilterLink}}
+    nb_outputs::UInt32
+    priv::Ptr{Cvoid}
+    graph::Ptr{AVFilterGraph}
+    thread_type::Cint
+    internal::Ptr{AVFilterInternal}
+    command_queue::Ptr{AVFilterCommand}
+    enable_str::Cstring
+    enable::Ptr{Cvoid}
+    var_values::Ptr{Cdouble}
+    is_disabled::Cint
+    hw_device_ctx::Ptr{AVBufferRef}
+    nb_threads::Cint
+    ready::UInt32
+    extra_hw_frames::Cint
+end
+
+struct AVFilterFormats
+end
+
 # begin enum ANONYMOUS_1
 const ANONYMOUS_1 = Cint
 const AVFILTER_AUTO_CONVERT_ALL = 0 |> Int32
@@ -135,18 +135,18 @@ struct AVFilterInOut
     name::Cstring
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint
-    next::Ptr{Cvoid}
+    next::Ptr{AVFilterInOut}
 end
 
 const AV_BUFFERSINK_FLAG_PEEK = 1
 const AV_BUFFERSINK_FLAG_NO_REQUEST = 2
 
 struct AVBufferSinkParams
-    pixel_fmts::Ptr{Cvoid}
+    pixel_fmts::Ptr{AVPixelFormat}
 end
 
 struct AVABufferSinkParams
-    sample_fmts::Ptr{Cvoid}
+    sample_fmts::Ptr{AVSampleFormat}
     channel_layouts::Ptr{Int64}
     channel_counts::Ptr{Cint}
     all_channel_counts::Cint

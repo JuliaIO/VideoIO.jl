@@ -93,9 +93,9 @@ const AV_DEV_TO_APP_VOLUME_LEVEL_CHANGED = 1129729868 |> UInt32
 struct AVDeviceCapabilitiesQuery
     av_class::Ptr{AVClass}
     device_context::Ptr{AVFormatContext}
-    codec::Cvoid
-    sample_format::Cvoid
-    pixel_format::Cvoid
+    codec::AVCodecID
+    sample_format::AVSampleFormat
+    pixel_format::AVPixelFormat
     sample_rate::Cint
     channels::Cint
     channel_layout::Int64
