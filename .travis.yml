@@ -22,18 +22,12 @@ os:
 julia:
   - 1.0
   - nightly
-# matrix:	
+# matrix:
 #   allow_failures:
 #     - julia: nightly
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-# script:
-#  - julia -e 'Pkg.clone(pwd())'
-#  - julia -e 'Pkg.build("VideoIO")'
-#  - if [ -f test/runtests.jl ]; then julia -e 'Pkg.test("VideoIO", coverage=true)'; fi
+
 after_success:
-  # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("VideoIO")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-  # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("VideoIO")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  # push coverage results to Coveralls and Codecov
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder()); Codecov.submit(process_folder())'
