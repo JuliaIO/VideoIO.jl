@@ -26,10 +26,10 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 # end
 
 if Sys.iswindows()
-    provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$WORD_SIZE/shared/ffmpeg-2.2.3-win$WORD_SIZE-shared.7z"),
+    provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$(Sys.WORD_SIZE)/shared/ffmpeg-2.2.3-win$(Sys.WORD_SIZE)-shared.7z"),
              libav_libs,
              os = :Windows,
-             unpacked_dir="ffmpeg-2.2.3-win$WORD_SIZE-shared/bin")
+             unpacked_dir="ffmpeg-2.2.3-win$(Sys.WORD_SIZE)-shared/bin")
 end
 
 if Sys.isapple()
