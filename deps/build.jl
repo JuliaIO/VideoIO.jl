@@ -26,10 +26,10 @@ libav_libs = [libavutil, libavcodec, libavformat, libavfilter, libswscale, libav
 # end
 
 if Sys.iswindows()
-    provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$(Sys.WORD_SIZE)/shared/ffmpeg-2.2.3-win$(Sys.WORD_SIZE)-shared.7z"),
+    provides(Binaries, URI("http://ffmpeg.zeranoe.com/builds/win$(Sys.WORD_SIZE)/shared/ffmpeg-4.1-win$(Sys.WORD_SIZE)-shared.zip"),
              libav_libs,
              os = :Windows,
-             unpacked_dir="ffmpeg-2.2.3-win$(Sys.WORD_SIZE)-shared/bin")
+             unpacked_dir="ffmpeg-4.1-win$(Sys.WORD_SIZE)-shared/bin")
 end
 
 if Sys.isapple()
@@ -94,7 +94,7 @@ provides(Pacman,
          Dict("ffmpeg" => libav_libs))
 
 provides(Sources,
-         URI("http://www.ffmpeg.org/releases/ffmpeg-2.3.2.tar.gz"),
+         URI("http://www.ffmpeg.org/releases/ffmpeg-4.1.tar.gz"),
          libav_libs)
 
 provides(BuildProcess, Autotools(configure_options=["--enable-gpl"]), libav_libs, os = :Unix)
