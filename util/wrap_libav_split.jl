@@ -138,7 +138,7 @@ end
 
 function get_header_outfile(hpath)
     for ((lib,ver,dir),path) in zip(av_lib_ver, av_hpath)
-        if contains(hpath, path)
+        if occursin(path, hpath)
             outdir = "$lib$(ver.major)"
             return get_header_outfile(outdir, hpath)
         end

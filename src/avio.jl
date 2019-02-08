@@ -631,13 +631,20 @@ if have_avdevice()
         camera_devices = String[]
 
         read_vid_devs = false
-        out, err = readall_stdout_stderr(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
-        buf = length(out) > 0 ? out : err
-        for line in eachline(IOBuffer(buf))
-            if contains(line, "video devices")
+        out = Pipe()
+        err = Pipe()
+        p = Base.open(pipeline(ignorestatus(`$ffmpeg -list_devices true -f $idev -i $idev_name`), stdout=out, stderr=err))
+        close(out.in); close(err.in)
+        err_s = readlines(err)
+        out_s = readlines(out)
+        
+        lines = length(out_s) > length(err_s) ? out_s : err_s
+
+        for line in lines
+            if occursin("video devices",line)
                 read_vid_devs = true
                 continue
-            elseif contains(line, "audio devices") || contains(line, "exit") || contains(line, "error")
+            elseif occursin("audio devices",line) || occursin("exit", line) || occursin("error", line)
                 read_vid_devs = false
                 continue
             end
