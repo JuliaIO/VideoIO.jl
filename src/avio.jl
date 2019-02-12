@@ -472,7 +472,7 @@ end
 
 function seek(s::VideoReader, seconds::Float64,
               seconds_min::Float64=-1.0,  seconds_max::Float64=-1.0,
-              video_stream::Int64=1, forward::Bool=false)
+              video_stream::Integer=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
 
     @static if _avformat_version().major < 54 || ffmpeg_or_libav == "libav"
@@ -512,7 +512,7 @@ end
 
 function seek(avin::AVInput{T}, seconds::Float64,
               seconds_min::Float64=-1.0,  seconds_max::Float64=-1.0,
-              video_stream::Int64=1, forward::Bool=false) where T <: AbstractString
+              video_stream::Integer=1, forward::Bool=false) where T <: AbstractString
 
     #Using 10 seconds before and after the desired timestamp, since the seek function
     #seek to the nearest keyframe, and 10 seconds is the longest GOP length seen in
