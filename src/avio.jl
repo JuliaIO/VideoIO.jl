@@ -470,9 +470,9 @@ function seconds_to_timestamp(s::Float64, time_base::AVRational)
     return round(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
 end
 
-function seek(s::VideoReader, seconds::Float64,
-              seconds_min::Float64=-1.0,  seconds_max::Float64=-1.0,
-              video_stream::Int64=1, forward::Bool=false)
+function seek(s::VideoReader, seconds::AbstractFloat,
+              seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0,
+              video_stream::Integer=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
 
     @static if _avformat_version().major < 54 || ffmpeg_or_libav == "libav"
@@ -510,9 +510,9 @@ function seek(s::VideoReader, seconds::Float64,
     return(s)
 end
 
-function seek(avin::AVInput{T}, seconds::Float64,
-              seconds_min::Float64=-1.0,  seconds_max::Float64=-1.0,
-              video_stream::Int64=1, forward::Bool=false) where T <: AbstractString
+function seek(avin::AVInput{T}, seconds::AbstractFloat,
+              seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0,
+              video_stream::Integer=1, forward::Bool=false) where T <: AbstractString
 
     #Using 10 seconds before and after the desired timestamp, since the seek function
     #seek to the nearest keyframe, and 10 seconds is the longest GOP length seen in
