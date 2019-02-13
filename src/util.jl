@@ -27,29 +27,3 @@ function av_pointer_to_field(s::Ptr{T}, name::Symbol) where T
 end
 
 av_pointer_to_field(s::Array, name::Symbol) = av_pointer_to_field(pointer(s), name)
-
-function open_stdout_stderr(cmd::Cmd)
-    out = Base.PipeEndpoint()
-    err = Base.PipeEndpoint()
-    cmd_out = Base.PipeEndpoint()
-    cmd_err = Base.PipeEndpoint()
-    Base.link_pipe(out, true, cmd_out, false)
-    Base.link_pipe(err, true, cmd_err, false)
-
-    r = spawn(ignorestatus(cmd), (devnull, cmd_out, cmd_err))
-
-    Base.close_pipe_sync(cmd_out)
-    Base.close_pipe_sync(cmd_err)
-
-    # NOTE: these are not necessary on v0.4 (although they don't seem
-    #       to hurt). Remove when we drop support for v0.3.
-    Base.start_reading(out)
-    Base.start_reading(err)
-
-    return (out, err, r)
-end
-
-function readall_stdout_stderr(cmd::Cmd)
-    (out, err, proc) = open_stdout_stderr(cmd)
-    return (read(out, String), read(err, String))
-end
