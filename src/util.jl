@@ -3,7 +3,7 @@
 function fieldposition(::Type{T}, name::Symbol) where T
     field_pos = findfirst(isequal(name), fieldnames(T))
     if field_pos === nothing
-        throw(ErrorException("The type `$T` does not contain field $name!"))
+        throw(ErrorException(string("The type `$T` does not contain field ",string(name))))
     end
     return field_pos
 end

@@ -1,6 +1,6 @@
 environment:
   matrix:
-  - julia_version: 1.0  
+  - julia_version: 1.0
   - julia_version: 1.1
   - julia_version: latest
 
@@ -29,6 +29,10 @@ notifications:
 #  - C:\Users\appveyor\.julia\packages\Homebrew
 #  - C:\Users\appveyor\.julia\packages\Conda
 #  - C:\Users\appveyor\.julia\packages\FFTW
+
+artifacts:
+  - path: C:\projects\videoio-jl\deps\build.log
+    name: VideoIO_build.log
 
 install:
   - ps: iex ((new-object net.webclient).DownloadString("https://raw.githubusercontent.com/JuliaCI/Appveyor.jl/version-1/bin/install.ps1"))

@@ -237,7 +237,6 @@ function AVInput(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536) whe
     avin
 end
 
-
 function VideoReader(avin::AVInput, video_stream=1;
                      transcode::Bool=true,
                      transcode_interpolation=SWS_BILINEAR,
