@@ -21,8 +21,7 @@ products = Product[
 
 # Download binaries from hosted location
 v = "4.1"
-#bin_prefix = "https://github.com/ianshmean/FFMPEG-tarballs/raw/master/$v/bin"
-bin_prefix = "/Users/IanB/Github_Personal/FFMPEG-tarballs/$v/bin"
+bin_prefix = "https://github.com/ianshmean/FFMPEG-tarballs/raw/master/$v/bin"
                     
 download_info = Dict(
     #Linux(:aarch64, :glibc) => ("$bin_prefix/ffmpeg-$v-aarch64-linux-gnu.tar.gz", ""),
