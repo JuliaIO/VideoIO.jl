@@ -684,7 +684,10 @@ if have_avdevice()
 
     if Sys.isapple()
 
-        @show DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
+        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
+        
+        #av_setfield(DEFAULT_CAMERA_FORMAT, :framerate, 30.0) #Not correct, but for placeholder
+        
         global CAMERA_DEVICES = String[]
         try
             global CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
