@@ -2,6 +2,7 @@ __precompile__(false)
 
 module VideoIO
 
+using Libdl
 using FixedPointNumbers, ColorTypes, ImageCore, Requires
 
 include("init.jl")
@@ -22,6 +23,8 @@ include("testvideos.jl")
 using .TestVideos
 
 function __init__()
+    # Always check your dependencies from `deps.jl`
+    check_deps()
     @require ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef" begin
         # Define read and retrieve for Images
         function play(f, flip=false)

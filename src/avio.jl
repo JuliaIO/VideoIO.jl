@@ -683,9 +683,8 @@ if have_avdevice()
     end
 
     if Sys.isapple()
-        ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
 
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
+        @show DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
         global CAMERA_DEVICES = String[]
         try
             global CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
