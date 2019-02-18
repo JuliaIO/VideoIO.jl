@@ -36,6 +36,10 @@ cache:
   - C:\Users\appveyor\.julia\packages\Gtk
   - C:\Users\appveyor\.julia\packages\ImageMagick
 
+artifacts:
+  - path: C:\projects\videoio-jl\deps\build.log
+    name: VideoIO_build.log
+    
 install:
   - ps: iex ((new-object net.webclient).DownloadString("https://raw.githubusercontent.com/JuliaCI/Appveyor.jl/version-1/bin/install.ps1"))
 
