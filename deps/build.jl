@@ -11,7 +11,7 @@ products = Product[
     ExecutableProduct(prefix, "ffprobe", :ffprobe),
     ExecutableProduct(prefix, "ffplay", :ffplay),
 
-    LibraryProduct(libpath, [["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*["53" "54" "55" "56" "57" "58"].*[".dylib"]...], :libavcodec),
+    LibraryProduct(libpath, [["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*["53" "54" "55" "56" "57" "58"]...], :libavcodec),
     LibraryProduct(libpath, [["libavformat-ffmpeg.so.","libavformat.","libavformat.so.","libavformat.ffmpeg.so.","avformat-"].*["53" "54" "55" "56" "57" "58"]...], :libavformat),
     LibraryProduct(libpath, [["libavutil-ffmpeg.so.", "libavutil.","libavutil.so.", "libavutil.ffmpeg.so.", "avutil-"].*["51" "52" "54" "55" "56"]...], :libavutil),
     LibraryProduct(libpath, [["libswscale-ffmpeg.so.","libswscale.","libswscale.so.","libswscale.ffmpeg.so.","swscale-"].*["2" "3" "4" "5"]...], :libswscale),
