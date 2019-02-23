@@ -1,5 +1,3 @@
-__precompile__(false)
-
 module VideoIO
 
 using Libdl
@@ -23,6 +21,7 @@ include("testvideos.jl")
 using .TestVideos
 
 function __init__()
+    global read_packet  =  @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
     # Always check your dependencies from `deps.jl`
     check_deps()
     @require ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef" begin
