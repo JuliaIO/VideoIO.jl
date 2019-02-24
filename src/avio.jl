@@ -633,7 +633,7 @@ if have_avdevice()
         close(out.in); close(err.in)
         err_s = readlines(err)
         out_s = readlines(out)
-        
+
         lines = length(out_s) > length(err_s) ? out_s : err_s
 
         for line in lines
