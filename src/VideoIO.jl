@@ -20,7 +20,8 @@ include("testvideos.jl")
 using .TestVideos
 
 function __init__()
-    global read_packet  =  @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
+    global read_packet
+    read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     @require ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef" begin
         # Define read and retrieve for Images

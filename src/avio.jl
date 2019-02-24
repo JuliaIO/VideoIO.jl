@@ -130,6 +130,10 @@ function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{UInt8}, buf_size::Cint)
     convert(Cint, readbytes!(avin.io, out))
 end
 
+# This will point to _read_packet, but is set in __init__()
+const read_packet = Ref{Ptr{Cvoid}}(C_NULL)
+
+
 function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
 
     !isreadable(io) && error("IO not readable")
@@ -149,7 +153,7 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
     # Allocate AVIOContext
     if (avin.apAVIOContext[1] = avio_alloc_context(avio_ctx_buffer, avin.avio_ctx_buffer_size,
                                                    0, pointer_from_objref(avin),
-                                                   read_packet, C_NULL, C_NULL)) == C_NULL
+                                                   read_packet[], C_NULL, C_NULL)) == C_NULL
         abuffer = [avio_ctx_buffer]
         av_freep(abuffer)
         error("Unable to allocate AVIOContext (out of memory)")
