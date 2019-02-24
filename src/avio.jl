@@ -130,9 +130,6 @@ function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{UInt8}, buf_size::Cint)
     convert(Cint, readbytes!(avin.io, out))
 end
 
-const read_packet  =  @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
-
-
 function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
 
     !isreadable(io) && error("IO not readable")
@@ -637,7 +634,7 @@ if have_avdevice()
         close(out.in); close(err.in)
         err_s = readlines(err)
         out_s = readlines(out)
-        
+
         lines = length(out_s) > length(err_s) ? out_s : err_s
 
         for line in lines
