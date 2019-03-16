@@ -443,7 +443,7 @@ const AV_NOPTS_VALUE = reinterpret(Int64, 0x8000000000000000)
 
 const AV_TIME_BASE = 1000000
 
-immutable AVRational
+struct AVRational
     num::Cint
     den::Cint
 end
@@ -474,15 +474,15 @@ const AV_PICTURE_TYPE_BI = UInt32(7)
 
 const AV_BUFFER_FLAG_READONLY = 1 << 0
 
-const AVBuffer=Void
+const AVBuffer=Nothing
 
-immutable AVBufferRef
+struct AVBufferRef
     buffer::Ptr{AVBuffer}
     data::Ptr{UInt8}
     size::Cint
 end
 
-const AVBufferPool=Void
+const AVBufferPool=Nothing
 
 const AV_CH_FRONT_LEFT = 0x00000001
 const AV_CH_FRONT_RIGHT = 0x00000002
@@ -557,14 +557,14 @@ const AV_DICT_DONT_STRDUP_VAL = 8
 const AV_DICT_DONT_OVERWRITE = 16
 const AV_DICT_APPEND = 32
 
-immutable AVDictionaryEntry
+struct AVDictionaryEntry
     key::Ptr{UInt8}
     value::Ptr{UInt8}
 end
 
-const AVDictionary=Void
+const AVDictionary=Nothing
 
-immutable AVFifoBuffer
+struct AVFifoBuffer
     buffer::Ptr{UInt8}
     rptr::Ptr{UInt8}
     wptr::Ptr{UInt8}
@@ -585,14 +585,14 @@ const AV_FRAME_DATA_MATRIXENCODING = UInt32(3)
 const AV_FRAME_DATA_DOWNMIX_INFO = UInt32(4)
 # end enum AVFrameSideDataType
 
-immutable AVFrameSideData
+struct AVFrameSideData
     _type::AVFrameSideDataType
     data::Ptr{UInt8}
     size::Cint
     metadata::Ptr{AVDictionary}
 end
 
-immutable Array_8_Ptr
+struct Array_8_Ptr
     d1::Ptr{UInt8}
     d2::Ptr{UInt8}
     d3::Ptr{UInt8}
@@ -605,7 +605,7 @@ end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
 
-immutable Array_8_Cint
+struct Array_8_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -618,14 +618,14 @@ end
 
 zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
-immutable Array_2_Ptr
-    d1::Ptr{Void}
-    d2::Ptr{Void}
+struct Array_2_Ptr
+    d1::Ptr{Cvoid}
+    d2::Ptr{Cvoid}
 end
 
 zero(::Type{Array_2_Ptr}) = Array_2_Ptr(fill(C_NULL,2)...)
 
-immutable Array_8_Uint64
+struct Array_8_Uint64
     d1::UInt64
     d2::UInt64
     d3::UInt64
@@ -638,7 +638,7 @@ end
 
 zero(::Type{Array_8_Uint64}) = Array_8_Uint64(fill(zero(UInt64),8)...)
 
-immutable AVFrame
+struct AVFrame
     data::Array_8_Ptr
     linesize::Array_8_Cint
     extended_data::Ptr{Ptr{UInt8}}
@@ -665,7 +665,7 @@ immutable AVFrame
     mb_type::Ptr{UInt32}
     dct_coeff::Ptr{Int16}
     ref_index::Array_2_Ptr
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     error::Array_8_Uint64
     _type::Cint
     repeat_pict::Cint
@@ -673,11 +673,11 @@ immutable AVFrame
     top_field_first::Cint
     palette_has_changed::Cint
     buffer_hints::Cint
-    pan_scan::Ptr{Void}  #Ptr{AVPanScan}
+    pan_scan::Ptr{Cvoid}  #Ptr{AVPanScan}
     reordered_opaque::Int64
-    hwaccel_picture_private::Ptr{Void}
-    owner::Ptr{Void} #Ptr{AVCodecContext}
-    thread_opaque::Ptr{Void}
+    hwaccel_picture_private::Ptr{Cvoid}
+    owner::Ptr{Cvoid} #Ptr{AVCodecContext}
+    thread_opaque::Ptr{Cvoid}
     motion_subsample_log2::UInt8
     sample_rate::Cint
     channel_layout::UInt64
@@ -715,27 +715,27 @@ const AV_OPT_TYPE_BINARY = UInt32(7)
 const AV_OPT_TYPE_CONST = UInt32(128)
 # end enum AVOptionType
 
-immutable AVOption
+struct AVOption
     name::Ptr{UInt8}
     help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
     unit::Ptr{UInt8}
 end
 
-immutable AVClass
+struct AVClass
     class_name::Ptr{UInt8}
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
 end
 
 const AV_PIX_FMT_FLAG_BE = 1 << 0
@@ -755,7 +755,7 @@ const PIX_FMT_RGB = AV_PIX_FMT_FLAG_RGB
 const PIX_FMT_PSEUDOPAL = AV_PIX_FMT_FLAG_PSEUDOPAL
 const PIX_FMT_ALPHA = AV_PIX_FMT_FLAG_ALPHA
 
-immutable AVComponentDescriptor
+struct AVComponentDescriptor
     plane::UInt16
     step_minus1::UInt16
     offset_plus1::UInt16
@@ -763,7 +763,7 @@ immutable AVComponentDescriptor
     depth_minus1::UInt16
 end
 
-immutable Array_4_AVComponentDescriptor
+struct Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
     d2::AVComponentDescriptor
     d3::AVComponentDescriptor
@@ -772,7 +772,7 @@ end
 
 zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
 
-immutable AVPixFmtDescriptor
+struct AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
@@ -1094,7 +1094,7 @@ const LIBAVUTIL_VERSION_MICRO = 0
 # Skipping MacroDefinition: FF_API_VDPAU ( LIBAVUTIL_VERSION_MAJOR < 54 )
 # Skipping MacroDefinition: FF_API_XVMC ( LIBAVUTIL_VERSION_MAJOR < 54 )
 
-const AVAudioFifo=Void
+const AVAudioFifo=Nothing
 
 # begin enum AVDownmixType
 const AVDownmixType=UInt32
@@ -1105,7 +1105,7 @@ const AV_DOWNMIX_TYPE_DPLII = UInt32(3)
 const AV_DOWNMIX_TYPE_NB = UInt32(4)
 # end enum AVDownmixType
 
-immutable AVDownmixInfo
+struct AVDownmixInfo
     preferred_downmix_type::AVDownmixType
     center_mix_level::Cdouble
     center_mix_level_ltrt::Cdouble
@@ -1141,12 +1141,12 @@ const AV_STEREO3D_LINES = UInt32(6)
 const AV_STEREO3D_COLUMNS = UInt32(7)
 # end enum AVStereo3DType
 
-immutable AVStereo3D
+struct AVStereo3D
     _type::AVStereo3DType
     flags::Cint
 end
 
-immutable Array_16_Uint32
+struct Array_16_Uint32
     d1::UInt32
     d2::UInt32
     d3::UInt32
@@ -1167,6 +1167,6 @@ end
 
 zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(UInt32),16)...)
 
-immutable AVXTEA
+struct AVXTEA
     key::Array_16_Uint32
 end

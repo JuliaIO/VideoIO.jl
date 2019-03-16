@@ -67,7 +67,7 @@ end
 
 function get_header_library(hpath)
     for lib,ver in av_lib_ver
-        if contains(hpath, lib)
+        if occursin(lib, hpath)
             return lib
         end
     end

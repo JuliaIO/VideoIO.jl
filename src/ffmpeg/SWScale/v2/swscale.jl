@@ -75,7 +75,7 @@ function sws_init_context(sws_context,srcFilter,dstFilter)
 end
 
 function sws_freeContext(swsContext)
-    ccall((:sws_freeContext,libswscale),Void,(Ptr{SwsContext},),swsContext)
+    ccall((:sws_freeContext,libswscale),Cvoid,(Ptr{SwsContext},),swsContext)
 end
 
 function sws_getContext(srcW::Integer,srcH::Integer,srcFormat::AVPixelFormat,dstW::Integer,dstH::Integer,dstFormat::AVPixelFormat,flags::Integer,srcFilter,dstFilter,param)
@@ -111,27 +111,27 @@ function sws_getIdentityVec()
 end
 
 function sws_scaleVec(a,scalar::Cdouble)
-    ccall((:sws_scaleVec,libswscale),Void,(Ptr{SwsVector},Cdouble),a,scalar)
+    ccall((:sws_scaleVec,libswscale),Cvoid,(Ptr{SwsVector},Cdouble),a,scalar)
 end
 
 function sws_normalizeVec(a,height::Cdouble)
-    ccall((:sws_normalizeVec,libswscale),Void,(Ptr{SwsVector},Cdouble),a,height)
+    ccall((:sws_normalizeVec,libswscale),Cvoid,(Ptr{SwsVector},Cdouble),a,height)
 end
 
 function sws_convVec(a,b)
-    ccall((:sws_convVec,libswscale),Void,(Ptr{SwsVector},Ptr{SwsVector}),a,b)
+    ccall((:sws_convVec,libswscale),Cvoid,(Ptr{SwsVector},Ptr{SwsVector}),a,b)
 end
 
 function sws_addVec(a,b)
-    ccall((:sws_addVec,libswscale),Void,(Ptr{SwsVector},Ptr{SwsVector}),a,b)
+    ccall((:sws_addVec,libswscale),Cvoid,(Ptr{SwsVector},Ptr{SwsVector}),a,b)
 end
 
 function sws_subVec(a,b)
-    ccall((:sws_subVec,libswscale),Void,(Ptr{SwsVector},Ptr{SwsVector}),a,b)
+    ccall((:sws_subVec,libswscale),Cvoid,(Ptr{SwsVector},Ptr{SwsVector}),a,b)
 end
 
 function sws_shiftVec(a,shift::Integer)
-    ccall((:sws_shiftVec,libswscale),Void,(Ptr{SwsVector},Cint),a,shift)
+    ccall((:sws_shiftVec,libswscale),Cvoid,(Ptr{SwsVector},Cint),a,shift)
 end
 
 function sws_cloneVec(a)
@@ -139,11 +139,11 @@ function sws_cloneVec(a)
 end
 
 function sws_printVec2(a,log_ctx,log_level::Integer)
-    ccall((:sws_printVec2,libswscale),Void,(Ptr{SwsVector},Ptr{AVClass},Cint),a,log_ctx,log_level)
+    ccall((:sws_printVec2,libswscale),Cvoid,(Ptr{SwsVector},Ptr{AVClass},Cint),a,log_ctx,log_level)
 end
 
 function sws_freeVec(a)
-    ccall((:sws_freeVec,libswscale),Void,(Ptr{SwsVector},),a)
+    ccall((:sws_freeVec,libswscale),Cvoid,(Ptr{SwsVector},),a)
 end
 
 function sws_getDefaultFilter(lumaGBlur::Cfloat,chromaGBlur::Cfloat,lumaSharpen::Cfloat,chromaSharpen::Cfloat,chromaHShift::Cfloat,chromaVShift::Cfloat,verbose::Integer)
@@ -151,7 +151,7 @@ function sws_getDefaultFilter(lumaGBlur::Cfloat,chromaGBlur::Cfloat,lumaSharpen:
 end
 
 function sws_freeFilter(filter)
-    ccall((:sws_freeFilter,libswscale),Void,(Ptr{SwsFilter},),filter)
+    ccall((:sws_freeFilter,libswscale),Cvoid,(Ptr{SwsFilter},),filter)
 end
 
 function sws_getCachedContext(context,srcW::Integer,srcH::Integer,srcFormat::AVPixelFormat,dstW::Integer,dstH::Integer,dstFormat::AVPixelFormat,flags::Integer,srcFilter,dstFilter,param)
@@ -159,11 +159,11 @@ function sws_getCachedContext(context,srcW::Integer,srcH::Integer,srcFormat::AVP
 end
 
 function sws_convertPalette8ToPacked32(src,dst,num_pixels::Integer,palette)
-    ccall((:sws_convertPalette8ToPacked32,libswscale),Void,(Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8}),src,dst,num_pixels,palette)
+    ccall((:sws_convertPalette8ToPacked32,libswscale),Cvoid,(Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8}),src,dst,num_pixels,palette)
 end
 
 function sws_convertPalette8ToPacked24(src,dst,num_pixels::Integer,palette)
-    ccall((:sws_convertPalette8ToPacked24,libswscale),Void,(Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8}),src,dst,num_pixels,palette)
+    ccall((:sws_convertPalette8ToPacked24,libswscale),Cvoid,(Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8}),src,dst,num_pixels,palette)
 end
 
 function sws_get_class()

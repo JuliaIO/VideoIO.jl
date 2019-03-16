@@ -30,7 +30,7 @@ function av_opencl_get_device_list(device_list)
 end
 
 function av_opencl_free_device_list(device_list)
-    ccall((:av_opencl_free_device_list,libavutil),Void,(Ptr{Ptr{AVOpenCLDeviceList}},),device_list)
+    ccall((:av_opencl_free_device_list,libavutil),Cvoid,(Ptr{Ptr{AVOpenCLDeviceList}},),device_list)
 end
 
 function av_opencl_set_option(key,val)
@@ -42,7 +42,7 @@ function av_opencl_get_option(key,out_val)
 end
 
 function av_opencl_free_option()
-    ccall((:av_opencl_free_option,libavutil),Void,())
+    ccall((:av_opencl_free_option,libavutil),Cvoid,())
 end
 
 function av_opencl_alloc_external_env()
@@ -50,7 +50,7 @@ function av_opencl_alloc_external_env()
 end
 
 function av_opencl_free_external_env(ext_opencl_env)
-    ccall((:av_opencl_free_external_env,libavutil),Void,(Ptr{Ptr{AVOpenCLExternalEnv}},),ext_opencl_env)
+    ccall((:av_opencl_free_external_env,libavutil),Cvoid,(Ptr{Ptr{AVOpenCLExternalEnv}},),ext_opencl_env)
 end
 
 function av_opencl_errstr(status::cl_int)
@@ -74,7 +74,7 @@ function av_opencl_get_command_queue()
 end
 
 function av_opencl_buffer_create(cl_buf,cl_buf_size::Csize_t,flags::Integer,host_ptr)
-    ccall((:av_opencl_buffer_create,libavutil),Cint,(Ptr{cl_mem},Csize_t,Cint,Ptr{Void}),cl_buf,cl_buf_size,flags,host_ptr)
+    ccall((:av_opencl_buffer_create,libavutil),Cint,(Ptr{cl_mem},Csize_t,Cint,Ptr{Cvoid}),cl_buf,cl_buf_size,flags,host_ptr)
 end
 
 function av_opencl_buffer_write(dst_cl_buf::cl_mem,src_buf,buf_size::Csize_t)
@@ -94,13 +94,13 @@ function av_opencl_buffer_read_image(dst_data,plane_size,plane_num::Integer,src_
 end
 
 function av_opencl_buffer_release(cl_buf)
-    ccall((:av_opencl_buffer_release,libavutil),Void,(Ptr{cl_mem},),cl_buf)
+    ccall((:av_opencl_buffer_release,libavutil),Cvoid,(Ptr{cl_mem},),cl_buf)
 end
 
 function av_opencl_uninit()
-    ccall((:av_opencl_uninit,libavutil),Void,())
+    ccall((:av_opencl_uninit,libavutil),Cvoid,())
 end
 
 function av_opencl_benchmark(device,platform::cl_platform_id,benchmark)
-    ccall((:av_opencl_benchmark,libavutil),Int64,(Ptr{AVOpenCLDeviceNode},cl_platform_id,Ptr{Void}),device,platform,benchmark)
+    ccall((:av_opencl_benchmark,libavutil),Int64,(Ptr{AVOpenCLDeviceNode},cl_platform_id,Ptr{Cvoid}),device,platform,benchmark)
 end

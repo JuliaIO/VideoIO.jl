@@ -142,9 +142,9 @@ const AVIO_FLAG_READ_WRITE  =  AVIO_FLAG_READ | AVIO_FLAG_WRITE
 const AVIO_FLAG_NONBLOCK  =  8
 const AVIO_FLAG_DIRECT  =  0x8000
 
-immutable AVIOInterruptCB
-    callback::Ptr{Void}
-    opaque::Ptr{Void}
+struct AVIOInterruptCB
+    callback::Ptr{Cvoid}
+    opaque::Ptr{Cvoid}
 end
 
 # begin enum AVIODirEntryType
@@ -162,7 +162,7 @@ const AVIO_ENTRY_SHARE  =  (UInt32)(9)
 const AVIO_ENTRY_WORKGROUP  =  (UInt32)(10)
 # end enum AVIODirEntryType
 
-immutable AVIODirEntry
+struct AVIODirEntry
     name::Cstring
     _type::Cint
     utf8::Cint
@@ -175,21 +175,21 @@ immutable AVIODirEntry
     filemode::Int64
 end
 
-immutable AVIODirContext
+struct AVIODirContext
 #    url_context::Ptr{URLContext}
-    url_context::Ptr{Void}
+    url_context::Ptr{Cvoid}
 end
 
-immutable AVIOContext
+struct AVIOContext
     av_class::Ptr{AVClass}
     buffer::Ptr{Cuchar}
     buffer_size::Cint
     buf_ptr::Ptr{Cuchar}
     buf_end::Ptr{Cuchar}
-    opaque::Ptr{Void}
-    read_packet::Ptr{Void}
-    write_packet::Ptr{Void}
-    seek::Ptr{Void}
+    opaque::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    seek::Ptr{Cvoid}
     pos::Int64
     must_flush::Cint
     eof_reached::Cint
@@ -197,10 +197,10 @@ immutable AVIOContext
     max_packet_size::Cint
     checksum::Culong
     checksum_ptr::Ptr{Cuchar}
-    update_checksum::Ptr{Void}
+    update_checksum::Ptr{Cvoid}
     error::Cint
-    read_pause::Ptr{Void}
-    read_seek::Ptr{Void}
+    read_pause::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
     seekable::Cint
     maxsize::Int64
     direct::Cint
@@ -212,7 +212,7 @@ immutable AVIOContext
     protocol_whitelist::Cstring
 end
 
-const AVBPrint = Void
+const AVBPrint = Nothing
 
 const LIBAVFORMAT_VERSION_MAJOR  =  57
 const LIBAVFORMAT_VERSION_MINOR  =  25
@@ -306,9 +306,9 @@ const AVSEEK_FLAG_BYTE  =  2
 const AVSEEK_FLAG_ANY  =  4
 const AVSEEK_FLAG_FRAME  =  8
 
-const AVCodecTag = Void
+const AVCodecTag = Nothing
 
-immutable AVInputFormat
+struct AVInputFormat
     name::Cstring
     long_name::Cstring
     flags::Cint
@@ -319,21 +319,21 @@ immutable AVInputFormat
     next::Ptr{AVInputFormat}
     raw_codec_id::Cint
     priv_data_size::Cint
-    read_probe::Ptr{Void}
-    read_header::Ptr{Void}
-    read_packet::Ptr{Void}
-    read_close::Ptr{Void}
-    read_seek::Ptr{Void}
-    read_timestamp::Ptr{Void}
-    read_play::Ptr{Void}
-    read_pause::Ptr{Void}
-    read_seek2::Ptr{Void}
-    get_device_list::Ptr{Void}
-    create_device_capabilities::Ptr{Void}
-    free_device_capabilities::Ptr{Void}
+    read_probe::Ptr{Cvoid}
+    read_header::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    read_close::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
+    read_timestamp::Ptr{Cvoid}
+    read_play::Ptr{Cvoid}
+    read_pause::Ptr{Cvoid}
+    read_seek2::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
 end
 
-immutable AVOutputFormat
+struct AVOutputFormat
     name::Cstring
     long_name::Cstring
     mime_type::Cstring
@@ -346,24 +346,24 @@ immutable AVOutputFormat
     priv_class::Ptr{AVClass}
     next::Ptr{AVOutputFormat}
     priv_data_size::Cint
-    write_header::Ptr{Void}
-    write_packet::Ptr{Void}
-    write_trailer::Ptr{Void}
-    interleave_packet::Ptr{Void}
-    query_codec::Ptr{Void}
-    get_output_timestamp::Ptr{Void}
-    control_message::Ptr{Void}
-    write_uncoded_frame::Ptr{Void}
-    get_device_list::Ptr{Void}
-    create_device_capabilities::Ptr{Void}
-    free_device_capabilities::Ptr{Void}
+    write_header::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    write_trailer::Ptr{Cvoid}
+    interleave_packet::Ptr{Cvoid}
+    query_codec::Ptr{Cvoid}
+    get_output_timestamp::Ptr{Cvoid}
+    control_message::Ptr{Cvoid}
+    write_uncoded_frame::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
     data_codec::AVCodecID
-    init::Ptr{Void}
-    deinit::Ptr{Void}
-    check_bitstream::Ptr{Void}
+    init::Ptr{Cvoid}
+    deinit::Ptr{Cvoid}
+    check_bitstream::Ptr{Cvoid}
 end
 
-immutable AVFrac
+struct AVFrac
     val::Int64
     num::Int64
     den::Int64
@@ -379,19 +379,19 @@ const AVSTREAM_PARSE_FULL_ONCE  =  (UInt32)(4)
 const AVSTREAM_PARSE_FULL_RAW  =  (UInt32)(1463898624)
 # end enum AVStreamParseType
 
-immutable AVPacketList
+struct AVPacketList
     pkt::AVPacket
     next::Ptr{AVPacketList}
 end
 
-immutable AVProbeData
+struct AVProbeData
     filename::Cstring
     buf::Ptr{Cuchar}
     buf_size::Cint
     mime_type::Cstring
 end
 
-immutable AVIndexEntry
+struct AVIndexEntry
     pos::Int64
     timestamp::Int64
     flags::Cint
@@ -399,13 +399,13 @@ immutable AVIndexEntry
     min_distance::Cint
 end
 
-const AVStreamInternal = Void
+const AVStreamInternal = Nothing
 
-immutable AVStream
+struct AVStream
     index::Cint
     id::Cint
     codec::Ptr{AVCodecContext}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pts::AVFrac
     time_base::AVRational
     start_time::Int64
@@ -420,7 +420,7 @@ immutable AVStream
     side_data::Ptr{AVPacketSideData}
     nb_side_data::Cint
     event_flags::Cint
-    info::Ptr{Void}
+    info::Ptr{Cvoid}
     pts_wrap_bits::Cint
     first_dts::Int64
     cur_dts::Int64
@@ -459,11 +459,11 @@ immutable AVStream
     inject_global_side_data::Cint
     recommended_encoder_configuration::Cstring
     display_aspect_ratio::AVRational
-    priv_pts::Ptr{Void} #FFFrac}
+    priv_pts::Ptr{Cvoid} #FFFrac}
     internal::Ptr{AVStreamInternal}
 end
 
-immutable AVProgram
+struct AVProgram
     id::Cint
     flags::Cint
     discard::AVDiscard
@@ -479,7 +479,7 @@ immutable AVProgram
     pts_wrap_behavior::Cint
 end
 
-immutable AVChapter
+struct AVChapter
     id::Cint
     time_base::AVRational
     start::Int64
@@ -494,14 +494,14 @@ const AVFMT_DURATION_FROM_STREAM  =  (UInt32)(1)
 const AVFMT_DURATION_FROM_BITRATE  =  (UInt32)(2)
 # end enum AVDurationEstimationMethod
 
-const AVFormatInternal = Void
-const av_format_control_message = Ptr{Void}
+const AVFormatInternal = Nothing
+const av_format_control_message = Ptr{Cvoid}
 
-immutable AVFormatContext
+struct AVFormatContext
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pb::Ptr{AVIOContext}
     ctx_flags::Cint
     nb_streams::UInt32
@@ -559,17 +559,17 @@ immutable AVFormatContext
     subtitle_codec::Ptr{AVCodec}
     data_codec::Ptr{AVCodec}
     metadata_header_padding::Cint
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     control_message_cb::av_format_control_message
     output_ts_offset::Int64
     dump_separator::Ptr{UInt8}
     data_codec_id::AVCodecID
-    open_cb::Ptr{Void}
+    open_cb::Ptr{Cvoid}
     protocol_whitelist::Cstring
-    io_open::Ptr{Void}
-    io_close::Ptr{Void}
+    io_open::Ptr{Cvoid}
+    io_close::Ptr{Cvoid}
 end
 
-const AVDeviceInfoList = Void
-const AVDeviceCapabilitiesQuery = Void
-const AVOpenCallback = Ptr{Void}
+const AVDeviceInfoList = Nothing
+const AVDeviceCapabilitiesQuery = Nothing
+const AVOpenCallback = Ptr{Cvoid}

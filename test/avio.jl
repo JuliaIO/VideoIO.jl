@@ -1,5 +1,5 @@
-using Base.Test
-using ColorTypes, FileIO, ImageCore
+using Test
+using ColorTypes, FileIO, ImageCore, ImageMagick
 
 import VideoIO
 
@@ -11,20 +11,20 @@ VideoIO.TestVideos.download_all()
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
-println(STDERR, "Testing file reading...")
+println(stderr, "Testing file reading...")
 
-@noinline function notblank(img)
+@noinline function isblank(img)
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
 for name in VideoIO.TestVideos.names()
-    is_apple() && startswith(name, "crescent") && continue
-    println(STDERR, "   Testing $name...")
+    Sys.isapple() && startswith(name, "crescent") && continue
+    println(stderr, "   Testing $name...")
 
     first_frame_file = joinpath(testdir, swapext(name, ".png"))
-    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png") 
+    fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
     first_frame = load(first_frame_file) # comment line when creating png files
-   
+
     f = VideoIO.testvideo(name)
     v = VideoIO.openvideo(f)
 
@@ -35,7 +35,7 @@ for name in VideoIO.TestVideos.names()
     img = read(v)
 
     # Find the first non-trivial image
-    while notblank(img)
+    while isblank(img)
         read!(v, img)
     end
 
@@ -43,45 +43,54 @@ for name in VideoIO.TestVideos.names()
 
     @test img == first_frame               # comment line when creating png files
 
-    
+
     for i in 1:50
         read!(v,img)
     end
     fiftieth_frame = img
     timebase = v.avin.video_info[1].stream.time_base
     tstamp = v.aVideoFrame[1].pkt_dts
-    fiftytime = (tstamp-v.avin.video_info[1].stream.first_dts)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
-
-    seek(v,float(fiftytime))
-    read!(v,img)
-    
-    @test img == fiftieth_frame
+    video_tstamp = v.avin.video_info[1].stream.first_dts
+    fiftytime = (tstamp-video_tstamp)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
 
     while !eof(v)
         read!(v, img)
     end
 
-    # read first frames again, and compare
-    seekstart(v)
+    if (video_tstamp == VideoIO.AV_NOPTS_VALUE ||
+        VideoIO._avformat_version().major < 54 ||
+        VideoIO.ffmpeg_or_libav == "libav")
+        println("Skipping seek tests")
+    else
 
-    read!(v, img)
+        seek(v,float(fiftytime))
+        read!(v,img)
 
-    while notblank(img)
+        @test img == fiftieth_frame
+
+        # read first frames again, and compare
+        seekstart(v)
+
         read!(v, img)
+
+        while isblank(img)
+            read!(v, img)
+        end
+
+        @test img == first_frame
     end
 
-    @test img == first_frame
     close(v)
 end
 
-println(STDERR, "Testing IO reading...")
+println(stderr, "Testing IO reading...")
 for name in VideoIO.TestVideos.names()
-    is_apple() && startswith(name, "crescent") && continue
+    Sys.isapple() && startswith(name, "crescent") && continue
     # TODO: fix me?
     (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
 
-    println(STDERR, "   Testing $name...")
-    first_frame_file = joinpath(testdir, swapext(name, ".png")) 
+    println(stderr, "   Testing $name...")
+    first_frame_file = joinpath(testdir, swapext(name, ".png"))
     first_frame = load(first_frame_file) # comment line when creating png files
 
     filename = joinpath(videodir, name)
@@ -94,13 +103,13 @@ for name in VideoIO.TestVideos.names()
     img = read(v)
 
     # Find the first non-trivial image
-    while notblank(img)
+    while isblank(img)
         read!(v, img)
     end
 
     #save(first_frame_file,img)        # uncomment line when creating png files
 
-    @test img == first_frame               # comment line when creating png files   
+    @test img == first_frame               # comment line when creating png files
 
     while !eof(v)
         read!(v, img)

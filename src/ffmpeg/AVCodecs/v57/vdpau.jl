@@ -21,7 +21,7 @@ function av_vdpau_hwaccel_get_render2(arg1)
 end
 
 function av_vdpau_hwaccel_set_render2(arg1,arg2::AVVDPAU_Render2)
-    ccall((:av_vdpau_hwaccel_set_render2,libavcodec),Void,(Ptr{AVVDPAUContext},AVVDPAU_Render2),arg1,arg2)
+    ccall((:av_vdpau_hwaccel_set_render2,libavcodec),Cvoid,(Ptr{AVVDPAUContext},AVVDPAU_Render2),arg1,arg2)
 end
 
 function av_vdpau_bind_context(avctx,device::Integer,get_proc_address,flags::Integer)

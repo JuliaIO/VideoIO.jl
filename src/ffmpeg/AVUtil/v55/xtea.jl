@@ -15,17 +15,17 @@ function av_xtea_alloc()
 end
 
 function av_xtea_init(ctx,key::NTuple{16,UInt8})
-    ccall((:av_xtea_init,libavutil),Void,(Ptr{AVXTEA},NTuple{16,UInt8}),ctx,key)
+    ccall((:av_xtea_init,libavutil),Cvoid,(Ptr{AVXTEA},NTuple{16,UInt8}),ctx,key)
 end
 
 function av_xtea_le_init(ctx,key::NTuple{16,UInt8})
-    ccall((:av_xtea_le_init,libavutil),Void,(Ptr{AVXTEA},NTuple{16,UInt8}),ctx,key)
+    ccall((:av_xtea_le_init,libavutil),Cvoid,(Ptr{AVXTEA},NTuple{16,UInt8}),ctx,key)
 end
 
 function av_xtea_crypt(ctx,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_xtea_crypt,libavutil),Void,(Ptr{AVXTEA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
+    ccall((:av_xtea_crypt,libavutil),Cvoid,(Ptr{AVXTEA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
 end
 
 function av_xtea_le_crypt(ctx,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_xtea_le_crypt,libavutil),Void,(Ptr{AVXTEA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
+    ccall((:av_xtea_le_crypt,libavutil),Cvoid,(Ptr{AVXTEA},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),ctx,dst,src,count,iv,decrypt)
 end

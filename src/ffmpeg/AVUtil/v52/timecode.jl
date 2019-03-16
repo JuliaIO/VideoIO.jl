@@ -34,11 +34,11 @@ function av_timecode_make_mpeg_tc_string(buf,tc25bit::Integer)
 end
 
 function av_timecode_init(tc,rate::AVRational,flags::Integer,frame_start::Integer,log_ctx)
-    ccall((:av_timecode_init,libavutil),Cint,(Ptr{AVTimecode},AVRational,Cint,Cint,Ptr{Void}),tc,rate,flags,frame_start,log_ctx)
+    ccall((:av_timecode_init,libavutil),Cint,(Ptr{AVTimecode},AVRational,Cint,Cint,Ptr{Cvoid}),tc,rate,flags,frame_start,log_ctx)
 end
 
 function av_timecode_init_from_string(tc,rate::AVRational,str,log_ctx)
-    ccall((:av_timecode_init_from_string,libavutil),Cint,(Ptr{AVTimecode},AVRational,Ptr{UInt8},Ptr{Void}),tc,rate,str,log_ctx)
+    ccall((:av_timecode_init_from_string,libavutil),Cint,(Ptr{AVTimecode},AVRational,Ptr{UInt8},Ptr{Cvoid}),tc,rate,str,log_ctx)
 end
 
 function av_timecode_check_frame_rate(rate::AVRational)

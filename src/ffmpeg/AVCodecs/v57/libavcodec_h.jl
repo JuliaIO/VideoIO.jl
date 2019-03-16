@@ -1492,12 +1492,12 @@ const PARSER_FLAG_ONCE  =  0x0002
 const PARSER_FLAG_FETCHED_OFFSET  =  0x0004
 const PARSER_FLAG_USE_CODEC_TS  =  0x1000
 
-immutable AVProfile
+struct AVProfile
     profile::Cint
     name::Cstring
 end
 
-immutable AVCodecDescriptor
+struct AVCodecDescriptor
     id::AVCodecID
     _type::AVMediaType
     name::Cstring
@@ -1546,21 +1546,21 @@ const AV_AUDIO_SERVICE_TYPE_KARAOKE  =  (UInt32)(8)
 const AV_AUDIO_SERVICE_TYPE_NB  =  (UInt32)(9)
 # end enum AVAudioServiceType
 
-immutable RcOverride
+struct RcOverride
     start_frame::Cint
     end_frame::Cint
     qscale::Cint
     quality_factor::Cfloat
 end
 
-immutable AVPanScan
+struct AVPanScan
     id::Cint
     width::Cint
     height::Cint
     position::NTuple{3,NTuple{2,Int16}}
 end
 
-immutable AVCPBProperties
+struct AVCPBProperties
     max_bitrate::Cint
     min_bitrate::Cint
     avg_bitrate::Cint
@@ -1568,13 +1568,13 @@ immutable AVCPBProperties
     vbv_delay::UInt64
 end
 
-immutable AVPacketSideData
+struct AVPacketSideData
     data::Ptr{UInt8}
     size::Cint
     _type::AVPacketSideDataType
 end
 
-immutable AVPacket
+struct AVPacket
     buf::Ptr{AVBufferRef}
     pts::Int64
     dts::Int64
@@ -1597,7 +1597,7 @@ const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE  =  (UInt32)(4)
 const AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS  =  (UInt32)(8)
 # end enum AVSideDataParamChangeFlags
 
-const AVCodecInternal = Void
+const AVCodecInternal = Nothing
 
 # begin enum AVFieldOrder
 const AVFieldOrder = UInt32
@@ -1609,9 +1609,9 @@ const AV_FIELD_TB  =  (UInt32)(4)
 const AV_FIELD_BT  =  (UInt32)(5)
 # end enum AVFieldOrder
 
-const AVCodecDefault = Void
+const AVCodecDefault = Nothing
 
-immutable AVCodec
+struct AVCodec
     name::Cstring
     long_name::Cstring
     _type::AVMediaType
@@ -1627,40 +1627,40 @@ immutable AVCodec
     profiles::Ptr{AVProfile}
     priv_data_size::Cint
     next::Ptr{AVCodec}
-    init_thread_copy::Ptr{Void}
-    update_thread_context::Ptr{Void}
+    init_thread_copy::Ptr{Cvoid}
+    update_thread_context::Ptr{Cvoid}
     defaults::Ptr{AVCodecDefault}
-    init_static_data::Ptr{Void}
-    init::Ptr{Void}
-    encode_sub::Ptr{Void}
-    encode2::Ptr{Void}
-    decode::Ptr{Void}
-    close::Ptr{Void}
-    flush::Ptr{Void}
+    init_static_data::Ptr{Cvoid}
+    init::Ptr{Cvoid}
+    encode_sub::Ptr{Cvoid}
+    encode2::Ptr{Cvoid}
+    decode::Ptr{Cvoid}
+    close::Ptr{Cvoid}
+    flush::Ptr{Cvoid}
     caps_internal::Cint
 end
 
-immutable AVHWAccel
+struct AVHWAccel
     name::Cstring
     _type::AVMediaType
     id::AVCodecID
     pix_fmt::AVPixelFormat
     capabilities::Cint
     next::Ptr{AVHWAccel}
-    alloc_frame::Ptr{Void}
-    start_frame::Ptr{Void}
-    decode_slice::Ptr{Void}
-    end_frame::Ptr{Void}
+    alloc_frame::Ptr{Cvoid}
+    start_frame::Ptr{Cvoid}
+    decode_slice::Ptr{Cvoid}
+    end_frame::Ptr{Cvoid}
     frame_priv_data_size::Cint
-    decode_mb::Ptr{Void}
-    init::Ptr{Void}
-    uninit::Ptr{Void}
+    decode_mb::Ptr{Cvoid}
+    init::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
     priv_data_size::Cint
 end
 
 # const AVFrame = Void
 
-immutable AVCodecContext
+struct AVCodecContext
     av_class::Ptr{AVClass}
     log_level_offset::Cint
     codec_type::AVMediaType
@@ -1669,9 +1669,9 @@ immutable AVCodecContext
     codec_id::AVCodecID
     codec_tag::UInt32
     stream_codec_tag::UInt32
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     internal::Ptr{AVCodecInternal}
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     bit_rate::Int64
     bit_rate_tolerance::Cint
     global_quality::Cint
@@ -1690,8 +1690,8 @@ immutable AVCodecContext
     gop_size::Cint
     pix_fmt::AVPixelFormat
     me_method::Cint
-    draw_horiz_band::Ptr{Void}
-    get_format::Ptr{Void}
+    draw_horiz_band::Ptr{Cvoid}
+    get_format::Ptr{Cvoid}
     max_b_frames::Cint
     b_quant_factor::Cfloat
     rc_strategy::Cint
@@ -1766,7 +1766,7 @@ immutable AVCodecContext
     request_channel_layout::UInt64
     audio_service_type::AVAudioServiceType
     request_sample_fmt::AVSampleFormat
-    get_buffer2::Ptr{Void}
+    get_buffer2::Ptr{Cvoid}
     refcounted_frames::Cint
     qcompress::Cfloat
     qblur::Cfloat
@@ -1799,7 +1799,7 @@ immutable AVCodecContext
     min_prediction_order::Cint
     max_prediction_order::Cint
     timecode_frame_start::Int64
-    rtp_callback::Ptr{Void}
+    rtp_callback::Ptr{Cvoid}
     rtp_payload_size::Cint
     mv_bits::Cint
     header_bits::Cint
@@ -1820,7 +1820,7 @@ immutable AVCodecContext
     err_recognition::Cint
     reordered_opaque::Int64
     hwaccel::Ptr{AVHWAccel}
-    hwaccel_context::Ptr{Void}
+    hwaccel_context::Ptr{Cvoid}
     error::NTuple{8,UInt64}
     dct_algo::Cint
     idct_algo::Cint
@@ -1832,8 +1832,8 @@ immutable AVCodecContext
     thread_type::Cint
     active_thread_type::Cint
     thread_safe_callbacks::Cint
-    execute::Ptr{Void}
-    execute2::Ptr{Void}
+    execute::Ptr{Cvoid}
+    execute2::Ptr{Cvoid}
     nsse_weight::Cint
     profile::Cint
     level::Cint
@@ -1866,7 +1866,7 @@ immutable AVCodecContext
     nb_coded_side_data::Cint
 end
 
-immutable AVPicture
+struct AVPicture
     data::NTuple{8,Ptr{UInt8}}
     linesize::NTuple{8,Cint}
 end
@@ -1879,7 +1879,7 @@ const SUBTITLE_TEXT  =  (UInt32)(2)
 const SUBTITLE_ASS  =  (UInt32)(3)
 # end enum AVSubtitleType
 
-immutable AVSubtitleRect
+struct AVSubtitleRect
     x::Cint
     y::Cint
     w::Cint
@@ -1894,7 +1894,7 @@ immutable AVSubtitleRect
     flags::Cint
 end
 
-immutable AVSubtitle
+struct AVSubtitle
     format::UInt16
     start_display_time::UInt32
     end_display_time::UInt32
@@ -1903,7 +1903,7 @@ immutable AVSubtitle
     pts::Int64
 end
 
-const MpegEncContext = Void
+const MpegEncContext = Nothing
 
 # begin enum AVPictureStructure
 const AVPictureStructure = UInt32
@@ -1913,18 +1913,18 @@ const AV_PICTURE_STRUCTURE_BOTTOM_FIELD  =  (UInt32)(2)
 const AV_PICTURE_STRUCTURE_FRAME  =  (UInt32)(3)
 # end enum AVPictureStructure
 
-immutable AVCodecParser
+struct AVCodecParser
     codec_ids::NTuple{5,Cint}
     priv_data_size::Cint
-    parser_init::Ptr{Void}
-    parser_parse::Ptr{Void}
-    parser_close::Ptr{Void}
-    split::Ptr{Void}
+    parser_init::Ptr{Cvoid}
+    parser_parse::Ptr{Cvoid}
+    parser_close::Ptr{Cvoid}
+    split::Ptr{Cvoid}
     next::Ptr{AVCodecParser}
 end
 
-immutable AVCodecParserContext
-    priv_data::Ptr{Void}
+struct AVCodecParserContext
+    priv_data::Ptr{Cvoid}
     parser::Ptr{AVCodecParser}
     frame_offset::Int64
     cur_offset::Int64
@@ -1962,19 +1962,19 @@ immutable AVCodecParserContext
     format::Cint
 end
 
-const ReSampleContext = Void
-const AVResampleContext = Void
+const ReSampleContext = Nothing
+const AVResampleContext = Nothing
 
-immutable AVBitStreamFilter
+struct AVBitStreamFilter
     name::Cstring
     priv_data_size::Cint
-    filter::Ptr{Void}
-    close::Ptr{Void}
+    filter::Ptr{Cvoid}
+    close::Ptr{Cvoid}
     next::Ptr{AVBitStreamFilter}
 end
 
-immutable AVBitStreamFilterContext
-    priv_data::Ptr{Void}
+struct AVBitStreamFilterContext
+    priv_data::Ptr{Cvoid}
     filter::Ptr{AVBitStreamFilter}
     parser::Ptr{AVCodecParserContext}
     next::Ptr{AVBitStreamFilterContext}
@@ -2054,21 +2054,21 @@ const LIBAVCODEC_VERSION_MICRO  =  102
 # Skipping MacroDefinition: FF_API_STAT_BITS ( LIBAVCODEC_VERSION_MAJOR < 59 )
 # Skipping MacroDefinition: FF_API_PRIVATE_OPT ( LIBAVCODEC_VERSION_MAJOR < 59 )
 
-immutable AVDCT
+struct AVDCT
     av_class::Ptr{AVClass}
-    idct::Ptr{Void}
+    idct::Ptr{Cvoid}
     idct_permutation::NTuple{64,UInt8}
-    fdct::Ptr{Void}
+    fdct::Ptr{Cvoid}
     dct_algo::Cint
     idct_algo::Cint
-    get_pixels::Ptr{Void}
+    get_pixels::Ptr{Cvoid}
     bits_per_sample::Cint
 end
 
 const FF_DXVA2_WORKAROUND_SCALING_LIST_ZIGZAG  =  1
 const FF_DXVA2_WORKAROUND_INTEL_CLEARVIDEO  =  2
 
-immutable AVD3D11VAContext
+struct AVD3D11VAContext
     decoder::Ptr{Cint}
     video_context::Ptr{Cint}
     cfg::Ptr{Cint}
@@ -2101,12 +2101,12 @@ const DIRAC_PCODE_INTRA_REF_PICT  =  (UInt32)(204)
 const DIRAC_PCODE_MAGIC  =  (UInt32)(1111638852)
 # end enum DiracParseCodes
 
-immutable DiracVersionInfo
+struct DiracVersionInfo
     major::Cint
     minor::Cint
 end
 
-immutable AVDiracSeqHeader
+struct AVDiracSeqHeader
     width::UInt32
     height::UInt32
     chroma_format::UInt8
@@ -2135,7 +2135,7 @@ end
 
 # const DV_PROFILE_BYTES  =  6 * 80
 
-immutable AVDVProfile
+struct AVDVProfile
     dsf::Cint
     video_stype::Cint
     frame_size::Cint
@@ -2152,10 +2152,10 @@ immutable AVDVProfile
     audio_stride::Cint
     audio_min_samples::NTuple{3,Cint}
     audio_samples_dist::NTuple{5,Cint}
-    audio_shuffle::Ptr{Void}
+    audio_shuffle::Ptr{Cvoid}
 end
 
-immutable AVQSVContext
+struct AVQSVContext
     session::Cint
     iopattern::Cint
     ext_buffers::Ptr{Ptr{Cint}}
@@ -2166,8 +2166,8 @@ immutable AVQSVContext
     opaque_alloc_type::Cint
 end
 
-immutable vaapi_context
-    display::Ptr{Void}
+struct vaapi_context
+    display::Ptr{Cvoid}
     config_id::UInt32
     context_id::UInt32
     pic_param_buf_id::UInt32
@@ -2176,7 +2176,7 @@ immutable vaapi_context
     slice_buf_ids::Ptr{UInt32}
     n_slice_buf_ids::UInt32
     slice_buf_ids_alloc::UInt32
-    slice_params::Ptr{Void}
+    slice_params::Ptr{Cvoid}
     slice_param_size::UInt32
     slice_params_alloc::UInt32
     slice_count::UInt32
@@ -2187,13 +2187,13 @@ end
 const FF_VDPAU_STATE_USED_FOR_RENDER  =  1
 const FF_VDPAU_STATE_USED_FOR_REFERENCE  =  2
 
-immutable AVVDPAUPictureInfo
+struct AVVDPAUPictureInfo
     _AVVDPAUPictureInfo::Cint
 end
 
-const AVVDPAU_Render2 = Ptr{Void}
+const AVVDPAU_Render2 = Ptr{Cvoid}
 
-immutable AVVDPAUContext
+struct AVVDPAUContext
     decoder::Cint
     render::Ptr{Cint}
     info::AVVDPAUPictureInfo
@@ -2203,7 +2203,7 @@ immutable AVVDPAUContext
     render2::AVVDPAU_Render2
 end
 
-immutable vdpau_render_state
+struct vdpau_render_state
     surface::Cint
     state::Cint
     info::AVVDPAUPictureInfo
@@ -2226,6 +2226,6 @@ const VORBIS_FLAG_HEADER  =  0x00000001
 const VORBIS_FLAG_COMMENT  =  0x00000002
 const VORBIS_FLAG_SETUP  =  0x00000004
 
-const AVVorbisParseContext = Void
+const AVVorbisParseContext = Nothing
 
 const AV_XVMC_ID  =  0x1dc711c0

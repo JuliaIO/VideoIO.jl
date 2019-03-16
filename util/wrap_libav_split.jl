@@ -2,16 +2,37 @@
 import Clang.wrap_c
 import DataStructures: DefaultDict
 import Base.Meta.isexpr
-import Compat: String
 using Match
 
 include("../src/init.jl")
 
-indexh         = joinpath(JULIA_HOME, "../include/clang-c/Index.h")
-clang_includes = String[joinpath(JULIA_HOME, "../lib/clang/3.7.1/include"), joinpath(dirname(indexh), "..")]
+indexh         = joinpath(Sys.BINDIR, "../include/clang-c/Index.h")
+clang_includes = String[joinpath(Sys.BINDIR, "../lib/clang/7.0.0/include"), joinpath(dirname(indexh), "..")]
 #clang_includes = String[joinpath(JULIA_HOME, "../lib/clang/3.3/include"), joinpath(dirname(indexh), "..")]
 
 strpack_structs = Set{Symbol}()
+
+import Clang.cindex, Clang.wrap_c.repr_jl, Clang.wrap_c.largestfield
+function repr_jl(t::cindex.FunctionProto)
+  :Cvoid
+end
+function repr_jl(t::Union{cindex.Enum, cindex.CXType_Elaborated})
+    decl = cindex.getTypeDeclaration(t)
+    r = cindex.spelling(decl)
+    if r != ""
+        Symbol(r)
+    elseif isa(decl, cindex.EnumDecl)
+        :Cint
+    elseif isa(decl, cindex.UnionDecl)
+        maxelem = largestfield(decl)
+        return repr_jl(cindex.cu_type(maxelem))
+    elseif isa(decl, cindex.StructDecl)
+        println("warn: treat StructDecl as Cvoid")
+        :Cvoid
+    else
+        error("unknown decl: ", decl)
+    end
+end
 
 # Allow root to be specified as the first argument
 if isempty(ARGS)
@@ -37,12 +58,13 @@ for lib in av_libs
         ver = eval(Symbol("_"*name*"_version"))()
         dir = eval(Symbol(name*"_dir"))
         push!(av_lib_ver, (lib,ver,dir))
+    catch
     end
 end
 
 const av_hpath  =  [joinpath(root, lib) for (lib,ver,dir) in av_lib_ver]
 
-const ignore_header  =  DefaultDict(String, Bool, false)
+const ignore_header  =  DefaultDict{String, Bool}(false)
 
 for i in ["lzo.h", "md5.h", "parse.h", "sha.h", "vda.h", "bprint.h",
           "attributes.h", "crc.h", "adler32.h", "aes.h", "avassert.h",
@@ -77,10 +99,10 @@ function wrap_library(library, path, outdir = ".")
                      common_file = joinpath(outdir, "$(library)_h.jl"),
                      clang_includes = clang_includes,
                      header_wrapped = check_use_header,
-                     header_library = library,
+                     header_library = x->library,
                      header_outputfile = x->get_header_outfile(outdir,x),
                      rewriter = rewrite,
-                     options = wrap_c.InternalOptions(true, true))
+                     options = wrap_c.InternalOptions(true, false))
     wrap_c.run(wc)
 
     if outdir != "."
@@ -116,7 +138,7 @@ end
 
 function get_header_outfile(hpath)
     for ((lib,ver,dir),path) in zip(av_lib_ver, av_hpath)
-        if contains(hpath, path)
+        if occursin(path, hpath)
             outdir = "$lib$(ver.major)"
             return get_header_outfile(outdir, hpath)
         end
@@ -142,13 +164,13 @@ function rewrite_fn(e, fncall, body, use_strpack=false)
     for call_arg in fncall.args[2:end]
         @match call_arg begin
             # Don't type Ptr{x} types
-            Expr(:(::), [sym, Expr(:curly, [:Ptr, _], _)], _) => push!(parms, sym)
+            Expr(:(::), [sym, Expr(:curly, [:Ptr, _])]) => push!(parms, sym)
 
             # Type all integers as Integer
-            Expr(:(::), [sym, (:UInt32 || :Cuint || :Int32 || :Cint)], _) => (sym; push!(parms, :($sym::Integer)))
+            Expr(:(::), [sym, (:UInt32 || :Cuint || :Int32 || :Cint)]) => (sym; push!(parms, :($sym::Integer)))
 
             # va_list
-            Expr(:(::), [sym, :va_list], _) => push!(parms, sym)
+            Expr(:(::), [sym, :va_list]) => push!(parms, sym)
 
             # Everything else is unchanged
             _ => push!(parms, call_arg)
@@ -173,7 +195,7 @@ end
 # Wrap type in @struct macro, and replace Array_<type>_<len> immutable types
 # (Not currently used, but possibly useful)
 function rewrite_struct(e::Expr)
-    @match(e, Expr(:type, [true, name, vars], _))
+    @match(e, Expr(:type, [true, name, vars]))
 
     global strpack_structs
     push!(strpack_structs, name)
@@ -181,7 +203,7 @@ function rewrite_struct(e::Expr)
     new_vars = []
     for arg in vars.args
         @match arg begin
-            Expr(:(::), [varname, vartype], _), if startswith(string(vartype), "Array") end =>
+            Expr(:(::), [varname, vartype]), if startswith(string(vartype), "Array") end =>
                 begin
                     @match string(vartype) r"Array_([0-9]+)_(.*)"(size_str, type_str)
                     size = Int(size_str)
@@ -199,14 +221,15 @@ end
 function rewrite_type(e::Expr)
     try
         @match e begin
-            #Expr(:type,     [false, _...], _)                      =>  return ""
+            #Expr(:type,     [false, _...])                      =>  return ""
 
             # Change empty types to type aliases
-            Expr(:type,     [_, name, Expr(:block, [], _)], _)      =>  return Expr(:typealias, name, :Void)
+            Expr(:type,     [_, name, Expr(:block, [])])         =>  return Expr(:typealias, name, :Void)
 
-            #Expr(:type,     _, _)                                  =>  return rewrite_struct(e)
-            _                                                       =>  e
+            #Expr(:type,     _)                                  =>  return rewrite_struct(e)
+            _                                                    =>  e
         end
+    catch
     end
     return e
 end
@@ -215,8 +238,8 @@ rewrite_type(s) = s
 
 function rewrite_fn(e::Expr)
     @match e begin
-        Expr(:function, [fncall, body], _)  =>  rewrite_fn(e, fncall, body)
-        _                                   =>  e
+        Expr(:function, [fncall, body])  =>  rewrite_fn(e, fncall, body)
+        _                                =>  e
     end
 end
 
@@ -225,13 +248,14 @@ rewrite_fn(s) = s
 extract_name(x) = string(x)
 function extract_name(e::Expr)
     @match e begin
-        Expr(:type,      [_, name, _], _)     => name
-        Expr(:typealias, [name, _], _)        => name
-        Expr(:call,      [name, _...], _)     => name
-        Expr(:function,  [sig, _...], _)      => extract_name(sig)
-        Expr(:const,     [assn, _...], _)     => extract_name(assn)
-        Expr(:(=),       [fn, body, _...], _) => extract_name(fn)
-        Expr(expr_type,  _...)                => error("Can't extract name from ", expr_type, " expression:\n    $e\n")
+        Expr(:type,      [_, name, _])     => name
+        Expr(:typealias, [name, _])        => name
+        Expr(:call,      [name, _...])     => name
+        Expr(:struct,    [_, name, _])     => name
+        Expr(:function,  [sig, _...])      => extract_name(sig)
+        Expr(:const,     [assn, _...])     => extract_name(assn)
+        Expr(:(=),       [fn, body, _...]) => extract_name(fn)
+        Expr(expr_type,  _...)             => error("Can't extract name from ", expr_type, " expression:\n    $e\n")
     end
 end
 

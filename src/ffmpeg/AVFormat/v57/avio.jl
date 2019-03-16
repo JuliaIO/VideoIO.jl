@@ -88,51 +88,51 @@ function avio_close_dir(s)
 end
 
 function avio_free_directory_entry(entry)
-    ccall((:avio_free_directory_entry,libavformat),Void,(Ptr{Ptr{AVIODirEntry}},),entry)
+    ccall((:avio_free_directory_entry,libavformat),Cvoid,(Ptr{Ptr{AVIODirEntry}},),entry)
 end
 
 function avio_alloc_context(buffer,buffer_size::Integer,write_flag::Integer,opaque,read_packet,write_packet,seek)
-    ccall((:avio_alloc_context,libavformat),Ptr{AVIOContext},(Ptr{Cuchar},Cint,Cint,Ptr{Void},Ptr{Void},Ptr{Void},Ptr{Void}),buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
+    ccall((:avio_alloc_context,libavformat),Ptr{AVIOContext},(Ptr{Cuchar},Cint,Cint,Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid}),buffer,buffer_size,write_flag,opaque,read_packet,write_packet,seek)
 end
 
 function avio_w8(s,b::Integer)
-    ccall((:avio_w8,libavformat),Void,(Ptr{AVIOContext},Cint),s,b)
+    ccall((:avio_w8,libavformat),Cvoid,(Ptr{AVIOContext},Cint),s,b)
 end
 
 function avio_write(s,buf,size::Integer)
-    ccall((:avio_write,libavformat),Void,(Ptr{AVIOContext},Ptr{Cuchar},Cint),s,buf,size)
+    ccall((:avio_write,libavformat),Cvoid,(Ptr{AVIOContext},Ptr{Cuchar},Cint),s,buf,size)
 end
 
 function avio_wl64(s,val::UInt64)
-    ccall((:avio_wl64,libavformat),Void,(Ptr{AVIOContext},UInt64),s,val)
+    ccall((:avio_wl64,libavformat),Cvoid,(Ptr{AVIOContext},UInt64),s,val)
 end
 
 function avio_wb64(s,val::UInt64)
-    ccall((:avio_wb64,libavformat),Void,(Ptr{AVIOContext},UInt64),s,val)
+    ccall((:avio_wb64,libavformat),Cvoid,(Ptr{AVIOContext},UInt64),s,val)
 end
 
 function avio_wl32(s,val::Integer)
-    ccall((:avio_wl32,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wl32,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wb32(s,val::Integer)
-    ccall((:avio_wb32,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wb32,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wl24(s,val::Integer)
-    ccall((:avio_wl24,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wl24,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wb24(s,val::Integer)
-    ccall((:avio_wb24,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wb24,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wl16(s,val::Integer)
-    ccall((:avio_wl16,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wl16,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_wb16(s,val::Integer)
-    ccall((:avio_wb16,libavformat),Void,(Ptr{AVIOContext},UInt32),s,val)
+    ccall((:avio_wb16,libavformat),Cvoid,(Ptr{AVIOContext},UInt32),s,val)
 end
 
 function avio_put_str(s,str)
@@ -172,7 +172,7 @@ function url_feof(s)
 end
 
 function avio_flush(s)
-    ccall((:avio_flush,libavformat),Void,(Ptr{AVIOContext},),s)
+    ccall((:avio_flush,libavformat),Cvoid,(Ptr{AVIOContext},),s)
 end
 
 function avio_read(s,buf,size::Integer)
@@ -252,7 +252,7 @@ function avio_close_dyn_buf(s,pbuffer)
 end
 
 function avio_enum_protocols(opaque,output::Integer)
-    ccall((:avio_enum_protocols,libavformat),Cstring,(Ptr{Ptr{Void}},Cint),opaque,output)
+    ccall((:avio_enum_protocols,libavformat),Cstring,(Ptr{Ptr{Cvoid}},Cint),opaque,output)
 end
 
 function avio_pause(h,pause::Integer)

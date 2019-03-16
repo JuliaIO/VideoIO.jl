@@ -82,16 +82,16 @@ const SWS_CS_SMPTE170M  =  5
 const SWS_CS_SMPTE240M  =  7
 const SWS_CS_DEFAULT  =  5
 
-immutable SwsVector
+struct SwsVector
     coeff::Ptr{Cdouble}
     length::Cint
 end
 
-immutable SwsFilter
+struct SwsFilter
     lumH::Ptr{SwsVector}
     lumV::Ptr{SwsVector}
     chrH::Ptr{SwsVector}
     chrV::Ptr{SwsVector}
 end
 
-const SwsContext = Void
+const SwsContext = Nothing

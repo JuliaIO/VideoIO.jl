@@ -1,0 +1,32 @@
+diff --git a/src/ffmpeg/SWScale/v5/LIBSWSCALE.jl b/src/ffmpeg/SWScale/v5/LIBSWSCALE.jl
+index e113c7b..75f6276 100644
+--- a/src/ffmpeg/SWScale/v5/LIBSWSCALE.jl
++++ b/src/ffmpeg/SWScale/v5/LIBSWSCALE.jl
+@@ -1,4 +1,4 @@
+ include("libswscale_h.jl")
+ 
+-#include("swscale.jl")
++include("swscale.jl")
+ #include("version.jl")
+diff --git a/src/ffmpeg/SWScale/v5/libswscale_h.jl b/src/ffmpeg/SWScale/v5/libswscale_h.jl
+index e7fe4dc..108e78b 100644
+--- a/src/ffmpeg/SWScale/v5/libswscale_h.jl
++++ b/src/ffmpeg/SWScale/v5/libswscale_h.jl
+@@ -7,7 +7,7 @@ export
+     LIBSWSCALE_VERSION_MAJOR,
+     LIBSWSCALE_VERSION_MINOR,
+     LIBSWSCALE_VERSION_MICRO,
+-    LIBSWSCALE_BUILD,
++    # LIBSWSCALE_BUILD,
+     SWS_FAST_BILINEAR,
+     SWS_BILINEAR,
+     SWS_BICUBIC,
+@@ -52,7 +52,7 @@ const LIBSWSCALE_VERSION_MICRO = 100
+ # Skipping MacroDefinition: LIBSWSCALE_VERSION_INT AV_VERSION_INT ( LIBSWSCALE_VERSION_MAJOR , LIBSWSCALE_VERSION_MINOR , LIBSWSCALE_VERSION_MICRO )
+ # Skipping MacroDefinition: LIBSWSCALE_VERSION AV_VERSION ( LIBSWSCALE_VERSION_MAJOR , LIBSWSCALE_VERSION_MINOR , LIBSWSCALE_VERSION_MICRO )
+ 
+-const LIBSWSCALE_BUILD = LIBSWSCALE_VERSION_INT
++# const LIBSWSCALE_BUILD = LIBSWSCALE_VERSION_INT
+ 
+ # Skipping MacroDefinition: LIBSWSCALE_IDENT "SwS" AV_STRINGIFY ( LIBSWSCALE_VERSION )
+ # Skipping MacroDefinition: FF_API_SWS_VECTOR ( LIBSWSCALE_VERSION_MAJOR < 6 )

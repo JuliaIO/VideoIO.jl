@@ -399,7 +399,7 @@ const AV_NOPTS_VALUE = reinterpret(Int64, 0x8000000000000000)
 
 const AV_TIME_BASE = 1000000
 
-immutable AVRational
+struct AVRational
     num::Cint
     den::Cint
 end
@@ -497,14 +497,14 @@ const AV_DICT_DONT_STRDUP_VAL = 8
 const AV_DICT_DONT_OVERWRITE = 16
 const AV_DICT_APPEND = 32
 
-immutable AVDictionaryEntry
+struct AVDictionaryEntry
     key::Ptr{UInt8}
     value::Ptr{UInt8}
 end
 
-const AVDictionary=Void
+const AVDictionary=Nothing
 
-immutable AVFifoBuffer
+struct AVFifoBuffer
     buffer::Ptr{UInt8}
     rptr::Ptr{UInt8}
     wptr::Ptr{UInt8}
@@ -539,27 +539,27 @@ const AV_OPT_TYPE_BINARY = UInt32(7)
 const AV_OPT_TYPE_CONST = UInt32(128)
 # end enum AVOptionType
 
-immutable AVOption
+struct AVOption
     name::Ptr{UInt8}
     help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
     unit::Ptr{UInt8}
 end
 
-immutable AVClass
+struct AVClass
     class_name::Ptr{UInt8}
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
 end
 
 const PIX_FMT_BE = 1
@@ -571,7 +571,7 @@ const PIX_FMT_RGB = 32
 const PIX_FMT_PSEUDOPAL = 64
 const PIX_FMT_ALPHA = 128
 
-immutable AVComponentDescriptor
+struct AVComponentDescriptor
     plane::UInt16
     step_minus1::UInt16
     offset_plus1::UInt16
@@ -579,7 +579,7 @@ immutable AVComponentDescriptor
     depth_minus1::UInt16
 end
 
-immutable Array_4_AVComponentDescriptor
+struct Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
     d2::AVComponentDescriptor
     d3::AVComponentDescriptor
@@ -588,7 +588,7 @@ end
 
 zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
 
-immutable AVPixFmtDescriptor
+struct AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
@@ -895,7 +895,7 @@ const LIBAVUTIL_VERSION_MICRO = 0
 # Skipping MacroDefinition: FF_API_AUDIOCONVERT ( LIBAVUTIL_VERSION_MAJOR < 53 )
 # Skipping MacroDefinition: FF_API_CPU_FLAG_MMX2 ( LIBAVUTIL_VERSION_MAJOR < 53 )
 
-const AVAudioFifo=Void
+const AVAudioFifo=Nothing
 
 # Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v
 # Skipping MacroDefinition: DECLARE_ASM_CONST ( n , t , v ) static const t av_used __attribute__ ( ( aligned ( n ) ) ) v
@@ -911,7 +911,7 @@ const AV_OPT_FLAG_SUBTITLE_PARAM = 32
 const AV_OPT_SEARCH_CHILDREN = 0x0001
 const AV_OPT_SEARCH_FAKE_OBJ = 0x0002
 
-immutable Array_16_Uint32
+struct Array_16_Uint32
     d1::UInt32
     d2::UInt32
     d3::UInt32
@@ -932,6 +932,6 @@ end
 
 zero(::Type{Array_16_Uint32}) = Array_16_Uint32(fill(zero(UInt32),16)...)
 
-immutable AVXTEA
+struct AVXTEA
     key::Array_16_Uint32
 end

@@ -45,7 +45,7 @@ function av_abuffersink_params_alloc()
 end
 
 function av_buffersink_set_frame_size(ctx,frame_size::Integer)
-    ccall((:av_buffersink_set_frame_size,libavfilter),Void,(Ptr{AVFilterContext},UInt32),ctx,frame_size)
+    ccall((:av_buffersink_set_frame_size,libavfilter),Cvoid,(Ptr{AVFilterContext},UInt32),ctx,frame_size)
 end
 
 function av_buffersink_get_frame_rate(ctx)

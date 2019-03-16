@@ -13,7 +13,7 @@ function av_get_channel_layout(name)
 end
 
 function av_get_channel_layout_string(buf,buf_size::Integer,nb_channels::Integer,channel_layout::UInt64)
-    ccall((:av_get_channel_layout_string,libavutil),Void,(Ptr{UInt8},Cint,Cint,UInt64),buf,buf_size,nb_channels,channel_layout)
+    ccall((:av_get_channel_layout_string,libavutil),Cvoid,(Ptr{UInt8},Cint,Cint,UInt64),buf,buf_size,nb_channels,channel_layout)
 end
 
 function av_get_channel_layout_nb_channels(channel_layout::UInt64)

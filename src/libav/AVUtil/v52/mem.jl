@@ -15,27 +15,27 @@ export
 
 
 function av_malloc(size::Csize_t)
-    ccall((:av_malloc,libavutil),Ptr{Void},(Csize_t,),size)
+    ccall((:av_malloc,libavutil),Ptr{Cvoid},(Csize_t,),size)
 end
 
 function av_malloc_array(nmemb::Csize_t,size::Csize_t)
-    ccall((:av_malloc_array,libavutil),Ptr{Void},(Csize_t,Csize_t),nmemb,size)
+    ccall((:av_malloc_array,libavutil),Ptr{Cvoid},(Csize_t,Csize_t),nmemb,size)
 end
 
 function av_realloc(ptr,size::Csize_t)
-    ccall((:av_realloc,libavutil),Ptr{Void},(Ptr{Void},Csize_t),ptr,size)
+    ccall((:av_realloc,libavutil),Ptr{Cvoid},(Ptr{Cvoid},Csize_t),ptr,size)
 end
 
 function av_free(ptr)
-    ccall((:av_free,libavutil),Void,(Ptr{Void},),ptr)
+    ccall((:av_free,libavutil),Cvoid,(Ptr{Cvoid},),ptr)
 end
 
 function av_mallocz(size::Csize_t)
-    ccall((:av_mallocz,libavutil),Ptr{Void},(Csize_t,),size)
+    ccall((:av_mallocz,libavutil),Ptr{Cvoid},(Csize_t,),size)
 end
 
 function av_mallocz_array(nmemb::Csize_t,size::Csize_t)
-    ccall((:av_mallocz_array,libavutil),Ptr{Void},(Csize_t,Csize_t),nmemb,size)
+    ccall((:av_mallocz_array,libavutil),Ptr{Cvoid},(Csize_t,Csize_t),nmemb,size)
 end
 
 function av_strdup(s)
@@ -43,9 +43,9 @@ function av_strdup(s)
 end
 
 function av_freep(ptr)
-    ccall((:av_freep,libavutil),Void,(Ptr{Void},),ptr)
+    ccall((:av_freep,libavutil),Cvoid,(Ptr{Cvoid},),ptr)
 end
 
 function av_memcpy_backptr(dst,back::Integer,cnt::Integer)
-    ccall((:av_memcpy_backptr,libavutil),Void,(Ptr{UInt8},Cint,Cint),dst,back,cnt)
+    ccall((:av_memcpy_backptr,libavutil),Cvoid,(Ptr{UInt8},Cint,Cint),dst,back,cnt)
 end

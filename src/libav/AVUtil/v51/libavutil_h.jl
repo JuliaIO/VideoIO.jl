@@ -360,7 +360,7 @@ const AV_NOPTS_VALUE = reinterpret(Int64, 0x8000000000000000)
 
 const AV_TIME_BASE = 1000000
 
-immutable AVRational
+struct AVRational
     num::Cint
     den::Cint
 end
@@ -396,12 +396,12 @@ const AV_DICT_DONT_STRDUP_VAL = 8
 const AV_DICT_DONT_OVERWRITE = 16
 const AV_DICT_APPEND = 32
 
-immutable AVDictionaryEntry
+struct AVDictionaryEntry
     key::Ptr{UInt8}
     value::Ptr{UInt8}
 end
 
-const AVDictionary=Void
+const AVDictionary=Nothing
 
 const AV_LOG_QUIET = -8
 const AV_LOG_PANIC = 0
@@ -438,27 +438,27 @@ const FF_OPT_TYPE_BINARY = UInt32(7)
 const FF_OPT_TYPE_CONST = UInt32(128)
 # end enum AVOptionType
 
-immutable AVOption
+struct AVOption
     name::Ptr{UInt8}
     help::Ptr{UInt8}
     offset::Cint
     _type::AVOptionType
-    default_val::Void
+    default_val::Nothing
     min::Cdouble
     max::Cdouble
     flags::Cint
     unit::Ptr{UInt8}
 end
 
-immutable AVClass
+struct AVClass
     class_name::Ptr{UInt8}
-    item_name::Ptr{Void}
+    item_name::Ptr{Cvoid}
     option::Ptr{AVOption}
     version::Cint
     log_level_offset_offset::Cint
     parent_log_context_offset::Cint
-    child_next::Ptr{Void}
-    child_class_next::Ptr{Void}
+    child_next::Ptr{Cvoid}
+    child_class_next::Ptr{Cvoid}
 end
 
 # Skipping MacroDefinition: DECLARE_ALIGNED ( n , t , v ) t __attribute__ ( ( aligned ( n ) ) ) v
@@ -483,7 +483,7 @@ const PIX_FMT_RGB = 32
 
 const AVComponentDescriptor=UInt16
 
-immutable Array_4_AVComponentDescriptor
+struct Array_4_AVComponentDescriptor
     d1::AVComponentDescriptor
     d2::AVComponentDescriptor
     d3::AVComponentDescriptor
@@ -492,7 +492,7 @@ end
 
 zero(::Type{Array_4_AVComponentDescriptor}) = Array_4_AVComponentDescriptor(fill(zero(AVComponentDescriptor),4)...)
 
-immutable AVPixFmtDescriptor
+struct AVPixFmtDescriptor
     name::Ptr{UInt8}
     nb_components::UInt8
     log2_chroma_w::UInt8
@@ -799,7 +799,7 @@ const AV_CH_LAYOUT_7POINT1_WIDE = (AV_CH_LAYOUT_5POINT1 | AV_CH_FRONT_LEFT_OF_CE
 const AV_CH_LAYOUT_OCTAGONAL = ((AV_CH_LAYOUT_5POINT0 | AV_CH_BACK_LEFT) | AV_CH_BACK_CENTER) | AV_CH_BACK_RIGHT
 const AV_CH_LAYOUT_STEREO_DOWNMIX = AV_CH_STEREO_LEFT | AV_CH_STEREO_RIGHT
 
-immutable AVFifoBuffer
+struct AVFifoBuffer
     buffer::Ptr{UInt8}
     rptr::Ptr{UInt8}
     wptr::Ptr{UInt8}

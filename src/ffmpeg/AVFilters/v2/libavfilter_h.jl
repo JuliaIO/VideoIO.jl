@@ -35,7 +35,7 @@ const AVFilterContext = AVFilterContext
 const AVFilterLink = AVFilterLink
 const AVFilterPad = AVFilterPad
 
-immutable Array_8_Ptr
+struct Array_8_Ptr
     d1::Ptr{UInt8}
     d2::Ptr{UInt8}
     d3::Ptr{UInt8}
@@ -48,7 +48,7 @@ end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
 
-immutable Array_8_Cint
+struct Array_8_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -61,18 +61,18 @@ end
 
 zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
-immutable AVFilterBuffer
+struct AVFilterBuffer
     data::Array_8_Ptr
     linesize::Array_8_Cint
     refcount::UInt32
-    priv::Ptr{Void}
-    free::Ptr{Void}
+    priv::Ptr{Cvoid}
+    free::Ptr{Cvoid}
     format::Cint
     w::Cint
     h::Cint
 end
 
-immutable AVFilterBufferRefAudioProps
+struct AVFilterBufferRefAudioProps
     channel_layout::UInt64
     nb_samples::Cint
     size::Cint
@@ -80,7 +80,7 @@ immutable AVFilterBufferRefAudioProps
     planar::Cint
 end
 
-immutable AVFilterBufferRefVideoProps
+struct AVFilterBufferRefVideoProps
     w::Cint
     h::Cint
     pixel_aspect::AVRational
@@ -90,7 +90,7 @@ immutable AVFilterBufferRefVideoProps
     key_frame::Cint
 end
 
-immutable AVFilterBufferRef
+struct AVFilterBufferRef
     buf::Ptr{AVFilterBuffer}
     data::Array_8_Ptr
     linesize::Array_8_Cint
@@ -103,31 +103,31 @@ immutable AVFilterBufferRef
     audio::Ptr{AVFilterBufferRefAudioProps}
 end
 
-immutable AVFilterFormats
+struct AVFilterFormats
     format_count::UInt32
     formats::Ptr{Cint}
     refcount::UInt32
     refs::Ptr{Ptr{Ptr{AVFilterFormats}}}
 end
 
-immutable AVFilter
+struct AVFilter
     name::Ptr{UInt8}
     priv_size::Cint
-    init::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
     description::Ptr{UInt8}
 end
 
-immutable AVFilterGraph
+struct AVFilterGraph
     filter_count::UInt32
     filters::Ptr{Ptr{AVFilterContext}}
     scale_sws_opts::Ptr{UInt8}
 end
 
-immutable AVFilterInOut
+struct AVFilterInOut
     name::Ptr{UInt8}
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint

@@ -1,0 +1,32 @@
+diff --git a/src/ffmpeg/AVDevice/v58/LIBAVDEVICE.jl b/src/ffmpeg/AVDevice/v58/LIBAVDEVICE.jl
+index 15027a1..363e31c 100644
+--- a/src/ffmpeg/AVDevice/v58/LIBAVDEVICE.jl
++++ b/src/ffmpeg/AVDevice/v58/LIBAVDEVICE.jl
+@@ -1,4 +1,4 @@
+ include("libavdevice_h.jl")
+ 
+-#include("avdevice.jl")
++include("avdevice.jl")
+ #include("version.jl")
+diff --git a/src/ffmpeg/AVDevice/v58/libavdevice_h.jl b/src/ffmpeg/AVDevice/v58/libavdevice_h.jl
+index 618a4e0..b21f08a 100644
+--- a/src/ffmpeg/AVDevice/v58/libavdevice_h.jl
++++ b/src/ffmpeg/AVDevice/v58/libavdevice_h.jl
+@@ -7,7 +7,7 @@ export
+     LIBAVDEVICE_VERSION_MAJOR,
+     LIBAVDEVICE_VERSION_MINOR,
+     LIBAVDEVICE_VERSION_MICRO,
+-    LIBAVDEVICE_BUILD,
++    # LIBAVDEVICE_BUILD,
+     AVDeviceRect,
+     AVAppToDevMessageType,
+     AV_APP_TO_DEV_NONE,
+@@ -48,7 +48,7 @@ const LIBAVDEVICE_VERSION_MICRO = 100
+ # Skipping MacroDefinition: LIBAVDEVICE_VERSION_INT AV_VERSION_INT ( LIBAVDEVICE_VERSION_MAJOR , LIBAVDEVICE_VERSION_MINOR , LIBAVDEVICE_VERSION_MICRO )
+ # Skipping MacroDefinition: LIBAVDEVICE_VERSION AV_VERSION ( LIBAVDEVICE_VERSION_MAJOR , LIBAVDEVICE_VERSION_MINOR , LIBAVDEVICE_VERSION_MICRO )
+ 
+-const LIBAVDEVICE_BUILD = LIBAVDEVICE_VERSION_INT
++# const LIBAVDEVICE_BUILD = LIBAVDEVICE_VERSION_INT
+ 
+ # Skipping MacroDefinition: LIBAVDEVICE_IDENT "Lavd" AV_STRINGIFY ( LIBAVDEVICE_VERSION )
+ 
