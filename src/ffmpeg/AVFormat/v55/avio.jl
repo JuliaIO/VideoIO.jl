@@ -189,7 +189,7 @@ function avio_open(s,url,flags::Integer)
 end
 
 function avio_open2(s,url,flags::Integer,int_cb,options)
-    ccall((:avio_open2,libavformat),Cint,(Ptr{Ptr{AVIOContext}},Ptr{UInt8},Cint,Ptr{AVIOInterruptCB},Ptr{Ptr{AVDictionary}}),s,url,flags,int_cb,options)
+    ccall((:avio_open2,libavformat),Cint,(Ptr{Ptr{AVIOContext}},Ptr{UInt8},Cint,Ptr{AVIOInterruptCB},Ref{Ptr{AVDictionary}}),s,url,flags,int_cb,options)
 end
 
 function avio_close(s)

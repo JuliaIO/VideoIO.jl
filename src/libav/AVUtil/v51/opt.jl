@@ -106,7 +106,7 @@ function av_opt_flag_is_set(obj,field_name,flag_name)
 end
 
 function av_opt_set_dict(obj,options)
-    ccall((:av_opt_set_dict,libavutil),Cint,(Ptr{Cvoid},Ptr{Ptr{AVDictionary}}),obj,options)
+    ccall((:av_opt_set_dict,libavutil),Cint,(Ptr{Cvoid},Ref{Ptr{AVDictionary}}),obj,options)
 end
 
 function av_opt_eval_flags(obj,o,val,flags_out)

@@ -163,7 +163,7 @@ function avcodec_free_frame(frame)
 end
 
 function avcodec_open2(avctx,codec,options)
-    ccall((:avcodec_open2,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{AVCodec},Ptr{Ptr{AVDictionary}}),avctx,codec,options)
+    ccall((:avcodec_open2,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{AVCodec},Ref{Ptr{AVDictionary}}),avctx,codec,options)
 end
 
 function avcodec_close(avctx)

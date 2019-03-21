@@ -19,6 +19,7 @@ if have_avdevice()
 end
 
 include("util.jl")
+include("avdictionary.jl")
 include("avio.jl")
 include("testvideos.jl")
 using .TestVideos

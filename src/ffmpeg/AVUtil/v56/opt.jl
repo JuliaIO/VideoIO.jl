@@ -84,11 +84,11 @@ function av_opt_flag_is_set(obj, field_name, flag_name)
 end
 
 function av_opt_set_dict(obj, options)
-    ccall((:av_opt_set_dict, libavutil), Cint, (Ptr{Cvoid}, Ptr{Ptr{AVDictionary}}), obj, options)
+    ccall((:av_opt_set_dict, libavutil), Cint, (Ptr{Cvoid}, Ref{Ptr{AVDictionary}}), obj, options)
 end
 
 function av_opt_set_dict2(obj, options, search_flags::Integer)
-    ccall((:av_opt_set_dict2, libavutil), Cint, (Ptr{Cvoid}, Ptr{Ptr{AVDictionary}}, Cint), obj, options, search_flags)
+    ccall((:av_opt_set_dict2, libavutil), Cint, (Ptr{Cvoid}, Ref{Ptr{AVDictionary}}, Cint), obj, options, search_flags)
 end
 
 function av_opt_get_key_value(ropts, key_val_sep, pairs_sep, flags::Integer, rkey, rval)
@@ -220,7 +220,7 @@ function av_opt_get_channel_layout(obj, name, search_flags::Integer, ch_layout)
 end
 
 function av_opt_get_dict_val(obj, name, search_flags::Integer, out_val)
-    ccall((:av_opt_get_dict_val, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Ptr{Ptr{AVDictionary}}), obj, name, search_flags, out_val)
+    ccall((:av_opt_get_dict_val, libavutil), Cint, (Ptr{Cvoid}, Cstring, Cint, Ref{Ptr{AVDictionary}}), obj, name, search_flags, out_val)
 end
 
 function av_opt_ptr(avclass, obj, name)
