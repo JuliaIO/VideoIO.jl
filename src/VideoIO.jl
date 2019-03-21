@@ -44,6 +44,7 @@ function __init__()
             global CAMERA_DEVICES
             push!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy")...)
             global DEFAULT_CAMERA_DEVICE = "video=" * (length(CAMERA_DEVICES) > 0 ? "\"$(CAMERA_DEVICES[1])\"" : "0")
+            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30)
 
         end
 
@@ -51,6 +52,7 @@ function __init__()
             global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
             global CAMERA_DEVICES = Glob.glob("video*", "/dev")
             global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
+            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30)
         end
 
         if Sys.isapple()
@@ -69,7 +71,9 @@ function __init__()
             end
 
             # Note: "Integrated" is another possible default value
-            DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "FaceTime"
+            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
+            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30, "pixel_format" => "uyvy422")
+
         end
     end
 

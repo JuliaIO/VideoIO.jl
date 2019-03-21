@@ -134,7 +134,7 @@ end
 const read_packet = Ref{Ptr{Cvoid}}(C_NULL)
 
 
-function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
+function open_avinput(avin::AVInput, io::IO, input_format=C_NULL, options=C_NULL)
 
     !isreadable(io) && error("IO not readable")
 
@@ -163,25 +163,25 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL)
     av_setfield(avin.apFormatContext[1], :pb, avin.apAVIOContext[1])
 
     # "Open" the input
-    if avformat_open_input(avin.apFormatContext, C_NULL, input_format, C_NULL) != 0
+    if avformat_open_input(avin.apFormatContext, C_NULL, input_format, options) != 0
         error("Unable to open input")
     end
 
     nothing
 end
 
-function open_avinput(avin::AVInput, source::AbstractString, input_format=C_NULL)
+function open_avinput(avin::AVInput, source::AbstractString, input_format=C_NULL, options=C_NULL)
     if avformat_open_input(avin.apFormatContext,
                            source,
                            input_format,
-                           C_NULL)    != 0
-        error("Could not open file $source")
+                           options)    != 0
+        error("Could not open $source")
     end
 
     nothing
 end
 
-function AVInput(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536) where T <: Union{IO,AbstractString}
+function AVInput(source::T, input_format=C_NULL, options=C_NULL; avio_ctx_buffer_size=65536) where T <: Union{IO,AbstractString}
 
     # Register all codecs and formats
     av_log_set_level(AVUtil.AV_LOG_ERROR)
@@ -198,7 +198,7 @@ function AVInput(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536) whe
     finalizer(close, avin)
 
     # Set up the format context and open the input, based on the type of source
-    open_avinput(avin, source, input_format)
+    open_avinput(avin, source, input_format, options)
     avin.isopen = true
 
     # Get the stream information
@@ -669,8 +669,8 @@ if have_avdevice()
     end
 
 
-    function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)
-        camera = AVInput(device, format)
+    function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, options=DEFAULT_CAMERA_OPTIONS, args...; kwargs...)
+        camera = AVInput(device, format, options)
         VideoReader(camera, args...; kwargs...)
     end
 end
