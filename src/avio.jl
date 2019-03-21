@@ -676,7 +676,6 @@ if have_avdevice()
         return camera_devices
     end
 
-
     function opencamera(
             device=DEFAULT_CAMERA_DEVICE[],
             format=DEFAULT_CAMERA_FORMAT[],
