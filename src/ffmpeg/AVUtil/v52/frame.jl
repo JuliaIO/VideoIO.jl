@@ -119,7 +119,7 @@ function av_frame_set_pkt_size(frame,val::Integer)
 end
 
 function avpriv_frame_get_metadatap(frame)
-    ccall((:avpriv_frame_get_metadatap,libavutil),Ptr{Ptr{AVDictionary}},(Ptr{AVFrame},),frame)
+    ccall((:avpriv_frame_get_metadatap,libavutil),Ref{Ptr{AVDictionary}},(Ptr{AVFrame},),frame)
 end
 
 function av_frame_get_qp_table(f,stride,_type)

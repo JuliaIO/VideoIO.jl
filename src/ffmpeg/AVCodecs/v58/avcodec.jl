@@ -290,7 +290,7 @@ function avcodec_parameters_to_context(codec, par)
 end
 
 function avcodec_open2(avctx, codec, options)
-    ccall((:avcodec_open2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodec}, Ptr{Ptr{AVDictionary}}), avctx, codec, options)
+    ccall((:avcodec_open2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodec}, Ref{Ptr{AVDictionary}}), avctx, codec, options)
 end
 
 function avcodec_close(avctx)
@@ -382,7 +382,7 @@ function av_packet_pack_dictionary(dict, size)
 end
 
 function av_packet_unpack_dictionary(data, size::Integer, dict)
-    ccall((:av_packet_unpack_dictionary, libavcodec), Cint, (Ptr{UInt8}, Cint, Ptr{Ptr{AVDictionary}}), data, size, dict)
+    ccall((:av_packet_unpack_dictionary, libavcodec), Cint, (Ptr{UInt8}, Cint, Ref{Ptr{AVDictionary}}), data, size, dict)
 end
 
 function av_packet_free_side_data(pkt)
@@ -710,7 +710,7 @@ function av_bsf_list_append(lst, bsf)
 end
 
 function av_bsf_list_append2(lst, bsf_name, options)
-    ccall((:av_bsf_list_append2, libavcodec), Cint, (Ptr{AVBSFList}, Cstring, Ptr{Ptr{AVDictionary}}), lst, bsf_name, options)
+    ccall((:av_bsf_list_append2, libavcodec), Cint, (Ptr{AVBSFList}, Cstring, Ref{Ptr{AVDictionary}}), lst, bsf_name, options)
 end
 
 function av_bsf_list_finalize(lst, bsf)

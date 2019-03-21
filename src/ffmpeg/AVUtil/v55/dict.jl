@@ -22,23 +22,23 @@ function av_dict_count(m)
 end
 
 function av_dict_set(pm,key,value,flags::Integer)
-    ccall((:av_dict_set,libavutil),Cint,(Ptr{Ptr{AVDictionary}},Cstring,Cstring,Cint),pm,key,value,flags)
+    ccall((:av_dict_set,libavutil),Cint,(Ref{Ptr{AVDictionary}},Cstring,Cstring,Cint),pm,key,value,flags)
 end
 
 function av_dict_set_int(pm,key,value::Int64,flags::Integer)
-    ccall((:av_dict_set_int,libavutil),Cint,(Ptr{Ptr{AVDictionary}},Cstring,Int64,Cint),pm,key,value,flags)
+    ccall((:av_dict_set_int,libavutil),Cint,(Ref{Ptr{AVDictionary}},Cstring,Int64,Cint),pm,key,value,flags)
 end
 
 function av_dict_parse_string(pm,str,key_val_sep,pairs_sep,flags::Integer)
-    ccall((:av_dict_parse_string,libavutil),Cint,(Ptr{Ptr{AVDictionary}},Cstring,Cstring,Cstring,Cint),pm,str,key_val_sep,pairs_sep,flags)
+    ccall((:av_dict_parse_string,libavutil),Cint,(Ref{Ptr{AVDictionary}},Cstring,Cstring,Cstring,Cint),pm,str,key_val_sep,pairs_sep,flags)
 end
 
 function av_dict_copy(dst,src,flags::Integer)
-    ccall((:av_dict_copy,libavutil),Cint,(Ptr{Ptr{AVDictionary}},Ptr{AVDictionary},Cint),dst,src,flags)
+    ccall((:av_dict_copy,libavutil),Cint,(Ref{Ptr{AVDictionary}},Ptr{AVDictionary},Cint),dst,src,flags)
 end
 
 function av_dict_free(m)
-    ccall((:av_dict_free,libavutil),Cvoid,(Ptr{Ptr{AVDictionary}},),m)
+    ccall((:av_dict_free,libavutil),Cvoid,(Ref{Ptr{AVDictionary}},),m)
 end
 
 function av_dict_get_string(m,buffer,key_val_sep::UInt8,pairs_sep::UInt8)

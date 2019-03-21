@@ -138,7 +138,7 @@ function avfilter_init_str(ctx,args)
 end
 
 function avfilter_init_dict(ctx,options)
-    ccall((:avfilter_init_dict,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{Ptr{AVDictionary}}),ctx,options)
+    ccall((:avfilter_init_dict,libavfilter),Cint,(Ptr{AVFilterContext},Ref{Ptr{AVDictionary}}),ctx,options)
 end
 
 function avfilter_free(filter)
