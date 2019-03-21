@@ -1,6 +1,7 @@
 import .AVUtil: AVDictionary
 import Base: getindex, setindex!, iterate, length, empty!
 
+
 mutable struct AVDict <: AbstractDict{String, String}
     ref_ptr_dict::Ref{Ptr{AVDictionary}}
 end
@@ -25,7 +26,6 @@ function AVDict(o::AbstractDict)
     end
     return d
 end
-
 
 Base.empty!(d::AVDict) = AVUtil.av_dict_free(d.ref_ptr_dict)
 
@@ -57,4 +57,3 @@ end
 function length(d::AVDict)
     return AVUtil.av_dict_count(d.ref_ptr_dict[])
 end
-

@@ -23,7 +23,10 @@ end
 include("info.jl")
 include("util.jl")
 include("avdictionary.jl")
+<<<<<<< HEAD
 include("info.jl")
+=======
+>>>>>>> Add AVDict
 include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
