@@ -42,7 +42,7 @@ function __init__()
             global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
             global CAMERA_DEVICES
             push!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy")...)
-            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
+            global DEFAULT_CAMERA_DEVICE = "video=" * (length(CAMERA_DEVICES) > 0 ? "\"$(CAMERA_DEVICES[1])\"" : "0")
 
         end
 
