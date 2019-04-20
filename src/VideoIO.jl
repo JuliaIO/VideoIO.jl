@@ -4,11 +4,7 @@ module VideoIO
 
 using FixedPointNumbers, ColorTypes, ImageCore, Requires
 
-if Sys.islinux()
-    include("init-linux.jl")
-else
-    include("init-notlinux.jl")
-end
+include("init.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
 include(joinpath(av_load_path, "AVCodecs", "src", "AVCodecs.jl"))
 include(joinpath(av_load_path, "AVFormat", "src", "AVFormat.jl"))
