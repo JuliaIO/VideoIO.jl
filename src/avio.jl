@@ -184,7 +184,6 @@ end
 function AVInput(source::T, input_format=C_NULL; avio_ctx_buffer_size=65536) where T <: Union{IO,AbstractString}
 
     # Register all codecs and formats
-    av_register_all()
     av_log_set_level(AVUtil.AV_LOG_ERROR)
 
     aPacket = [AVPacket()]
@@ -623,10 +622,12 @@ end
 
 ### Camera Functions
 
-if have_avdevice()
-    import .AVDevice
-    AVDevice.avdevice_register_all()
+# These are set in __init__()
+DEFAULT_CAMERA_FORMAT = Ptr{AVFormat.AVInputFormat}(C_NULL)
+CAMERA_DEVICES = String[]
+DEFAULT_CAMERA_DEVICE = ""
 
+if have_avdevice()
     function get_camera_devices(ffmpeg, idev, idev_name)
         camera_devices = String[]
 
@@ -666,38 +667,6 @@ if have_avdevice()
         return camera_devices
     end
 
-    if Sys.iswindows()
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
-        CAMERA_DEVICES = get_camera_devices(ffmpeg, "dshow", "dummy")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
-    end
-
-    if Sys.islinux()
-        import Glob
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
-        CAMERA_DEVICES = Glob.glob("video*", "/dev")
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
-    end
-
-    if Sys.isapple()
-
-        DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
-        
-        #av_setfield(DEFAULT_CAMERA_FORMAT, :framerate, 30.0) #Not correct, but for placeholder
-        
-        global CAMERA_DEVICES = String[]
-        try
-            global CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
-        catch
-            try
-                global CAMERA_DEVICES = get_camera_devices(ffmpeg, "qtkit", "\"\"")
-            catch
-            end
-        end
-
-        DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "FaceTime"
-        #DEFAULT_CAMERA_DEVICE = "Integrated"
-    end
 
     function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, args...; kwargs...)
         camera = AVInput(device, format)
