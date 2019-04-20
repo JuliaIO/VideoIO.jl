@@ -1,9 +1,14 @@
 module VideoIO
 
-using Libdl
+!Sys.islinux() && using Libdl
+
 using FixedPointNumbers, ColorTypes, ImageCore, Requires
 
-include("init.jl")
+if Sys.islinux()
+    include("init-linux.jl")
+else
+    include("init-notlinux.jl")
+end
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
 include(joinpath(av_load_path, "AVCodecs", "src", "AVCodecs.jl"))
 include(joinpath(av_load_path, "AVFormat", "src", "AVFormat.jl"))
@@ -32,8 +37,7 @@ function __init__()
     global read_packet
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
     
-    # Always check your dependencies from `deps.jl`
-    check_deps()
+    !islinux() && check_deps()
 
     av_register_all()
 
@@ -41,8 +45,6 @@ function __init__()
         AVDevice.avdevice_register_all()
 
         if Sys.iswindows()
-            ffmpeg = joinpath(dirname(@__FILE__), "..", "deps", "ffmpeg-4.1-win$(Sys.WORD_SIZE)-shared", "bin", "ffmpeg.exe")
-
             global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
             global CAMERA_DEVICES
             push!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy")...)
@@ -57,8 +59,6 @@ function __init__()
         end
 
         if Sys.isapple()
-            ffmpeg = joinpath(INSTALL_ROOT, "bin", "ffmpeg")
-
             global CAMERA_DEVICES = String[]
             try
                 global CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
