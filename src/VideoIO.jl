@@ -33,7 +33,7 @@ function __init__()
     global read_packet
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
     
-    !islinux() && check_deps()
+    !Sys.islinux() && check_deps()
 
     av_register_all()
 
