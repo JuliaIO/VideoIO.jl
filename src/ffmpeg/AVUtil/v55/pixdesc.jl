@@ -26,11 +26,11 @@ export
 
 
 function av_read_image_line(dst,data::NTuple{4,Ptr{UInt8}},linesize::NTuple{4,Cint},desc,x::Integer,y::Integer,c::Integer,w::Integer,read_pal_component::Integer)
-    ccall((:av_read_image_line,libavutil),Void,(Ptr{UInt16},NTuple{4,Ptr{UInt8}},NTuple{4,Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint,Cint),dst,data,linesize,desc,x,y,c,w,read_pal_component)
+    ccall((:av_read_image_line,libavutil),Cvoid,(Ptr{UInt16},NTuple{4,Ptr{UInt8}},NTuple{4,Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint,Cint),dst,data,linesize,desc,x,y,c,w,read_pal_component)
 end
 
 function av_write_image_line(src,data::NTuple{4,Ptr{UInt8}},linesize::NTuple{4,Cint},desc,x::Integer,y::Integer,c::Integer,w::Integer)
-    ccall((:av_write_image_line,libavutil),Void,(Ptr{UInt16},NTuple{4,Ptr{UInt8}},NTuple{4,Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint),src,data,linesize,desc,x,y,c,w)
+    ccall((:av_write_image_line,libavutil),Cvoid,(Ptr{UInt16},NTuple{4,Ptr{UInt8}},NTuple{4,Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint),src,data,linesize,desc,x,y,c,w)
 end
 
 function av_get_pix_fmt(name)

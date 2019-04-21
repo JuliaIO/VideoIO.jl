@@ -119,21 +119,21 @@ const AVIO_FLAG_READ_WRITE  =  AVIO_FLAG_READ | AVIO_FLAG_WRITE
 const AVIO_FLAG_NONBLOCK  =  8
 const AVIO_FLAG_DIRECT  =  0x8000
 
-immutable AVIOInterruptCB
-    callback::Ptr{Void}
-    opaque::Ptr{Void}
+struct AVIOInterruptCB
+    callback::Ptr{Cvoid}
+    opaque::Ptr{Cvoid}
 end
 
-immutable AVIOContext
+struct AVIOContext
     av_class::Ptr{AVClass}
     buffer::Ptr{Cuchar}
     buffer_size::Cint
     buf_ptr::Ptr{Cuchar}
     buf_end::Ptr{Cuchar}
-    opaque::Ptr{Void}
-    read_packet::Ptr{Void}
-    write_packet::Ptr{Void}
-    seek::Ptr{Void}
+    opaque::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    seek::Ptr{Cvoid}
     pos::Int64
     must_flush::Cint
     eof_reached::Cint
@@ -141,10 +141,10 @@ immutable AVIOContext
     max_packet_size::Cint
     checksum::Culong
     checksum_ptr::Ptr{Cuchar}
-    update_checksum::Ptr{Void}
+    update_checksum::Ptr{Cvoid}
     error::Cint
-    read_pause::Ptr{Void}
-    read_seek::Ptr{Void}
+    read_pause::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
     seekable::Cint
     maxsize::Int64
     direct::Cint
@@ -222,9 +222,9 @@ const AVSEEK_FLAG_BYTE  =  2
 const AVSEEK_FLAG_ANY  =  4
 const AVSEEK_FLAG_FRAME  =  8
 
-const AVCodecTag = Void
+const AVCodecTag = Nothing
 
-immutable AVInputFormat
+struct AVInputFormat
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     flags::Cint
@@ -234,21 +234,21 @@ immutable AVInputFormat
     next::Ptr{AVInputFormat}
     raw_codec_id::Cint
     priv_data_size::Cint
-    read_probe::Ptr{Void}
-    read_header::Ptr{Void}
-    read_packet::Ptr{Void}
-    read_close::Ptr{Void}
-    read_seek::Ptr{Void}
-    read_timestamp::Ptr{Void}
-    read_play::Ptr{Void}
-    read_pause::Ptr{Void}
-    read_seek2::Ptr{Void}
-    get_device_list::Ptr{Void}
-    create_device_capabilities::Ptr{Void}
-    free_device_capabilities::Ptr{Void}
+    read_probe::Ptr{Cvoid}
+    read_header::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    read_close::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
+    read_timestamp::Ptr{Cvoid}
+    read_play::Ptr{Cvoid}
+    read_pause::Ptr{Cvoid}
+    read_seek2::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
 end
 
-immutable AVOutputFormat
+struct AVOutputFormat
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     mime_type::Ptr{UInt8}
@@ -261,20 +261,20 @@ immutable AVOutputFormat
     priv_class::Ptr{AVClass}
     next::Ptr{AVOutputFormat}
     priv_data_size::Cint
-    write_header::Ptr{Void}
-    write_packet::Ptr{Void}
-    write_trailer::Ptr{Void}
-    interleave_packet::Ptr{Void}
-    query_codec::Ptr{Void}
-    get_output_timestamp::Ptr{Void}
-    control_message::Ptr{Void}
-    write_uncoded_frame::Ptr{Void}
-    get_device_list::Ptr{Void}
-    create_device_capabilities::Ptr{Void}
-    free_device_capabilities::Ptr{Void}
+    write_header::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    write_trailer::Ptr{Cvoid}
+    interleave_packet::Ptr{Cvoid}
+    query_codec::Ptr{Cvoid}
+    get_output_timestamp::Ptr{Cvoid}
+    control_message::Ptr{Cvoid}
+    write_uncoded_frame::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
 end
 
-immutable AVFrac
+struct AVFrac
     val::Int64
     num::Int64
     den::Int64
@@ -290,18 +290,18 @@ const AVSTREAM_PARSE_FULL_ONCE  =  UInt32(4)
 const AVSTREAM_PARSE_FULL_RAW  =  UInt32(1463898624)
 # end enum AVStreamParseType
 
-immutable AVPacketList
+struct AVPacketList
     pkt::AVPacket
     next::Ptr{AVPacketList}
 end
 
-immutable AVProbeData
+struct AVProbeData
     filename::Ptr{UInt8}
     buf::Ptr{Cuchar}
     buf_size::Cint
 end
 
-immutable Array_17_Int64
+struct Array_17_Int64
     d1::Int64
     d2::Int64
     d3::Int64
@@ -323,7 +323,7 @@ end
 
 zero(::Type{Array_17_Int64}) = Array_17_Int64(fill(zero(Int64),17)...)
 
-immutable AVIndexEntry
+struct AVIndexEntry
     pos::Int64
     timestamp::Int64
     flags::Cint
@@ -331,7 +331,7 @@ immutable AVIndexEntry
     min_distance::Cint
 end
 
-immutable Array_17_Uint8
+struct Array_17_Uint8
     d1::UInt8
     d2::UInt8
     d3::UInt8
@@ -353,11 +353,11 @@ end
 
 zero(::Type{Array_17_Uint8}) = Array_17_Uint8(fill(zero(UInt8),17)...)
 
-immutable AVStream
+struct AVStream
     index::Cint
     id::Cint
     codec::Ptr{AVCodecContext}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pts::AVFrac
     time_base::AVRational
     start_time::Int64
@@ -371,7 +371,7 @@ immutable AVStream
     attached_pic::AVPacket
     side_data::Ptr{AVPacketSideData}
     nb_side_data::Cint
-    info::Ptr{Void}
+    info::Ptr{Cvoid}
     pts_wrap_bits::Cint
     do_not_use::Int64
     first_dts::Int64
@@ -408,7 +408,7 @@ immutable AVStream
     inject_global_side_data::Cint
 end
 
-immutable Array_1024_Uint8
+struct Array_1024_Uint8
     d1::UInt8
     d2::UInt8
     d3::UInt8
@@ -1437,7 +1437,7 @@ end
 
 zero(::Type{Array_1024_Uint8}) = Array_1024_Uint8(fill(zero(UInt8),1024)...)
 
-immutable AVProgram
+struct AVProgram
     id::Cint
     flags::Cint
     discard::AVDiscard
@@ -1453,7 +1453,7 @@ immutable AVProgram
     pts_wrap_behavior::Cint
 end
 
-immutable AVChapter
+struct AVChapter
     id::Cint
     time_base::AVRational
     start::Int64
@@ -1468,14 +1468,14 @@ const AVFMT_DURATION_FROM_STREAM  =  UInt32(1)
 const AVFMT_DURATION_FROM_BITRATE  =  UInt32(2)
 # end enum AVDurationEstimationMethod
 
-const AVFormatInternal = Void
-const av_format_control_message = Ptr{Void}
+const AVFormatInternal = Nothing
+const av_format_control_message = Ptr{Cvoid}
 
-immutable AVFormatContext
+struct AVFormatContext
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pb::Ptr{AVIOContext}
     ctx_flags::Cint
     nb_streams::UInt32
@@ -1538,11 +1538,11 @@ immutable AVFormatContext
     audio_codec::Ptr{AVCodec}
     subtitle_codec::Ptr{AVCodec}
     metadata_header_padding::Cint
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     control_message_cb::av_format_control_message
     output_ts_offset::Int64
     max_analyze_duration2::Int64
 end
 
-const AVDeviceInfoList = Void
-const AVDeviceCapabilitiesQuery = Void
+const AVDeviceInfoList = Nothing
+const AVDeviceCapabilitiesQuery = Nothing

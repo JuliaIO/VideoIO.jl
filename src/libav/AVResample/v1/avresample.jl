@@ -47,11 +47,11 @@ function avresample_open(avr)
 end
 
 function avresample_close(avr)
-    ccall((:avresample_close,libavresample),Void,(Ptr{AVAudioResampleContext},),avr)
+    ccall((:avresample_close,libavresample),Cvoid,(Ptr{AVAudioResampleContext},),avr)
 end
 
 function avresample_free(avr)
-    ccall((:avresample_free,libavresample),Void,(Ptr{Ptr{AVAudioResampleContext}},),avr)
+    ccall((:avresample_free,libavresample),Cvoid,(Ptr{Ptr{AVAudioResampleContext}},),avr)
 end
 
 function avresample_build_matrix(in_layout::UInt64,out_layout::UInt64,center_mix_level::Cdouble,surround_mix_level::Cdouble,lfe_mix_level::Cdouble,normalize::Integer,matrix,stride::Integer,matrix_encoding::AVMatrixEncoding)

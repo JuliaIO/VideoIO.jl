@@ -47,28 +47,28 @@ const AVFILTER_THREAD_SLICE  =  1 << 0
 const AVFILTER_CMD_FLAG_ONE  =  1
 const AVFILTER_CMD_FLAG_FAST  =  2
 
-const AVFilterPad = Void
+const AVFilterPad = Nothing
 
-immutable AVFilter
+struct AVFilter
     name::Cstring
     description::Cstring
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
     priv_class::Ptr{AVClass}
     flags::Cint
-    init::Ptr{Void}
-    init_dict::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    init_dict::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     priv_size::Cint
     next::Ptr{AVFilter}
-    process_command::Ptr{Void}
-    init_opaque::Ptr{Void}
+    process_command::Ptr{Cvoid}
+    init_opaque::Ptr{Cvoid}
 end
 
-const AVFilterGraphInternal = Void
+const AVFilterGraphInternal = Nothing
 
-immutable AVFilterGraph
+struct AVFilterGraph
     av_class::Ptr{AVClass}
     filters::Ptr{Ptr{AVFilterContext}}
     nb_filters::UInt32
@@ -77,7 +77,7 @@ immutable AVFilterGraph
     thread_type::Cint
     nb_threads::Cint
     internal::Ptr{AVFilterGraphInternal}
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     execute::Ptr{avfilter_execute_func}
     aresample_swr_opts::Cstring
     sink_links::Ptr{Ptr{AVFilterLink}}
@@ -85,9 +85,9 @@ immutable AVFilterGraph
     disable_auto_convert::UInt32
 end
 
-const AVFilterInternal = Void
+const AVFilterInternal = Nothing
 
-immutable AVFilterContext
+struct AVFilterContext
     av_class::Ptr{AVClass}
     filter::Ptr{AVFilter}
     name::Cstring
@@ -97,18 +97,18 @@ immutable AVFilterContext
     output_pads::Ptr{AVFilterPad}
     outputs::Ptr{Ptr{AVFilterLink}}
     nb_outputs::UInt32
-    priv::Ptr{Void}
+    priv::Ptr{Cvoid}
     graph::Ptr{AVFilterGraph}
     thread_type::Cint
     internal::Ptr{AVFilterInternal}
     command_queue::Ptr{AVFilterCommand}
     enable_str::Cstring
-    enable::Ptr{Void}
+    enable::Ptr{Cvoid}
     var_values::Ptr{Cdouble}
     is_disabled::Cint
 end
 
-const AVFilterFormats = Void
+const AVFilterFormats = Nothing
 
 # begin enum ANONYMOUS_1
 const ANONYMOUS_1 = Cint
@@ -116,7 +116,7 @@ const AVFILTER_AUTO_CONVERT_ALL  =  (Int32)(0)
 const AVFILTER_AUTO_CONVERT_NONE  =  (Int32)(-1)
 # end enum ANONYMOUS_1
 
-immutable AVFilterInOut
+struct AVFilterInOut
     name::Cstring
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint
@@ -143,11 +143,11 @@ const LIBAVFILTER_BUILD  =  LIBAVFILTER_VERSION_INT
 const AV_BUFFERSINK_FLAG_PEEK  =  1
 const AV_BUFFERSINK_FLAG_NO_REQUEST  =  2
 
-immutable AVBufferSinkParams
+struct AVBufferSinkParams
     pixel_fmts::Ptr{AVPixelFormat}
 end
 
-immutable AVABufferSinkParams
+struct AVABufferSinkParams
     sample_fmts::Ptr{AVSampleFormat}
     channel_layouts::Ptr{Int64}
     channel_counts::Ptr{Cint}

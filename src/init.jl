@@ -5,18 +5,14 @@ using BinDeps
 #        avcodec_version, avformat_version, avutil_version, swscale_version, avdevice_version, avfilter_version, avresample_version, swresample_version,
 #        libavcodec, libavformat, libavutil, libswscale, libavdevice, libavfilter, libavresample, libswresample,
 
-if !isdefined(:libavcodec)
+if !@isdefined(libavcodec)
     include("../deps/deps.jl")
 end
 
 INSTALL_ROOT = realpath(joinpath(splitdir(libavcodec)[1], ".."))
 
-if !isdefined(:ffmpeg_or_libav)
+if !@isdefined(ffmpeg_or_libav)
     include("version.jl")
 end
 
 av_load_path = joinpath(dirname(@__FILE__), ffmpeg_or_libav)
-!(av_load_path in LOAD_PATH) && unshift!(LOAD_PATH, av_load_path)
-
-
-

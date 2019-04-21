@@ -27,11 +27,11 @@ export
 
 
 function av_read_image_line(dst,data,linesize,desc,x::Integer,y::Integer,c::Integer,w::Integer,read_pal_component::Integer)
-    ccall((:av_read_image_line,libavutil),Void,(Ptr{UInt16},Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint,Cint),dst,data,linesize,desc,x,y,c,w,read_pal_component)
+    ccall((:av_read_image_line,libavutil),Cvoid,(Ptr{UInt16},Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint,Cint),dst,data,linesize,desc,x,y,c,w,read_pal_component)
 end
 
 function av_write_image_line(src,data,linesize,desc,x::Integer,y::Integer,c::Integer,w::Integer)
-    ccall((:av_write_image_line,libavutil),Void,(Ptr{UInt16},Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint),src,data,linesize,desc,x,y,c,w)
+    ccall((:av_write_image_line,libavutil),Cvoid,(Ptr{UInt16},Ptr{Ptr{UInt8}},Ptr{Cint},Ptr{AVPixFmtDescriptor},Cint,Cint,Cint,Cint),src,data,linesize,desc,x,y,c,w)
 end
 
 function av_get_pix_fmt(name)
@@ -75,7 +75,7 @@ function av_pix_fmt_count_planes(pix_fmt::AVPixelFormat)
 end
 
 function ff_check_pixfmt_descriptors()
-    ccall((:ff_check_pixfmt_descriptors,libavutil),Void,())
+    ccall((:ff_check_pixfmt_descriptors,libavutil),Cvoid,())
 end
 
 function av_pix_fmt_swap_endianness(pix_fmt::AVPixelFormat)

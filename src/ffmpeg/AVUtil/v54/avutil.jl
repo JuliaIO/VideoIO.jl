@@ -35,15 +35,15 @@ function av_get_picture_type_char(pict_type::AVPictureType)
 end
 
 function av_x_if_null(p,x)
-    ccall((:av_x_if_null,libavutil),Ptr{Void},(Ptr{Void},Ptr{Void}),p,x)
+    ccall((:av_x_if_null,libavutil),Ptr{Cvoid},(Ptr{Cvoid},Ptr{Cvoid}),p,x)
 end
 
 function av_int_list_length_for_size(elsize::Integer,list,term::UInt64)
-    ccall((:av_int_list_length_for_size,libavutil),UInt32,(UInt32,Ptr{Void},UInt64),elsize,list,term)
+    ccall((:av_int_list_length_for_size,libavutil),UInt32,(UInt32,Ptr{Cvoid},UInt64),elsize,list,term)
 end
 
 function av_fopen_utf8(path,mode)
-    ccall((:av_fopen_utf8,libavutil),Ptr{Void},(Ptr{UInt8},Ptr{UInt8}),path,mode)
+    ccall((:av_fopen_utf8,libavutil),Ptr{Cvoid},(Ptr{UInt8},Ptr{UInt8}),path,mode)
 end
 
 function av_get_time_base_q()

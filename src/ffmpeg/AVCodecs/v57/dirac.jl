@@ -7,5 +7,5 @@ export
 
 
 function av_dirac_parse_sequence_header(dsh,buf,buf_size::Csize_t,log_ctx)
-    ccall((:av_dirac_parse_sequence_header,libavcodec),Cint,(Ptr{Ptr{AVDiracSeqHeader}},Ptr{UInt8},Csize_t,Ptr{Void}),dsh,buf,buf_size,log_ctx)
+    ccall((:av_dirac_parse_sequence_header,libavcodec),Cint,(Ptr{Ptr{AVDiracSeqHeader}},Ptr{UInt8},Csize_t,Ptr{Cvoid}),dsh,buf,buf_size,log_ctx)
 end

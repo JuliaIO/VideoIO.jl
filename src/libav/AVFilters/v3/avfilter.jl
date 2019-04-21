@@ -42,7 +42,7 @@ function avfilter_license()
 end
 
 function avfilter_copy_buffer_ref_props(dst,src)
-    ccall((:avfilter_copy_buffer_ref_props,libavfilter),Void,(Ptr{AVFilterBufferRef},Ptr{AVFilterBufferRef}),dst,src)
+    ccall((:avfilter_copy_buffer_ref_props,libavfilter),Cvoid,(Ptr{AVFilterBufferRef},Ptr{AVFilterBufferRef}),dst,src)
 end
 
 function avfilter_ref_buffer(ref,pmask::Integer)
@@ -50,11 +50,11 @@ function avfilter_ref_buffer(ref,pmask::Integer)
 end
 
 function avfilter_unref_buffer(ref)
-    ccall((:avfilter_unref_buffer,libavfilter),Void,(Ptr{AVFilterBufferRef},),ref)
+    ccall((:avfilter_unref_buffer,libavfilter),Cvoid,(Ptr{AVFilterBufferRef},),ref)
 end
 
 function avfilter_unref_bufferp(ref)
-    ccall((:avfilter_unref_bufferp,libavfilter),Void,(Ptr{Ptr{AVFilterBufferRef}},),ref)
+    ccall((:avfilter_unref_bufferp,libavfilter),Cvoid,(Ptr{Ptr{AVFilterBufferRef}},),ref)
 end
 
 function avfilter_pad_get_name(pads,pad_idx::Integer)
@@ -82,11 +82,11 @@ function avfilter_get_audio_buffer_ref_from_arrays(data,linesize::Integer,perms:
 end
 
 function avfilter_register_all()
-    ccall((:avfilter_register_all,libavfilter),Void,())
+    ccall((:avfilter_register_all,libavfilter),Cvoid,())
 end
 
 function avfilter_uninit()
-    ccall((:avfilter_uninit,libavfilter),Void,())
+    ccall((:avfilter_uninit,libavfilter),Cvoid,())
 end
 
 function avfilter_register(filter)
@@ -106,11 +106,11 @@ function avfilter_open(filter_ctx,filter,inst_name)
 end
 
 function avfilter_init_filter(filter,args,opaque)
-    ccall((:avfilter_init_filter,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{UInt8},Ptr{Void}),filter,args,opaque)
+    ccall((:avfilter_init_filter,libavfilter),Cint,(Ptr{AVFilterContext},Ptr{UInt8},Ptr{Cvoid}),filter,args,opaque)
 end
 
 function avfilter_free(filter)
-    ccall((:avfilter_free,libavfilter),Void,(Ptr{AVFilterContext},),filter)
+    ccall((:avfilter_free,libavfilter),Cvoid,(Ptr{AVFilterContext},),filter)
 end
 
 function avfilter_insert_filter(link,filt,filt_srcpad_idx::Integer,filt_dstpad_idx::Integer)

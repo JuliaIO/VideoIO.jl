@@ -22,5 +22,5 @@ function avdevice_license()
 end
 
 function avdevice_register_all()
-    ccall((:avdevice_register_all,libavdevice),Void,())
+    ccall((:avdevice_register_all,libavdevice),Cvoid,())
 end

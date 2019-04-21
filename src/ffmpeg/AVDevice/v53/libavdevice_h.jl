@@ -31,7 +31,7 @@ export
     AVDeviceInfoList
 
 
-immutable AVDeviceRect
+struct AVDeviceRect
     x::Cint
     y::Cint
     width::Cint
@@ -69,7 +69,7 @@ const AV_DEV_TO_APP_MUTE_STATE_CHANGED  =  UInt32(1129141588)
 const AV_DEV_TO_APP_VOLUME_LEVEL_CHANGED  =  UInt32(1129729868)
 # end enum AVDevToAppMessageType
 
-immutable AVDeviceCapabilitiesQuery
+struct AVDeviceCapabilitiesQuery
     av_class::Ptr{AVClass}
     device_context::Ptr{AVFormatContext}
     codec::AVCodecID
@@ -85,12 +85,12 @@ immutable AVDeviceCapabilitiesQuery
     fps::AVRational
 end
 
-immutable AVDeviceInfo
+struct AVDeviceInfo
     device_name::Ptr{UInt8}
     device_description::Ptr{UInt8}
 end
 
-immutable AVDeviceInfoList
+struct AVDeviceInfoList
     devices::Ptr{Ptr{AVDeviceInfo}}
     nb_devices::Cint
     default_device::Cint

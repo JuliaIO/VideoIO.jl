@@ -51,7 +51,7 @@ function av_frame_get_best_effort_timestamp(frame)
 end
 
 function av_frame_set_best_effort_timestamp(frame,val::Int64)
-    ccall((:av_frame_set_best_effort_timestamp,libavutil),Void,(Ptr{AVFrame},Int64),frame,val)
+    ccall((:av_frame_set_best_effort_timestamp,libavutil),Cvoid,(Ptr{AVFrame},Int64),frame,val)
 end
 
 function av_frame_get_pkt_duration(frame)
@@ -59,7 +59,7 @@ function av_frame_get_pkt_duration(frame)
 end
 
 function av_frame_set_pkt_duration(frame,val::Int64)
-    ccall((:av_frame_set_pkt_duration,libavutil),Void,(Ptr{AVFrame},Int64),frame,val)
+    ccall((:av_frame_set_pkt_duration,libavutil),Cvoid,(Ptr{AVFrame},Int64),frame,val)
 end
 
 function av_frame_get_pkt_pos(frame)
@@ -67,7 +67,7 @@ function av_frame_get_pkt_pos(frame)
 end
 
 function av_frame_set_pkt_pos(frame,val::Int64)
-    ccall((:av_frame_set_pkt_pos,libavutil),Void,(Ptr{AVFrame},Int64),frame,val)
+    ccall((:av_frame_set_pkt_pos,libavutil),Cvoid,(Ptr{AVFrame},Int64),frame,val)
 end
 
 function av_frame_get_channel_layout(frame)
@@ -75,7 +75,7 @@ function av_frame_get_channel_layout(frame)
 end
 
 function av_frame_set_channel_layout(frame,val::Int64)
-    ccall((:av_frame_set_channel_layout,libavutil),Void,(Ptr{AVFrame},Int64),frame,val)
+    ccall((:av_frame_set_channel_layout,libavutil),Cvoid,(Ptr{AVFrame},Int64),frame,val)
 end
 
 function av_frame_get_channels(frame)
@@ -83,7 +83,7 @@ function av_frame_get_channels(frame)
 end
 
 function av_frame_set_channels(frame,val::Integer)
-    ccall((:av_frame_set_channels,libavutil),Void,(Ptr{AVFrame},Cint),frame,val)
+    ccall((:av_frame_set_channels,libavutil),Cvoid,(Ptr{AVFrame},Cint),frame,val)
 end
 
 function av_frame_get_sample_rate(frame)
@@ -91,7 +91,7 @@ function av_frame_get_sample_rate(frame)
 end
 
 function av_frame_set_sample_rate(frame,val::Integer)
-    ccall((:av_frame_set_sample_rate,libavutil),Void,(Ptr{AVFrame},Cint),frame,val)
+    ccall((:av_frame_set_sample_rate,libavutil),Cvoid,(Ptr{AVFrame},Cint),frame,val)
 end
 
 function av_frame_get_metadata(frame)
@@ -99,7 +99,7 @@ function av_frame_get_metadata(frame)
 end
 
 function av_frame_set_metadata(frame,val)
-    ccall((:av_frame_set_metadata,libavutil),Void,(Ptr{AVFrame},Ptr{AVDictionary}),frame,val)
+    ccall((:av_frame_set_metadata,libavutil),Cvoid,(Ptr{AVFrame},Ptr{AVDictionary}),frame,val)
 end
 
 function av_frame_get_decode_error_flags(frame)
@@ -107,7 +107,7 @@ function av_frame_get_decode_error_flags(frame)
 end
 
 function av_frame_set_decode_error_flags(frame,val::Integer)
-    ccall((:av_frame_set_decode_error_flags,libavutil),Void,(Ptr{AVFrame},Cint),frame,val)
+    ccall((:av_frame_set_decode_error_flags,libavutil),Cvoid,(Ptr{AVFrame},Cint),frame,val)
 end
 
 function av_frame_get_pkt_size(frame)
@@ -115,7 +115,7 @@ function av_frame_get_pkt_size(frame)
 end
 
 function av_frame_set_pkt_size(frame,val::Integer)
-    ccall((:av_frame_set_pkt_size,libavutil),Void,(Ptr{AVFrame},Cint),frame,val)
+    ccall((:av_frame_set_pkt_size,libavutil),Cvoid,(Ptr{AVFrame},Cint),frame,val)
 end
 
 function avpriv_frame_get_metadatap(frame)
@@ -135,7 +135,7 @@ function av_frame_get_colorspace(frame)
 end
 
 function av_frame_set_colorspace(frame,val::AVColorSpace)
-    ccall((:av_frame_set_colorspace,libavutil),Void,(Ptr{AVFrame},AVColorSpace),frame,val)
+    ccall((:av_frame_set_colorspace,libavutil),Cvoid,(Ptr{AVFrame},AVColorSpace),frame,val)
 end
 
 function av_frame_get_color_range(frame)
@@ -143,7 +143,7 @@ function av_frame_get_color_range(frame)
 end
 
 function av_frame_set_color_range(frame,val::AVColorRange)
-    ccall((:av_frame_set_color_range,libavutil),Void,(Ptr{AVFrame},AVColorRange),frame,val)
+    ccall((:av_frame_set_color_range,libavutil),Cvoid,(Ptr{AVFrame},AVColorRange),frame,val)
 end
 
 function av_get_colorspace_name(val::AVColorSpace)
@@ -155,7 +155,7 @@ function av_frame_alloc()
 end
 
 function av_frame_free(frame)
-    ccall((:av_frame_free,libavutil),Void,(Ptr{Ptr{AVFrame}},),frame)
+    ccall((:av_frame_free,libavutil),Cvoid,(Ptr{Ptr{AVFrame}},),frame)
 end
 
 function av_frame_ref(dst,src)
@@ -167,11 +167,11 @@ function av_frame_clone(src)
 end
 
 function av_frame_unref(frame)
-    ccall((:av_frame_unref,libavutil),Void,(Ptr{AVFrame},),frame)
+    ccall((:av_frame_unref,libavutil),Cvoid,(Ptr{AVFrame},),frame)
 end
 
 function av_frame_move_ref(dst,src)
-    ccall((:av_frame_move_ref,libavutil),Void,(Ptr{AVFrame},Ptr{AVFrame}),dst,src)
+    ccall((:av_frame_move_ref,libavutil),Cvoid,(Ptr{AVFrame},Ptr{AVFrame}),dst,src)
 end
 
 function av_frame_get_buffer(frame,align::Integer)
@@ -207,5 +207,5 @@ function av_frame_get_side_data(frame,_type::AVFrameSideDataType)
 end
 
 function av_frame_remove_side_data(frame,_type::AVFrameSideDataType)
-    ccall((:av_frame_remove_side_data,libavutil),Void,(Ptr{AVFrame},AVFrameSideDataType),frame,_type)
+    ccall((:av_frame_remove_side_data,libavutil),Cvoid,(Ptr{AVFrame},AVFrameSideDataType),frame,_type)
 end

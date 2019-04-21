@@ -18,9 +18,9 @@ function av_des_init(d,key,key_bits::Integer,decrypt::Integer)
 end
 
 function av_des_crypt(d,dst,src,count::Integer,iv,decrypt::Integer)
-    ccall((:av_des_crypt,libavutil),Void,(Ptr{AVDES},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),d,dst,src,count,iv,decrypt)
+    ccall((:av_des_crypt,libavutil),Cvoid,(Ptr{AVDES},Ptr{UInt8},Ptr{UInt8},Cint,Ptr{UInt8},Cint),d,dst,src,count,iv,decrypt)
 end
 
 function av_des_mac(d,dst,src,count::Integer)
-    ccall((:av_des_mac,libavutil),Void,(Ptr{AVDES},Ptr{UInt8},Ptr{UInt8},Cint),d,dst,src,count)
+    ccall((:av_des_mac,libavutil),Cvoid,(Ptr{AVDES},Ptr{UInt8},Ptr{UInt8},Cint),d,dst,src,count)
 end

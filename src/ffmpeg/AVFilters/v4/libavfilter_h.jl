@@ -70,9 +70,9 @@ const AVFILTER_CMD_FLAG_FAST  =  2
 const AVFilterContext = AVFilterContext
 const AVFilterLink = AVFilterLink
 const AVFilterPad = AVFilterPad
-const AVFilterFormats = Void
+const AVFilterFormats = Nothing
 
-immutable Array_8_Ptr
+struct Array_8_Ptr
     d1::Ptr{UInt8}
     d2::Ptr{UInt8}
     d3::Ptr{UInt8}
@@ -85,7 +85,7 @@ end
 
 zero(::Type{Array_8_Ptr}) = Array_8_Ptr(fill(C_NULL,8)...)
 
-immutable Array_8_Cint
+struct Array_8_Cint
     d1::Cint
     d2::Cint
     d3::Cint
@@ -98,26 +98,26 @@ end
 
 zero(::Type{Array_8_Cint}) = Array_8_Cint(fill(zero(Cint),8)...)
 
-immutable AVFilterBuffer
+struct AVFilterBuffer
     data::Array_8_Ptr
     extended_data::Ptr{Ptr{UInt8}}
     linesize::Array_8_Cint
-    priv::Ptr{Void}
-    free::Ptr{Void}
+    priv::Ptr{Cvoid}
+    free::Ptr{Cvoid}
     format::Cint
     w::Cint
     h::Cint
     refcount::UInt32
 end
 
-immutable AVFilterBufferRefAudioProps
+struct AVFilterBufferRefAudioProps
     channel_layout::UInt64
     nb_samples::Cint
     sample_rate::Cint
     channels::Cint
 end
 
-immutable AVFilterBufferRefVideoProps
+struct AVFilterBufferRefVideoProps
     w::Cint
     h::Cint
     sample_aspect_ratio::AVRational
@@ -130,7 +130,7 @@ immutable AVFilterBufferRefVideoProps
     qp_table::Ptr{Int8}
 end
 
-immutable AVFilterBufferRef
+struct AVFilterBufferRef
     buf::Ptr{AVFilterBuffer}
     data::Array_8_Ptr
     extended_data::Ptr{Ptr{UInt8}}
@@ -145,27 +145,27 @@ immutable AVFilterBufferRef
     metadata::Ptr{AVDictionary}
 end
 
-immutable AVFilter
+struct AVFilter
     name::Ptr{UInt8}
     description::Ptr{UInt8}
     inputs::Ptr{AVFilterPad}
     outputs::Ptr{AVFilterPad}
     priv_class::Ptr{AVClass}
     flags::Cint
-    init::Ptr{Void}
-    init_dict::Ptr{Void}
-    uninit::Ptr{Void}
-    query_formats::Ptr{Void}
+    init::Ptr{Cvoid}
+    init_dict::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    query_formats::Ptr{Cvoid}
     priv_size::Cint
     next::Ptr{AVFilter}
-    process_command::Ptr{Void}
-    init_opaque::Ptr{Void}
+    process_command::Ptr{Cvoid}
+    init_opaque::Ptr{Cvoid}
 end
 
-const AVFilterInternal = Void
-const AVFilterGraphInternal = Void
+const AVFilterInternal = Nothing
+const AVFilterGraphInternal = Nothing
 
-immutable AVFilterGraph
+struct AVFilterGraph
     av_class::Ptr{AVClass}
     filter_count_unused::UInt32
     filters::Ptr{Ptr{AVFilterContext}}
@@ -175,7 +175,7 @@ immutable AVFilterGraph
     thread_type::Cint
     nb_threads::Cint
     internal::Ptr{AVFilterGraphInternal}
-    opaque::Ptr{Void}
+    opaque::Ptr{Cvoid}
     execute::Ptr{avfilter_execute_func}
     aresample_swr_opts::Ptr{UInt8}
     sink_links::Ptr{Ptr{AVFilterLink}}
@@ -189,7 +189,7 @@ const AVFILTER_AUTO_CONVERT_ALL  =  Int32(0)
 const AVFILTER_AUTO_CONVERT_NONE  =  Int32(-1)
 # end enum ANONYMOUS_1
 
-immutable AVFilterInOut
+struct AVFilterInOut
     name::Ptr{UInt8}
     filter_ctx::Ptr{AVFilterContext}
     pad_idx::Cint
@@ -199,11 +199,11 @@ end
 const AV_BUFFERSINK_FLAG_PEEK  =  1
 const AV_BUFFERSINK_FLAG_NO_REQUEST  =  2
 
-immutable AVBufferSinkParams
+struct AVBufferSinkParams
     pixel_fmts::Ptr{AVPixelFormat}
 end
 
-immutable AVABufferSinkParams
+struct AVABufferSinkParams
     sample_fmts::Ptr{AVSampleFormat}
     channel_layouts::Ptr{Int64}
     channel_counts::Ptr{Cint}

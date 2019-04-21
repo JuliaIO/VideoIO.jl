@@ -8,27 +8,27 @@ addons:
     - tcl8.5
     - tk8.5
     - libcairo2
-    - libavcodec-extra-53
+    - libavcodec-extra-54
     - libavdevice53
-    - libavfilter2
-    - libavformat53
-    - libavutil-extra-51
+    - libavfilter3
+    - libavformat54
+    - libavutil-extra-52
     - libswscale2
+    - libgtk-3-dev
+    - zlib1g-dev
 os:
   - linux
-#  - osx
+  - osx
 julia:
-  - 0.5
-  - 0.6
+  - 1.0
+  - 1.1
   - nightly
-matrix:	
-  allow_failures:
-    - julia: nightly
+# matrix:
+#   allow_failures:
+#     - julia: nightly
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-script:
-  - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.build("VideoIO")'
-  # coverage=true causes tests to hang, see pull request #92
-  - if [ -f test/runtests.jl ]; then julia -e 'Pkg.test("VideoIO", coverage=false)'; fi
+
+after_success:
+  # push coverage results to Coveralls and Codecov
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder()); Codecov.submit(process_folder())'

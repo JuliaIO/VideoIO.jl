@@ -22,7 +22,7 @@ export
 
 const AVRESAMPLE_MAX_CHANNELS = 32
 
-const AVAudioResampleContext=Void
+const AVAudioResampleContext=Nothing
 
 # begin enum AVMixCoeffType
 const AVMixCoeffType=UInt32

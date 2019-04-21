@@ -116,20 +116,20 @@ const AVIO_FLAG_WRITE  =  2
 const AVIO_FLAG_READ_WRITE  =  AVIO_FLAG_READ | AVIO_FLAG_WRITE
 const AVIO_FLAG_NONBLOCK  =  8
 
-immutable AVIOInterruptCB
-    callback::Ptr{Void}
-    opaque::Ptr{Void}
+struct AVIOInterruptCB
+    callback::Ptr{Cvoid}
+    opaque::Ptr{Cvoid}
 end
 
-immutable AVIOContext
+struct AVIOContext
     buffer::Ptr{Cuchar}
     buffer_size::Cint
     buf_ptr::Ptr{Cuchar}
     buf_end::Ptr{Cuchar}
-    opaque::Ptr{Void}
-    read_packet::Ptr{Void}
-    write_packet::Ptr{Void}
-    seek::Ptr{Void}
+    opaque::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    seek::Ptr{Cvoid}
     pos::Int64
     must_flush::Cint
     eof_reached::Cint
@@ -138,43 +138,43 @@ immutable AVIOContext
     max_packet_size::Cint
     checksum::Culong
     checksum_ptr::Ptr{Cuchar}
-    update_checksum::Ptr{Void}
+    update_checksum::Ptr{Cvoid}
     error::Cint
-    read_pause::Ptr{Void}
-    read_seek::Ptr{Void}
+    read_pause::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
     seekable::Cint
 end
 
-immutable URLProtocol
+struct URLProtocol
     name::Ptr{UInt8}
-    url_open::Ptr{Void}
-    url_read::Ptr{Void}
-    url_write::Ptr{Void}
-    url_seek::Ptr{Void}
-    url_close::Ptr{Void}
+    url_open::Ptr{Cvoid}
+    url_read::Ptr{Cvoid}
+    url_write::Ptr{Cvoid}
+    url_seek::Ptr{Cvoid}
+    url_close::Ptr{Cvoid}
     next::Ptr{URLProtocol}
-    url_read_pause::Ptr{Void}
-    url_read_seek::Ptr{Void}
-    url_get_file_handle::Ptr{Void}
+    url_read_pause::Ptr{Cvoid}
+    url_read_seek::Ptr{Cvoid}
+    url_get_file_handle::Ptr{Cvoid}
     priv_data_size::Cint
     priv_data_class::Ptr{AVClass}
     flags::Cint
-    url_check::Ptr{Void}
+    url_check::Ptr{Cvoid}
 end
 
-immutable URLContext
+struct URLContext
     av_class::Ptr{AVClass}
     prot::Ptr{URLProtocol}
     flags::Cint
     is_streamed::Cint
     max_packet_size::Cint
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     filename::Ptr{UInt8}
     is_connected::Cint
     interrupt_callback::AVIOInterruptCB
 end
 
-immutable URLPollEntry
+struct URLPollEntry
     handle::Ptr{URLContext}
     events::Cint
     revents::Cint
@@ -237,32 +237,32 @@ const AVSEEK_FLAG_BYTE  =  2
 const AVSEEK_FLAG_ANY  =  4
 const AVSEEK_FLAG_FRAME  =  8
 
-const AVCodecTag = Void
-const AVMetadataConv = Void
+const AVCodecTag = Nothing
+const AVMetadataConv = Nothing
 
-immutable AVInputFormat
+struct AVInputFormat
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     priv_data_size::Cint
-    read_probe::Ptr{Void}
-    read_header::Ptr{Void}
-    read_packet::Ptr{Void}
-    read_close::Ptr{Void}
-    read_seek::Ptr{Void}
-    read_timestamp::Ptr{Void}
+    read_probe::Ptr{Cvoid}
+    read_header::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    read_close::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
+    read_timestamp::Ptr{Cvoid}
     flags::Cint
     extensions::Ptr{UInt8}
     value::Cint
-    read_play::Ptr{Void}
-    read_pause::Ptr{Void}
+    read_play::Ptr{Cvoid}
+    read_pause::Ptr{Cvoid}
     codec_tag::Ptr{Ptr{AVCodecTag}}
-    read_seek2::Ptr{Void}
+    read_seek2::Ptr{Cvoid}
     metadata_conv::Ptr{AVMetadataConv}
     priv_class::Ptr{AVClass}
     next::Ptr{AVInputFormat}
 end
 
-immutable AVOutputFormat
+struct AVOutputFormat
     name::Ptr{UInt8}
     long_name::Ptr{UInt8}
     mime_type::Ptr{UInt8}
@@ -270,21 +270,21 @@ immutable AVOutputFormat
     priv_data_size::Cint
     audio_codec::CodecID
     video_codec::CodecID
-    write_header::Ptr{Void}
-    write_packet::Ptr{Void}
-    write_trailer::Ptr{Void}
+    write_header::Ptr{Cvoid}
+    write_packet::Ptr{Cvoid}
+    write_trailer::Ptr{Cvoid}
     flags::Cint
-    set_parameters::Ptr{Void}
-    interleave_packet::Ptr{Void}
+    set_parameters::Ptr{Cvoid}
+    interleave_packet::Ptr{Cvoid}
     codec_tag::Ptr{Ptr{AVCodecTag}}
     subtitle_codec::CodecID
     metadata_conv::Ptr{AVMetadataConv}
     priv_class::Ptr{AVClass}
-    query_codec::Ptr{Void}
+    query_codec::Ptr{Cvoid}
     next::Ptr{AVOutputFormat}
 end
 
-immutable AVFrac
+struct AVFrac
     val::Int64
     num::Int64
     den::Int64
@@ -299,7 +299,7 @@ const AVSTREAM_PARSE_TIMESTAMPS  =  UInt32(3)
 const AVSTREAM_PARSE_FULL_ONCE  =  UInt32(4)
 # end enum AVStreamParseType
 
-immutable AVIndexEntry
+struct AVIndexEntry
     pos::Int64
     timestamp::Int64
     flags::Cint
@@ -307,13 +307,13 @@ immutable AVIndexEntry
     min_distance::Cint
 end
 
-immutable AVProbeData
+struct AVProbeData
     filename::Ptr{UInt8}
     buf::Ptr{Cuchar}
     buf_size::Cint
 end
 
-immutable Array_17_Int64
+struct Array_17_Int64
     d1::Int64
     d2::Int64
     d3::Int64
@@ -335,17 +335,17 @@ end
 
 zero(::Type{Array_17_Int64}) = Array_17_Int64(fill(zero(Int64),17)...)
 
-immutable AVPacketList
+struct AVPacketList
     pkt::AVPacket
     next::Ptr{AVPacketList}
 end
 
-immutable AVStream
+struct AVStream
     index::Cint
     id::Cint
     codec::Ptr{AVCodecContext}
     r_frame_rate::AVRational
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     first_dts::Int64
     pts::AVFrac
     time_base::AVRational
@@ -377,10 +377,10 @@ immutable AVStream
     last_in_packet_buffer::Ptr{AVPacketList}
     avg_frame_rate::AVRational
     codec_info_nb_frames::Cint
-    info::Ptr{Void}
+    info::Ptr{Cvoid}
 end
 
-immutable Array_1024_Uint8
+struct Array_1024_Uint8
     d1::UInt8
     d2::UInt8
     d3::UInt8
@@ -1409,7 +1409,7 @@ end
 
 zero(::Type{Array_1024_Uint8}) = Array_1024_Uint8(fill(zero(UInt8),1024)...)
 
-immutable AVProgram
+struct AVProgram
     id::Cint
     flags::Cint
     discard::AVDiscard
@@ -1418,7 +1418,7 @@ immutable AVProgram
     metadata::Ptr{AVDictionary}
 end
 
-immutable AVChapter
+struct AVChapter
     id::Cint
     time_base::AVRational
     start::Int64
@@ -1426,11 +1426,11 @@ immutable AVChapter
     metadata::Ptr{AVDictionary}
 end
 
-immutable AVFormatContext
+struct AVFormatContext
     av_class::Ptr{AVClass}
     iformat::Ptr{AVInputFormat}
     oformat::Ptr{AVOutputFormat}
-    priv_data::Ptr{Void}
+    priv_data::Ptr{Cvoid}
     pb::Ptr{AVIOContext}
     nb_streams::UInt32
     streams::Ptr{Ptr{AVStream}}
@@ -1479,7 +1479,7 @@ end
 const AVMetadata = AVDictionary
 const AVMetadataTag = AVDictionaryEntry
 
-immutable AVFormatParameters
+struct AVFormatParameters
     time_base::AVRational
     sample_rate::Cint
     channels::Cint

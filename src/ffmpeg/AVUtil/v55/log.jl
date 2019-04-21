@@ -24,11 +24,11 @@ function av_log_get_level()
 end
 
 function av_log_set_level(level::Integer)
-    ccall((:av_log_set_level,libavutil),Void,(Cint,),level)
+    ccall((:av_log_set_level,libavutil),Cvoid,(Cint,),level)
 end
 
 function av_log_set_callback(callback)
-    ccall((:av_log_set_callback,libavutil),Void,(Ptr{Void},),callback)
+    ccall((:av_log_set_callback,libavutil),Cvoid,(Ptr{Cvoid},),callback)
 end
 
 # function av_log_default_callback(avcl,level::Integer,fmt,vl)
@@ -36,11 +36,11 @@ end
 # end
 
 function av_default_item_name(ctx)
-    ccall((:av_default_item_name,libavutil),Cstring,(Ptr{Void},),ctx)
+    ccall((:av_default_item_name,libavutil),Cstring,(Ptr{Cvoid},),ctx)
 end
 
 function av_default_get_category(ptr)
-    ccall((:av_default_get_category,libavutil),AVClassCategory,(Ptr{Void},),ptr)
+    ccall((:av_default_get_category,libavutil),AVClassCategory,(Ptr{Cvoid},),ptr)
 end
 
 # function av_log_format_line(ptr,level::Integer,fmt,vl,line,line_size::Integer,print_prefix)
@@ -48,7 +48,7 @@ end
 # end
 
 function av_log_set_flags(arg::Integer)
-    ccall((:av_log_set_flags,libavutil),Void,(Cint,),arg)
+    ccall((:av_log_set_flags,libavutil),Cvoid,(Cint,),arg)
 end
 
 function av_log_get_flags()

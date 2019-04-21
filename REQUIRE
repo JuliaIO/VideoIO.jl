@@ -1,5 +1,4 @@
-julia 0.5
-Compat v0.18.0
+julia 0.7
 BinDeps 0.3.4
 FixedPointNumbers 0.3.0
 ColorTypes
@@ -8,3 +7,4 @@ ImageCore
 ImageView 0.3.0
 @osx Homebrew
 @linux Glob
+Requires
