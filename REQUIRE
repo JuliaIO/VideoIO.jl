@@ -1,4 +1,6 @@
 julia 0.7
+BinaryProvider
+Libdl
 FixedPointNumbers 0.3.0
 ColorTypes
 FileIO
