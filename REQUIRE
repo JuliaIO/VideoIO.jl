@@ -2,6 +2,7 @@ julia 0.7
 BinDeps 0.3.4
 FixedPointNumbers 0.3.0
 ColorTypes
+Dates
 FileIO
 ImageCore
 ImageView 0.3.0

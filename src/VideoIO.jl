@@ -1,8 +1,9 @@
 module VideoIO
 
-using FixedPointNumbers, ColorTypes, ImageCore, Requires
+using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 
 include("init.jl")
+include("util.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
 include(joinpath(av_load_path, "AVCodecs", "src", "AVCodecs.jl"))
 include(joinpath(av_load_path, "AVFormat", "src", "AVFormat.jl"))
@@ -19,6 +20,7 @@ if have_avdevice()
 end
 
 include("util.jl")
+include("info.jl")
 include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
