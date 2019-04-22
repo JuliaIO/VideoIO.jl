@@ -4,7 +4,12 @@ using BinaryProvider
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
 
-libpath = joinpath(@__DIR__, "usr/bin") #for forcing LibraryProduct to find libs in bin dir (as ffmpeg likes to do)
+if Sys.islinux()
+    libpath = joinpath(@__DIR__, "usr/lib")
+else
+    libpath = joinpath(@__DIR__, "usr/bin") #The FFMPEG binaries not sourced from BinaryProvider have libs in bin
+end
+                        
 # These are the two binary objects we care about
 products = Product[
     ExecutableProduct(prefix, "ffmpeg", :ffmpeg),
