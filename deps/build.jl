@@ -9,7 +9,7 @@ libpath = joinpath(@__DIR__, "usr/bin") #for forcing LibraryProduct to find libs
 products = Product[
     ExecutableProduct(prefix, "ffmpeg", :ffmpeg),
     ExecutableProduct(prefix, "ffprobe", :ffprobe),
-    ExecutableProduct(prefix, "ffplay", :ffplay),
+    #ExecutableProduct(prefix, "ffplay", :ffplay),
 
     LibraryProduct(libpath, [["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*["53" "54" "55" "56" "57" "58"]...], :libavcodec),
     LibraryProduct(libpath, [["libavformat-ffmpeg.so.","libavformat.","libavformat.so.","libavformat.ffmpeg.so.","avformat-"].*["53" "54" "55" "56" "57" "58"]...], :libavformat),
