@@ -4,11 +4,8 @@ using BinaryProvider
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
 
-if Sys.islinux()
-    libpath = joinpath(@__DIR__, "usr/lib")
-else
-    libpath = joinpath(@__DIR__, "usr/bin") #The FFMPEG binaries not sourced from BinaryProvider have libs in bin
-end
+#N.B. The FFMPEG binaries not sourced from BinaryProvider have libs in bin, so the BinaryProvider structure was conformed
+libpath = joinpath(@__DIR__, "usr/bin")
                         
 # These are the two binary objects we care about
 products = Product[
@@ -33,7 +30,7 @@ download_info = Dict(
     #Linux(:armv7l, :glibc)  => ("$bin_prefix/ffmpeg-$v-arm-linux-gnueabihf.tar.gz", ""),
     #Linux(:powerpc64le, :glibc) => ("$bin_prefix/ffmpeg-$v-powerpc64le-linux-gnu.tar.gz", ""),
     #Linux(:i686, :glibc)    => ("$bin_prefix/ffmpeg-$v-i686-linux-gnu.tar.gz", ""),
-    Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-4.1-86_64-linux-gnu.tar.gz", "c4af8723324407e09febfaacdda604580edec7d6134416fb598c2d0398b6adfd"),
+    Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-4.1-86_64-linux-gnu.tar.gz", "7d1199e95f8a81b6e3fa6fd6584ca6f419847f6d4f5a5dc83656cd46e84a51fb"),
 
     #Linux(:aarch64, :musl)  => ("$bin_prefix/ffmpeg-$v-aarch64-linux-musl.tar.gz", ""),
     #Linux(:armv7l, :musl)   => ("$bin_prefix/ffmpeg-$v-arm-linux-musleabihf.tar.gz", ""),
