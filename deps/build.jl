@@ -13,12 +13,12 @@ products = Product[
     ExecutableProduct(prefix, "ffprobe", :ffprobe),
     #ExecutableProduct(prefix, "ffplay", :ffplay),
 
-    LibraryProduct(libpath, [["libavcodec-ffmpeg.so.","libavcodec.","libavcodec.so.","libavcodec.ffmpeg.so.","avcodec-"].*["53" "54" "55" "56" "57" "58"]...], :libavcodec),
-    LibraryProduct(libpath, [["libavformat-ffmpeg.so.","libavformat.","libavformat.so.","libavformat.ffmpeg.so.","avformat-"].*["53" "54" "55" "56" "57" "58"]...], :libavformat),
-    LibraryProduct(libpath, [["libavutil-ffmpeg.so.", "libavutil.","libavutil.so.", "libavutil.ffmpeg.so.", "avutil-"].*["51" "52" "54" "55" "56"]...], :libavutil),
-    LibraryProduct(libpath, [["libswscale-ffmpeg.so.","libswscale.","libswscale.so.","libswscale.ffmpeg.so.","swscale-"].*["2" "3" "4" "5"]...], :libswscale),
-    LibraryProduct(libpath, [["libavfilter-ffmpeg.so.","libavfilter.","libavfilter.so.","libavfilter.ffmpeg.so.","avfilter-"].*["2" "3" "4" "5" "6" "7"]...], :libavfilter),
-    LibraryProduct(libpath, [["libavdevice-ffmpeg.so.","libavdevice.","libavdevice.so.","libavdevice.ffmpeg.so.","avdevice-"].*["53" "54" "55" "56" "57" "58"]...], :libavdevice),
+    LibraryProduct(libpath, ["libavcodec","avcodec"], :libavcodec),
+    LibraryProduct(libpath, ["libavformat","avformat"], :libavformat),
+    LibraryProduct(libpath, ["libavutil","avutil"], :libavutil),
+    LibraryProduct(libpath, ["libswscale","swscale"], :libswscale),
+    LibraryProduct(libpath, ["libavfilter","avfilter"], :libavfilter),
+    LibraryProduct(libpath, ["libavdevice","avdevice"], :libavdevice),
 ]
 
 # Download binaries from hosted location
