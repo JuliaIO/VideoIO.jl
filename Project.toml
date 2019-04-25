@@ -14,6 +14,12 @@ ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
+[compat]
+BinDeps = "≥ 0.3.4"
+FixedPointNumbers = "≥ 0.3.0"
+ImageView = "≥ 0.3.0"
+julia = "≥ 0.7.0"
+
 [extras]
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
