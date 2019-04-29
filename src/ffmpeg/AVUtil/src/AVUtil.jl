@@ -4,6 +4,6 @@ module AVUtil
 
   include(w("LIBAVUTIL.jl"))
 
-  #Base.zero(::Type{AVRational}) = AVRational(0, 1)
+  Base.zero(::Type{AVRational}) = AVRational(0, 1)
 
 end

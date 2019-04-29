@@ -20,7 +20,6 @@ if have_avdevice()
     import .AVDevice
 end
 
-include("util.jl")
 include("info.jl")
 include("avio.jl")
 include("testvideos.jl")
@@ -32,9 +31,12 @@ end
 
 function __init__()
     # Always check your dependencies from `deps.jl`
-    check_deps()
+    # TODO remove uncessary ENV["LD_LIBRARY_PATH"] from check_deps, so that
+    # it doesn't mess with LD_LIBRARY_PATH
+    # since check_deps is optional, I hope this is ok for now
 
-    global read_packet  =  @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
+    # check_deps()
+
     global read_packet
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
