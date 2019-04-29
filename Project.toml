@@ -11,14 +11,12 @@ FixedPointNumbers = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 Homebrew = "d9be37ee-ecc9-5288-90f1-b9ca67657a75"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 BinDeps = "≥ 0.3.4"
 FixedPointNumbers = "≥ 0.3.0"
-ImageView = "≥ 0.3.0"
 julia = "≥ 0.7.0"
 
 [extras]
