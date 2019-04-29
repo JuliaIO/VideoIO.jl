@@ -83,6 +83,16 @@ This code is essentially the code in `playvideo`, and will read and
 As with the `playvideo` function, the `Images` and `ImageView` packages
 must be loaded for the appropriate functions to be available.
 
+As an example, here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
+```
+f = VideoIO.openvideo(filename,target_format=VideoIO.AV_PIX_FMT_GRAY8)
+v = Vector{Array{UInt8}}(undef,0)
+while !eof(f)
+    push!(v,reinterpret(UInt8, read(f)))
+end
+close(f)
+```
+
 
 Low Level Interface
 -------------------
