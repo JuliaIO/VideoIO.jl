@@ -6,7 +6,7 @@ const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__
 
 #N.B. The FFMPEG binaries not sourced from BinaryProvider have libs in bin, so the BinaryProvider structure was conformed
 libpath = joinpath(@__DIR__, "usr/bin")
-                        
+
 # These are the two binary objects we care about
 products = Product[
     ExecutableProduct(prefix, "ffmpeg", :ffmpeg),
@@ -24,7 +24,7 @@ products = Product[
 # Download binaries from hosted location
 v = "4.1"
 bin_prefix = "https://github.com/ianshmean/FFMPEG-tarballs/raw/master/$v/bin"
-                    
+
 download_info = Dict(
     #Linux(:aarch64, :glibc) => ("$bin_prefix/ffmpeg-$v-aarch64-linux-gnu.tar.gz", ""),
     #Linux(:armv7l, :glibc)  => ("$bin_prefix/ffmpeg-$v-arm-linux-gnueabihf.tar.gz", ""),
@@ -43,6 +43,34 @@ download_info = Dict(
     Windows(:i686)          => ("$bin_prefix/ffmpeg-$v-win32-shared.tar.gz", "3d6486189953a8f9af14190fdcf43a3216654ee0d64a741b6e108b7d8f7039e5"),
     Windows(:x86_64)        => ("$bin_prefix/ffmpeg-$v-win64-shared.tar.gz", "19191f33c2ffd437fde8d61cb65724d672389e4522716496829a4a7366a5bf76"),
 )
+
+dependencies = [
+    "https://github.com/JuliaIO/LibassBuilder/releases/download/v0.14.0/build_libass.v0.14.0.jl",
+    "https://github.com/SimonDanisch/FDKBuilder/releases/download/0.1.6/build_libfdk.v0.1.6.jl",
+    "https://github.com/SimonDanisch/LAMEBuilder/releases/download/3.100.0/build_liblame.v3.100.0.jl",
+    "https://github.com/JuliaIO/LibVorbisBuilder/releases/download/v1.3.6/build_libvorbis.v1.3.6.jl",
+    "https://github.com/staticfloat/OggBuilder/releases/download/v1.3.3-7/build_Ogg.v1.3.3.jl",
+    "https://github.com/jpsamaroo/LibVPXBuilder/releases/download/v5.0.0/build_LibVPX.v5.0.0.jl",
+]
+
+for dependency in dependencies
+    file = joinpath(@__DIR__, basename(dependency))
+    isfile(file) || download(dependency, file)
+    # it's a bit faster to run the build in an anonymous module instead of
+    # starting a new julia process
+
+    # Build the dependencies
+    Mod = @eval module Anon end
+    Mod.include(file)
+end
+
+# Not sure why those end up in lib, but they do -.-
+
+for elem in readdir(joinpath(prefix, "lib"))
+    if occursin(".so", elem)
+        cp(joinpath(prefix, "lib", elem), joinpath(prefix, "bin", elem), follow_symlinks = true, force = true)
+    end
+end
 # First, check to see if we're all satisfied
 if any(!satisfied(p; verbose=verbose) for p in products)
     try
@@ -56,7 +84,6 @@ if any(!satisfied(p; verbose=verbose) for p in products)
             rethrow(e)
         end
     end
-
     # Finally, write out a deps.jl file
     write_deps_file(joinpath(@__DIR__, "deps.jl"), products)
 end
