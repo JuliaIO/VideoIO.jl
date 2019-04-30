@@ -1,17 +1,13 @@
-[![Build Status](https://travis-ci.org/JuliaIO/VideoIO.jl.svg?branch=master)](https://travis-ci.org/JuliaIO/VideoIO.jl) 
+[![Build Status](https://travis-ci.org/JuliaIO/VideoIO.jl.svg?branch=master)](https://travis-ci.org/JuliaIO/VideoIO.jl)
 [![Appveyor Build](https://ci.appveyor.com/api/projects/status/44g5t95ev6ww6kro?svg=true)](https://ci.appveyor.com/project/JuliaIO/videoio-jl)
 [![Coverage Status](https://coveralls.io/repos/JuliaIO/VideoIO.jl/badge.png)](https://coveralls.io/r/JuliaIO/VideoIO.jl)
 
 VideoIO.jl
 ==========
 
-Julia bindings for libav/ffmpeg.
+Julia bindings for libav/ffmpeg, using a dedicated installation of ffmpeg 4.1.
 
-Currently, only video reading is supported, for the following
-library versions:
-
-* libav 0.8, 9, 10
-* ffmpeg 2.2 through 3.0
+Currently, only video reading is supported.
 
 Video images may be read as raw arrays, or optionally, `Image`
 objects (if `Images.jl` is installed and loaded first).
