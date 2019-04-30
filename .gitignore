@@ -1,5 +1,7 @@
-deps/*
-!deps/build.jl
+deps/usr
+deps/deps.jl
+deps/deps_codec.jl
+deps/build.log
 .DS_Store
 videos/*
 Manifest.toml
