@@ -1,5 +1,5 @@
 using Test
-using ColorTypes, FileIO, ImageCore, ImageMagick
+using ColorTypes, FileIO, ImageCore, ImageMagick, Dates
 
 import VideoIO
 
@@ -123,3 +123,11 @@ VideoIO.testvideo("ladybird") # coverage testing
 
 
 #VideoIO.TestVideos.remove_all()
+
+println(stderr, "Tesing reading of video duration and date/datetime...")
+# tesing the duration and date & time functions:
+println(stderr, "   Testing annie_oakley.ogg...")
+file = joinpath(videodir, "annie_oakley.ogg")
+@test VideoIO.get_duration(file) == Dates.Millisecond(24224200)
+@test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
+@test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), Dates.Millisecond(24224200))
