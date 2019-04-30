@@ -3,7 +3,7 @@ TODO
 
 Interface
 ---------
-* Video iterator interface 
+* Video iterator interface
 * Audio
 * Seeking
 
@@ -20,7 +20,6 @@ Needs testing
 =============
 * Tentative support for libav 0.8, 9, 10, ffmpeg 2.2, 2.3
 * Non-iterator video-only interface
-* BinDeps support
 
 
 Done
