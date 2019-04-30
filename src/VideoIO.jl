@@ -23,6 +23,7 @@ end
 include("info.jl")
 include("util.jl")
 include("avdictionary.jl")
+include("info.jl")
 include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
