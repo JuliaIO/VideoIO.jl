@@ -77,15 +77,19 @@ function __init__()
         end
     end
 
-    @require ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef" begin
+    @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
         # Define read and retrieve for Images
         function play(f, flip=false)
+            scene = Makie.Scene(resolution = (f.width, f.height))
+            
             buf = read(f)
-            canvas, _ = ImageView.imshow(buf, flipx=flip, interactive=false)
+            hmap = Makie.image!(scene,buf, show_axis = false, scale_plot = false)[end]
+            Makie.rotate!(scene, -0.5pi)
+            display(scene)
 
             while !eof(f)
                 read!(f, buf)
-                ImageView.imshow(canvas, buf, flipx=flip, interactive=false)
+                hmap[1] = buf
                 sleep(1 / f.framerate)
             end
         end
