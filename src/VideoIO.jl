@@ -79,14 +79,18 @@ function __init__()
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
         # Define read and retrieve for Images
-        function play(f, flip=false)
+        function play(f; flipx=false, flipy=false)
             scene = Makie.Scene(resolution = (f.width, f.height))
-            
             buf = read(f)
             makieimg = Makie.image!(scene,buf, show_axis = false, scale_plot = false)[end]
             Makie.rotate!(scene, -0.5pi)
+            if flipx && flipy
+                Makie.scale!(scene, -1, -1, 1)
+            else
+                flipx && Makie.scale!(scene, -1, 1, 1)
+                flipy && Makie.scale!(scene, 1, -1, 1)
+            end
             display(scene)
-
             while !eof(f)
                 read!(f, buf)
                 makieimg[1] = buf
@@ -94,15 +98,15 @@ function __init__()
             end
         end
 
-        function playvideo(video)
+        function playvideo(video;flipx=false,flipy=false)
             f = VideoIO.openvideo(video)
-            play(f)
+            play(f,flipx=flipx,flipy=flipy)
         end
 
         if have_avdevice()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
                 camera = opencamera(device, format)
-                play(camera, true)
+                play(camera, flipx=true)
             end
         else
             function viewcam()
