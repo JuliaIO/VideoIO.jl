@@ -83,13 +83,13 @@ function __init__()
             scene = Makie.Scene(resolution = (f.width, f.height))
             
             buf = read(f)
-            hmap = Makie.image!(scene,buf, show_axis = false, scale_plot = false)[end]
+            makieimg = Makie.image!(scene,buf, show_axis = false, scale_plot = false)[end]
             Makie.rotate!(scene, -0.5pi)
             display(scene)
 
             while !eof(f)
                 read!(f, buf)
-                hmap[1] = buf
+                makieimg[1] = buf
                 sleep(1 / f.framerate)
             end
         end
