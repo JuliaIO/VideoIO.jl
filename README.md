@@ -30,7 +30,7 @@ Simple Interface
 ----------------
 A trivial video player interface exists (no audio):
 
-    import ImageView
+    import Makie
     import VideoIO
 
     f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
@@ -45,8 +45,7 @@ High Level Interface
 VideoIO contains a simple high-level interface which allows reading of
 video frames from a supported video file, or from a camera device:
 
-    using Images
-    import ImageView
+    import Makie
     import VideoIO
 
     io = VideoIO.open(video_file)
@@ -65,11 +64,13 @@ video frames from a supported video file, or from a camera device:
     # One can seek to an arbitrary position in the video
     seek(f,2.5)  ## The second parameter is the time in seconds and must be Float64
     img = read(f)
-    canvas, _ = ImageView.view(img)
+    makieimg = Makie.image!(scene, buf, show_axis = false, scale_plot = false)[end]
+    Makie.rotate!(scene, -0.5pi)
+    display(scene)
 
     while !eof(f)
         read!(f, img)
-        ImageView.imshow(canvas, img)
+        makieimg[1] = img
         #sleep(1/30)
     end
 
@@ -79,7 +80,7 @@ This code is essentially the code in `playvideo`, and will read and
 As with the `playvideo` function, the `Images` and `ImageView` packages
 must be loaded for the appropriate functions to be available.
 
-As an example, here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
+As an additional handling example, here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
 ```
 f = VideoIO.openvideo(filename,target_format=VideoIO.AV_PIX_FMT_GRAY8)
 v = Vector{Array{UInt8}}(undef,0)
