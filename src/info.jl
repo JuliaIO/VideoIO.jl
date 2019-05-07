@@ -4,12 +4,12 @@ function _get_fc(file::String) # convenience function for `get_duration` and `ge
     v = open(file)
     return unsafe_load(v.apFormatContext[1])
 end
-get_duration(fc::AVFormatContext) = Dates.Millisecond(fc.duration) # this is a bit risky: if AV_TIME_BASE ≠ 1e6 then this conversion will give false results, or if `fc.duration` is not a whole number then this will result in an InexactError. I'll add the appropriate checks if you'll tell me that either event or both are possible.
+get_duration(fc::AVFormatContext) = Dates.Microsecond(fc.duration) # this is a bit risky: if AV_TIME_BASE ≠ 1e6 then this conversion will give false results, or if `fc.duration` is not a whole number then this will result in an InexactError. I'll add the appropriate checks if you'll tell me that either event or both are possible.
 
 """
-    get_duration(file::String) -> Millisecond
+    get_duration(file::String) -> Microsecond
 
-Return the duration of the video `file` in `Millisecond`s.
+Return the duration of the video `file` in `Microsecond`s.
 """
 get_duration(file::String) = get_duration(_get_fc(file))
 
@@ -25,7 +25,7 @@ get_start_time(file::String) = get_start_time(_get_fc(file))
 get_time_duration(fc::AVFormatContext) = (get_start_time(fc), get_duration(fc))
 
 """
-    get_time_duration(file::String) -> (DateTime, Millisecond)
+    get_time_duration(file::String) -> (DateTime, Microsecond)
 
 Return the starting date & time as well as the duration of the video `file`. Note that if the starting date & time are missing, this function will return the Unix epoch (00:00 1st January 1970).
 """
