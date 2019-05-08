@@ -202,7 +202,7 @@ function AVInput(source::T, input_format=C_NULL, options=C_NULL; avio_ctx_buffer
     avin.isopen = true
 
     # Get the stream information
-    if avformat_find_stream_info(avin.apFormatContext[1], C_NULL) < 0
+    if avformat_find_stream_info(avin.apFormatContext[1], options) < 0
         error("Unable to find stream information")
     end
 
