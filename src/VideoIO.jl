@@ -97,7 +97,7 @@ function __init__()
                 flipy && Makie.scale!(scene, 1, -1, 1)
             end
             display(scene)
-            while !eof(f)
+            while !eof(f) && isopen(scene)
                 read!(f, buf)
                 makieimg[1] = buf
                 sleep(1 / f.framerate)
@@ -113,6 +113,7 @@ function __init__()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
                 camera = opencamera(device[], format[])
                 play(camera, flipx=true)
+                close(camera)
             end
         else
             function viewcam()
