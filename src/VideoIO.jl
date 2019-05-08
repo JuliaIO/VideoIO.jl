@@ -30,6 +30,33 @@ using .TestVideos
 
 if Sys.islinux()
     import Glob
+    function init_camera_devices()
+        append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
+        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
+    end
+end
+
+if Sys.iswindows()
+    function init_camera_devices()
+        append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
+        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
+    end
+end
+
+
+if Sys.isapple()
+    function init_camera_devices()
+        try
+            append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
+            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
+        catch
+            try
+                append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "qtkit", "\"\""))
+                DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("qtkit")
+            catch
+            end
+        end
+    end
 end
 
 function __init__()
@@ -39,48 +66,22 @@ function __init__()
     # since check_deps is optional, I hope this is ok for now
 
     # check_deps()
-
-    global read_packet
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()
 
     if have_avdevice()
+        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         AVDevice.avdevice_register_all()
-
-        if Sys.iswindows()
-            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
-            push!(CAMERA_DEVICES[], get_camera_devices(ffmpeg, "dshow", "dummy")...)
-            DEFAULT_CAMERA_DEVICE[] = "video=" * (length(CAMERA_DEVICES[]) > 0 ? "\"$(CAMERA_DEVICES[1])\"" : "0")
-            DEFAULT_CAMERA_OPTIONS[] = AVDict("framerate" => 30)
-
-        end
-
-        if Sys.islinux()
-            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
-            CAMERA_DEVICES[] = Glob.glob("video*", "/dev")
-            DEFAULT_CAMERA_DEVICE[] = length(CAMERA_DEVICES[]) > 0 ? CAMERA_DEVICES[][1] : ""
-            DEFAULT_CAMERA_OPTIONS[] = AVDict("framerate" => 30)
-        end
-
+        init_camera_devices()
         if Sys.isapple()
-            CAMERA_DEVICES[] = String[]
-            try
-                CAMERA_DEVICES[] = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
-                DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
-            catch
-                try
-                    CAMERA_DEVICES[] = get_camera_devices(ffmpeg, "qtkit", "\"\"")
-                    DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("qtkit")
-                catch
-                end
-            end
-
             # Note: "Integrated" is another possible default value
-            DEFAULT_CAMERA_DEVICE[] = length(CAMERA_DEVICES[]) > 0 ? CAMERA_DEVICES[][1] : "0"
-            DEFAULT_CAMERA_OPTIONS[] = AVDict("framerate" => 30, "pixel_format" => "uyvy422")
-
+            DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
         end
+        DEFAULT_CAMERA_DEVICE[] = string(
+            "video=",
+            isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+        )
     end
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
