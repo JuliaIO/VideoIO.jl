@@ -623,10 +623,10 @@ end
 ### Camera Functions
 
 # These are set in __init__()
-const DEFAULT_CAMERA_FORMAT = Ref{Any}()
-const CAMERA_DEVICES = Ref{Any}()
-const DEFAULT_CAMERA_DEVICE = Ref{Any}()
-const DEFAULT_CAMERA_OPTIONS = Ref{Any}()
+const DEFAULT_CAMERA_FORMAT = Ref{Ptr{AVFormat.AVInputFormat}}()
+const CAMERA_DEVICES = Ref{Array{String}}()
+const DEFAULT_CAMERA_DEVICE = Ref{String}()
+const DEFAULT_CAMERA_OPTIONS = Ref{AVDict}()
 
 if have_avdevice()
     function get_camera_devices(ffmpeg, idev, idev_name)
