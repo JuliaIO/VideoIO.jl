@@ -48,37 +48,36 @@ function __init__()
         AVDevice.avdevice_register_all()
 
         if Sys.iswindows()
-            global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
-            global CAMERA_DEVICES
-            push!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy")...)
-            global DEFAULT_CAMERA_DEVICE = "video=" * (length(CAMERA_DEVICES) > 0 ? "\"$(CAMERA_DEVICES[1])\"" : "0")
-            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30)
+            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
+            push!(CAMERA_DEVICES[], get_camera_devices(ffmpeg, "dshow", "dummy")...)
+            DEFAULT_CAMERA_DEVICE[] = "video=" * (length(CAMERA_DEVICES[]) > 0 ? "\"$(CAMERA_DEVICES[1])\"" : "0")
+            DEFAULT_CAMERA_OPTIONS[] = AVDict("framerate" => 30)
 
         end
 
         if Sys.islinux()
-            global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
-            global CAMERA_DEVICES = Glob.glob("video*", "/dev")
-            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
-            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30)
+            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
+            CAMERA_DEVICES[] = Glob.glob("video*", "/dev")
+            DEFAULT_CAMERA_DEVICE[] = length(CAMERA_DEVICES[]) > 0 ? CAMERA_DEVICES[][1] : ""
+            DEFAULT_CAMERA_OPTIONS[] = AVDict("framerate" => 30)
         end
 
         if Sys.isapple()
-            global CAMERA_DEVICES = String[]
+            CAMERA_DEVICES[] = String[]
             try
-                global CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
-                global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
+                CAMERA_DEVICES[] = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
+                DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
             catch
                 try
-                    global CAMERA_DEVICES = get_camera_devices(ffmpeg, "qtkit", "\"\"")
-                    global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("qtkit")
+                    CAMERA_DEVICES[] = get_camera_devices(ffmpeg, "qtkit", "\"\"")
+                    DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("qtkit")
                 catch
                 end
             end
 
             # Note: "Integrated" is another possible default value
-            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
-            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30, "pixel_format" => "uyvy422")
+            DEFAULT_CAMERA_DEVICE[] = length(CAMERA_DEVICES[]) > 0 ? CAMERA_DEVICES[][1] : "0"
+            DEFAULT_CAMERA_OPTIONS[] = AVDict("framerate" => 30, "pixel_format" => "uyvy422")
 
         end
     end
@@ -111,7 +110,7 @@ function __init__()
 
         if have_avdevice()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-                camera = opencamera(device, format)
+                camera = opencamera(device[], format[])
                 play(camera, flipx=true)
             end
         else
