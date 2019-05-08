@@ -623,9 +623,10 @@ end
 ### Camera Functions
 
 # These are set in __init__()
-DEFAULT_CAMERA_FORMAT = Ptr{AVFormat.AVInputFormat}(C_NULL)
-CAMERA_DEVICES = String[]
-DEFAULT_CAMERA_DEVICE = ""
+const DEFAULT_CAMERA_FORMAT = Ref{Any}()
+const CAMERA_DEVICES = Ref{Any}()
+const DEFAULT_CAMERA_DEVICE = Ref{Any}()
+const DEFAULT_CAMERA_OPTIONS = Ref{Any}()
 
 if have_avdevice()
     function get_camera_devices(ffmpeg, idev, idev_name)
@@ -668,7 +669,7 @@ if have_avdevice()
     end
 
 
-    function opencamera(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, options=DEFAULT_CAMERA_OPTIONS, args...; kwargs...)
+    function opencamera(device=DEFAULT_CAMERA_DEVICE[], format=DEFAULT_CAMERA_FORMAT[], options=DEFAULT_CAMERA_OPTIONS[], args...; kwargs...)
         camera = AVInput(device, format, options)
         VideoReader(camera, args...; kwargs...)
     end
