@@ -77,8 +77,6 @@ function __init__()
         if Sys.isapple()
             # Note: "Integrated" is another possible default value
             DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
-            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
-            global DEFAULT_CAMERA_OPTIONS = AVDict("framerate" => 30, "pixel_format" => "uyvy422")
         end
         DEFAULT_CAMERA_DEVICE[] = string(
             "video=",
