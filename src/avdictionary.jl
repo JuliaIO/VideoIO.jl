@@ -1,5 +1,5 @@
 import .AVUtil: AVDictionary
-import Base: getindex, setindex!, iterate, length
+import Base: getindex, setindex!, iterate, length, empty!
 
 mutable struct AVDict <: AbstractDict{String, String}
     ref_ptr_dict::Ref{Ptr{AVDictionary}}
@@ -27,9 +27,7 @@ function AVDict(o::AbstractDict)
 end
 
 
-function empty!(d::AVDict)
-    AVUtil.av_dict_free(d.ref_ptr_dict)
-end
+Base.empty!(d::AVDict) = AVUtil.av_dict_free(d.ref_ptr_dict)
 
 Base.convert(::Type{Ref{Ptr{AVDictionary}}}, d::AVDict) = d.ref_ptr_dict
 
