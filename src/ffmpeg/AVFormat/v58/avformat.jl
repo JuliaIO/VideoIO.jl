@@ -337,7 +337,7 @@ function av_demuxer_open(ic)
 end
 
 function avformat_find_stream_info(ic, options)
-    ccall((:avformat_find_stream_info, libavformat), Cint, (Ptr{AVFormatContext}, Ref{Ptr{AVDictionary}}), ic, options)
+    ccall((:avformat_find_stream_info, libavformat), Cint, (Ptr{AVFormatContext}, Ptr{Ptr{AVDictionary}}), ic, options)
 end
 
 function av_find_program_from_stream(ic, last, s::Integer)
