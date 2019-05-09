@@ -59,6 +59,21 @@ if Sys.isapple()
     end
 end
 
+#Helper functions to explain about Makie load order requirement
+function play(f; flipx=false, flipy=false)
+    error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
+end
+function playvideo(video;flipx=false,flipy=false)
+    error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
+end
+function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
+    if have_avdevice()    
+        error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
+    else
+        error("No AV device detected")
+    end
+end
+
 function __init__()
     # Always check your dependencies from `deps.jl`
     # TODO remove uncessary ENV["LD_LIBRARY_PATH"] from check_deps, so that
