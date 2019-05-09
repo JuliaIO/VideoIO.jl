@@ -2,7 +2,7 @@ include("libavutil_h.jl")
 
 #include("audioconvert.jl")
 #include("avutil.jl")
-#include("dict.jl")
+include("dict.jl")
 #include("fifo.jl")
 #include("file.jl")
 #include("imgutils.jl")

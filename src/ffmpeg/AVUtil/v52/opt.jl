@@ -129,11 +129,11 @@ function av_opt_flag_is_set(obj,field_name,flag_name)
 end
 
 function av_opt_set_dict(obj,options)
-    ccall((:av_opt_set_dict,libavutil),Cint,(Ptr{Cvoid},Ptr{Ptr{AVDictionary}}),obj,options)
+    ccall((:av_opt_set_dict,libavutil),Cint,(Ptr{Cvoid},Ref{Ptr{AVDictionary}}),obj,options)
 end
 
 function av_opt_set_dict2(obj,options,search_flags::Integer)
-    ccall((:av_opt_set_dict2,libavutil),Cint,(Ptr{Cvoid},Ptr{Ptr{AVDictionary}},Cint),obj,options,search_flags)
+    ccall((:av_opt_set_dict2,libavutil),Cint,(Ptr{Cvoid},Ref{Ptr{AVDictionary}},Cint),obj,options,search_flags)
 end
 
 function av_opt_get_key_value(ropts,key_val_sep,pairs_sep,flags::Integer,rkey,rval)

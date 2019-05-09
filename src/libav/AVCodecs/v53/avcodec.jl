@@ -363,7 +363,7 @@ function avcodec_open(avctx,codec)
 end
 
 function avcodec_open2(avctx,codec,options)
-    ccall((:avcodec_open2,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{AVCodec},Ptr{Ptr{AVDictionary}}),avctx,codec,options)
+    ccall((:avcodec_open2,libavcodec),Cint,(Ptr{AVCodecContext},Ptr{AVCodec},Ref{Ptr{AVDictionary}}),avctx,codec,options)
 end
 
 function avcodec_decode_audio3(avctx,samples,frame_size_ptr,avpkt)

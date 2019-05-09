@@ -21,12 +21,42 @@ if have_avdevice()
 end
 
 include("info.jl")
+include("util.jl")
+include("avdictionary.jl")
+include("info.jl")
 include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
 
 if Sys.islinux()
     import Glob
+    function init_camera_devices()
+        append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
+        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
+    end
+end
+
+if Sys.iswindows()
+    function init_camera_devices()
+        append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
+        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
+    end
+end
+
+
+if Sys.isapple()
+    function init_camera_devices()
+        try
+            append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
+            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
+        catch
+            try
+                append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "qtkit", "\"\""))
+                DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("qtkit")
+            catch
+            end
+        end
+    end
 end
 
 function __init__()
@@ -36,45 +66,22 @@ function __init__()
     # since check_deps is optional, I hope this is ok for now
 
     # check_deps()
-
-    global read_packet
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()
 
     if have_avdevice()
+        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         AVDevice.avdevice_register_all()
-
-        if Sys.iswindows()
-            global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("dshow")
-            global CAMERA_DEVICES
-            push!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy")...)
-            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "0"
-
-        end
-
-        if Sys.islinux()
-            global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("video4linux2")
-            global CAMERA_DEVICES = Glob.glob("video*", "/dev")
-            global DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : ""
-        end
-
+        init_camera_devices()
         if Sys.isapple()
-            global CAMERA_DEVICES = String[]
-            try
-                global CAMERA_DEVICES = get_camera_devices(ffmpeg, "avfoundation", "\"\"")
-                global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("avfoundation")
-            catch
-                try
-                    global CAMERA_DEVICES = get_camera_devices(ffmpeg, "qtkit", "\"\"")
-                    global DEFAULT_CAMERA_FORMAT = AVFormat.av_find_input_format("qtkit")
-                catch
-                end
-            end
-
             # Note: "Integrated" is another possible default value
-            DEFAULT_CAMERA_DEVICE = length(CAMERA_DEVICES) > 0 ? CAMERA_DEVICES[1] : "FaceTime"
+            DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
         end
+        DEFAULT_CAMERA_DEVICE[] = string(
+            "video=",
+            isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+        )
     end
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
@@ -91,7 +98,7 @@ function __init__()
                 flipy && Makie.scale!(scene, 1, -1, 1)
             end
             display(scene)
-            while !eof(f)
+            while !eof(f) && isopen(scene)
                 read!(f, buf)
                 makieimg[1] = buf
                 sleep(1 / f.framerate)
@@ -105,8 +112,9 @@ function __init__()
 
         if have_avdevice()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-                camera = opencamera(device, format)
+                camera = opencamera(device[], format[])
                 play(camera, flipx=true)
+                close(camera)
             end
         else
             function viewcam()

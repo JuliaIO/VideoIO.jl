@@ -91,7 +91,7 @@ function av_metadata_get(m,key,prev,flags::Integer)
 end
 
 function av_metadata_set2(pm,key,value,flags::Integer)
-    ccall((:av_metadata_set2,libavformat),Cint,(Ptr{Ptr{AVDictionary}},Ptr{UInt8},Ptr{UInt8},Cint),pm,key,value,flags)
+    ccall((:av_metadata_set2,libavformat),Cint,(Ref{Ptr{AVDictionary}},Ptr{UInt8},Ptr{UInt8},Cint),pm,key,value,flags)
 end
 
 function av_metadata_conv(ctx,d_conv,s_conv)
@@ -99,11 +99,11 @@ function av_metadata_conv(ctx,d_conv,s_conv)
 end
 
 function av_metadata_copy(dst,src,flags::Integer)
-    ccall((:av_metadata_copy,libavformat),Cvoid,(Ptr{Ptr{AVDictionary}},Ptr{AVDictionary},Cint),dst,src,flags)
+    ccall((:av_metadata_copy,libavformat),Cvoid,(Ref{Ptr{AVDictionary}},Ptr{AVDictionary},Cint),dst,src,flags)
 end
 
 function av_metadata_free(m)
-    ccall((:av_metadata_free,libavformat),Cvoid,(Ptr{Ptr{AVDictionary}},),m)
+    ccall((:av_metadata_free,libavformat),Cvoid,(Ref{Ptr{AVDictionary}},),m)
 end
 
 function av_get_packet(s,pkt,size::Integer)
@@ -211,7 +211,7 @@ end
 # end
 
 function avformat_open_input(ps,filename,fmt,options)
-    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{UInt8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)
+    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{UInt8},Ptr{AVInputFormat},Ref{Ptr{AVDictionary}}),ps,filename,fmt,options)
 end
 
 function av_find_stream_info(ic)
@@ -219,7 +219,7 @@ function av_find_stream_info(ic)
 end
 
 function avformat_find_stream_info(ic,options)
-    ccall((:avformat_find_stream_info,libavformat),Cint,(Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),ic,options)
+    ccall((:avformat_find_stream_info,libavformat),Cint,(Ptr{AVFormatContext},Ref{Ptr{AVDictionary}}),ic,options)
 end
 
 function av_find_best_stream(ic,_type::AVMediaType,wanted_stream_nb::Integer,related_stream::Integer,decoder_ret,flags::Integer)
@@ -287,7 +287,7 @@ function av_set_parameters(s,ap)
 end
 
 function avformat_write_header(s,options)
-    ccall((:avformat_write_header,libavformat),Cint,(Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),s,options)
+    ccall((:avformat_write_header,libavformat),Cint,(Ptr{AVFormatContext},Ref{Ptr{AVDictionary}}),s,options)
 end
 
 function av_write_header(s)

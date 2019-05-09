@@ -282,7 +282,7 @@ function av_probe_input_buffer(pb,fmt,filename,logctx,offset::Integer,max_probe_
 end
 
 function avformat_open_input(ps,filename,fmt,options)
-    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{UInt8},Ptr{AVInputFormat},Ptr{Ptr{AVDictionary}}),ps,filename,fmt,options)
+    ccall((:avformat_open_input,libavformat),Cint,(Ptr{Ptr{AVFormatContext}},Ptr{UInt8},Ptr{AVInputFormat},Ref{Ptr{AVDictionary}}),ps,filename,fmt,options)
     #ccall((:avformat_open_input,libavformat),Cint,(Ptr{Void},Ptr{Void},Ptr{Void},Ptr{Void}),ps,filename,fmt,options)
 end
 
@@ -295,7 +295,7 @@ function av_find_stream_info(ic)
 end
 
 function avformat_find_stream_info(ic,options)
-    ccall((:avformat_find_stream_info,libavformat),Cint,(Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),ic,options)
+    ccall((:avformat_find_stream_info,libavformat),Cint,(Ptr{AVFormatContext},Ref{Ptr{AVDictionary}}),ic,options)
 end
 
 function av_find_program_from_stream(ic,last,s::Integer)
@@ -347,7 +347,7 @@ function av_set_pts_info(s,pts_wrap_bits::Integer,pts_num::Integer,pts_den::Inte
 end
 
 function avformat_write_header(s,options)
-    ccall((:avformat_write_header,libavformat),Cint,(Ptr{AVFormatContext},Ptr{Ptr{AVDictionary}}),s,options)
+    ccall((:avformat_write_header,libavformat),Cint,(Ptr{AVFormatContext},Ref{Ptr{AVDictionary}}),s,options)
 end
 
 function av_write_frame(s,pkt)
