@@ -32,6 +32,10 @@ if Sys.islinux()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
     end
+    function init_camera_settings()
+        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
+        DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "" : CAMERA_DEVICES[1]
+    end
 end
 
 if Sys.iswindows()
@@ -39,8 +43,14 @@ if Sys.iswindows()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
     end
+    function init_camera_settings()
+        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
+        DEFAULT_CAMERA_DEVICE[] = string(
+            "video=",
+            isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+        )
+    end
 end
-
 
 if Sys.isapple()
     function init_camera_devices()
@@ -54,6 +64,12 @@ if Sys.isapple()
             catch
             end
         end
+    end
+    function init_camera_settings()
+        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
+        # Note: "Integrated" is another possible default value
+        DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
+        DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
     end
 end
 
@@ -84,24 +100,8 @@ function __init__()
     av_register_all()
 
     if have_avdevice()
-        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         AVDevice.avdevice_register_all()
         init_camera_devices()
-        if Sys.isapple()
-            # Note: "Integrated" is another possible default value
-            DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
-            DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
-        end
-        if Sys.iswindows()
-            DEFAULT_CAMERA_DEVICE[] = string(
-                "video=",
-                isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
-            )
-        end
-        if Sys.islinux()
-            DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "" : CAMERA_DEVICES[1]
-        end
-        
     end
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
@@ -132,13 +132,10 @@ function __init__()
 
         if have_avdevice()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
+                init_camera_settings()
                 camera = opencamera(device[], format[])
                 play(camera, flipx=true)
                 close(camera)
-            end
-        else
-            function viewcam()
-                error("libavdevice not present")
             end
         end
     end
