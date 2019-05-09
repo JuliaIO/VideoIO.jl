@@ -21,9 +21,7 @@ if have_avdevice()
 end
 
 include("info.jl")
-include("util.jl")
 include("avdictionary.jl")
-include("info.jl")
 include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
@@ -67,7 +65,7 @@ function playvideo(video;flipx=false,flipy=false)
     error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
 end
 function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-    if have_avdevice()    
+    if have_avdevice()
         error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
     else
         error("No AV device detected")
@@ -92,11 +90,18 @@ function __init__()
         if Sys.isapple()
             # Note: "Integrated" is another possible default value
             DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
+            DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
         end
-        DEFAULT_CAMERA_DEVICE[] = string(
-            "video=",
-            isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
-        )
+        if Sys.iswindows()
+            DEFAULT_CAMERA_DEVICE[] = string(
+                "video=",
+                isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+            )
+        end
+        if Sys.islinux()
+            DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "" : CAMERA_DEVICES[1]
+        end
+        
     end
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
