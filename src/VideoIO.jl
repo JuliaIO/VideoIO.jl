@@ -102,6 +102,7 @@ function __init__()
     if have_avdevice()
         AVDevice.avdevice_register_all()
         init_camera_devices()
+        init_camera_settings()
     end
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
