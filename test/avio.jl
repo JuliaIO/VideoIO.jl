@@ -13,12 +13,16 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 # tesing that the executables run by testing the standard first line output
 println(stderr, "Tesing ffmpeg executable...")
-out = VideoIO.execoutput(`$(VideoIO.ffmpeg)`)
-@test occursin("ffmpeg version ",out[1])
+withenv("PATH" => VideoIO.libpath, "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+    out = VideoIO.execoutput(`$(VideoIO.ffmpeg)`)
+    @test occursin("ffmpeg version ",out[1])
+end
 
 println(stderr, "Tesing ffprobe executable...")
-out = VideoIO.execoutput(`$(VideoIO.ffprobe)`)
-@test occursin("ffprobe version ",out[1])
+withenv("PATH" => VideoIO.libpath, "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+    out = VideoIO.execoutput(`$(VideoIO.ffprobe)`)
+    @test occursin("ffprobe version ",out[1])
+end
 
 println(stderr, "Testing file reading...")
 

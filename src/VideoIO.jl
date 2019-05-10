@@ -93,20 +93,10 @@ end
 function __init__()
     # Always check your dependencies from `deps.jl`
     # TODO remove uncessary ENV["LD_LIBRARY_PATH"] from check_deps, so that
-    # it doesn't mess with LD_LIBRARY_PATH
+    # it doesn't mess with LD_LIBRARY_PATH, which was causing CI download issues due to issues with julia's curl
     # since check_deps is optional, I hope this is ok for now
     
-    Sys.islinux() && (pathvar = "LD_LIBRARY_PATH")
-    Sys.iswindows() && (pathvar = "PATH")
-    Sys.isapple() && (pathvar = "DYLD_LIBRARY_PATH")
-
-    libpaths = split(get(ENV, pathvar, ""), ":")
-    if !(libpath in libpaths)
-        push!(libpaths, libpath)
-    end
-    ENV[pathvar] = join(filter(!isempty, libpaths), ":")
-    
-    check_deps()
+    #check_deps()
     
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
