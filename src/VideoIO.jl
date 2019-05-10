@@ -94,7 +94,8 @@ function __init__()
     # it doesn't mess with LD_LIBRARY_PATH
     # since check_deps is optional, I hope this is ok for now
 
-    # check_deps()
+    check_deps()
+    
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()
