@@ -26,6 +26,8 @@ include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
 
+libpath = joinpath(@__DIR__, "..", "deps", "usr", "bin")
+
 if Sys.islinux()
     import Glob
     function init_camera_devices()
