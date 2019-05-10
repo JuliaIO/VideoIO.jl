@@ -11,11 +11,14 @@ VideoIO.TestVideos.download_all()
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
-# tesing that the executables run
+# tesing that the executables run by testing the standard first line output
 println(stderr, "Tesing ffmpeg executable...")
-@test occursin("ffmpeg version ",VideoIO.execoutput(`$(VideoIO.ffmpeg)`)[1])
+out = VideoIO.execoutput(`$(VideoIO.ffmpeg)`)
+@test occursin("ffmpeg version ",out[1])
+
 println(stderr, "Tesing ffprobe executable...")
-@test occursin("ffprobe version ",VideoIO.execoutput(`$(VideoIO.ffprobe)`)[1])
+out = VideoIO.execoutput(`$(VideoIO.ffprobe)`)
+@test occursin("ffprobe version ",out[1])
 
 println(stderr, "Testing file reading...")
 

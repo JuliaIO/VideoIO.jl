@@ -27,7 +27,6 @@ include("testvideos.jl")
 using .TestVideos
 
 if Sys.islinux()
-    ENV["LD_LIBRARY_PATH"] = joinpath(dirname(dirname(pathof(VideoIO))),"deps/usr/bin/")
     import Glob
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
@@ -40,7 +39,6 @@ if Sys.islinux()
 end
 
 if Sys.iswindows()
-    ENV["PATH"] = joinpath(dirname(dirname(pathof(VideoIO))),"deps/usr/bin/")
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
@@ -55,7 +53,6 @@ if Sys.iswindows()
 end
 
 if Sys.isapple()
-    ENV["DYLD_LIBRARY_PATH"] = joinpath(dirname(dirname(pathof(VideoIO))),"deps/usr/bin/")
     function init_camera_devices()
         try
             append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
