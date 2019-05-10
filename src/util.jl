@@ -27,3 +27,11 @@ function av_pointer_to_field(s::Ptr{T}, name::Symbol) where T
 end
 
 av_pointer_to_field(s::Array, name::Symbol) = av_pointer_to_field(pointer(s), name)
+
+function execoutput(exec::Cmd)
+    out = Pipe(); err = Pipe()
+    p = Base.open(pipeline(ignorestatus(exec), stdout=out, stderr=err))
+    close(out.in); close(err.in)
+    err_s = readlines(err); out_s = readlines(out)
+    return (length(out_s) > length(err_s)) ? out_s : err_s
+end

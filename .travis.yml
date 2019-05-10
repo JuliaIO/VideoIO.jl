@@ -4,8 +4,7 @@ sudo: false
 addons:
   apt:
     packages:
-    - imagemagick
-
+    - imagemagick   
 os:
   - linux
   - osx

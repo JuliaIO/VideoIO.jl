@@ -3,6 +3,8 @@ module VideoIO
 using Libdl
 using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 
+libpath = joinpath(@__DIR__, "..", "deps", "usr", "bin")
+
 include("init.jl")
 include("util.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
@@ -27,7 +29,7 @@ include("testvideos.jl")
 using .TestVideos
 
 if Sys.islinux()
-    import Glob
+    import Glob    
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
@@ -91,10 +93,11 @@ end
 function __init__()
     # Always check your dependencies from `deps.jl`
     # TODO remove uncessary ENV["LD_LIBRARY_PATH"] from check_deps, so that
-    # it doesn't mess with LD_LIBRARY_PATH
+    # it doesn't mess with LD_LIBRARY_PATH, which was causing CI download issues due to issues with julia's curl
     # since check_deps is optional, I hope this is ok for now
-
-    # check_deps()
+    
+    #check_deps()
+    
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()
