@@ -11,6 +11,12 @@ VideoIO.TestVideos.download_all()
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
+# tesing that the executables run
+println(stderr, "Tesing ffmpeg executable...")
+@test occursin("ffmpeg version ",VideoIO.execoutput(`$(VideoIO.ffmpeg)`)[1])
+println(stderr, "Tesing ffprobe executable...")
+@test occursin("ffprobe version ",VideoIO.execoutput(`$(VideoIO.ffprobe)`)[1])
+
 println(stderr, "Testing file reading...")
 
 @noinline function isblank(img)
