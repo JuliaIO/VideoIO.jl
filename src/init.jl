@@ -1,9 +1,9 @@
 ## convenient way to get library information
 using BinaryProvider
 
-Sys.islinux() && ENV["LD_LIBRARY_PATH"] = joinpath(@__DIR__, "..", "deps", "usr", "bin")
-Sys.iswindows() && ENV["PATH"] = joinpath(@__DIR__, "..", "deps", "usr", "bin")
-Sys.isapple() && ENV["DYLD_LIBRARY_PATH"] = joinpath(@__DIR__, "..", "deps", "usr", "bin")
+Sys.islinux() && (ENV["LD_LIBRARY_PATH"] = joinpath(@__DIR__, "..", "deps", "usr", "bin"))
+Sys.iswindows() && (ENV["PATH"] = joinpath(@__DIR__, "..", "deps", "usr", "bin"))
+Sys.isapple() && (ENV["DYLD_LIBRARY_PATH"] = joinpath(@__DIR__, "..", "deps", "usr", "bin"))
 
 # Load in `deps.jl`, complaining if it does not exist
 const depsjl_path = joinpath(@__DIR__, "..", "deps", "deps.jl")
