@@ -4,6 +4,7 @@ module AVUtil
 
   include(w("LIBAVUTIL.jl"))
 
-  Base.zero(::Type{AVRational}) = AVRational(0, 1)
+    #If AVUtil v55 is needed, this will need to be added back
+  #Base.zero(::Type{AVRational}) = AVRational(0, 1)
 
 end
