@@ -3,6 +3,8 @@ module VideoIO
 using Libdl
 using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 
+libpath = joinpath(@__DIR__, "..", "deps", "usr", "bin")
+
 include("init.jl")
 include("util.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
@@ -26,10 +28,15 @@ include("avio.jl")
 include("testvideos.jl")
 using .TestVideos
 
-libpath = joinpath(@__DIR__, "..", "deps", "usr", "bin")
-
 if Sys.islinux()
     import Glob
+    
+    libpaths = split(get(ENV, "LD_LIBRARY_PATH", ""), ":")
+    if !(libpath in libpaths)
+        push!(libpaths, libpath)
+    end
+    ENV["LD_LIBRARY_PATH"] = join(filter(!isempty, libpaths), ":")
+    
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
@@ -41,6 +48,11 @@ if Sys.islinux()
 end
 
 if Sys.iswindows()
+    libpaths = split(get(ENV, "PATH", ""), ":")
+    if !(libpath in libpaths)
+        push!(libpaths, libpath)
+    end
+    ENV["PATH"] = join(filter(!isempty, libpaths), ":")
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
@@ -55,6 +67,11 @@ if Sys.iswindows()
 end
 
 if Sys.isapple()
+    libpaths = split(get(ENV, "DYLD_LIBRARY_PATH", ""), ":")
+    if !(libpath in libpaths)
+        push!(libpaths, libpath)
+    end
+    ENV["DYLD_LIBRARY_PATH"] = join(filter(!isempty, libpaths), ":")
     function init_camera_devices()
         try
             append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
