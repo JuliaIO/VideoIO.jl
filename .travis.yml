@@ -4,8 +4,10 @@ sudo: false
 addons:
   apt:
     packages:
-    - imagemagick
-
+    - imagemagick   
+cache:
+    directories:
+     - /home/travis/build/JuliaIO/VideoIO.jl/src/../videos/
 os:
   - linux
   - osx
