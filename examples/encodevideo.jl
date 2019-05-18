@@ -6,22 +6,22 @@ encode(enc_ctx::AVCodecContext, frame::AVFrame, pkt::AVPacket, output::String)
 
 Append and encode frame to output.
 """
-function encode(enc_ctx::AVCodecContext, frame::AVFrame, pkt::AVPacket, io::IO)
-    ret = avcodec_send_frame(enc_ctx, frame)
+function encode(enc_ctx::VideoIO.AVCodecContext, frame::VideoIO.AVFrame, pkt::VideoIO.AVPacket, io::IO)
+    ret = VideoIO.avcodec_send_frame(enc_ctx, frame)
     if ret < 0
         error("Error sending a frame for encoding")
     end
 
     while ret >= 0
-        ret = avcodec_receive_packet(enc_ctx, pkt)
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+        ret = VideoIO.avcodec_receive_packet(enc_ctx, pkt)
+        if (ret == VideoIO.AVERROR(EAGAIN) || ret == VideoIO.AVERROR_EOF)
             return
         elseif (ret < 0)
             error("Error during encoding")
         end
         sprintf("Write packet %3d (size=%5d)", pkt.pts, pkt.size)
         write(pkt.data, io);
-        av_packet_unref(pkt)
+        VideoIO.av_packet_unref(pkt)
     end
 end
 
@@ -100,17 +100,15 @@ if ret == C_NULL
     error("Could not allocate the video frame data")
 end
 
-framedata_1 = unsafe_load(frame.data[1])
+
 
 i = 1
 for image in video
-    println(size(image))
-
     ret = VideoIO.av_frame_make_writable(frameptr)
     if ret == C_NULL
         error("av_frame_make_writable() error")
     end
-
+    framedata_1 = unsafe_load(frame.data[1])
     framedata_1 = image
     frame.pts = i
     VideoIO.encode(c, frame, pkt, f)
