@@ -5,19 +5,12 @@
 VideoIO.jl
 ==========
 
-Julia bindings for libav/ffmpeg, using a dedicated installation of ffmpeg 4.1.
+Julia bindings for ffmpeg, using a dedicated installation of ffmpeg 4.1.
 
 Currently, only video reading is supported.
 
 Video images may be read as raw arrays, or optionally, `Image`
 objects (if `Images.jl` is installed and loaded first).
-
-Feel free to request support for additional libav/ffmpeg
-versions, although earlier versions may be too challenging to
-support.
-
-If you encounter any problems, please add the output
-of `VideoIO.versioninfo()` to your report.
 
 Installation
 ------------
@@ -93,7 +86,7 @@ close(f)
 
 Low Level Interface
 -------------------
-Each libav and ffmpeg library has its own VideoIO subpackage:
+Each ffmpeg library has its own VideoIO subpackage:
 
     libavcodec    -> AVCodecs
     libavdevice   -> AVDevice
@@ -102,11 +95,10 @@ Each libav and ffmpeg library has its own VideoIO subpackage:
     libavutil     -> AVUtil
     libswscale    -> SWScale
 
-The following three files are related to ffmpeg/libav, but currently not
+The following three files are related to ffmpeg, but currently not
 exposed:
 
-    libavresample -> AVResample (libav only)
-    libswresample -> SWResample (ffmpeg only)
+    libswresample -> SWResample
     libpostproc   -> PostProc   (not wrapped)
 
 After importing VideoIO, you can import and use any of the subpackages directly
@@ -121,8 +113,8 @@ modules files.  For example, ffmpeg's libswscale-v2 files are loaded by
 $(VideoIO_PKG_DIR)/src/ffmpeg/SWScale/v2/LIBSWSCALE.jl.
 
 Check these files to enable any needed functionality that isn't already
-enabled.  Note that you'll probably need to do this for each version
-of the package for both ffmpeg and libav, and that the interfaces do
+enabled. Note that you'll probably need to do this for each version
+of the package for ffmpeg, and that the interfaces do
 change some from version to version.
 
 Note that, in general, the low-level functions are not very fun to use,
@@ -145,8 +137,12 @@ These are short videos in a variety of formats with non-restrictive
 
 Status
 ------
-At this point, a simple video interface is available, for multiple
-versions of libav and ffmpeg.  See TODO.md for some possible directions
+Prior to version 6.0, this package used a BinDeps approach, using system-level ffmpeg 
+installs, and thus provided support of many versions of ffmpeg and libav. See [v0.5.6](https://github.com/JuliaIO/VideoIO.jl/releases/tag/v0.5.6) for that prior functionality.
+
+v0.6.0 onwards uses a BinaryProvider approach, with a dedicated ffmpeg 4.1 install.  
+
+Currently, a simple video interface is available. See TODO.md for some possible directions
 forward.
 
 Issues, requests, and/or pull requests for problems or additional
