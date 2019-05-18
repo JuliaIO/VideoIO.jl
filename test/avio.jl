@@ -70,28 +70,21 @@ for name in VideoIO.TestVideos.names()
         read!(v, img)
     end
 
-    if (video_tstamp == VideoIO.AV_NOPTS_VALUE ||
-        VideoIO._avformat_version().major < 54 ||
-        VideoIO.ffmpeg_or_libav == "libav")
-        println("Skipping seek tests")
-    else
+    seek(v,float(fiftytime))
+    read!(v,img)
 
-        seek(v,float(fiftytime))
-        read!(v,img)
+    @test img == fiftieth_frame
 
-        @test img == fiftieth_frame
+    # read first frames again, and compare
+    seekstart(v)
 
-        # read first frames again, and compare
-        seekstart(v)
+    read!(v, img)
 
+    while isblank(img)
         read!(v, img)
-
-        while isblank(img)
-            read!(v, img)
-        end
-
-        @test img == first_frame
     end
+
+    @test img == first_frame
 
     close(v)
 end

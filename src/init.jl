@@ -9,8 +9,6 @@ if !isfile(depsjl_path)
 end
 include(depsjl_path)
 
-if !@isdefined(ffmpeg_or_libav)
-    include("version.jl")
-end
+include("version.jl")
 
-av_load_path = joinpath(dirname(@__FILE__), ffmpeg_or_libav)
+av_load_path = joinpath(dirname(@__FILE__), "ffmpeg")
