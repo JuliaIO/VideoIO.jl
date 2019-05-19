@@ -1,7 +1,7 @@
-Wrapping libav/ffmpeg libraries
+Wrapping ffmpeg libraries
 -------------------------------
 
-Wrapping libav and ffmpeg is currently achieved using the wrap_libav_split.jl
+Wrapping ffmpeg is currently achieved using the wrap_libav_split.jl
 script, which uses Clang.jl.
 
 ============== Cut here ================

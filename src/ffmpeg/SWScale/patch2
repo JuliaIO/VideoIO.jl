@@ -1,8 +1,0 @@
-diff -rU 3 ../util/ffmpeg/SWScale/v2/LIBSWSCALE.jl SWScale/v2/LIBSWSCALE.jl
---- ../util/ffmpeg/SWScale/v2/LIBSWSCALE.jl	2014-07-20 20:02:13.596361130 -0700
-+++ SWScale/v2/LIBSWSCALE.jl	2014-07-20 19:34:33.742846997 -0700
-@@ -1,3 +1,3 @@
- include("libswscale_h.jl")
- 
--#include("swscale.jl")
-+include("swscale.jl")

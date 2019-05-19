@@ -1,9 +1,9 @@
 AV Package Layout
 =================
 
-The FFMPEG and libav packages each distribute a number of libraries, which are mostly named the same and have the same or very similar interfaces.  
+The FFMPEG packages each distribute a number of libraries, which are mostly named the same and have the same or very similar interfaces.  
 
-This package currently separates ffmpeg and libav support into different directories.  In theory, these should be mostly compatible, but I was finding enough differences that I thought it best to start here.
+This package currently separates ffmpeg support into different directories.  In theory, these should be mostly compatible, but I was finding enough differences that I thought it best to start here.
 
 For each of the libraries, VideoIO.jl contains an additional submodule with a related name (e.g., libavcodec -> AVCodecs, libavdevice -> AVDevice, etc.).  Following Julia conventions, AVCodecs and AVFilters are pluralized (to allow types in them to be named AVCodec and AVFilter).  The remaining submodules are formed directly from the library name.
 
@@ -20,15 +20,6 @@ src/ffmpeg/AVCodecs/v55
 src/ffmpeg/AVDevice
 src/ffmpeg/AVDevice/src
 src/ffmpeg/AVDevice/v53
-...
-src/libav
-src/libav/AVCodecs
-src/libav/AVCodecs/src
-src/libav/AVCodecs/v53
-src/libav/AVDevice
-src/libav/AVDevice/src
-src/libav/AVDevice/v53
-src/libav/AVDevice/v54
 ...
 ```
 
@@ -49,4 +40,3 @@ This can also be done independently without loading VideoIO if `init.jl` is incl
 include(joinpath(Pkg.dir("VideoIO"),"src","init.jl"))
 import AVDevice
 ```
-
