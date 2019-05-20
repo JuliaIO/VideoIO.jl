@@ -2,7 +2,7 @@
 using VideoIO, Printf
 
 """
-encode(enc_ctx::Ptr{VideoIO.AVCodecs.AVCodecContext}, frame::AVFrame, pkt::AVPacket, output::String)
+encode(enc_ctx::Ptr{VideoIO.AVCodecContext}, frame, pktptr::Ptr{VideoIO.AVPacket}, io::IO)
 
 Append and encode frame to output.
 """
@@ -10,41 +10,29 @@ function encode(enc_ctx::Ptr{VideoIO.AVCodecContext},
     frame, pktptr::Ptr{VideoIO.AVPacket}, io::IO)
     ret = VideoIO.avcodec_send_frame(enc_ctx, frame)
     if ret < 0
-        @show ret
-        error("Error sending a frame for encoding")
+        error("Error $ret sending a frame for encoding")
     end
 
     while ret >= 0
         ret = VideoIO.avcodec_receive_packet(enc_ctx, pktptr)
-        #if (ret == VideoIO.AVERROR(EAGAIN) || ret == VideoIO.AVERROR_EOF)
-        if (ret == -35 || ret == -541478725)
+        if (ret == -35 || ret == -541478725) # -35=EAGAIN -541478725=AVERROR_EOF
              return
         elseif (ret < 0)
             error("Error $ret during encoding")
         end
         pkt = unsafe_load(pktptr)
-        @sprintf("Write packet %3d (size=%5d)", pkt.pts, pkt.size)
+        @printf("Write packet %3d (size=%5d)\n", pkt.pts, pkt.size)
         data = unsafe_load(pkt.data)
         write(io,data)
         VideoIO.av_packet_unref(pktptr)
     end
 end
 
-####
-# Dummy video (vector of images)
-video = Vector{Array{UInt8}}(undef,0)
-for i = 1:100
-    push!(video,rand(UInt8,150,200))
-end
-
-##
 filename = "video.mp4"
 codec_name = "libx264"
 
 c = VideoIO.AVCodecContext[]
 
-frame = [VideoIO.AVFrame()]
-pkt = [VideoIO.AVPacket()]
 endcode = UInt8[0, 0, 1, 0xb7]
 
 codec = VideoIO.avcodec_find_encoder_by_name(codec_name)
@@ -69,8 +57,8 @@ codecContext = unsafe_load(c)
 # put sample parameters
 codecContext.bit_rate = 400000
 #resolution must be a multiple of two
-codecContext.width = size(video[1],1)
-codecContext.height = size(video[1],2)
+codecContext.width = 352
+codecContext.height = 288
 # frames per second
 codecContext.time_base = VideoIO.AVRational(1, 25)
 codecContext.framerate = VideoIO.AVRational(25, 1)
@@ -92,7 +80,7 @@ if codec_loaded.id == VideoIO.AV_CODEC_ID_H264
 end
 # open it
 ret = VideoIO.avcodec_open2(c, codec, C_NULL)
-if ret == C_NULL
+if ret < 0
     error("Could not open codec: $(av_err2str(ret))")
 end
 f = open(filename,"w")
@@ -107,30 +95,45 @@ frame.height = codecContext.height
 unsafe_store!(frameptr,frame,1)
 
 ret = VideoIO.av_frame_get_buffer(frameptr, 32)
-if ret == C_NULL
+if ret < 0
     error("Could not allocate the video frame data")
 end
 
-i = 0
-for image in video
-    global i
+# frame_fields = map(x->fieldname(VideoIO.AVUtil.AVFrame,x),1:fieldcount(VideoIO.AVUtil.AVFrame))
+# pos_data = findfirst(fields.==:data)
+
+for i = 0:24
+    flush(stdout)
+
     ret = VideoIO.av_frame_make_writable(frameptr)
-    if ret == C_NULL
+    if ret < 0
         error("av_frame_make_writable() error")
     end
-    frame = unsafe_load(frameptr)
-    #framedata = reinterpret(Ptr{UInt8}, [frame.data])
 
-    for x = 1:length(image[:])
-        unsafe_store!(frame.data[1],image[x],x)
+    #im_YCbCr = convert.(YCbCr{Float64}, image)
+
+    frame = unsafe_load(frameptr) #grab data from c memory
+    framedata_1 = unsafe_wrap(Array,frame.data[1],Int64(frame.height*frame.width),own=false)
+    framedata_2 = unsafe_wrap(Array,frame.data[2],Int64((frame.height*frame.width)/2),own=false)
+    framedata_3 = unsafe_wrap(Array,frame.data[3],Int64((frame.height*frame.width)/2),own=false)
+
+    for y = 1:frame.height
+        for x = 1:frame.width
+            framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
+        end
     end
-    #frame.data[1] = image[:]
+    for y = 1:Int64(frame.height/2)
+        for x = 1:Int64(frame.width/2)
+            framedata_2[((y-1)*frame.linesize[2])+(x)] = UInt8(clamp(0,255,128 + y + i * 2))
+            framedata_3[((y-1)*frame.linesize[3])+(x)] = UInt8(clamp(0,255,64 + x + i * 5))
+        end
+    end
 
     frame.pts = i
-    unsafe_store!(frameptr,frame)
+    unsafe_store!(frameptr,frame) #pass data back to c memory
+
     encode(c, frameptr, pktptr, f)
-    @show i
-    i += 1
+    println(i)
 end
 
 # flush the encoder
