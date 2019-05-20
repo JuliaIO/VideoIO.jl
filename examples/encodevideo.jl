@@ -21,8 +21,8 @@ function encode(enc_ctx::Ptr{VideoIO.AVCodecContext},
             error("Error $ret during encoding")
         end
         pkt = unsafe_load(pktptr)
-        @printf("Write packet %3d (size=%5d)\n", pkt.pts, pkt.size)
-        data = unsafe_load(pkt.data)
+        println("Write packet $(pkt.pts) (size=$(pkt.size))")
+        data = unsafe_wrap(Array,pkt.data,pkt.size)
         write(io,data)
         VideoIO.av_packet_unref(pktptr)
     end
