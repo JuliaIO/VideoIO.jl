@@ -28,7 +28,7 @@ function encode(enc_ctx::Ptr{VideoIO.AVCodecContext},
     end
 end
 
-filename = "video.mp4"
+filename = "video.h264"
 codec_name = "libx264"
 
 c = VideoIO.AVCodecContext[]
@@ -119,13 +119,16 @@ for i = 0:24
 
     for y = 1:frame.height
         for x = 1:frame.width
-            framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
+            #framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
+            framedata_1[((y-1)*frame.linesize[1])+(x)] = rand(UInt8)
         end
     end
     for y = 1:Int64(frame.height/2)
         for x = 1:Int64(frame.width/2)
-            framedata_2[((y-1)*frame.linesize[2])+(x)] = UInt8(clamp(0,255,128 + y + i * 2))
-            framedata_3[((y-1)*frame.linesize[3])+(x)] = UInt8(clamp(0,255,64 + x + i * 5))
+            # framedata_2[((y-1)*frame.linesize[2])+(x)] = UInt8(clamp(0,255,128 + y + i * 2))
+            # framedata_3[((y-1)*frame.linesize[3])+(x)] = UInt8(clamp(0,255,64 + x + i * 5))
+            framedata_2[((y-1)*frame.linesize[2])+(x)] = rand(UInt8)
+            framedata_3[((y-1)*frame.linesize[3])+(x)] = rand(UInt8)
         end
     end
 
