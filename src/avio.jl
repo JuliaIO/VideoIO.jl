@@ -482,11 +482,6 @@ function seek(s::VideoReader, seconds::AbstractFloat,
               video_stream::Integer=1, forward::Bool=false)
     !isopen(s) && throw(ErrorException("Video input stream is not open!"))
 
-    @static if _avformat_version().major < 54 || ffmpeg_or_libav == "libav"
-        # We're unable to get the frame rate on these platforms
-        throw(ErrorException("Seeking does not work on libav or early versions of ffmpeg"))
-    end
-
     fc = s.avin.apFormatContext[1]
 
     pCodecContext = s.pVideoCodecContext # AVCodecContext
