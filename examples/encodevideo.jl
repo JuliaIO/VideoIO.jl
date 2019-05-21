@@ -72,7 +72,7 @@ codecContext.gop_size = 10
 codecContext.max_b_frames = 1
 codecContext.pix_fmt = VideoIO.AV_PIX_FMT_YUV420P
 
-unsafe_store!(c, codecContext, 1)
+unsafe_store!(c, codecContext)
 
 codec_loaded = unsafe_load(codec)
 if codec_loaded.id == VideoIO.AV_CODEC_ID_H264
@@ -92,7 +92,7 @@ frame = unsafe_load(frameptr)
 frame.format = codecContext.pix_fmt
 frame.width  = codecContext.width
 frame.height = codecContext.height
-unsafe_store!(frameptr,frame,1)
+unsafe_store!(frameptr,frame)
 
 ret = VideoIO.av_frame_get_buffer(frameptr, 32)
 if ret < 0
@@ -102,7 +102,7 @@ end
 # frame_fields = map(x->fieldname(VideoIO.AVUtil.AVFrame,x),1:fieldcount(VideoIO.AVUtil.AVFrame))
 # pos_data = findfirst(fields.==:data)
 
-for i = 0:24
+for i = 0:240
     flush(stdout)
 
     ret = VideoIO.av_frame_make_writable(frameptr)
@@ -120,15 +120,15 @@ for i = 0:24
     for y = 1:frame.height
         for x = 1:frame.width
             #framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
-            framedata_1[((y-1)*frame.linesize[1])+(x)] = rand(UInt8)
+            framedata_1[((y-1)*frame.linesize[1])+x] = rand(UInt8)
         end
     end
     for y = 1:Int64(frame.height/2)
         for x = 1:Int64(frame.width/2)
             # framedata_2[((y-1)*frame.linesize[2])+(x)] = UInt8(clamp(0,255,128 + y + i * 2))
             # framedata_3[((y-1)*frame.linesize[3])+(x)] = UInt8(clamp(0,255,64 + x + i * 5))
-            framedata_2[((y-1)*frame.linesize[2])+(x)] = rand(UInt8)
-            framedata_3[((y-1)*frame.linesize[3])+(x)] = rand(UInt8)
+            framedata_2[((y-1)*frame.linesize[2])+x] = rand(UInt8)
+            framedata_3[((y-1)*frame.linesize[3])+x] = rand(UInt8)
         end
     end
 
@@ -144,6 +144,17 @@ encode(c, C_NULL, pktptr, f);
 # add sequence end code to have a real MPEG file
 write(f,endcode)
 close(f)
+
 VideoIO.avcodec_free_context(c)
+# segfault: LLDB output:
+# * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=EXC_I386_GPFLT)
+#     frame #0: 0x00000001345e0a9a libavutil.56.dylib`avpriv_slicethread_free + 26
+
 VideoIO.av_frame_free(frameptr)
+# julia(63724,0x10d8705c0) malloc: *** error for object 0x8fb53694d469fcc2: pointer being freed was not allocated
+# julia(63724,0x10d8705c0) malloc: *** set a breakpoint in malloc_error_break to debug
+#
+# signal (6): Abort trap: 6
+
 VideoIO.av_packet_free(pktptr)
+# OK
