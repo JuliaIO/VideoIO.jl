@@ -167,15 +167,5 @@ write(f,endcode)
 close(f)
 
 VideoIO.avcodec_free_context(c)
-# segfault: LLDB output:
-# * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=EXC_I386_GPFLT)
-#     frame #0: 0x00000001345e0a9a libavutil.56.dylib`avpriv_slicethread_free + 26
-
 VideoIO.av_frame_free(frameptr)
-# julia(63724,0x10d8705c0) malloc: *** error for object 0x8fb53694d469fcc2: pointer being freed was not allocated
-# julia(63724,0x10d8705c0) malloc: *** set a breakpoint in malloc_error_break to debug
-#
-# signal (6): Abort trap: 6
-
 VideoIO.av_packet_free(pktptr)
-# OK
