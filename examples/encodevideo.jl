@@ -1,4 +1,27 @@
 # Based on https://www.ffmpeg.org/doxygen/trunk/encode_video_8c-example.html
+#=
+ * Copyright (c) 2001 Fabrice Bellard
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+=#
+
 using VideoIO, Printf
 
 """
@@ -36,23 +59,21 @@ c = VideoIO.AVCodecContext[]
 endcode = UInt8[0, 0, 1, 0xb7]
 
 codec = VideoIO.avcodec_find_encoder_by_name(codec_name)
-if codec == C_NULL
+if codec == [C_NULL]
     error("Codec '$codec_name' not found")
 end
 
-c = VideoIO.avcodec_alloc_context3(codec)
-#c = Ptr{VideoIO.AVCodecContext}[VideoIO.avcodec_alloc_context3(codec)]
-if c == C_NULL
+c = Ptr{VideoIO.AVCodecContext}[VideoIO.avcodec_alloc_context3(codec)]
+if c == [C_NULL]
     error("Could not allocate video codec context")
 end
 
-pktptr = VideoIO.av_packet_alloc()
-#pkt = Ptr{VideoIO.AVPacket}[VideoIO.av_packet_alloc()]
-if pktptr == C_NULL
+pktptr = Ptr{VideoIO.AVPacket}[VideoIO.av_packet_alloc()]
+if pktptr == [C_NULL]
     error("av_packet_alloc() error")
 end
 
-codecContext = unsafe_load(c)
+codecContext = unsafe_load(c[1])
 
 # put sample parameters
 codecContext.bit_rate = 400000
@@ -72,29 +93,29 @@ codecContext.gop_size = 10
 codecContext.max_b_frames = 1
 codecContext.pix_fmt = VideoIO.AV_PIX_FMT_YUV420P
 
-unsafe_store!(c, codecContext)
+unsafe_store!(c[1], codecContext)
 
 codec_loaded = unsafe_load(codec)
 if codec_loaded.id == VideoIO.AV_CODEC_ID_H264
     VideoIO.av_opt_set(codecContext.priv_data, "preset", "slow", 0)
 end
 # open it
-ret = VideoIO.avcodec_open2(c, codec, C_NULL)
+ret = VideoIO.avcodec_open2(c[1], codec, C_NULL)
 if ret < 0
     error("Could not open codec: $(av_err2str(ret))")
 end
 f = open(filename,"w")
-frameptr = VideoIO.av_frame_alloc()
-if frameptr == C_NULL
+frameptr = Ptr{VideoIO.AVFrame}[VideoIO.av_frame_alloc()]
+if frameptr == [C_NULL]
     error("Could not allocate video frame")
 end
-frame = unsafe_load(frameptr)
+frame = unsafe_load(frameptr[1])
 frame.format = codecContext.pix_fmt
 frame.width  = codecContext.width
 frame.height = codecContext.height
-unsafe_store!(frameptr,frame)
+unsafe_store!(frameptr[1],frame)
 
-ret = VideoIO.av_frame_get_buffer(frameptr, 32)
+ret = VideoIO.av_frame_get_buffer(frameptr[1], 32)
 if ret < 0
     error("Could not allocate the video frame data")
 end
@@ -105,14 +126,14 @@ end
 for i = 0:240
     flush(stdout)
 
-    ret = VideoIO.av_frame_make_writable(frameptr)
+    ret = VideoIO.av_frame_make_writable(frameptr[1])
     if ret < 0
         error("av_frame_make_writable() error")
     end
 
     #im_YCbCr = convert.(YCbCr{Float64}, image)
 
-    frame = unsafe_load(frameptr) #grab data from c memory
+    frame = unsafe_load(frameptr[1]) #grab data from c memory
     framedata_1 = unsafe_wrap(Array,frame.data[1],Int64(frame.height*frame.width),own=false)
     framedata_2 = unsafe_wrap(Array,frame.data[2],Int64((frame.height*frame.width)/2),own=false)
     framedata_3 = unsafe_wrap(Array,frame.data[3],Int64((frame.height*frame.width)/2),own=false)
@@ -133,14 +154,14 @@ for i = 0:240
     end
 
     frame.pts = i
-    unsafe_store!(frameptr,frame) #pass data back to c memory
+    unsafe_store!(frameptr[1],frame) #pass data back to c memory
 
-    encode(c, frameptr, pktptr, f)
+    encode(c[1], frameptr[1], pktptr[1], f)
     println(i)
 end
 
 # flush the encoder
-encode(c, C_NULL, pktptr, f);
+encode(c[1], C_NULL, pktptr[1], f);
 # add sequence end code to have a real MPEG file
 write(f,endcode)
 close(f)
