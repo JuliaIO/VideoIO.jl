@@ -59,7 +59,7 @@ c = VideoIO.AVCodecContext[]
 endcode = UInt8[0, 0, 1, 0xb7]
 
 codec = VideoIO.avcodec_find_encoder_by_name(codec_name)
-if codec == [C_NULL]
+if codec == C_NULL
     error("Codec '$codec_name' not found")
 end
 
