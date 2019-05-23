@@ -1,38 +1,40 @@
 using ColorTypes, ProgressMeter, FixedPointNumbers
 
-export encodevideo, encode, prepareencoder, appendencode, finishencode, mux
+export encodevideo, encode!, prepareencoder, appendencode!, finishencode!, mux
 
-mutable struct encoderobjects
+# A struct collecting encoder objects for easy passing
+mutable struct VideoEncoder
     pcodeccontext::Array{Ptr{VideoIO.AVCodecContext}}
     pframe::Array{Ptr{VideoIO.AVFrame}}
     ppkt::Array{Ptr{VideoIO.AVPacket}}
     pix_fmt::Integer
 end
+
 """
 encode(enc_ctx::Ptr{VideoIO.AVCodecContext}, pktptr::Ptr{VideoIO.AVPacket}, io::IO)
 
 Encode frame in memory
 """
-function encode(encobjs::encoderobjects, io::IO; flush=false)
+function encode!(encoder::VideoEncoder, io::IO; flush=false)
     if flush
-        ret = avcodec_send_frame(encobjs.pcodeccontext[1],C_NULL)
+        ret = avcodec_send_frame(encoder.pcodeccontext[1],C_NULL)
     else
-        ret = avcodec_send_frame(encobjs.pcodeccontext[1],encobjs.pframe[1])
+        ret = avcodec_send_frame(encoder.pcodeccontext[1],encoder.pframe[1])
     end
     ret < 0 && error("Error $ret sending a frame for encoding")
 
     while ret >= 0
-        ret = avcodec_receive_packet(encobjs.pcodeccontext[1], encobjs.ppkt[1])
+        ret = avcodec_receive_packet(encoder.pcodeccontext[1], encoder.ppkt[1])
         if (ret == -35 || ret == -541478725) # -35=EAGAIN -541478725=AVERROR_EOF
              return
         elseif (ret < 0)
             error("Error $ret during encoding")
         end
-        pkt = unsafe_load(encobjs.ppkt[1])
+        pkt = unsafe_load(encoder.ppkt[1])
         @debug println("Write packet $(pkt.pts) (size=$(pkt.size))")
         data = unsafe_wrap(Array,pkt.data,pkt.size)
         write(io,data)
-        VideoIO.av_packet_unref(encobjs.ppkt[1])
+        VideoIO.av_packet_unref(encoder.ppkt[1])
     end
 end
 
@@ -101,7 +103,7 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
     ret = VideoIO.av_frame_get_buffer(frameptr[1], 32)
     ret < 0 && error("Could not allocate the video frame data")
 
-    return encoderobjects(codeccontextptr, frameptr, pktptr, pix_fmt)
+    return VideoEncoder(codeccontextptr, frameptr, pktptr, pix_fmt)
 end
 
 """
@@ -113,28 +115,28 @@ appendencode(io::IO, img, index::Integer,
 
 Send image object to ffmpeg encoder and encode
 """
-function appendencode(io::IO, img, index::Integer,encobj::encoderobjects)
+function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 
     flush(stdout)
 
-    ret = VideoIO.av_frame_make_writable(encobj.pframe[1])
+    ret = VideoIO.av_frame_make_writable(encoder.pframe[1])
     ret < 0 && error("av_frame_make_writable() error")
 
-    frame = unsafe_load(encobj.pframe[1]) #grab data from c memory
+    frame = unsafe_load(encoder.pframe[1]) #grab data from c memory
 
     img_eltype = eltype(img)
 
-    if (img_eltype == UInt8) && (encobj.pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
+    if (img_eltype == UInt8) && (encoder.pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
         framedata_1 = unsafe_load(frame.data[1])
         for y = 1:frame.height, x = 1:frame.width
             unsafe_store!(frame.data[1], img[x,y], ((y-1)*frame.linesize[1])+x)
         end
-    elseif (img_eltype  == Gray{N0f8}) && (encobj.pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
+    elseif (img_eltype  == Gray{N0f8}) && (encoder.pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
         img_uint8 = reinterpret(UInt8,img)
         for y = 1:frame.height, x = 1:frame.width
             unsafe_store!(frame.data[1], img_uint8[x,y], ((y-1)*frame.linesize[1])+x)
         end
-    elseif (img_eltype  == RGB{N0f8}) && (encobj.pix_fmt == VideoIO.AV_PIX_FMT_RGB24)
+    elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == VideoIO.AV_PIX_FMT_RGB24)
         img_r_uint8 = reinterpret(UInt8, map(x->x.r,img))
         img_r_uint8 = reinterpret(UInt8, map(x->x.g,img))
         img_r_uint8 = reinterpret(UInt8, map(x->x.b,img))
@@ -147,8 +149,8 @@ function appendencode(io::IO, img, index::Integer,encobj::encoderobjects)
         error("Array elment type not supported")
     end
     frame.pts = index
-    unsafe_store!(encobj.pframe[1], frame) #pass data back to c memory
-    encode(encobj, io)
+    unsafe_store!(encoder.pframe[1], frame) #pass data back to c memory
+    encode!(encoder, io)
 end
 
 """
@@ -156,12 +158,12 @@ function finishencode(io, codeccontextptr, frameptr, pktptr)
 
 End encoding by sending endencode package to ffmpeg, and close objects.
 """
-function finishencode(io, encobj::encoderobjects)
-    encode(encobj, io, flush=true) # flush the encoder
+function finishencode!(encoder::VideoEncoder, io)
+    encode!(encoder, io, flush=true) # flush the encoder
     write(io,UInt8[0, 0, 1, 0xb7]) # add sequence end code to have a real MPEG file
-    VideoIO.avcodec_free_context(encobj.pcodeccontext)
-    VideoIO.av_frame_free(encobj.pframe)
-    VideoIO.av_packet_free(encobj.ppkt)
+    VideoIO.avcodec_free_context(encoder.pcodeccontext)
+    VideoIO.av_frame_free(encoder.pframe)
+    VideoIO.av_packet_free(encoder.ppkt)
 end
 
 """
@@ -198,15 +200,15 @@ function encodevideo(filename::String,imgstack::Array;
     framerate = 24)
 
     io = Base.open("temp.stream","w")
-    encobj = prepareencoder(imgstack[1],codec_name,framerate,AVCodecContextProperties)
+    encoder = prepareencoder(imgstack[1],codec_name,framerate,AVCodecContextProperties)
     p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
     index = 1
     for img in imgstack
-        appendencode(io, img, index, encobj)
+        appendencode!(encoder, io, img, index)
         next!(p)
         index += 1
     end
-    finishencode(io, encobj)
+    finishencode!(encoder, io)
     close(io)
     mux("temp.stream",filename,framerate)
 end
