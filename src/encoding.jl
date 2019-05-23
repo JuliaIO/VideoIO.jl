@@ -77,7 +77,7 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
 
     # open it
     ret = VideoIO.avcodec_open2(codeccontextptr[1], codec, C_NULL)
-    ret < 0 && error("Could not open codec: $(av_err2str(ret))")
+    ret < 0 && error("Could not open codec: Return code $(ret)")
 
     frameptr = Ptr{VideoIO.AVFrame}[VideoIO.av_frame_alloc()]
     frameptr == [C_NULL] && error("Could not allocate video frame")
@@ -123,14 +123,18 @@ function appendencode(io::IO, img, index::Integer,
             unsafe_store!(frame.data[1],img[x,y],((y-1)*frame.linesize[1])+x)
         end
     elseif (img_eltype  == Gray{N0f8}) && (pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
+        img_uint8 = reinterpret(UInt8,img)
         for y = 1:frame.height, x = 1:frame.width
-            framedata[1][((y-1)*frame.linesize[1])+x] = reinterpret(UInt8,img[x,y])
+            unsafe_store!(frame.data[1],img_uint8[x,y],((y-1)*frame.linesize[1])+x)
         end
     elseif (img_eltype  == RGB{N0f8}) && (pix_fmt == VideoIO.AV_PIX_FMT_RGB24)
+        img_r_uint8 = reinterpret(UInt8,map(x->x.r,img))
+        img_r_uint8 = reinterpret(UInt8,map(x->x.g,img))
+        img_r_uint8 = reinterpret(UInt8,map(x->x.b,img))
         for y = 1:frame.height, x = 1:frame.width
-            framedata[1][((y-1)*frame.linesize[1])+x] = reinterpret(UInt8,img[x,y].r)
-            framedata[2][((y-1)*frame.linesize[2])+x] = reinterpret(UInt8,img[x,y].g)
-            framedata[3][((y-1)*frame.linesize[3])+x] = reinterpret(UInt8,img[x,y].b)
+            unsafe_store!(frame.data[1],img_r_uint8[x,y],((y-1)*frame.linesize[1])+x)
+            unsafe_store!(frame.data[2],img_r_uint8[x,y],((y-1)*frame.linesize[2])+x)
+            unsafe_store!(frame.data[3],img_r_uint8[x,y],((y-1)*frame.linesize[3])+x)
         end
     else
         error("Array elment type not supported")
