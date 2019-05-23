@@ -1,0 +1,203 @@
+using ColorTypes, ProgressMeter, FixedPointNumbers, FileIO
+
+"""
+encode(enc_ctx::Ptr{VideoIO.AVCodecContext}, frame, pktptr::Ptr{VideoIO.AVPacket}, io::IO)
+
+Encode frame in memory
+"""
+function encode(enc_ctx::Ptr{VideoIO.AVCodecContext},
+    frame, pktptr::Ptr{VideoIO.AVPacket}, io::IO)
+    ret = VideoIO.avcodec_send_frame(enc_ctx, frame)
+    ret < 0 && error("Error $ret sending a frame for encoding")
+
+    while ret >= 0
+        ret = VideoIO.avcodec_receive_packet(enc_ctx, pktptr)
+        if (ret == -35 || ret == -541478725) # -35=EAGAIN -541478725=AVERROR_EOF
+             return
+        elseif (ret < 0)
+            error("Error $ret during encoding")
+        end
+        pkt = unsafe_load(pktptr)
+        @debug println("Write packet $(pkt.pts) (size=$(pkt.size))")
+        data = unsafe_wrap(Array,pkt.data,pkt.size)
+        write(io,data)
+        VideoIO.av_packet_unref(pktptr)
+    end
+end
+
+const AVCodecContextPropertiesDefault =[:priv_data => ("crf"=>"22","preset"=>"medium")]
+
+"""
+prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
+
+Prepare encoder and return AV objects.
+"""
+function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
+    width = size(firstimg,1)
+    height = size(firstimg,2)
+    ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
+
+    codec = avcodec_find_encoder_by_name(codec_name)
+    codec == C_NULL && error("Codec '$codec_name' not found")
+
+    codeccontextptr = Ptr{VideoIO.AVCodecContext}[VideoIO.avcodec_alloc_context3(codec)]
+    codeccontextptr == [C_NULL] && error("Could not allocate video codec context")
+
+    pktptr = Ptr{VideoIO.AVPacket}[VideoIO.av_packet_alloc()]
+    pktptr == [C_NULL] && error("av_packet_alloc() error")
+
+    if eltype(firstimg) == UInt8
+        pix_fmt = VideoIO.AV_PIX_FMT_GRAY8
+    elseif eltype(firstimg) == Gray{N0f8}
+            pix_fmt = VideoIO.AV_PIX_FMT_GRAY8
+    elseif eltype(firstimg) == RGB{N0f8}
+        pix_fmt = VideoIO.AV_PIX_FMT_RGB24
+    else
+        error("VideoIO: Encoding image element type $(eltype(imgstack[1])) not currently supported")
+    end
+
+    codecContext = unsafe_load(codeccontextptr[1])
+    codecContext.width = width
+    codecContext.height = height
+    codecContext.time_base = VideoIO.AVRational(1, framerate) # frames per second
+    codecContext.framerate = VideoIO.AVRational(framerate, 1)
+    codecContext.pix_fmt = pix_fmt
+    unsafe_store!(codeccontextptr[1], codecContext)
+
+    codec_loaded = unsafe_load(codec)
+    for prop in AVCodecContextProperties
+        if prop[1] == :priv_data
+            for pd in prop[2]
+                VideoIO.av_opt_set(codecContext.priv_data, string(pd[1]), string(pd[2]), VideoIO.AV_OPT_SEARCH_CHILDREN)
+            end
+        else
+            setproperty!(codecContext, prop[1], prop[2])
+        end
+    end
+
+    # open it
+    ret = VideoIO.avcodec_open2(codeccontextptr[1], codec, C_NULL)
+    ret < 0 && error("Could not open codec: $(av_err2str(ret))")
+
+    frameptr = Ptr{VideoIO.AVFrame}[VideoIO.av_frame_alloc()]
+    frameptr == [C_NULL] && error("Could not allocate video frame")
+    frame = unsafe_load(frameptr[1])
+    frame.format = codecContext.pix_fmt
+    frame.width  = codecContext.width
+    frame.height = codecContext.height
+    unsafe_store!(frameptr[1],frame)
+
+    ret = VideoIO.av_frame_get_buffer(frameptr[1], 32)
+    ret < 0 && error("Could not allocate the video frame data")
+
+    return codeccontextptr, frameptr, pktptr, pix_fmt
+end
+
+"""
+appendencode(io::IO, img, index::Integer,
+    codeccontextptr::Array{Ptr{VideoIO.AVCodecContext}},
+    frameptr::Array{Ptr{VideoIO.AVFrame}},
+    pktptr::Array{Ptr{VideoIO.AVPacket}},
+    pix_fmt::Integer)
+
+Send image object to ffmpeg encoder and encode
+"""
+function appendencode(io::IO, img, index::Integer,
+    codeccontextptr::Array{Ptr{VideoIO.AVCodecContext}},
+    frameptr::Array{Ptr{VideoIO.AVFrame}},
+    pktptr::Array{Ptr{VideoIO.AVPacket}},
+    pix_fmt::Integer)
+
+    flush(stdout)
+
+    ret = VideoIO.av_frame_make_writable(frameptr[1])
+    ret < 0 && error("av_frame_make_writable() error")
+
+    frame = unsafe_load(frameptr[1]) #grab data from c memory
+
+    img_eltype = eltype(img)
+
+    if (img_eltype == UInt8) && (pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
+        framedata_1 = unsafe_load(frame.data[1])
+        for y = 1:frame.height, x = 1:frame.width
+            unsafe_store!(frame.data[1],img[x,y],((y-1)*frame.linesize[1])+x)
+        end
+    elseif (img_eltype  == Gray{N0f8}) && (pix_fmt == VideoIO.AV_PIX_FMT_GRAY8)
+        for y = 1:frame.height, x = 1:frame.width
+            framedata[1][((y-1)*frame.linesize[1])+x] = reinterpret(UInt8,img[x,y])
+        end
+    elseif (img_eltype  == RGB{N0f8}) && (pix_fmt == VideoIO.AV_PIX_FMT_RGB24)
+        for y = 1:frame.height, x = 1:frame.width
+            framedata[1][((y-1)*frame.linesize[1])+x] = reinterpret(UInt8,img[x,y].r)
+            framedata[2][((y-1)*frame.linesize[2])+x] = reinterpret(UInt8,img[x,y].g)
+            framedata[3][((y-1)*frame.linesize[3])+x] = reinterpret(UInt8,img[x,y].b)
+        end
+    else
+        error("Array elment type not supported")
+    end
+    frame.pts = index
+    unsafe_store!(frameptr[1],frame) #pass data back to c memory
+    encode(codeccontextptr[1], frameptr[1], pktptr[1], io)
+end
+
+"""
+function finishencode(io, codeccontextptr, frameptr, pktptr)
+
+End encoding by sending endencode package to ffmpeg, and close objects.
+"""
+function finishencode(io, codeccontextptr::Array{Ptr{VideoIO.AVCodecContext}},
+frameptr::Array{Ptr{VideoIO.AVFrame}},
+pktptr::Array{Ptr{VideoIO.AVPacket}})
+    encode(codeccontextptr[1], C_NULL, pktptr[1], io) # flush the encoder
+    write(io,UInt8[0, 0, 1, 0xb7]) # add sequence end code to have a real MPEG file
+    VideoIO.avcodec_free_context(codeccontextptr)
+    VideoIO.av_frame_free(frameptr)
+    VideoIO.av_packet_free(pktptr)
+end
+
+"""
+mux(srcfilename,destfilename,framerate)
+
+Multiplex stream object into video container.
+"""
+function mux(srcfilename,destfilename,framerate)
+    muxout = VideoIO.collectexecoutput(`$(VideoIO.ffmpeg) -y -framerate $framerate -i $srcfilename -c copy $destfilename`)
+    filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout)
+    if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
+        rm("$srcfilename")
+        @info "Video file saved: $(pwd())/$destfilename"
+        @info muxout[end-1]
+        @info muxout[end]
+    else
+        @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
+        println.(muxout)
+    end
+end
+
+"""
+encodevideo(filename::String,imgstack::Array;
+    AVCodecContextProperties = AVCodecContextPropertiesDefault,
+    codec_name = "libx264",
+    framerate = 24)
+
+Encode image stack to video file
+
+"""
+function encodevideo(filename::String,imgstack::Array;
+    AVCodecContextProperties = AVCodecContextPropertiesDefault,
+    codec_name = "libx264",
+    framerate = 24)
+
+    io = Base.open("temp.stream","w")
+    codeccontextptr, frameptr, pktptr, pix_fmt = prepareencoder(imgstack[1],codec_name,framerate,AVCodecContextProperties)
+    p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
+    index = 1
+    for img in imgstack
+        appendencode(io, img, index, codeccontextptr, frameptr, pktptr, pix_fmt)
+        next!(p)
+        index += 1
+    end
+    finishencode(io, codeccontextptr, frameptr, pktptr)
+    close(io)
+    mux("temp.stream",filename,framerate)
+end
