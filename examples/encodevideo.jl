@@ -87,7 +87,7 @@ unsafe_store!(c[1], codecContext)
 codec_loaded = unsafe_load(codec)
 if codec_loaded.id == VideoIO.AV_CODEC_ID_H264
     VideoIO.av_opt_set(codecContext.priv_data, "crf", "0", VideoIO.AV_OPT_SEARCH_CHILDREN)
-    VideoIO.av_opt_set(codecContext.priv_data, "preset", "veryslow", 0)
+    VideoIO.av_opt_set(codecContext.priv_data, "preset", "veryslow", VideoIO.AV_OPT_SEARCH_CHILDREN)
 else
     ## PARAMETERS FROM ORIGINAL EXAMPLE
     # put sample parameters
@@ -134,25 +134,19 @@ for i = 0:240
         error("av_frame_make_writable() error")
     end
 
-    #im_YCbCr = convert.(YCbCr{Float64}, image)
-
     frame = unsafe_load(frameptr[1]) #grab data from c memory
-    framedata_1 = unsafe_wrap(Array,frame.data[1],Int64(frame.height*frame.width),own=false)
-    framedata_2 = unsafe_wrap(Array,frame.data[2],Int64((frame.height*frame.width)/2),own=false)
-    framedata_3 = unsafe_wrap(Array,frame.data[3],Int64((frame.height*frame.width)/2),own=false)
-
+    Y = rand(UInt8,frame.width,frame.height)
+    Cb = rand(UInt8,Int64(frame.width/2),Int64(frame.height/2))
+    Cr = rand(UInt8,Int64(frame.width/2),Int64(frame.height/2))
     for y = 1:frame.height
         for x = 1:frame.width
-            # framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
-            framedata_1[((y-1)*frame.linesize[1])+x] = rand(UInt8)
+            unsafe_store!(frame.data[1],rand(UInt8),((y-1)*frame.linesize[1])+x)
         end
     end
     for y = 1:Int64(frame.height/2)
         for x = 1:Int64(frame.width/2)
-            # framedata_2[((y-1)*frame.linesize[2])+(x)] = UInt8(clamp(0,255,128 + y + i * 2))
-            # framedata_3[((y-1)*frame.linesize[3])+(x)] = UInt8(clamp(0,255,64 + x + i * 5))
-            framedata_2[((y-1)*frame.linesize[2])+x] = rand(UInt8)
-            framedata_3[((y-1)*frame.linesize[3])+x] = rand(UInt8)
+            unsafe_store!(frame.data[2],Cb[x,y],((y-1)*frame.linesize[2])+x)
+            unsafe_store!(frame.data[3],Cr[x,y],((y-1)*frame.linesize[3])+x)
         end
     end
 
