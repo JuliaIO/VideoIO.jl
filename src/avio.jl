@@ -636,7 +636,7 @@ if have_avdevice()
         camera_devices = String[]
 
         read_vid_devs = false        
-        lines = execoutput(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
+        lines = collectexecoutput(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
 
         for line in lines
             if occursin("video devices",line)

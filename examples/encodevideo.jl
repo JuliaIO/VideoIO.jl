@@ -51,10 +51,9 @@ function encode(enc_ctx::Ptr{VideoIO.AVCodecContext},
     end
 end
 
-filename = "video.h264"
+filename = "video"
 codec_name = "libx264"
-
-c = VideoIO.AVCodecContext[]
+framerate = 24
 
 endcode = UInt8[0, 0, 1, 0xb7]
 
@@ -75,36 +74,40 @@ end
 
 codecContext = unsafe_load(c[1])
 
-# put sample parameters
-codecContext.bit_rate = 400000
 #resolution must be a multiple of two
 codecContext.width = 352
 codecContext.height = 288
 # frames per second
-codecContext.time_base = VideoIO.AVRational(1, 25)
-codecContext.framerate = VideoIO.AVRational(25, 1)
-#= emit one intra frame every ten frames
- * check frame pict_type before passing frame
- * to encoder, if frame->pict_type is AV_PICTURE_TYPE_I
- * then gop_size is ignored and the output of encoder
- * will always be I frame irrespective to gop_size
-=#
-codecContext.gop_size = 10
-codecContext.max_b_frames = 1
+codecContext.time_base = VideoIO.AVRational(1, framerate)
+codecContext.framerate = VideoIO.AVRational(framerate, 1)
 codecContext.pix_fmt = VideoIO.AV_PIX_FMT_YUV420P
 
 unsafe_store!(c[1], codecContext)
 
 codec_loaded = unsafe_load(codec)
 if codec_loaded.id == VideoIO.AV_CODEC_ID_H264
-    VideoIO.av_opt_set(codecContext.priv_data, "preset", "slow", 0)
+    VideoIO.av_opt_set(codecContext.priv_data, "crf", "0", VideoIO.AV_OPT_SEARCH_CHILDREN)
+    VideoIO.av_opt_set(codecContext.priv_data, "preset", "veryslow", 0)
+else
+    ## PARAMETERS FROM ORIGINAL EXAMPLE
+    # put sample parameters
+    codecContext.bit_rate = 400000
+    #= emit one intra frame every ten frames
+     * check frame pict_type before passing frame
+     * to encoder, if frame->pict_type is AV_PICTURE_TYPE_I
+     * then gop_size is ignored and the output of encoder
+     * will always be I frame irrespective to gop_size
+    =#
+    codecContext.gop_size = 10        #####
+    codecContext.max_b_frames = 1
 end
+
 # open it
 ret = VideoIO.avcodec_open2(c[1], codec, C_NULL)
 if ret < 0
     error("Could not open codec: $(av_err2str(ret))")
 end
-f = open(filename,"w")
+f = open(string(filename,".h264"),"w")
 frameptr = Ptr{VideoIO.AVFrame}[VideoIO.av_frame_alloc()]
 if frameptr == [C_NULL]
     error("Could not allocate video frame")
@@ -140,7 +143,7 @@ for i = 0:240
 
     for y = 1:frame.height
         for x = 1:frame.width
-            #framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
+            # framedata_1[((y-1)*frame.linesize[1])+(x)] = UInt8(clamp(0,255,x + y + i * 3))
             framedata_1[((y-1)*frame.linesize[1])+x] = rand(UInt8)
         end
     end
@@ -169,3 +172,21 @@ close(f)
 VideoIO.avcodec_free_context(c)
 VideoIO.av_frame_free(frameptr)
 VideoIO.av_packet_free(pktptr)
+
+overwrite = true
+ow = overwrite ? `-y` : `-n`
+
+muxout = VideoIO.collectexecoutput(`$(VideoIO.ffmpeg) $ow -framerate $framerate -i $filename.h264 -c copy $filename.mp4`)
+
+filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout)
+if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
+    rm("$filename.h264")
+    @info "Video file saved: $(pwd())/$filename.mp4"
+    @info muxout[end-1]
+    @info muxout[end]
+    return
+else
+    rm("$filename.h264")
+    @warn "Stream Muxing may have failed: $(pwd())/$filename.h264 into $(pwd())/$filename.mp4"
+    println.(muxout)
+end
