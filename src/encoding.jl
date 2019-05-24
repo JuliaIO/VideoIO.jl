@@ -1,9 +1,10 @@
-using ColorTypes, ProgressMeter, FixedPointNumbers
+using ColorTypes, ProgressMeter, FixedPointNumbers, ImageTransformations
 
 export encodevideo, encode!, prepareencoder, appendencode!, finishencode!, mux
 
 # A struct collecting encoder objects for easy passing
 mutable struct VideoEncoder
+    codec_name::String
     pcodeccontext::Array{Ptr{VideoIO.AVCodecContext}}
     pframe::Array{Ptr{VideoIO.AVFrame}}
     ppkt::Array{Ptr{VideoIO.AVPacket}}
@@ -40,6 +41,19 @@ end
 
 const AVCodecContextPropertiesDefault =[:priv_data => ("crf"=>"22","preset"=>"medium")]
 
+function islossless(prop)
+    for p in prop
+        if p[1] == :priv_data
+            for subp in p[2]
+                if (subp[1] == "crf") && (subp[2] == "0")
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
 """
 prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
 
@@ -63,10 +77,23 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
         pix_fmt = VideoIO.AV_PIX_FMT_GRAY8
     elseif eltype(firstimg) == Gray{N0f8}
             pix_fmt = VideoIO.AV_PIX_FMT_GRAY8
-    elseif eltype(firstimg) == RGB{N0f8}
+    elseif eltype(firstimg) == RGB{N0f8} && (codec_name == "libx264rgb")
+        if !islossless(AVCodecContextProperties)
+            @warn """Codec libx264rgb has limited playback support. Given that
+            selected encoding settings are not lossless (crf!=0), codec_name="libx264"
+            will give better results"""
+        end
         pix_fmt = VideoIO.AV_PIX_FMT_RGB24
+    elseif eltype(firstimg) == RGB{N0f8} && (codec_name == "libx264")
+        if islossless(AVCodecContextProperties)
+            @warn """Lossless encoding is selected (crf=0), however libx264 does
+            not support lossless RGB planes. RGB will be downsampled to lossy YUV420P.
+            To encode lossless RGB use codec_name="libx264rgb" """
+        end
+        pix_fmt = VideoIO.AV_PIX_FMT_YUV420P
     else
-        error("VideoIO: Encoding image element type $(eltype(imgstack[1])) not currently supported")
+        error("VideoIO: Encoding image element type $(eltype(imgstack[1])) with
+        codec $codec_name not currently supported")
     end
 
     codecContext = unsafe_load(codeccontextptr[1])
@@ -103,7 +130,7 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
     ret = VideoIO.av_frame_get_buffer(frameptr[1], 32)
     ret < 0 && error("Could not allocate the video frame data")
 
-    return VideoEncoder(codeccontextptr, frameptr, pktptr, pix_fmt)
+    return VideoEncoder(codec_name, codeccontextptr, frameptr, pktptr, pix_fmt)
 end
 
 """
@@ -137,16 +164,20 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
             unsafe_store!(frame.data[1], img_uint8[x,y], ((y-1)*frame.linesize[1])+x)
         end
     elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == VideoIO.AV_PIX_FMT_RGB24)
-        img_r_uint8 = reinterpret(UInt8, map(x->x.r,img))
-        img_r_uint8 = reinterpret(UInt8, map(x->x.g,img))
-        img_r_uint8 = reinterpret(UInt8, map(x->x.b,img))
+        img_uint8 = reinterpret(UInt8, img)
+        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
+    elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == VideoIO.AV_PIX_FMT_YUV420P)
+        img_YCbCr = convert.(YCbCr{Float64}, img)
+        img_YCbCr_half = convert.(YCbCr{Float64}, restrict(img))
         for y = 1:frame.height, x = 1:frame.width
-            unsafe_store!(frame.data[1], img_r_uint8[x,y], ((y-1)*frame.linesize[1])+x)
-            unsafe_store!(frame.data[2], img_r_uint8[x,y], ((y-1)*frame.linesize[2])+x)
-            unsafe_store!(frame.data[3], img_r_uint8[x,y], ((y-1)*frame.linesize[3])+x)
+            unsafe_store!(frame.data[1], round(UInt8,img_YCbCr[x,y].y), ((y-1)*frame.linesize[1])+x)
+        end
+        for y = 1:Int64(frame.height/2), x = 1:Int64(frame.width/2)
+            unsafe_store!(frame.data[2], round(UInt8,img_YCbCr_half[x,y].cb), ((y-1)*frame.linesize[2])+x)
+            unsafe_store!(frame.data[3], round(UInt8,img_YCbCr_half[x,y].cr), ((y-1)*frame.linesize[3])+x)
         end
     else
-        error("Array elment type not supported")
+        error("Array element type not supported")
     end
     frame.pts = index
     unsafe_store!(encoder.pframe[1], frame) #pass data back to c memory
