@@ -26,7 +26,7 @@ function encode!(encoder::VideoEncoder, io::IO; flush=false)
 
     while ret >= 0
         ret = avcodec_receive_packet(encoder.apCodecContext[1], encoder.apPacket[1])
-        if (ret == -35 || ret == -541478725) # -35=EAGAIN -541478725=AVERROR_EOF
+        if (ret == -35 || ret == -11 || ret == -541478725) # -35=EAGAIN or -11.  -541478725=AVERROR_EOF
              return
         elseif (ret < 0)
             error("Error $ret during encoding")
