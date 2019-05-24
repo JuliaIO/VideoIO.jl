@@ -147,11 +147,18 @@ A few helpful presets for h264:
 - Direct control of bitrate and frequency of intra frames (every 10):
 ```AVCodecContextProperties = [:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]```
 
+Encoding of the following image element color types currently supported:
+- UInt8
+- Gray{N0f8}
+- RGB{N0f8}
+
+
 ### RGB encoding
-If lossless RGB is desired, true RGB lossless requires using libx264rgb, to avoid
-the lossy YUV420 conversion. That's achieved with codec_name="libx264rgb" and
-"crf" => "0" in the above example, but is typically only useful for data storage
-given that even VLC cannot handle playing back libx264rgb videos smoothly.
+If lossless RGB is desired for RGB{N0f8}, true RGB lossless requires using libx264rgb,
+to avoid the lossy RGB->YUV420 conversion in libx264. That's achieved with
+codec_name="libx264rgb" and "crf" => "0" in the above example, but is typically
+only useful for data storage given that even VLC cannot handle playing back
+libx264rgb videos smoothly.
 
 
 Low Level Interface
