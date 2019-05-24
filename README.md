@@ -7,21 +7,25 @@ VideoIO.jl
 
 Julia bindings for ffmpeg, using a dedicated installation of ffmpeg 4.1.
 
-Currently, only video reading is supported.
+Currently, only video reading and writing is supported.
 
 Video images may be read as raw arrays, or optionally, `Image`
 objects (if `Images.jl` is installed and loaded first).
+
+Videos can be encoded from image stacks (a vector of same-sized `Image` objects),
+or encoded iteratively in custom loops.
 
 Installation
 ------------
 Use the Julia package manager.  Within Julia, do:
 ```julia
-Pkg.add("VideoIO")
+]add VideoIO
 ```
 
 Simple Interface
 ----------------
 A trivial video player interface exists (no audio):
+Note: `Makie` must be imported first to enable playback functionality.
 
     import Makie
     import VideoIO
@@ -34,6 +38,8 @@ A trivial video player interface exists (no audio):
 
 High Level Interface
 --------------------
+
+### Video Reading
 
 VideoIO contains a simple high-level interface which allows reading of
 video frames from a supported video file, or from a camera device:
@@ -82,6 +88,70 @@ while !eof(f)
 end
 close(f)
 ```
+
+### Video Writing
+
+Given an image stack:
+```julia
+imgstack = map(x->rand(UInt8,2048,1536),1:100)
+100-element Array{Array{UInt8,2},1}
+```
+
+Encode entire imgstack in one go:
+```julia
+> using VideoIO
+> props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+> encodevideo("video.mp4",imgstack,framerate=30,AVCodecContextProperties=props)
+
+[ Info: Video file saved: /Users/username/Documents/video.mp4
+[ Info: frame=  100 fps=0.0 q=-1.0 Lsize=  129867kB time=00:00:03.23 bitrate=329035.1kbits/s speed=8.17x    
+[ Info: video:129865kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.001692%
+```
+
+Encode by appending within a custom loop:
+```julia
+using VideoIO, ProgressMeter
+filename = "manual.mp4"
+props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+codec_name = "libx264"
+framerate = 24
+
+encoder = prepareencoder(imgstack[1],codec_name,framerate,props)
+
+io = Base.open("temp.stream","w")
+p = Progress(length(imgstack), 1)
+index = 1
+for img in imgstack
+    global index
+    appendencode!(encoder, io, img, index)
+    next!(p)
+    index += 1
+end
+
+finishencode!(encoder, io)
+close(io)
+
+mux("temp.stream",filename,framerate) #Multiplexes the stream into a video container
+```
+
+The AVCodecContextProperties object allows control of the majority of settings required.
+
+A few helpful presets for h264:
+
+- Lossless compression - Fastest, largest file size:
+```AVCodecContextProperties = [:priv_data => ("crf"=>"0","preset"=>"ultrafast")]```
+- Lossless compression - Slowest, smallest file size:
+```AVCodecContextProperties = [:priv_data => ("crf"=>"0","preset"=>"ultraslow")]```
+- Perceptual compression, h264 default (as per docs):
+```AVCodecContextProperties = [:priv_data => ("crf"=>"23","preset"=>"medium")]```
+- Direct control of bitrate and frequency of intra frames (every 10):
+```AVCodecContextProperties = [:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]```
+
+### RGB encoding
+If lossless RGB is desired, true RGB lossless requires using libx264rgb, to avoid
+the lossy YUV420 conversion. That's achieved with codec_name="libx264rgb" and
+"crf" => "0" in the above example, but is typically only useful for data storage
+given that even VLC cannot handle playing back libx264rgb videos smoothly.
 
 
 Low Level Interface
@@ -137,7 +207,7 @@ These are short videos in a variety of formats with non-restrictive
 
 Status
 ------
-Prior to version 6.0, this package used a BinDeps approach, using system-level ffmpeg 
+Prior to version 6.0, this package used a BinDeps approach, using system-level ffmpeg
 installs, and thus provided support of many versions of ffmpeg and libav. See [v0.5.6](https://github.com/JuliaIO/VideoIO.jl/releases/tag/v0.5.6) for that prior functionality.
 
 v0.6.0 onwards uses a BinaryProvider approach, with a dedicated ffmpeg 4.1 install.  
