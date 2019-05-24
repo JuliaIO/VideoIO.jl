@@ -137,3 +137,31 @@ file = joinpath(videodir, "annie_oakley.ogg")
 @test VideoIO.get_duration(file) == Dates.Microsecond(24224200)
 @test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
 @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), Dates.Microsecond(24224200))
+
+
+println(stderr, "Tesing video encoding...")
+println(stderr, "   Read-in annie_oakley.ogg source video...")
+file = joinpath(videodir, "annie_oakley.ogg")
+f = VideoIO.openvideo(file)
+imgstack = []
+while !eof(f)
+    push!(imgstack,read(f))
+end
+
+println(stderr, "   Encode lossless RGB H264 copy...")
+file_lossless_copy = joinpath(videodir, "annie_oakley_lossless.mp4")
+prop = [:priv_data => ("crf"=>"0","preset"=>"medium")]
+codec_name="libx264rgb"
+VideoIO.encodevideo(file_lossless_copy,imgstack,codec_name=codec_name,
+AVCodecContextProperties=prop, silent=true)
+
+println(stderr, "   Read back lossless RGB H264 copy...")
+fcopy = VideoIO.openvideo(file_lossless_copy)
+imgstack_copy = []
+while !eof(fcopy)
+    push!(imgstack_copy,read(fcopy))
+end
+
+println(stderr, "   Checking lossless copy is exactly equal to original (each frame)")
+@test length(imgstack) == length(imgstack_copy)
+@test !any(.!(imgstack .== imgstack_copy))
