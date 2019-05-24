@@ -1,4 +1,4 @@
-using ColorTypes, ProgressMeter, FixedPointNumbers, ImageTransformations
+using ColorTypes, ProgressMeter, FixedPointNumbers, ImageTransformations, ImageCore
 
 export encodevideo, encode!, prepareencoder, appendencode!, finishencode!, mux
 
@@ -60,8 +60,8 @@ prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
 Prepare encoder and return AV objects.
 """
 function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
-    width = size(firstimg,2)
     height = size(firstimg,1)
+    width = size(firstimg,2)
     ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
 
     codec = avcodec_find_encoder_by_name(codec_name)
@@ -147,26 +147,26 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     img_eltype = eltype(img)
 
     if (img_eltype == UInt8) && (encoder.pix_fmt == AV_PIX_FMT_GRAY8)
-        for y = 1:frame.height, x = 1:frame.width
-            unsafe_store!(frame.data[1], img[x,y], ((y-1)*frame.linesize[1])+x)
+        for r = 1:frame.height, c = 1:frame.width
+            unsafe_store!(frame.data[1], img[r,c], ((r-1)*frame.linesize[1])+c)
         end
-    elseif (img_eltype  == Gray{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_GRAY8)
-        img_uint8 = reinterpret(UInt8,img)
-        for y = 1:frame.height, x = 1:frame.width
-            unsafe_store!(frame.data[1], img_uint8[x,y], ((y-1)*frame.linesize[1])+x)
+    elseif (img_eltype == Gray{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_GRAY8)
+        img_uint8 = rawview(channelview(img))
+        for r = 1:frame.height, c = 1:frame.width
+            unsafe_store!(frame.data[1], img_uint8[r,c], ((r-1)*frame.linesize[1])+c)
         end
     elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_RGB24)
-        img_uint8 = reinterpret(UInt8, img)
+        img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
         unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
     elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_YUV420P)
         img_YCbCr = convert.(YCbCr{Float64}, img)
         img_YCbCr_half = convert.(YCbCr{Float64}, restrict(img))
-        for y = 1:frame.height, x = 1:frame.width
-            unsafe_store!(frame.data[1], round(UInt8,img_YCbCr[x,y].y), ((y-1)*frame.linesize[1])+x)
+        for r = 1:frame.height, c = 1:frame.width
+            unsafe_store!(frame.data[1], round(UInt8,img_YCbCr[r,c].y), ((r-1)*frame.linesize[1])+c)
         end
-        for y = 1:Int64(frame.height/2), x = 1:Int64(frame.width/2)
-            unsafe_store!(frame.data[2], round(UInt8,img_YCbCr_half[x,y].cb), ((y-1)*frame.linesize[2])+x)
-            unsafe_store!(frame.data[3], round(UInt8,img_YCbCr_half[x,y].cr), ((y-1)*frame.linesize[3])+x)
+        for r = 1:Int64(frame.height/2), c = 1:Int64(frame.width/2)
+            unsafe_store!(frame.data[2], round(UInt8,img_YCbCr_half[r,c].cb), ((r-1)*frame.linesize[2])+c)
+            unsafe_store!(frame.data[3], round(UInt8,img_YCbCr_half[r,c].cr), ((r-1)*frame.linesize[3])+c)
         end
     else
         error("Array element type not supported")
