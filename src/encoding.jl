@@ -60,8 +60,8 @@ prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
 Prepare encoder and return AV objects.
 """
 function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
-    width = size(firstimg,1)
-    height = size(firstimg,2)
+    width = size(firstimg,2)
+    height = size(firstimg,1)
     ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
 
     codec = avcodec_find_encoder_by_name(codec_name)
@@ -190,18 +190,18 @@ function finishencode!(encoder::VideoEncoder, io::IO)
 end
 
 """
-mux(srcfilename,destfilename,framerate)
+mux(srcfilename,destfilename,framerate;silent=false)
 
 Multiplex stream object into video container.
 """
-function mux(srcfilename,destfilename,framerate)
+function mux(srcfilename,destfilename,framerate;silent=false)
     muxout = collectexecoutput(`$(ffmpeg) -y -framerate $framerate -i $srcfilename -c copy $destfilename`)
     filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout)
     if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
         rm("$srcfilename")
-        @info "Video file saved: $(pwd())/$destfilename"
-        @info muxout[end-1]
-        @info muxout[end]
+        !silent && (@info "Video file saved: $(pwd())/$destfilename")
+        !silent && (@info muxout[end-1])
+        !silent && (@info muxout[end])
     else
         @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
         println.(muxout)
@@ -220,18 +220,19 @@ Encode image stack to video file
 function encodevideo(filename::String,imgstack::Array;
     AVCodecContextProperties = AVCodecContextPropertiesDefault,
     codec_name = "libx264",
-    framerate = 24)
+    framerate = 24,
+    silent=false)
 
     io = Base.open("temp.stream","w")
     encoder = prepareencoder(imgstack[1],codec_name,framerate,AVCodecContextProperties)
-    p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
+    !silent && (p = Progress(length(imgstack), 1))   # minimum update interval: 1 second
     index = 1
     for img in imgstack
         appendencode!(encoder, io, img, index)
-        next!(p)
+        !silent && next!(p)
         index += 1
     end
     finishencode!(encoder, io)
     close(io)
-    mux("temp.stream",filename,framerate)
+    mux("temp.stream",filename,framerate,silent=silent)
 end
