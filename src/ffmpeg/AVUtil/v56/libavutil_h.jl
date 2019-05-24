@@ -851,7 +851,7 @@ const AVCHROMA_LOC_NB = 7 |> UInt32
 zero(::Type{NTuple{N,P}}) where {N,P<:Ptr} = (N == 1 ? (C_NULL,) : (zero(NTuple{N-1,P})..., C_NULL))
 zero(::Type{NTuple{N,T}}) where {N,T} = (N == 1 ? (zero(T),) : (zero(NTuple{N-1,T})..., zero(T)))
 
-mutable struct AVFrame
+struct AVFrame
     data::NTuple{8, Ptr{UInt8}}
     linesize::NTuple{8, Cint}
     extended_data::Ptr{Ptr{UInt8}}

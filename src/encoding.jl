@@ -96,13 +96,11 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
         codec $codec_name not currently supported")
     end
 
-    codecContext = unsafe_load(apCodecContext[1])
-    codecContext.width = width
-    codecContext.height = height
-    codecContext.time_base = VideoIO.AVRational(1, framerate) # frames per second
-    codecContext.framerate = VideoIO.AVRational(framerate, 1)
-    codecContext.pix_fmt = pix_fmt
-    unsafe_store!(apCodecContext[1], codecContext)
+    av_setfield(apCodecContext[1],:width,width)
+    av_setfield(apCodecContext[1],:height,height)
+    av_setfield(apCodecContext[1],:time_base,AVRational(1, framerate))
+    av_setfield(apCodecContext[1],:framerate,AVRational(framerate, 1))
+    av_setfield(apCodecContext[1],:pix_fmt,pix_fmt)
 
     codecContext = unsafe_load(apCodecContext[1])
     for prop in AVCodecContextProperties
@@ -121,11 +119,10 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
 
     apFrame = Ptr{VideoIO.AVFrame}[VideoIO.av_frame_alloc()]
     apFrame == [C_NULL] && error("Could not allocate video frame")
-    frame = unsafe_load(apFrame[1])
-    frame.format = codecContext.pix_fmt
-    frame.width  = codecContext.width
-    frame.height = codecContext.height
-    unsafe_store!(apFrame[1],frame)
+
+    av_setfield(apFrame[1],:format,pix_fmt)
+    av_setfield(apFrame[1],:width,width)
+    av_setfield(apFrame[1],:height,height)
 
     ret = av_frame_get_buffer(apFrame[1], 32)
     ret < 0 && error("Could not allocate the video frame data")
@@ -174,8 +171,8 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     else
         error("Array element type not supported")
     end
-    frame.pts = index
     unsafe_store!(encoder.apFrame[1], frame) #pass data back to c memory
+    av_setfield(encoder.apFrame[1],:pts,index)
     encode!(encoder, io)
 end
 

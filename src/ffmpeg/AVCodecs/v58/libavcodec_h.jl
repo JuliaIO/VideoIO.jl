@@ -1625,7 +1625,7 @@ end
 # struct AVFrame
 # end
 
-mutable struct AVCodecContext
+struct AVCodecContext
     av_class::Ptr{AVClass}
     log_level_offset::Cint
     codec_type::AVMediaType
