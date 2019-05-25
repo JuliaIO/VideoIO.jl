@@ -74,9 +74,21 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
     apPacket == [C_NULL] && error("av_packet_alloc() error")
 
     if eltype(firstimg) == UInt8
+        pix_fmt = AV_PIX_FMT_YUV420P
+    elseif eltype(firstimg) == Gray{N0f8} && (codec_name == "libx264")
+        if islossless(AVCodecContextProperties)
+            @warn """Lossless encoding is selected (crf=0), however libx264 does
+            not support lossless Grayscale due to range compression clipping UInt8
+            values to 16-235. To encode lossless RGB use codec_name="libx264rgb" """
+        end
         pix_fmt = AV_PIX_FMT_GRAY8
-    elseif eltype(firstimg) == Gray{N0f8}
-            pix_fmt = AV_PIX_FMT_GRAY8
+    elseif eltype(firstimg) == Gray{N0f8} && (codec_name == "libx264rgb")
+        if !islossless(AVCodecContextProperties)
+            @warn """Codec libx264rgb has limited playback support. Given that
+            selected encoding settings are not lossless (crf!=0), codec_name="libx264"
+            will give better playback results"""
+        end
+        pix_fmt = AV_PIX_FMT_RGB24
     elseif eltype(firstimg) == RGB{N0f8} && (codec_name == "libx264rgb")
         if !islossless(AVCodecContextProperties)
             @warn """Codec libx264rgb has limited playback support. Given that
@@ -138,12 +150,10 @@ Send image object to ffmpeg encoder and encode
 function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 
     flush(stdout)
-
     ret = av_frame_make_writable(encoder.apFrame[1])
     ret < 0 && error("av_frame_make_writable() error")
 
     frame = unsafe_load(encoder.apFrame[1]) #grab data from c memory
-
     img_eltype = eltype(img)
 
     if (img_eltype == UInt8) && (encoder.pix_fmt == AV_PIX_FMT_GRAY8)
@@ -155,6 +165,9 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
         for r = 1:frame.height, c = 1:frame.width
             unsafe_store!(frame.data[1], img_uint8[r,c], ((r-1)*frame.linesize[1])+c)
         end
+    elseif (img_eltype == Gray{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_RGB24)
+        img_uint8 = repeat(PermutedDimsArray(rawview(channelview(img)),(2,1))[:],inner=3)
+        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
     elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_RGB24)
         img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
         unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
@@ -171,7 +184,6 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     else
         error("Array element type not supported")
     end
-    unsafe_store!(encoder.apFrame[1], frame) #pass data back to c memory
     av_setfield(encoder.apFrame[1],:pts,index)
     encode!(encoder, io)
 end

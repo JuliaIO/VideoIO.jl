@@ -145,20 +145,18 @@ end
         push!(imgstack_gray,img_gray)
     end
     @testset "Lossless Grayscale encoding" begin
-    file_lossless_gray_copy = joinpath(videodir, "annie_oakley_lossless_gray.mp4")
-    prop = [:priv_data => ("crf"=>"0","preset"=>"ultrafast")]
-    codec_name="libx264"
-    VideoIO.encodevideo(file_lossless_gray_copy,imgstack_gray,codec_name=codec_name,AVCodecContextProperties=prop, silent=true)
+        file_lossless_gray_copy = joinpath(videodir, "annie_oakley_lossless_gray.mp4")
+        prop = [:priv_data => ("crf"=>"0","preset"=>"medium")]
+        codec_name="libx264rgb"
+        VideoIO.encodevideo(file_lossless_gray_copy,imgstack_gray,codec_name=codec_name,AVCodecContextProperties=prop, silent=true)
 
-    fcopy = VideoIO.openvideo(file_lossless_gray_copy,target_format=VideoIO.AV_PIX_FMT_GRAY8)
-    imgstack_gray_copy = []
-    while !eof(fcopy)
-        img = collect(read(fcopy))
-        push!(imgstack_gray_copy,img)
-    end
-    close(f)
-    # save("test_gray.png",imgstack_gray[100])
-    # save("test_gray_copy.png",imgstack_gray_copy[100])
+        fcopy = VideoIO.openvideo(file_lossless_gray_copy)
+        imgstack_gray_copy = []
+        while !eof(fcopy)
+            push!(imgstack_gray_copy,convert.(Gray{N0f8},collect(read(fcopy))))
+        end
+        close(f)
+        @test eltype(imgstack_gray) == eltype(imgstack_gray_copy)
         @test length(imgstack_gray) == length(imgstack_gray_copy)
         @test size(imgstack_gray[1]) == size(imgstack_gray_copy[1])
         @test !any(.!(imgstack_gray .== imgstack_gray_copy))
@@ -166,7 +164,7 @@ end
 
     @testset "Lossless RGB encoding" begin
         file_lossless_rgb_copy = joinpath(videodir, "annie_oakley_lossless_rgb.mp4")
-        prop = [:priv_data => ("crf"=>"0","preset"=>"ultrafast")]
+        prop = [:priv_data => ("crf"=>"0","preset"=>"medium")]
         codec_name="libx264rgb"
         VideoIO.encodevideo(file_lossless_rgb_copy,imgstack_rgb,codec_name=codec_name,AVCodecContextProperties=prop, silent=true)
 
@@ -177,9 +175,7 @@ end
             push!(imgstack_rgb_copy,img)
         end
         close(f)
-        # save("test_rgb.png",imgstack_rgb[100])
-        # save("test_rgb_copy.png",imgstack_rgb_copy[100])
-
+        @test eltype(imgstack_rgb) == eltype(imgstack_rgb_copy)
         @test length(imgstack_rgb) == length(imgstack_rgb_copy)
         @test size(imgstack_rgb[1]) == size(imgstack_rgb_copy[1])
         @test !any(.!(imgstack_rgb .== imgstack_rgb_copy))
