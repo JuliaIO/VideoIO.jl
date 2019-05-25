@@ -77,8 +77,9 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
         pix_fmt = AV_PIX_FMT_YUV420P
     elseif eltype(firstimg) == Gray{N0f8} && (codec_name == "libx264")
         if islossless(AVCodecContextProperties)
-            @warn """Lossless encoding is selected (crf=0), however libx264 does
-            not support lossless Grayscale due to range compression clipping UInt8
+            @warn """Encoding output not lossless.
+            Lossless encoding is selected (crf=0), however libx264 does not
+            support lossless Grayscale due to range compression clipping UInt8
             values to 16-235. To encode lossless RGB use codec_name="libx264rgb" """
         end
         pix_fmt = AV_PIX_FMT_GRAY8
@@ -93,12 +94,13 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
         if !islossless(AVCodecContextProperties)
             @warn """Codec libx264rgb has limited playback support. Given that
             selected encoding settings are not lossless (crf!=0), codec_name="libx264"
-            will give better results"""
+            will give better playback results"""
         end
         pix_fmt = AV_PIX_FMT_RGB24
     elseif eltype(firstimg) == RGB{N0f8} && (codec_name == "libx264")
         if islossless(AVCodecContextProperties)
-            @warn """Lossless encoding is selected (crf=0), however libx264 does
+            @warn """Encoding output not lossless.
+            Lossless encoding is selected (crf=0), however libx264 does
             not support lossless RGB planes. RGB will be downsampled to lossy YUV420P.
             To encode lossless RGB use codec_name="libx264rgb" """
         end
