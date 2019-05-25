@@ -135,6 +135,7 @@ mux("temp.stream",filename,framerate) #Multiplexes the stream into a video conta
 ```
 
 The AVCodecContextProperties object allows control of the majority of settings required.
+Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodecContext.html)
 
 A few helpful presets for h264:
 
@@ -154,10 +155,11 @@ Encoding of the following image element color types currently supported:
 
 
 ### RGB encoding
-If lossless RGB is desired for RGB{N0f8}, true RGB lossless requires using libx264rgb,
-to avoid the lossy RGB->YUV420 conversion in libx264. That's achieved with
+If lossless encoding of RGB{N0f8} or Gray{N0f8} is required, true lossless
+requires using libx264rgb, to avoid the lossy RGB->YUV420 conversion and GRAY8
+color_range compression  in libx264. That's achieved with
 codec_name="libx264rgb" and "crf" => "0" in the above example, but is typically
-only useful for data storage given that even VLC cannot handle playing back
+only useful for data storage given that even VLC struggles playing back
 libx264rgb videos smoothly.
 
 
