@@ -1929,7 +1929,7 @@ const AV_TIMECODE_FLAG_24HOURSMAX = 2 |> UInt32
 const AV_TIMECODE_FLAG_ALLOWNEGATIVE = 4 |> UInt32
 # end enum AVTimecodeFlag
 
-const AVTimecode = 
+const AVTimecode =
 
 struct AVTreeNode
 end

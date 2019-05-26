@@ -30,7 +30,7 @@ download_info = Dict(
     #Linux(:armv7l, :glibc)  => ("$bin_prefix/ffmpeg-$v-arm-linux-gnueabihf.tar.gz", ""),
     #Linux(:powerpc64le, :glibc) => ("$bin_prefix/ffmpeg-$v-powerpc64le-linux-gnu.tar.gz", ""),
     #Linux(:i686, :glibc)    => ("$bin_prefix/ffmpeg-$v-i686-linux-gnu.tar.gz", ""),
-    Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-$v-86_64-linux-gnu.tar.gz", "7d1199e95f8a81b6e3fa6fd6584ca6f419847f6d4f5a5dc83656cd46e84a51fb"),
+    Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-$v-86_64-linux-gnu-full.tar.gz", "e1544d62d65368e6ed7c5910d1695e9b8957ea7793d9afc4fdd8671e86cb4fb0"),
 
     #Linux(:aarch64, :musl)  => ("$bin_prefix/ffmpeg-$v-aarch64-linux-musl.tar.gz", ""),
     #Linux(:armv7l, :musl)   => ("$bin_prefix/ffmpeg-$v-arm-linux-musleabihf.tar.gz", ""),

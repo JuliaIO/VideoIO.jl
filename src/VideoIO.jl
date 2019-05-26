@@ -25,6 +25,7 @@ end
 include("info.jl")
 include("avdictionary.jl")
 include("avio.jl")
+include("encoding.jl")
 include("testvideos.jl")
 using .TestVideos
 

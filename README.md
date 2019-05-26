@@ -7,65 +7,75 @@ VideoIO.jl
 
 Julia bindings for ffmpeg, using a dedicated installation of ffmpeg 4.1.
 
-Currently, only video reading is supported.
+Reading and writing of videos is supported.
 
 Video images may be read as raw arrays, or optionally, `Image`
 objects (if `Images.jl` is installed and loaded first).
+
+Videos can be encoded from image stacks (a vector of same-sized `Image` objects),
+or encoded iteratively in custom loops.
 
 Installation
 ------------
 Use the Julia package manager.  Within Julia, do:
 ```julia
-Pkg.add("VideoIO")
+]add VideoIO
 ```
 
 Simple Interface
 ----------------
 A trivial video player interface exists (no audio):
+Note: `Makie` must be imported first to enable playback functionality.
 
-    import Makie
-    import VideoIO
+```julia
+import Makie
+import VideoIO
 
-    f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
-    VideoIO.playvideo(f)  # no sound
+f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
+VideoIO.playvideo(f)  # no sound
 
-    # Aternatively, you can just open the camera
-    #VideoIO.viewcam()
+# Aternatively, you can just open the camera
+#VideoIO.viewcam()
+```
 
 High Level Interface
 --------------------
 
+### Video Reading
+
 VideoIO contains a simple high-level interface which allows reading of
 video frames from a supported video file, or from a camera device:
+```julia
+import Makie
+import VideoIO
 
-    import Makie
-    import VideoIO
+io = VideoIO.open(video_file)
+f = VideoIO.openvideo(io)
 
-    io = VideoIO.open(video_file)
-    f = VideoIO.openvideo(io)
+# As a shortcut for just video, you can upen the file directly
+# with openvideo
+#f = VideoIO.openvideo(video_file)
 
-    # As a shortcut for just video, you can upen the file directly
-    # with openvideo
-    #f = VideoIO.openvideo(video_file)
+# Alternatively, you can open the camera with opencamera().
+# The default device is "0" on Windows, "/dev/video0" on Linux,
+# and "Integrated Camera" on OSX.  If using something other
+# than the default, pass it in as the first parameter (as a string).
+#f = VideoIO.opencamera()
 
-    # Alternatively, you can open the camera with opencamera().
-    # The default device is "0" on Windows, "/dev/video0" on Linux,
-    # and "Integrated Camera" on OSX.  If using something other
-    # than the default, pass it in as the first parameter (as a string).
-    #f = VideoIO.opencamera()
+# One can seek to an arbitrary position in the video
+seek(f,2.5)  ## The second parameter is the time in seconds and must be Float64
+img = read(f)
+scene = Makie.Scene(resolution = size(img))
+makieimg = Makie.image!(scene, buf, show_axis = false, scale_plot = false)[end]
+Makie.rotate!(scene, -0.5pi)
+display(scene)
 
-    # One can seek to an arbitrary position in the video
-    seek(f,2.5)  ## The second parameter is the time in seconds and must be Float64
-    img = read(f)
-    makieimg = Makie.image!(scene, buf, show_axis = false, scale_plot = false)[end]
-    Makie.rotate!(scene, -0.5pi)
-    display(scene)
-
-    while !eof(f)
-        read!(f, img)
-        makieimg[1] = img
-        #sleep(1/30)
-    end
+while !eof(f)
+    read!(f, img)
+    makieimg[1] = img
+    #sleep(1/30)
+end
+```
 
 This code is essentially the code in `playvideo`, and will read and
 (without the `sleep`) play a movie file as fast as possible.
@@ -74,7 +84,7 @@ As with the `playvideo` function, the `Images` and `ImageView` packages
 must be loaded for the appropriate functions to be available.
 
 As an additional handling example, here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
-```
+```julia
 f = VideoIO.openvideo(filename,target_format=VideoIO.AV_PIX_FMT_GRAY8)
 v = Vector{Array{UInt8}}(undef,0)
 while !eof(f)
@@ -82,6 +92,79 @@ while !eof(f)
 end
 close(f)
 ```
+
+### Video Writing
+
+Given an image stack:
+```julia
+imgstack = map(x->rand(UInt8,2048,1536),1:100)
+100-element Array{Array{UInt8,2},1}
+```
+
+Encode entire imgstack in one go:
+```julia
+> using VideoIO
+> props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+> encodevideo("video.mp4",imgstack,framerate=30,AVCodecContextProperties=props)
+
+[ Info: Video file saved: /Users/username/Documents/video.mp4
+[ Info: frame=  100 fps=0.0 q=-1.0 Lsize=  129867kB time=00:00:03.23 bitrate=329035.1kbits/s speed=8.17x    
+[ Info: video:129865kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.001692%
+```
+
+Encode by appending within a custom loop:
+```julia
+using VideoIO, ProgressMeter
+filename = "manual.mp4"
+props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+codec_name = "libx264"
+framerate = 24
+
+encoder = prepareencoder(imgstack[1],codec_name,framerate,props)
+
+io = Base.open("temp.stream","w")
+p = Progress(length(imgstack), 1)
+index = 1
+for img in imgstack
+    global index
+    appendencode!(encoder, io, img, index)
+    next!(p)
+    index += 1
+end
+
+finishencode!(encoder, io)
+close(io)
+
+mux("temp.stream",filename,framerate) #Multiplexes the stream into a video container
+```
+
+The AVCodecContextProperties object allows control of the majority of settings required.
+Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodecContext.html)
+
+A few helpful presets for h264:
+
+- Lossless compression - Fastest, largest file size:
+```AVCodecContextProperties = [:priv_data => ("crf"=>"0","preset"=>"ultrafast")]```
+- Lossless compression - Slowest, smallest file size:
+```AVCodecContextProperties = [:priv_data => ("crf"=>"0","preset"=>"ultraslow")]```
+- Perceptual compression, h264 default (as per docs):
+```AVCodecContextProperties = [:priv_data => ("crf"=>"23","preset"=>"medium")]```
+- Direct control of bitrate and frequency of intra frames (every 10):
+```AVCodecContextProperties = [:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]```
+
+Encoding of the following image element color types currently supported:
+- UInt8
+- Gray{N0f8}
+- RGB{N0f8}
+
+
+### RGB encoding
+If lossless encoding of `RGB{N0f8}`` or `Gray{N0f8}`` is required, _true_ lossless
+requires using libx264rgb, to avoid the lossy RGB->YUV420 conversion and GRAY8
+color_range compression in libx264. That's achieved with
+codec_name="libx264rgb" and "crf" => "0" in the above example, but is typically
+only useful for data storage given that even VLC struggles playing back
+libx264rgb videos smoothly.
 
 
 Low Level Interface
@@ -137,7 +220,7 @@ These are short videos in a variety of formats with non-restrictive
 
 Status
 ------
-Prior to version 6.0, this package used a BinDeps approach, using system-level ffmpeg 
+Prior to version 6.0, this package used a BinDeps approach, using system-level ffmpeg
 installs, and thus provided support of many versions of ffmpeg and libav. See [v0.5.6](https://github.com/JuliaIO/VideoIO.jl/releases/tag/v0.5.6) for that prior functionality.
 
 v0.6.0 onwards uses a BinaryProvider approach, with a dedicated ffmpeg 4.1 install.  
