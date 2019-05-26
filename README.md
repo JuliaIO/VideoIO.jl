@@ -143,28 +143,29 @@ Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodec
 
 A few helpful presets for h264:
 
+- Perceptual compression, h264 default - Best for most cases:
+```AVCodecContextProperties = [:priv_data => ("crf"=>"23","preset"=>"medium")]```
 - Lossless compression - Fastest, largest file size:
 ```AVCodecContextProperties = [:priv_data => ("crf"=>"0","preset"=>"ultrafast")]```
 - Lossless compression - Slowest, smallest file size:
 ```AVCodecContextProperties = [:priv_data => ("crf"=>"0","preset"=>"ultraslow")]```
-- Perceptual compression, h264 default (as per docs):
-```AVCodecContextProperties = [:priv_data => ("crf"=>"23","preset"=>"medium")]```
 - Direct control of bitrate and frequency of intra frames (every 10):
 ```AVCodecContextProperties = [:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]```
 
 Encoding of the following image element color types currently supported:
-- UInt8
-- Gray{N0f8}
-- RGB{N0f8}
+- `UInt8`
+- `Gray{N0f8}`
+- `RGB{N0f8}`
 
 
-### RGB encoding
-If lossless encoding of `RGB{N0f8}`` or `Gray{N0f8}`` is required, _true_ lossless
-requires using libx264rgb, to avoid the lossy RGB->YUV420 conversion and GRAY8
-color_range compression in libx264. That's achieved with
-codec_name="libx264rgb" and "crf" => "0" in the above example, but is typically
-only useful for data storage given that even VLC struggles playing back
-libx264rgb videos smoothly.
+### Lossless encoding
+If lossless encoding of `RGB{N0f8}` is required, _true_ lossless
+requires using `codec_name = "libx264rgb"`, to avoid the lossy RGB->YUV420 conversion,
+and `"crf" => "0"`.
+
+If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `"crf" => "0"` should be
+set, as well as `:color_range=>2` to ensure full 8-bit pixel color representation.
+i.e. `[:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]`
 
 
 Low Level Interface
