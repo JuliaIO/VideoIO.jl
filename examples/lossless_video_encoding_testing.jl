@@ -26,7 +26,6 @@ function testvideocomp!(df,preset,imgstack_gray)
 end
 
 imgstack_gray_noise = map(x->rand(Gray{N0f8},1280,720),1:1000)
-noise_raw_size = size(imgstack_gray_noise,1) * size(imgstack_gray_noise,2) * length(imgstack_gray_noise) * 8
 
 f = openvideo(createtestvideo())
 imgstack = []
@@ -34,7 +33,6 @@ while !eof(f)
     push!(imgstack,read(f))
 end
 imgstack_gray_testvid = map(x->convert.(Gray{N0f8},x),imgstack)
-testvid_raw_size = size(imgstack_gray_testvid,1) * size(imgstack_gray_testvid,2) * length(imgstack_gray_testvid) * 8
 
 f = openvideo("videos/ladybird.mp4")
 imgstack = []
@@ -42,7 +40,6 @@ while !eof(f)
     push!(imgstack,read(f))
 end
 imgstack_gray_ladybird = map(x->convert.(Gray{N0f8},x),imgstack)
-ladybird_raw_size = size(imgstack_gray_ladybird,1) * size(imgstack_gray_ladybird,2) * length(imgstack_gray_ladybird) * 8
 
 df_noise = DataFrame(preset=[],filesize=[],time=[],identical=[])
 df_testvid = DataFrame(preset=[],filesize=[],time=[],identical=[])
@@ -57,6 +54,11 @@ for preset in ["ultrafast","superfast","veryfast","faster","fast","medium","slow
         testvideocomp!(df_ladybird,preset,imgstack_gray_ladybird)
     end
 end
+
+noise_raw_size = size(imgstack_gray_noise[1],1) * size(imgstack_gray_noise[1],2) * length(imgstack_gray_noise)
+testvid_raw_size = size(imgstack_gray_testvid[1],1) * size(imgstack_gray_testvid[1],2) * length(imgstack_gray_testvid)
+ladybird_raw_size = size(imgstack_gray_ladybird[1],1) * size(imgstack_gray_ladybird[1],2) * length(imgstack_gray_ladybird)
+
 df_noise[:filesize_perc] = 100*(df_noise[:filesize]./noise_raw_size)
 df_testvid[:filesize_perc] = 100*(df_testvid[:filesize]./testvid_raw_size)
 df_ladybird[:filesize_perc] = 100*(df_ladybird[:filesize]./ladybird_raw_size)
@@ -73,7 +75,53 @@ df_ladybird_summary = by(df_ladybird, :preset, identical = :identical => minimum
 @show df_testvid_summary
 @show df_ladybird_summary
 
-# HISTOGRAM COMPARISON
+### Results (generated 2019-05-29 on a 2019 Macbook Pro)
+#=
+df_noise_summary = 9×6 DataFrame
+│ Row │ preset    │ identical │ fps_mean │ fps_std │ filesize_perc_mean │ filesize_perc_std │
+│     │ Any       │ Bool      │ Float64  │ Float64 │ Float64            │ Float64           │
+├─────┼───────────┼───────────┼──────────┼─────────┼────────────────────┼───────────────────┤
+│ 1   │ ultrafast │ true      │ 92.5769  │ 8.40224 │ 156.444            │ 0.0               │
+│ 2   │ superfast │ true      │ 62.3509  │ 1.19652 │ 144.019            │ 0.0               │
+│ 3   │ veryfast  │ true      │ 59.9182  │ 1.77294 │ 144.019            │ 0.0               │
+│ 4   │ faster    │ true      │ 60.3482  │ 2.32679 │ 144.02             │ 0.0               │
+│ 5   │ fast      │ true      │ 149.169  │ 1.56068 │ 100.784            │ 0.0               │
+│ 6   │ medium    │ true      │ 146.141  │ 3.41282 │ 100.784            │ 0.0               │
+│ 7   │ slow      │ true      │ 147.214  │ 1.23929 │ 100.784            │ 0.0               │
+│ 8   │ slower    │ true      │ 138.808  │ 2.553   │ 100.784            │ 0.0               │
+│ 9   │ veryslow  │ true      │ 132.505  │ 3.28558 │ 100.784            │ 0.0               │
+
+df_testvid_summary = 9×6 DataFrame
+│ Row │ preset    │ identical │ fps_mean │ fps_std │ filesize_perc_mean │ filesize_perc_std │
+│     │ Any       │ Bool      │ Float64  │ Float64 │ Float64            │ Float64           │
+├─────┼───────────┼───────────┼──────────┼─────────┼────────────────────┼───────────────────┤
+│ 1   │ ultrafast │ true      │ 228.166  │ 75.1439 │ 4.80392            │ 0.0               │
+│ 2   │ superfast │ true      │ 239.73   │ 54.2033 │ 3.62199            │ 0.0               │
+│ 3   │ veryfast  │ true      │ 197.506  │ 13.1121 │ 3.59901            │ 0.0               │
+│ 4   │ faster    │ true      │ 174.174  │ 18.0316 │ 3.60282            │ 0.0               │
+│ 5   │ fast      │ true      │ 235.181  │ 7.40358 │ 3.44104            │ 0.0               │
+│ 6   │ medium    │ true      │ 219.654  │ 3.27445 │ 3.40832            │ 0.0               │
+│ 7   │ slow      │ true      │ 171.337  │ 3.92415 │ 3.33917            │ 0.0               │
+│ 8   │ slower    │ true      │ 105.24   │ 6.59151 │ 3.25774            │ 5.43896e-16       │
+│ 9   │ veryslow  │ true      │ 63.1136  │ 2.47291 │ 3.2219             │ 0.0               │
+
+df_ladybird_summary = 9×6 DataFrame
+│ Row │ preset    │ identical │ fps_mean │ fps_std  │ filesize_perc_mean │ filesize_perc_std │
+│     │ Any       │ Bool      │ Float64  │ Float64  │ Float64            │ Float64           │
+├─────┼───────────┼───────────┼──────────┼──────────┼────────────────────┼───────────────────┤
+│ 1   │ ultrafast │ true      │ 176.787  │ 36.5227  │ 12.2293            │ 0.0               │
+│ 2   │ superfast │ true      │ 135.925  │ 7.04431  │ 10.3532            │ 0.0               │
+│ 3   │ veryfast  │ true      │ 117.115  │ 1.28102  │ 10.1954            │ 0.0               │
+│ 4   │ faster    │ true      │ 94.39    │ 3.48494  │ 9.85604            │ 0.0               │
+│ 5   │ fast      │ true      │ 69.657   │ 1.61004  │ 9.62724            │ 0.0               │
+│ 6   │ medium    │ true      │ 54.9621  │ 0.568074 │ 9.51032            │ 0.0               │
+│ 7   │ slow      │ true      │ 37.8888  │ 1.27484  │ 9.33622            │ 0.0               │
+│ 8   │ slower    │ true      │ 20.1112  │ 1.04282  │ 9.25529            │ 0.0               │
+│ 9   │ veryslow  │ true      │ 10.0016  │ 0.473213 │ 9.24999            │ 0.0               │
+=#
+
+
+# HISTOGRAM COMPARISON - useful for diagnosing range compression
 # using PyPlot, ImageCore
 # figure()
 # hist(rawview(channelview(imgstack_gray_copy[1]))[:],0:256,label="copy")
