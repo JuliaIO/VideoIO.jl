@@ -59,10 +59,14 @@ df_noise[:fps] = length(imgstack_gray_noise)./df_noise[:time]
 df_testvid[:fps] = length(imgstack_gray_testvid)./df_testvid[:time]
 df_ladybird[:fps] = length(imgstack_gray_ladybird)./df_ladybird[:time]
 
+using Statistics
 df_noise_summary = by(df_noise, :preset, identical = :identical => minimum, fps_mean = :fps => mean, fps_std = :fps => std, filesize_perc_mean = :filesize_perc => mean,filesize_perc_std = :filesize_perc => std)
 df_testvid_summary = by(df_testvid, :preset, identical = :identical => minimum, fps_mean = :fps => mean, fps_std = :fps => std, filesize_perc_mean = :filesize_perc => mean,filesize_perc_std = :filesize_perc => std)
 df_ladybird_summary = by(df_ladybird, :preset, identical = :identical => minimum, fps_mean = :fps => mean, fps_std = :fps => std, filesize_perc_mean = :filesize_perc => mean,filesize_perc_std = :filesize_perc => std)
 
+@show df_noise_summary
+@show df_testvid_summary
+@show df_ladybird_summary
 # HISTOGRAM COMPARISON
 # using PyPlot, ImageCore
 # figure()
