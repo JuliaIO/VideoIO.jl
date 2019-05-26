@@ -209,16 +209,18 @@ mux(srcfilename,destfilename,framerate;silent=false)
 Multiplex stream object into video container.
 """
 function mux(srcfilename,destfilename,framerate;silent=false)
-    muxout = collectexecoutput(`$(ffmpeg) -y -framerate $framerate -i $srcfilename -c copy $destfilename`)
-    filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout)
-    if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
-        rm("$srcfilename")
-        !silent && (@info "Video file saved: $(pwd())/$destfilename")
-        !silent && (@info muxout[end-1])
-        !silent && (@info muxout[end])
-    else
-        @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
-        println.(muxout)
+    withenv("PATH" => VideoIO.libpath, "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+        muxout = collectexecoutput(`$(ffmpeg) -y -framerate $framerate -i $srcfilename -c copy $destfilename`)
+        filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout)
+        if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
+            rm("$srcfilename")
+            !silent && (@info "Video file saved: $(pwd())/$destfilename")
+            !silent && (@info muxout[end-1])
+            !silent && (@info muxout[end])
+        else
+            @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
+            println.(muxout)
+        end
     end
 end
 
