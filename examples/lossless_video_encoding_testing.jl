@@ -26,18 +26,23 @@ function testvideocomp!(df,preset,imgstack_gray)
 end
 
 imgstack_gray_noise = map(x->rand(Gray{N0f8},1280,720),1:1000)
+noise_raw_size = size(imgstack_gray_noise,1) * size(imgstack_gray_noise,2) * length(imgstack_gray_noise) * 8
+
 f = openvideo(createtestvideo())
 imgstack = []
 while !eof(f)
     push!(imgstack,read(f))
 end
 imgstack_gray_testvid = map(x->convert.(Gray{N0f8},x),imgstack)
+testvid_raw_size = size(imgstack_gray_testvid,1) * size(imgstack_gray_testvid,2) * length(imgstack_gray_testvid) * 8
+
 f = openvideo("videos/ladybird.mp4")
 imgstack = []
 while !eof(f)
     push!(imgstack,read(f))
 end
 imgstack_gray_ladybird = map(x->convert.(Gray{N0f8},x),imgstack)
+ladybird_raw_size = size(imgstack_gray_ladybird,1) * size(imgstack_gray_ladybird,2) * length(imgstack_gray_ladybird) * 8
 
 df_noise = DataFrame(preset=[],filesize=[],time=[],identical=[])
 df_testvid = DataFrame(preset=[],filesize=[],time=[],identical=[])
@@ -52,9 +57,9 @@ for preset in ["ultrafast","superfast","veryfast","faster","fast","medium","slow
         testvideocomp!(df_ladybird,preset,imgstack_gray_ladybird)
     end
 end
-df_noise[:filesize_perc] = 100*(df_noise[:filesize]./df_noise[:filesize][1])
-df_testvid[:filesize_perc] = 100*(df_testvid[:filesize]./df_testvid[:filesize][1])
-df_ladybird[:filesize_perc] = 100*(df_ladybird[:filesize]./df_ladybird[:filesize][1])
+df_noise[:filesize_perc] = 100*(df_noise[:filesize]./noise_raw_size)
+df_testvid[:filesize_perc] = 100*(df_testvid[:filesize]./testvid_raw_size)
+df_ladybird[:filesize_perc] = 100*(df_ladybird[:filesize]./ladybird_raw_size)
 df_noise[:fps] = length(imgstack_gray_noise)./df_noise[:time]
 df_testvid[:fps] = length(imgstack_gray_testvid)./df_testvid[:time]
 df_ladybird[:fps] = length(imgstack_gray_ladybird)./df_ladybird[:time]
@@ -67,6 +72,7 @@ df_ladybird_summary = by(df_ladybird, :preset, identical = :identical => minimum
 @show df_noise_summary
 @show df_testvid_summary
 @show df_ladybird_summary
+
 # HISTOGRAM COMPARISON
 # using PyPlot, ImageCore
 # figure()
