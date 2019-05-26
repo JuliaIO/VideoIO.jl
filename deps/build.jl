@@ -30,7 +30,7 @@ download_info = Dict(
     #Linux(:armv7l, :glibc)  => ("$bin_prefix/ffmpeg-$v-arm-linux-gnueabihf.tar.gz", ""),
     #Linux(:powerpc64le, :glibc) => ("$bin_prefix/ffmpeg-$v-powerpc64le-linux-gnu.tar.gz", ""),
     #Linux(:i686, :glibc)    => ("$bin_prefix/ffmpeg-$v-i686-linux-gnu.tar.gz", ""),
-    Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-$v-86_64-linux-gnu-full.tar.gz", "e1544d62d65368e6ed7c5910d1695e9b8957ea7793d9afc4fdd8671e86cb4fb0"),
+    Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-$v-86_64-linux-gnu-full.tar.gz", "683249e7450a18a13f7a896b4abd6b92abff77ddeb3640ad10fe48bb7723f4fc"),
 
     #Linux(:aarch64, :musl)  => ("$bin_prefix/ffmpeg-$v-aarch64-linux-musl.tar.gz", ""),
     #Linux(:armv7l, :musl)   => ("$bin_prefix/ffmpeg-$v-arm-linux-musleabihf.tar.gz", ""),
@@ -55,7 +55,7 @@ if Sys.islinux()
         "https://github.com/staticfloat/OggBuilder/releases/download/v1.3.3-7/build_Ogg.v1.3.3.jl",
         "https://github.com/JuliaIO/LibVorbisBuilder/releases/download/v1.3.6/build_libvorbis.v1.3.6.jl",
         "https://github.com/jpsamaroo/LibVPXBuilder/releases/download/v5.0.0/build_LibVPX.v5.0.0.jl",
-        "https://github.com/jpsamaroo/x264Builder/releases/download/v2018.2.12-noyasm/build_x264Builder.v2018.2.12-pre-noyasm.jl"
+        "https://github.com/ianshmean/x264Builder/releases/download/v2019.5.25-noyasm/build_x264Builder.v2019.5.25-noyasm.jl"
     ]
 
     for dependency in dependencies

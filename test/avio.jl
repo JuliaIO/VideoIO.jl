@@ -146,14 +146,14 @@ end
     end
     @testset "Lossless Grayscale encoding" begin
         file_lossless_gray_copy = joinpath(videodir, "annie_oakley_lossless_gray.mp4")
-        prop = [:priv_data => ("crf"=>"0","preset"=>"medium")]
-        codec_name="libx264rgb"
+        prop = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+        codec_name="libx264"
         VideoIO.encodevideo(file_lossless_gray_copy,imgstack_gray,codec_name=codec_name,AVCodecContextProperties=prop, silent=true)
 
-        fcopy = VideoIO.openvideo(file_lossless_gray_copy)
+        fcopy = VideoIO.openvideo(file_lossless_gray_copy,target_format=VideoIO.AV_PIX_FMT_GRAY8)
         imgstack_gray_copy = []
         while !eof(fcopy)
-            push!(imgstack_gray_copy,convert.(Gray{N0f8},collect(read(fcopy))))
+            push!(imgstack_gray_copy,collect(read(fcopy)))
         end
         close(f)
         @test eltype(imgstack_gray) == eltype(imgstack_gray_copy)
