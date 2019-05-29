@@ -167,6 +167,7 @@ If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `"crf" => "0"` shou
 set, as well as `:color_range=>2` to ensure full 8-bit pixel color representation.
 i.e. `[:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]`
 
+See [examples/lossless_video_encoding_testing.jl](https://github.com/JuliaIO/VideoIO.jl/blob/master/examples/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.  
 
 Low Level Interface
 -------------------
