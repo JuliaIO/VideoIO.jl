@@ -112,7 +112,7 @@ function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
         end
         pix_fmt = AV_PIX_FMT_YUV420P
     else
-        error("VideoIO: Encoding image element type $(eltype(imgstack[1])) with
+        error("VideoIO: Encoding image element type $(eltype(firstimg)) with
         codec $codec_name not currently supported")
     end
 
