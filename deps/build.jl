@@ -28,6 +28,7 @@ download_info = Dict(
     #Linux(:powerpc64le, :glibc) => ("$bin_prefix/ffmpeg-$v-powerpc64le-linux-gnu.tar.gz", ""),
     Linux(:i686, :glibc)    => ("$bin_prefix/FFMPEG.v4.1.0.i686-linux-gnu.tar.gz", "490fa758cd50ce0c93f14f7ccbf2e36bf43b6ffbd8b579fa5a4ecd684273e98a"),                   
     Linux(:x86_64, :glibc)  => ("$bin_prefix/FFMPEG.v4.1.0.x86_64-linux-gnu.tar.gz", "b64de49de3a87105774958f6796a0411b43acce6b4e53c76e42b6ffb6a481182"),
+                        
     #Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-$v-86_64-linux-gnu-full.tar.gz", "683249e7450a18a13f7a896b4abd6b92abff77ddeb3640ad10fe48bb7723f4fc"),
 
     #Linux(:aarch64, :musl)  => ("$bin_prefix/ffmpeg-$v-aarch64-linux-musl.tar.gz", ""),
