@@ -4,7 +4,7 @@ using BinaryProvider # requires BinaryProvider 0.3.0 or later
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
 products = [
-        
+ # No shared product (or executable) is created on windows (only static), therefore no product to catch
 ]
 
 # Download binaries from hosted location
@@ -28,7 +28,8 @@ download_info = Dict(
 )
 
 # Install unsatisfied or updated dependencies:
-unsatisfied = true
+unsatisfied = true #FORCE INSTALLATION GIVEN POINT MADE ABOVE IN products 
+
 dl_info = choose_download(download_info, platform_key_abi())
 if dl_info === nothing && unsatisfied
     # If we don't have a compatible .tar.gz to download, complain.
