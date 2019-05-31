@@ -8,7 +8,8 @@ const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__
 products = Product[
     ExecutableProduct(prefix, "ffmpeg", :ffmpeg),
     ExecutableProduct(prefix, "ffprobe", :ffprobe),
-    #ExecutableProduct(prefix, "ffplay", :ffplay),
+    ExecutableProduct(prefix, "x264", :x264),
+    ExecutableProduct(prefix, "x265", :x265),                    
 
     LibraryProduct(prefix, ["libavcodec","avcodec"], :libavcodec),
     LibraryProduct(prefix, ["libavformat","avformat"], :libavformat),
@@ -19,7 +20,8 @@ products = Product[
 ]
 
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-0/build_Bzip2.v1.0.6.jl",
+    "buildmod_Bzip2.v1.0.6.jl",
+    #"https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-0/build_Bzip2.v1.0.6.jl",
     "https://github.com/ianshmean/ZlibBuilder/releases/download/v1.2.11/build_Zlib.v1.2.11.jl",
     "https://github.com/SimonDanisch/FDKBuilder/releases/download/0.1.6/build_libfdk.v0.1.6.jl",
     "https://github.com/SimonDanisch/FribidiBuilder/releases/download/0.14.0/build_fribidi.v0.14.0.jl",
