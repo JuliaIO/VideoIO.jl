@@ -3,7 +3,7 @@ module VideoIO
 using Libdl
 using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 
-libpath = joinpath(@__DIR__, "..", "deps", "usr", "bin")
+libpath = joinpath(@__DIR__, "..", "deps", "usr", "lib")
 
 include("init.jl")
 include("util.jl")
