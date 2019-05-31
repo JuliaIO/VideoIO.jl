@@ -20,8 +20,7 @@ products = Product[
 ]
 
 dependencies = [
-    "https://github.com/ianshmean/Bzip2Builder/releases/download/v1.0.6-2/build_Bzip2.v1.0.6.jl",
-    #"https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-0/build_Bzip2.v1.0.6.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-1/build_Bzip2.v1.0.6.jl",
 
     "https://github.com/ianshmean/ZlibBuilder/releases/download/v1.2.11/build_Zlib.v1.2.11.jl",
     "https://github.com/SimonDanisch/FDKBuilder/releases/download/0.1.6/build_libfdk.v0.1.6.jl",
@@ -34,8 +33,7 @@ dependencies = [
     "https://github.com/JuliaIO/OggBuilder/releases/download/v1.3.3-7/build_Ogg.v1.3.3.jl",
     "https://github.com/JuliaIO/LibVorbisBuilder/releases/download/v1.3.6-2/build_libvorbis.v1.3.6.jl",
                         
-    "buildmod_LibVPX.v1.8.0.jl",
-    #"https://github.com/JuliaIO/LibVPXBuilder/releases/download/v1.8.0/build_LibVPX.v1.8.0.jl",
+    "https://github.com/JuliaIO/LibVPXBuilder/releases/download/v1.8.0/build_LibVPX.v1.8.0.jl",
     "https://github.com/JuliaIO/x264Builder/releases/download/v2019.5.25-static/build_x264Builder.v2019.5.25.jl",
     "https://github.com/JuliaIO/x265Builder/releases/download/v3.0.0-static/build_x265Builder.v3.0.0.jl",
     
