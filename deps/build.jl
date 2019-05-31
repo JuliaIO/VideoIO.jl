@@ -4,21 +4,18 @@ using BinaryProvider
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
 
-#N.B. The FFMPEG binaries not sourced from BinaryProvider have libs in bin, so the BinaryProvider structure was conformed
-libpath = joinpath(@__DIR__, "usr/bin")
-
 # These are the two binary objects we care about
 products = Product[
     ExecutableProduct(prefix, "ffmpeg", :ffmpeg),
     ExecutableProduct(prefix, "ffprobe", :ffprobe),
     #ExecutableProduct(prefix, "ffplay", :ffplay),
 
-    LibraryProduct(libpath, ["libavcodec","avcodec"], :libavcodec),
-    LibraryProduct(libpath, ["libavformat","avformat"], :libavformat),
-    LibraryProduct(libpath, ["libavutil","avutil"], :libavutil),
-    LibraryProduct(libpath, ["libswscale","swscale"], :libswscale),
-    LibraryProduct(libpath, ["libavfilter","avfilter"], :libavfilter),
-    LibraryProduct(libpath, ["libavdevice","avdevice"], :libavdevice),
+    LibraryProduct(prefix, ["libavcodec","avcodec"], :libavcodec),
+    LibraryProduct(prefix, ["libavformat","avformat"], :libavformat),
+    LibraryProduct(prefix, ["libavutil","avutil"], :libavutil),
+    LibraryProduct(prefix, ["libswscale","swscale"], :libswscale),
+    LibraryProduct(prefix, ["libavfilter","avfilter"], :libavfilter),
+    LibraryProduct(prefix, ["libavdevice","avdevice"], :libavdevice),
 ]
 
 # Download binaries from hosted location
@@ -29,7 +26,7 @@ download_info = Dict(
     #Linux(:aarch64, :glibc) => ("$bin_prefix/ffmpeg-$v-aarch64-linux-gnu.tar.gz", ""),
     #Linux(:armv7l, :glibc)  => ("$bin_prefix/ffmpeg-$v-arm-linux-gnueabihf.tar.gz", ""),
     #Linux(:powerpc64le, :glibc) => ("$bin_prefix/ffmpeg-$v-powerpc64le-linux-gnu.tar.gz", ""),
-    #Linux(:i686, :glibc)    => ("$bin_prefix/ffmpeg-$v-i686-linux-gnu.tar.gz", ""),
+    Linux(:i686, :glibc)    => ("$bin_prefix/FFMPEG.v4.1.0.i686-linux-gnu.tar.gz", ""),
     Linux(:x86_64, :glibc)  => ("$bin_prefix/ffmpeg-$v-86_64-linux-gnu-full.tar.gz", "683249e7450a18a13f7a896b4abd6b92abff77ddeb3640ad10fe48bb7723f4fc"),
 
     #Linux(:aarch64, :musl)  => ("$bin_prefix/ffmpeg-$v-aarch64-linux-musl.tar.gz", ""),
@@ -43,38 +40,30 @@ download_info = Dict(
     Windows(:i686)          => ("$bin_prefix/ffmpeg-$v-win32-shared.tar.gz", "3d6486189953a8f9af14190fdcf43a3216654ee0d64a741b6e108b7d8f7039e5"),
     Windows(:x86_64)        => ("$bin_prefix/ffmpeg-$v-win64-shared.tar.gz", "19191f33c2ffd437fde8d61cb65724d672389e4522716496829a4a7366a5bf76"),
 )
+dependencies = [
+    "https://github.com/JuliaIO/LibassBuilder/releases/download/v0.14.0-2/build_libass.v0.14.0.jl",
+    "https://github.com/SimonDanisch/FDKBuilder/releases/download/0.1.6/build_libfdk.v0.1.6.jl",
+    "https://github.com/SimonDanisch/FribidiBuilder/releases/download/0.14.0/build_fribidi.v0.14.0.jl",
+    "https://github.com/JuliaGraphics/FreeTypeBuilder/releases/download/v2.9.1-4/build_FreeType2.v2.10.0.jl",
+    "https://github.com/JuliaIO/LAMEBuilder/releases/download/v3.100.0-2/build_liblame.v3.100.0.jl",
+    "https://github.com/JuliaIO/LibVorbisBuilder/releases/download/v1.3.6-2/build_libvorbis.v1.3.6.jl",
+    "https://github.com/JuliaIO/OggBuilder/releases/download/v1.3.3-7/build_Ogg.v1.3.3.jl",
+    "https://github.com/JuliaIO/LibVPXBuilder/releases/download/v1.8.0/build_LibVPX.v1.8.0.jl",
+    "https://github.com/JuliaIO/x264Builder/releases/download/v2019.5.25-static/build_x264Builder.v2019.5.25.jl",
+    "https://github.com/JuliaIO/x265Builder/releases/download/v3.0.0-static/build_x265Builder.v3.0.0.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-0/build_Bzip2.v1.0.6.jl",
+    "https://github.com/ianshmean/ZlibBuilder/releases/download/v1.2.11/build_Zlib.v1.2.11.jl"
+]
 
-if Sys.islinux()
-    dependencies = [
-        "https://github.com/SimonDanisch/FribidiBuilder/releases/download/0.14.0/build_fribidi.v0.14.0.jl",
-        # "https://github.com/SimonDanisch/NASMBuilder/releases/download/2.13.3/build_nasm.v2.13.3.jl",
-        "https://github.com/JuliaGraphics/FreeTypeBuilder/releases/download/v2.9.1-3/build_FreeType2.v2.9.1.jl",
-        "https://github.com/JuliaIO/LibassBuilder/releases/download/v0.14.0/build_libass.v0.14.0.jl",
-        "https://github.com/SimonDanisch/FDKBuilder/releases/download/0.1.6/build_libfdk.v0.1.6.jl",
-        "https://github.com/SimonDanisch/LAMEBuilder/releases/download/3.100.0/build_liblame.v3.100.0.jl",
-        "https://github.com/staticfloat/OggBuilder/releases/download/v1.3.3-7/build_Ogg.v1.3.3.jl",
-        "https://github.com/JuliaIO/LibVorbisBuilder/releases/download/v1.3.6/build_libvorbis.v1.3.6.jl",
-        "https://github.com/jpsamaroo/LibVPXBuilder/releases/download/v5.0.0/build_LibVPX.v5.0.0.jl",
-        "https://github.com/ianshmean/x264Builder/releases/download/v2019.5.25-noyasm/build_x264Builder.v2019.5.25-noyasm.jl"
-    ]
+for dependency in dependencies
+    file = joinpath(@__DIR__, basename(dependency))
+    isfile(file) || download(dependency, file)
+    # it's a bit faster to run the build in an anonymous module instead of
+    # starting a new julia process
 
-    for dependency in dependencies
-        file = joinpath(@__DIR__, basename(dependency))
-        isfile(file) || download(dependency, file)
-        # it's a bit faster to run the build in an anonymous module instead of
-        # starting a new julia process
-
-        # Build the dependencies
-        Mod = @eval module Anon end
-        Mod.include(file)
-    end
-    # Not sure why those end up in lib, but they do -.-
-
-    for elem in readdir(joinpath(prefix, "lib"))
-        if occursin(".so", elem)
-            cp(joinpath(prefix, "lib", elem), joinpath(prefix, "bin", elem), follow_symlinks = true, force = true)
-        end
-    end
+    # Build the dependencies
+    Mod = @eval module Anon end
+    Mod.include(file)
 end
 
 # First, check to see if we're all satisfied
