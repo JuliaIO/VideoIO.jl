@@ -4,6 +4,7 @@ using BinaryProvider # requires BinaryProvider 0.3.0 or later
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
 products = [
+        
 ]
 
 # Download binaries from hosted location
@@ -27,7 +28,7 @@ download_info = Dict(
 )
 
 # Install unsatisfied or updated dependencies:
-unsatisfied = any(!satisfied(p; verbose=verbose) for p in products)
+unsatisfied = true
 dl_info = choose_download(download_info, platform_key_abi())
 if dl_info === nothing && unsatisfied
     # If we don't have a compatible .tar.gz to download, complain.
@@ -44,4 +45,4 @@ if unsatisfied || !isinstalled(dl_info...; prefix=prefix)
 end
 
 # Write out a deps.jl file that will contain mappings for our products
-write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=verbose)
+#write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=verbose)
