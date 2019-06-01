@@ -52,7 +52,7 @@ import VideoIO
 io = VideoIO.open(video_file)
 f = VideoIO.openvideo(io)
 
-# As a shortcut for just video, you can upen the file directly
+# As a shortcut for just video, you can open the file directly
 # with openvideo
 #f = VideoIO.openvideo(video_file)
 
