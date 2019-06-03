@@ -13,6 +13,8 @@ swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
 isarm() = (Base.Sys.ARCH == :armv7l) || (Base.Sys.ARCH == :aarch64)
 
+@show Base.Sys.ARCH
+
 @noinline function isblank(img)
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
