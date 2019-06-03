@@ -15,6 +15,9 @@ objects (if `Images.jl` is installed and loaded first).
 Videos can be encoded from image stacks (a vector of same-sized `Image` objects),
 or encoded iteratively in custom loops.
 
+NOTE: There is a known issue on arm7l & aarch64 that results in small precision differences when reading/writing video files. 
+As such, tests for frame comparison are currently skipped on arm7l & aarch64
+
 Installation
 ------------
 Use the Julia package manager.  Within Julia, do:
