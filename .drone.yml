@@ -1,78 +1,22 @@
-kind: pipeline
-name: linux-arm-1.0
+local Pipeline(name, image) = {
+  kind: "pipeline",
+  name: name,
+  platform: {
+    os: "linux",
+    arch: "arm",
+  },
+  steps: [
+    {
+      name: "build",
+      image: image,
+      commands: [
+        "julia -e using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'"
+      ]
+    }
+  ]
+};
 
-platform:
-  os: linux
-  arch: arm
-
-steps:
-- name: build:
-    image: julia:1.0
-    commands:
-      - uname -a
-      - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
-      # push coverage results to Coveralls
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-      # push coverage results to Codecov
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-
----
-
-kind: pipeline
-name: linux-arm-1.1
-
-platform:
-  os: linux
-  arch: arm
-
-steps:
-- name: build:
-    image: julia:1.1
-    commands:
-      - uname -a
-      - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
-      # push coverage results to Coveralls
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-      # push coverage results to Codecov
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-
----
-
-kind: pipeline
-name: linux-aarch64-1.0
-
-platform:
-  os: linux
-  arch: arm64
-
-steps:
-- name: build:
-    image: julia:1.0
-    commands:
-      - uname -a
-      - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
-      # push coverage results to Coveralls
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-      # push coverage results to Codecov
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-
----
-
-kind: pipeline
-name: linux-aarch64-1.1
-
-platform:
-  os: linux
-  arch: arm64
-
-steps:
-- name: build:
-    image: julia:1.1
-    commands:
-      - uname -a
-      - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
-      # push coverage results to Coveralls
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-      # push coverage results to Codecov
-      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-
+[
+  Pipeline("julia-arm-1-0", "julia:1.0"),
+  Pipeline("julia-arm-1-1", "julia:1.1"),
+]
