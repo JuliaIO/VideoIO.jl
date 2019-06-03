@@ -5,8 +5,8 @@ platform:
   os: linux
   arch: arm64
 
-pipeline:
-  build:
+steps:
+- name: test
     image: julia:${JULIA_VERSION}
     commands:
       - uname -a
