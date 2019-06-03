@@ -215,7 +215,7 @@ mux(srcfilename,destfilename,framerate;silent=false)
 Multiplex stream object into video container.
 """
 function mux(srcfilename,destfilename,framerate;silent=false)
-    withenv("PATH" => string(VideoIO.libpath,";",Sys.BINDIR), "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+    withenv(execenv) do
         muxout = collectexecoutput(`$(ffmpeg) -y -framerate $framerate -i $srcfilename -c copy $destfilename`)
         filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
         if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])

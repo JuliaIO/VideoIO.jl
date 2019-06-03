@@ -5,6 +5,15 @@ using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 
 libpath = joinpath(@__DIR__, "..", "deps", "usr", "lib")
 
+if Sys.iswindows()
+    execenv = ("PATH" => string(VideoIO.libpath,";",Sys.BINDIR))
+elseif Sys.isapple()
+    execenv = ("DYLD_LIBRARY_PATH" => VideoIO.libpath)
+else
+    execenv = ("LD_LIBRARY_PATH" => VideoIO.libpath)
+end
+    
+
 include("init.jl")
 include("util.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
