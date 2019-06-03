@@ -11,8 +11,7 @@ VideoIO.TestVideos.download_all()
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
-isarm() = (Base.Sys.ARCH == :armv7l) || (Base.Sys.ARCH == :aarch64)
-
+isarm() = any(Base.Sys.ARCH .==[:arm,:arm32,:arm7l,:armv7l,:arm8l,:armv8l,:aarch64,:arm64])
 @show Base.Sys.ARCH
 
 @noinline function isblank(img)
