@@ -4,7 +4,7 @@ using VideoIO, ColorTypes, FixedPointNumbers, DataFrames
 function createtestvideo(;filename::String="$(tempname()).mp4",duration::Real=5,
     width::Int64=1280,height::Int64=720,framerate::Real=30,testtype::String="testsrc2",
     encoder::String="libx264rgb")
-    withenv("PATH" => VideoIO.libpath, "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+    withenv("PATH" => string(VideoIO.libpath,":",Sys.BINDIR), "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
         VideoIO.collectexecoutput(`$(VideoIO.ffmpeg) -y -f lavfi -i
             $testtype=duration=$duration:size=$(width)x$(height):rate=$framerate
             -c:v $encoder -preset slow -crf 0 -c:a copy $filename`)
