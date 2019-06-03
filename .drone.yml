@@ -1,21 +1,61 @@
 kind: pipeline
-name: linux-${ARCH_VERSION}-${JULIA_VERSION}
+name: linux-arm-1.0
 
 platform:
   os: linux
-  arch: ${ARCH_VERSION}
+  arch: arm
 
 steps:
 - name: build
-  image: julia:${JULIA_VERSION}
+  image: julia:1.0
   commands:
       - uname -a
       - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
 
-matrix:
-  JULIA_VERSION:
-    - 1.0
-    - 1.1
-  ARCH_VERSION:
-    - arm
-    - arm64
+---
+
+kind: pipeline
+name: linux-arm-1.1
+
+platform:
+  os: linux
+  arch: arm
+
+steps:
+- name: build
+  image: julia:1.1
+  commands:
+      - uname -a
+      - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
+
+---
+
+kind: pipeline
+name: linux-aarch64-1.0
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: build
+  image: julia:1.0
+  commands:
+      - uname -a
+      - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
+
+---
+
+kind: pipeline
+name: linux-aarch64-1.1
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: build
+  image: julia:1.1
+  commands:
+      - uname -a
+      - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
