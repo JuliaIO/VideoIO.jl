@@ -1,7 +1,8 @@
+kind: pipeline
+name: linux-arm
 platform:
-    architecture: "arm64"
-    os: "linux"
-    variant": "v8"         
+  os: linux
+  arch: arm
 pipeline:
   build:
     image: julia:${JULIA_VERSION}
