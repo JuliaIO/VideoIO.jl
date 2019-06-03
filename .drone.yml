@@ -3,10 +3,10 @@ name: linux-arm
 
 platform:
   os: linux
-  arch: arm64
+  arch: arm
 
 steps:
-- name: test
+- name: build:
     image: julia:${JULIA_VERSION}
     commands:
       - uname -a
@@ -21,3 +21,26 @@ matrix:
     - 1.0
     - 1.1
 
+---
+kind: pipeline
+name: linux-aarch64
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: build:
+    image: julia:${JULIA_VERSION}
+    commands:
+      - uname -a
+      - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
+      # push coverage results to Coveralls
+      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+      # push coverage results to Codecov
+      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+
+matrix:
+  JULIA_VERSION:
+    - 1.0
+    - 1.1
