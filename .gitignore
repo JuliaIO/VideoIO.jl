@@ -5,3 +5,4 @@ deps/build.log
 .DS_Store
 videos/*
 Manifest.toml
+deps/build_*

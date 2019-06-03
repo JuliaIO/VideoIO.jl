@@ -3,7 +3,16 @@ module VideoIO
 using Libdl
 using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 
-libpath = joinpath(@__DIR__, "..", "deps", "usr", "bin")
+libpath = joinpath(@__DIR__, "..", "deps", "usr", "lib")
+
+if Sys.iswindows()
+    const execenv = ("PATH" => string(VideoIO.libpath,";",Sys.BINDIR))
+elseif Sys.isapple()
+    const execenv = ("DYLD_LIBRARY_PATH" => VideoIO.libpath)
+else
+    const execenv = ("LD_LIBRARY_PATH" => VideoIO.libpath)
+end
+    
 
 include("init.jl")
 include("util.jl")
