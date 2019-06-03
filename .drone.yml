@@ -3,7 +3,7 @@ name: linux-arm
 
 platform:
   os: linux
-  arch: arm
+  arch: arm64
 
 pipeline:
   build:
