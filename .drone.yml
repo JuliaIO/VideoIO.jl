@@ -1,22 +1,39 @@
 kind: pipeline
-name: linux-arm
+name: linux-arm-1.0
+
 platform:
   os: linux
   arch: arm
+
 pipeline:
   build:
-    image: julia:${JULIA_VERSION}
+    image: julia:1.0
     commands:
       - uname -a
-      - lshw -short
       - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
       # push coverage results to Coveralls
       #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
       # push coverage results to Codecov
       #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
 
-matrix:
-  JULIA_VERSION:
-    - 1.0
-    - 1.1
-    - 1.2
+---
+
+kind: pipeline
+name: linux-arm-1.1
+
+platform:
+  os: linux
+  arch: arm
+
+pipeline:
+  build:
+    image: julia:1.1
+    commands:
+      - uname -a
+      - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
+      # push coverage results to Coveralls
+      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+      # push coverage results to Codecov
+      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+
+---
