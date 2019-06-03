@@ -17,11 +17,11 @@ end
 
 # tesing that the executables run by testing the standard first line output
 @testset "Executable functionality (ffmpeg & ffprobe)" begin
-    withenv("PATH" => string(VideoIO.libpath,":",Sys.BINDIR), "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+    withenv("PATH" => string(VideoIO.libpath,";",Sys.BINDIR), "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
         out = VideoIO.collectexecoutput(`$(VideoIO.ffmpeg)`)
         @test occursin("ffmpeg version ",out[1])
     end
-    withenv("PATH" => string(VideoIO.libpath,":",Sys.BINDIR), "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
+    withenv("PATH" => string(VideoIO.libpath,";",Sys.BINDIR), "LD_LIBRARY_PATH" => VideoIO.libpath, "DYLD_LIBRARY_PATH" => VideoIO.libpath) do
         out = VideoIO.collectexecoutput(`$(VideoIO.ffprobe)`)
         @test occursin("ffprobe version ",out[1])
     end
