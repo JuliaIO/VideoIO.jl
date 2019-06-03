@@ -1,13 +1,13 @@
 kind: pipeline
-name: linux-$(ARCH_VERSION)-$(JULIA_VERSION)
+name: linux-${ARCH_VERSION}-${JULIA_VERSION}
 
 platform:
   os: linux
-  arch: $(ARCH_VERSION)
+  arch: ${ARCH_VERSION}
 
 steps:
 - name: build
-  image: julia:$(JULIA_VERSION)
+  image: julia:${JULIA_VERSION}
   commands:
       - uname -a
       - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
