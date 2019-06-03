@@ -6,11 +6,11 @@ using FixedPointNumbers, ColorTypes, ImageCore, Requires, Dates
 libpath = joinpath(@__DIR__, "..", "deps", "usr", "lib")
 
 if Sys.iswindows()
-    execenv = ("PATH" => string(VideoIO.libpath,";",Sys.BINDIR))
+    const execenv = ("PATH" => string(VideoIO.libpath,";",Sys.BINDIR))
 elseif Sys.isapple()
-    execenv = ("DYLD_LIBRARY_PATH" => VideoIO.libpath)
+    const execenv = ("DYLD_LIBRARY_PATH" => VideoIO.libpath)
 else
-    execenv = ("LD_LIBRARY_PATH" => VideoIO.libpath)
+    const execenv = ("LD_LIBRARY_PATH" => VideoIO.libpath)
 end
     
 
