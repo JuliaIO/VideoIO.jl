@@ -3,7 +3,7 @@ name: linux-$(ARCH_VERSION)-$(JULIA_VERSION)
 
 platform:
   os: linux
-  arch: ARCH_VERSION
+  arch: $(ARCH_VERSION)
 
 steps:
 - name: build
