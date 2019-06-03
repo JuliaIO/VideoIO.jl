@@ -1,0 +1,19 @@
+platform:
+    architecture: "arm64"
+    os: "linux"
+    variant": "v8"         
+pipeline:
+  build:
+    image: julia:${JULIA_VERSION}
+    commands:
+      - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
+      # push coverage results to Coveralls
+      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+      # push coverage results to Codecov
+      #- julia -e 'cd(Pkg.dir("Sample")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+
+matrix:
+  JULIA_VERSION:
+    - 1.0
+    - 1.1
+    - nightly
