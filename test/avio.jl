@@ -32,7 +32,7 @@ end
     end
 end
 
-@testset "Read & Encode UInt8 Accuracy" begin
+@testset "UInt8 accuracy during read & encode " begin
     # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
     f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
     frame_truth = collect(rawview(channelview(read(f))))
@@ -58,13 +58,45 @@ end
     @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
 end
 
-@testset "File reading" begin
+@testset "Correct frame order when reading & encoding" begin
+    @testset "Frame order when reading ground truth video" begin
+        # Test that reading a video with frame-incremental pixel values is read in in-order
+        f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+        frame_ids_truth = []
+        while !eof(f)
+            img = collect(rawview(channelview(read(f))))
+            push!(frame_ids_truth,img[1,1])
+        end
+        @test frame_ids_truth == collect(0:255) #Test that reading is in correct frame order
+    end
+    @testset "Frame order when encoding, then reading video" begin
+        # Test that writing and reading a video with frame-incremental pixel values is read in in-order
+        imgstack = []
+        img = Array{UInt8}(undef,16,16)
+        for i in 0:255
+            push!(imgstack,fill(UInt8(i),(16,16)))
+        end
+        props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+        VideoIO.encodevideo(joinpath(testdir,"ordertest_gray_test.mp4"), imgstack,
+        AVCodecContextProperties = props,silent=true)
+        f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_test.mp4"),
+        target_format=VideoIO.AV_PIX_FMT_GRAY8)
+        frame_ids_test = []
+        while !eof(f)
+            img = collect(rawview(channelview(read(f))))
+            push!(frame_ids_test,img[1,1])
+        end
+        @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
+    end
+end
+
+@testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
-        Sys.isapple() && startswith(name, "crescent") && continue
+        #Sys.isapple() && startswith(name, "crescent") && continue
         @testset "Reading $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".bmp"))
-            fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.bmp")
-            first_frame = load(first_frame_file) # comment line when creating bmp files
+            first_frame_file = joinpath(testdir, swapext(name, ".png"))
+            fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
+            first_frame = load(first_frame_file) # comment line when creating png files
 
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
@@ -80,9 +112,9 @@ end
                 read!(v, img)
             end
 
-            #save(File(format"BMP", first_frame_file),img) # uncomment line when creating bmp files)
+            #save(first_frame_file,img) # uncomment line when creating png files)
+            @test img == first_frame               # comment line when creating png files
 
-            @test img == first_frame               # comment line when creating bmp files
             for i in 1:50
                 read!(v,img)
             end
@@ -117,13 +149,13 @@ end
     end
 end
 
-@testset "IO reading" begin
+@testset "IO reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".bmp"))
-            first_frame = load(first_frame_file) # comment line when creating bmp files
+            first_frame_file = joinpath(testdir, swapext(name, ".png"))
+            first_frame = load(first_frame_file) # comment line when creating png files
 
             filename = joinpath(videodir, name)
             v = VideoIO.openvideo(open(filename))
@@ -131,18 +163,13 @@ end
             if size(first_frame, 1) > v.height
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
             end
-
             img = read(v)
-
             # Find the first non-trivial image
             while isblank(img)
                 read!(v, img)
             end
 
-            #save(File(format"BMP", first_frame_file),img) # uncomment line when creating bmp files)
-
-            @test img == first_frame               # comment line when creating bmp files
-
+            @test img == first_frame               # comment line when creating png files
             while !eof(v)
                 read!(v, img)
             end
@@ -154,7 +181,7 @@ end
     @test_throws ErrorException VideoIO.testvideo("")
 end
 
-@testset "Reading video duration and date/datetime" begin
+@testset "Reading video duration, start date, and duration" begin
     # tesing the duration and date & time functions:
     file = joinpath(videodir, "annie_oakley.ogg")
     @test VideoIO.get_duration(file) == Dates.Microsecond(24224200)
@@ -162,7 +189,7 @@ end
     @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), Dates.Microsecond(24224200))
 end
 
-@testset "Video encoding (read, encode, read, compare)" begin
+@testset "Lossless video encoding (read, encode, read, compare)" begin
     file = joinpath(videodir, "annie_oakley.ogg")
     f = VideoIO.openvideo(file)
     imgstack_rgb = []
