@@ -57,11 +57,11 @@ end
 isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) != nothing)
 
 """
-prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
+prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
 
 Prepare encoder and return AV objects.
 """
-function prepareencoder(firstimg,codec_name,framerate,AVCodecContextProperties)
+function prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
     height = size(firstimg,1)
     width = size(firstimg,2)
     ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
@@ -246,7 +246,7 @@ function encodevideo(filename::String,imgstack::Array;
     silent=false)
 
     io = Base.open("temp.stream","w")
-    encoder = prepareencoder(imgstack[1],codec_name,framerate,AVCodecContextProperties)
+    encoder = prepareencoder(imgstack[1],codec_name=codec_name,framerate=framerate,AVCodecContextProperties=AVCodecContextProperties)
     !silent && (p = Progress(length(imgstack), 1))   # minimum update interval: 1 second
     index = 1
     for img in imgstack
