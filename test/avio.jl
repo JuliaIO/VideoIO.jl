@@ -34,7 +34,7 @@ end
 
 @testset "Read & Encode Precision" begin
     # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
-    f = VideoIO.openvideo(joinpath(testdir,"..","test/precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
     frame_truth = collect(rawview(channelview(read(f))))
     h_truth = fit(Histogram, frame_truth[:], 0:256)
     @test h_truth.weights == fill(1,256) #Test that reading is precise
@@ -49,8 +49,8 @@ end
         push!(imgstack,img)
     end
     props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-    VideoIO.encodevideo(joinpath(testdir,"..","test/precisiontest_gray_test.mp4"), imgstack, AVCodecContextProperties = props)
-    f = VideoIO.openvideo(joinpath(testdir,"..","test/precisiontest_gray_test.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    VideoIO.encodevideo(joinpath(testdir,"precisiontest_gray_test.mp4"), imgstack, AVCodecContextProperties = props)
+    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_test.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
     frame_test = collect(rawview(channelview(read(f))))
     h_test = fit(Histogram, frame_test[:], 0:256)
     @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
@@ -81,12 +81,7 @@ end
 
             #save(first_frame_file,img)        # uncomment line when creating png files)
 
-            if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame               # comment line when creating png files
-            else
-                @test img == first_frame               # comment line when creating png files
-            end
+            @test img == first_frame               # comment line when creating png files
             for i in 1:50
                 read!(v,img)
             end
@@ -103,12 +98,7 @@ end
             seek(v,float(fiftytime))
             read!(v,img)
 
-            if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame               # comment line when creating png files
-            else
-                @test img == fiftieth_frame
-            end
+            @test img == fiftieth_frame
 
             # read first frames again, and compare
             seekstart(v)
@@ -119,12 +109,7 @@ end
                 read!(v, img)
             end
 
-             if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame
-            else
-                @test img == first_frame
-            end
+            @test img == first_frame
 
             close(v)
         end
@@ -156,12 +141,7 @@ end
 
             #save(first_frame_file,img)        # uncomment line when creating png files
 
-            if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame
-            else
-                @test img == first_frame               # comment line when creating png files
-            end
+            @test img == first_frame               # comment line when creating png files
 
             while !eof(v)
                 read!(v, img)
@@ -208,13 +188,7 @@ end
         @test eltype(imgstack_gray) == eltype(imgstack_gray_copy)
         @test length(imgstack_gray) == length(imgstack_gray_copy)
         @test size(imgstack_gray[1]) == size(imgstack_gray_copy[1])
-
-        if isarm()
-            # Skip due to known precision error on ARM
-            @test_skip !any(.!(imgstack_gray .== imgstack_gray_copy))
-        else
-            @test !any(.!(imgstack_gray .== imgstack_gray_copy))
-        end
+        @test !any(.!(imgstack_gray .== imgstack_gray_copy))
     end
 
     @testset "Lossless RGB encoding" begin
@@ -233,12 +207,7 @@ end
         @test eltype(imgstack_rgb) == eltype(imgstack_rgb_copy)
         @test length(imgstack_rgb) == length(imgstack_rgb_copy)
         @test size(imgstack_rgb[1]) == size(imgstack_rgb_copy[1])
-        if isarm()
-            # Skip due to known precision error on ARM
-            @test_skip !any(.!(imgstack_rgb .== imgstack_rgb_copy))
-        else
-            @test !any(.!(imgstack_rgb .== imgstack_rgb_copy))
-        end
+        @test !any(.!(imgstack_rgb .== imgstack_rgb_copy))
     end
 end
 
