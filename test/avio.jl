@@ -32,7 +32,7 @@ end
     end
 end
 
-@testset "Read & Encode Precision" begin
+@testset "Read & Encode UInt8 Accuracy" begin
     # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
     f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
     frame_truth = collect(rawview(channelview(read(f))))
@@ -49,15 +49,16 @@ end
         push!(imgstack,img)
     end
     props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-    VideoIO.encodevideo(joinpath(testdir,"precisiontest_gray_test.mp4"), imgstack, AVCodecContextProperties = props)
-    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_test.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    VideoIO.encodevideo(joinpath(testdir,"precisiontest_gray_test.mp4"), imgstack,
+    AVCodecContextProperties = props,silent=true)
+    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_test.mp4"),
+    target_format=VideoIO.AV_PIX_FMT_GRAY8)
     frame_test = collect(rawview(channelview(read(f))))
     h_test = fit(Histogram, frame_test[:], 0:256)
     @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
 end
 
 @testset "File reading" begin
-
     for name in VideoIO.TestVideos.names()
         Sys.isapple() && startswith(name, "crescent") && continue
         @testset "Reading $name" begin
@@ -79,7 +80,7 @@ end
                 read!(v, img)
             end
 
-            #save(File(format"BMP", first_frame_file_bmp),img) # uncomment line when creating bmp files)
+            #save(File(format"BMP", first_frame_file),img) # uncomment line when creating bmp files)
 
             @test img == first_frame               # comment line when creating bmp files
             for i in 1:50
@@ -118,7 +119,6 @@ end
 
 @testset "IO reading" begin
     for name in VideoIO.TestVideos.names()
-        Sys.isapple() && startswith(name, "crescent") && continue
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
@@ -139,7 +139,7 @@ end
                 read!(v, img)
             end
 
-            #save(File(format"BMP", first_frame_file_bmp),img) # uncomment line when creating bmp files)
+            #save(File(format"BMP", first_frame_file),img) # uncomment line when creating bmp files)
 
             @test img == first_frame               # comment line when creating bmp files
 
