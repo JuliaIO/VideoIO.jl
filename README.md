@@ -127,12 +127,10 @@ Encode by appending within a custom loop:
 ```julia
 using VideoIO, ProgressMeter
 filename = "manual.mp4"
-props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-codec_name = "libx264"
 framerate = 24
 
 firstimg = read(filenames[1])
-encoder = prepareencoder(firstimg,codec_name,framerate,props)
+encoder = prepareencoder(imgstack[1], framerate=30.0)
 
 io = Base.open("temp.stream","w")
 p = Progress(length(imgstack), 1)
