@@ -17,8 +17,6 @@ or encoded iteratively in custom loops.
 
 ### Platform Nodes: 
 
-- FreeBSD: Not currently supported due to an issue during build
-
 - ARM: There is a known issue on ARM that results in small precision differences when reading/writing video files. 
 As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed
 
