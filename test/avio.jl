@@ -61,9 +61,9 @@ end
     for name in VideoIO.TestVideos.names()
         Sys.isapple() && startswith(name, "crescent") && continue
         @testset "Reading $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
-            first_frame = load(first_frame_file) # comment line when creating png files
+            first_frame_file = joinpath(testdir, swapext(name, ".bmp"))
+            fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.bmp")
+            first_frame = load(first_frame_file) # comment line when creating bmp files
 
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
@@ -79,9 +79,9 @@ end
                 read!(v, img)
             end
 
-            #save(first_frame_file,img)        # uncomment line when creating png files)
+            #save(File(format"BMP", first_frame_file_bmp),img) # uncomment line when creating bmp files)
 
-            @test img == first_frame               # comment line when creating png files
+            @test img == first_frame               # comment line when creating bmp files
             for i in 1:50
                 read!(v,img)
             end
@@ -122,8 +122,8 @@ end
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            first_frame = load(first_frame_file) # comment line when creating png files
+            first_frame_file = joinpath(testdir, swapext(name, ".bmp"))
+            first_frame = load(first_frame_file) # comment line when creating bmp files
 
             filename = joinpath(videodir, name)
             v = VideoIO.openvideo(open(filename))
@@ -139,9 +139,9 @@ end
                 read!(v, img)
             end
 
-            #save(first_frame_file,img)        # uncomment line when creating png files
+            #save(File(format"BMP", first_frame_file_bmp),img) # uncomment line when creating bmp files)
 
-            @test img == first_frame               # comment line when creating png files
+            @test img == first_frame               # comment line when creating bmp files
 
             while !eof(v)
                 read!(v, img)
