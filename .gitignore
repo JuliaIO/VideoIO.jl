@@ -6,3 +6,4 @@ deps/build.log
 videos/*
 Manifest.toml
 deps/build_*
+test/precisiontest_gray_test.mp4

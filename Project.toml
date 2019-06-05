@@ -14,6 +14,7 @@ ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 BinaryProvider = "≥ 0.3.0"

@@ -1,5 +1,6 @@
 using Test
-using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, FixedPointNumbers, Statistics
+using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, FixedPointNumbers
+using Statistics, StatsBase
 
 import VideoIO
 
@@ -31,6 +32,30 @@ end
     end
 end
 
+@testset "Read & Encode Precision" begin
+    # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
+    f = VideoIO.openvideo(joinpath(testdir,"..","test/precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    frame_truth = collect(rawview(channelview(read(f))))
+    h_truth = fit(Histogram, frame_truth[:], 0:256)
+    @test h_truth.weights == fill(1,256) #Test that reading is precise
+
+    # Test that encoding new test video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
+    img = Array{UInt8}(undef,16,16)
+    for i in 1:256
+        img[i] = UInt8(i-1)
+    end
+    imgstack = []
+    for i=1:24
+        push!(imgstack,img)
+    end
+    props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+    VideoIO.encodevideo(joinpath(testdir,"..","test/precisiontest_gray_test.mp4"), imgstack, AVCodecContextProperties = props)
+    f = VideoIO.openvideo(joinpath(testdir,"..","test/precisiontest_gray_test.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    frame_test = collect(rawview(channelview(read(f))))
+    h_test = fit(Histogram, frame_test[:], 0:256)
+    @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
+end
+
 @testset "File reading" begin
 
     for name in VideoIO.TestVideos.names()
@@ -55,7 +80,7 @@ end
             end
 
             #save(first_frame_file,img)        # uncomment line when creating png files)
-            
+
             if isarm()
                 # Skip due to known precision error on ARM
                 @test_skip img == first_frame               # comment line when creating png files
@@ -130,7 +155,7 @@ end
             end
 
             #save(first_frame_file,img)        # uncomment line when creating png files
-            
+
             if isarm()
                 # Skip due to known precision error on ARM
                 @test_skip img == first_frame
@@ -183,7 +208,7 @@ end
         @test eltype(imgstack_gray) == eltype(imgstack_gray_copy)
         @test length(imgstack_gray) == length(imgstack_gray_copy)
         @test size(imgstack_gray[1]) == size(imgstack_gray_copy[1])
-        
+
         if isarm()
             # Skip due to known precision error on ARM
             @test_skip !any(.!(imgstack_gray .== imgstack_gray_copy))
