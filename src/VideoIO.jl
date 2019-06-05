@@ -83,6 +83,17 @@ if Sys.isapple()
         DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
         DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
     end
+elseif Sys.isbsd()
+    # copied loosely from apple above - needs figuring out
+    function init_camera_devices()
+        append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
+        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
+    end
+    function init_camera_settings()
+        DEFAULT_CAMERA_OPTIONS["framerate"] = 30
+        DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
+        DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+    end
 end
 
 #Helper functions to explain about Makie load order requirement
