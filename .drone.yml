@@ -9,7 +9,7 @@ steps:
 - name: build
   image: julia:1.0
   commands:
-      - apt-get update && apt-get install arm-none-eabi-gcc
+      - apt-get update && apt-get install arm-linux-gnueabi-gcc
       - uname -a
       - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("VideoIO"); Pkg.test("VideoIO"; coverage=true)'
 
