@@ -1,7 +1,10 @@
 using Test
 using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, FixedPointNumbers, Statistics
+using Statistics, StatsBase
 
 import VideoIO
+
+createmode = false
 
 testdir = dirname(@__FILE__)
 videodir = joinpath(testdir, "..", "videos")
@@ -31,37 +34,92 @@ end
     end
 end
 
-@testset "File reading" begin
+@testset "UInt8 accuracy during read & encode" begin
+    # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
+    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    frame_truth = collect(rawview(channelview(read(f))))
+    h_truth = fit(Histogram, frame_truth[:], 0:256)
+    @test h_truth.weights == fill(1,256) #Test that reading is precise
 
+    # Test that encoding new test video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
+    img = Array{UInt8}(undef,16,16)
+    for i in 1:256
+        img[i] = UInt8(i-1)
+    end
+    imgstack = []
+    for i=1:24
+        push!(imgstack,img)
+    end
+    props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+    VideoIO.encodevideo(joinpath(testdir,"precisiontest_gray_test.mp4"), imgstack,
+    AVCodecContextProperties = props,silent=true)
+    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_test.mp4"),
+    target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    frame_test = collect(rawview(channelview(read(f))))
+    h_test = fit(Histogram, frame_test[:], 0:256)
+    @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
+end
+
+@testset "Correct frame order when reading & encoding" begin
+    @testset "Frame order when reading ground truth video" begin
+        # Test that reading a video with frame-incremental pixel values is read in in-order
+        f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+        frame_ids_truth = []
+        while !eof(f)
+            img = collect(rawview(channelview(read(f))))
+            push!(frame_ids_truth,img[1,1])
+        end
+        @test frame_ids_truth == collect(0:255) #Test that reading is in correct frame order
+    end
+    @testset "Frame order when encoding, then reading video" begin
+        # Test that writing and reading a video with frame-incremental pixel values is read in in-order
+        imgstack = []
+        img = Array{UInt8}(undef,16,16)
+        for i in 0:255
+            push!(imgstack,fill(UInt8(i),(16,16)))
+        end
+        props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+        VideoIO.encodevideo(joinpath(testdir,"ordertest_gray_test.mp4"), imgstack,
+        AVCodecContextProperties = props,silent=true)
+        f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_test.mp4"),
+        target_format=VideoIO.AV_PIX_FMT_GRAY8)
+        frame_ids_test = []
+        while !eof(f)
+            img = collect(rawview(channelview(read(f))))
+            push!(frame_ids_test,img[1,1])
+        end
+        @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
+    end
+end
+
+@testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
-        Sys.isapple() && startswith(name, "crescent") && continue
         @testset "Reading $name" begin
             first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
-            first_frame = load(first_frame_file) # comment line when creating png files
+            !createmode && (first_frame = load(first_frame_file))
 
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
 
-            if size(first_frame, 1) > v.height
+            if !createmode && (size(first_frame, 1) > v.height)
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
             end
 
-            img = read(v)
-
             # Find the first non-trivial image
+            img = read(v)
+            i=1
             while isblank(img)
                 read!(v, img)
+                i += 1
+            end
+            # println("$name vs. $first_frame_file - First non-blank frame: $i") # for debugging
+            createmode && save(first_frame_file,img)
+            if isarm()
+                !createmode && (@test_skip img == first_frame)
+            else
+                !createmode && (@test img == first_frame)
             end
 
-            #save(first_frame_file,img)        # uncomment line when creating png files)
-            
-            if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame               # comment line when creating png files
-            else
-                @test img == first_frame               # comment line when creating png files
-            end
             for i in 1:50
                 read!(v,img)
             end
@@ -78,12 +136,7 @@ end
             seek(v,float(fiftytime))
             read!(v,img)
 
-            if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame               # comment line when creating png files
-            else
-                @test img == fiftieth_frame
-            end
+            @test img == fiftieth_frame
 
             # read first frames again, and compare
             seekstart(v)
@@ -94,11 +147,10 @@ end
                 read!(v, img)
             end
 
-             if isarm()
-                # Skip due to known precision error on ARM
-                @test_skip img == first_frame
+            if isarm()
+                !createmode && (@test_skip img == first_frame)
             else
-                @test img == first_frame
+                !createmode && (@test img == first_frame)
             end
 
             close(v)
@@ -106,14 +158,13 @@ end
     end
 end
 
-@testset "IO reading" begin
+@testset "IO reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
-        Sys.isapple() && startswith(name, "crescent") && continue
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
             first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            first_frame = load(first_frame_file) # comment line when creating png files
+            first_frame = load(first_frame_file)
 
             filename = joinpath(videodir, name)
             v = VideoIO.openvideo(open(filename))
@@ -121,23 +172,17 @@ end
             if size(first_frame, 1) > v.height
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
             end
-
             img = read(v)
-
             # Find the first non-trivial image
             while isblank(img)
                 read!(v, img)
             end
 
-            #save(first_frame_file,img)        # uncomment line when creating png files
-            
             if isarm()
-                # Skip due to known precision error on ARM
                 @test_skip img == first_frame
             else
-                @test img == first_frame               # comment line when creating png files
+                @test img == first_frame
             end
-
             while !eof(v)
                 read!(v, img)
             end
@@ -149,7 +194,7 @@ end
     @test_throws ErrorException VideoIO.testvideo("")
 end
 
-@testset "Reading video duration and date/datetime" begin
+@testset "Reading video duration, start date, and duration" begin
     # tesing the duration and date & time functions:
     file = joinpath(videodir, "annie_oakley.ogg")
     @test VideoIO.get_duration(file) == Dates.Microsecond(24224200)
@@ -157,7 +202,7 @@ end
     @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), Dates.Microsecond(24224200))
 end
 
-@testset "Video encoding (read, encode, read, compare)" begin
+@testset "Lossless video encoding (read, encode, read, compare)" begin
     file = joinpath(videodir, "annie_oakley.ogg")
     f = VideoIO.openvideo(file)
     imgstack_rgb = []
@@ -183,13 +228,7 @@ end
         @test eltype(imgstack_gray) == eltype(imgstack_gray_copy)
         @test length(imgstack_gray) == length(imgstack_gray_copy)
         @test size(imgstack_gray[1]) == size(imgstack_gray_copy[1])
-        
-        if isarm()
-            # Skip due to known precision error on ARM
-            @test_skip !any(.!(imgstack_gray .== imgstack_gray_copy))
-        else
-            @test !any(.!(imgstack_gray .== imgstack_gray_copy))
-        end
+        @test !any(.!(imgstack_gray .== imgstack_gray_copy))
     end
 
     @testset "Lossless RGB encoding" begin
@@ -208,12 +247,7 @@ end
         @test eltype(imgstack_rgb) == eltype(imgstack_rgb_copy)
         @test length(imgstack_rgb) == length(imgstack_rgb_copy)
         @test size(imgstack_rgb[1]) == size(imgstack_rgb_copy[1])
-        if isarm()
-            # Skip due to known precision error on ARM
-            @test_skip !any(.!(imgstack_rgb .== imgstack_rgb_copy))
-        else
-            @test !any(.!(imgstack_rgb .== imgstack_rgb_copy))
-        end
+        @test !any(.!(imgstack_rgb .== imgstack_rgb_copy))
     end
 end
 
