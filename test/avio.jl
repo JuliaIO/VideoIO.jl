@@ -1,8 +1,11 @@
 using Test
-using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, FixedPointNumbers
+using ColorTypes, ImageCore, Dates, FixedPointNumbers
 using Statistics, StatsBase
+using JLD
 
 import VideoIO
+
+createmode = false
 
 testdir = dirname(@__FILE__)
 videodir = joinpath(testdir, "..", "videos")
@@ -32,7 +35,7 @@ end
     end
 end
 
-@testset "UInt8 accuracy during read & encode " begin
+@testset "UInt8 accuracy during read & encode" begin
     # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
     f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
     frame_truth = collect(rawview(channelview(read(f))))
@@ -92,16 +95,14 @@ end
 
 @testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
-        #Sys.isapple() && startswith(name, "crescent") && continue
         @testset "Reading $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            fiftieth_frame_file = joinpath(testdir, swapext(name, "")*"50.png")
-            first_frame = load(first_frame_file) # comment line when creating png files
+            first_frame_file = joinpath(testdir, swapext(name, ".jld"))
+            !createmode && (first_frame = load(first_frame_file,"img"))
 
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
 
-            if size(first_frame, 1) > v.height
+            if !createmode && (size(first_frame, 1) > v.height)
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
             end
 
@@ -111,9 +112,8 @@ end
             while isblank(img)
                 read!(v, img)
             end
-
-            #save(first_frame_file,img) # uncomment line when creating png files)
-            @test img == first_frame               # comment line when creating png files
+            createmode && save(first_frame_file,"img",collect(img))
+            !createmode && (@test img == first_frame)
 
             for i in 1:50
                 read!(v,img)
@@ -142,7 +142,7 @@ end
                 read!(v, img)
             end
 
-            @test img == first_frame
+            !createmode && (@test img == first_frame)
 
             close(v)
         end
@@ -154,8 +154,8 @@ end
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            first_frame = load(first_frame_file) # comment line when creating png files
+            first_frame_file = joinpath(testdir, swapext(name, ".jld"))
+            first_frame = load(first_frame_file,"img")
 
             filename = joinpath(videodir, name)
             v = VideoIO.openvideo(open(filename))

@@ -22,9 +22,8 @@ FixedPointNumbers = "≥ 0.3.0"
 julia = "≥ 0.7.0"
 
 [extras]
-ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
-Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+JLD = "4138dd39-2aa7-5051-a626-17a0bb65d9c8"
 
 [targets]
-test = ["Test", "Images", "ImageMagick"]
+test = ["Test", "JLD"]
