@@ -105,15 +105,14 @@ end
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
             end
 
-            img = read(v)
-
             # Find the first non-trivial image
+            img = read(v)
             i=1
             while isblank(img)
                 read!(v, img)
                 i += 1
             end
-            println("First non-blank frame: $i")
+            println("$name vs. $first_frame_file - First non-blank frame: $i")
             createmode && save(first_frame_file,img)
             !createmode && (@test img == first_frame)
 
