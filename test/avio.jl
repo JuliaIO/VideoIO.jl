@@ -112,9 +112,13 @@ end
                 read!(v, img)
                 i += 1
             end
-            println("$name vs. $first_frame_file - First non-blank frame: $i")
+            # println("$name vs. $first_frame_file - First non-blank frame: $i") # for debugging
             createmode && save(first_frame_file,img)
-            !createmode && (@test img == first_frame)
+            if isarm()
+                !createmode && (@test_skip img == first_frame)
+            else
+                !createmode && (@test img == first_frame)
+            end
 
             for i in 1:50
                 read!(v,img)
@@ -170,7 +174,11 @@ end
                 read!(v, img)
             end
 
-            @test img == first_frame               # comment line when creating png files
+            if isarm()
+                !createmode && (@test_skip img == first_frame)
+            else
+                !createmode && (@test img == first_frame)
+            end
             while !eof(v)
                 read!(v, img)
             end
