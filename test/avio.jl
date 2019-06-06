@@ -179,9 +179,9 @@ end
             end
 
             if isarm()
-                !createmode && (@test_skip img == first_frame)
+                @test_skip img == first_frame
             else
-                !createmode && (@test img == first_frame)
+                @test img == first_frame
             end
             while !eof(v)
                 read!(v, img)
