@@ -17,8 +17,7 @@ or encoded iteratively in custom loops.
 
 ### Platform Nodes: 
 
-- ARM: There is a known issue on ARM that results in small precision differences when reading/writing video files. 
-As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed
+- ARM: There is a known issue on ARM that results in very small and rare precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
 
 Installation
