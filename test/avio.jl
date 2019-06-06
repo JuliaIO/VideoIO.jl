@@ -1,7 +1,6 @@
 using Test
-using ColorTypes, ImageCore, Dates, FixedPointNumbers
+using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, FixedPointNumbers, Statistics
 using Statistics, StatsBase
-using JLD
 
 import VideoIO
 
@@ -96,8 +95,8 @@ end
 @testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
         @testset "Reading $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".jld"))
-            !createmode && (first_frame = load(first_frame_file,"img"))
+            first_frame_file = joinpath(testdir, swapext(name, ".png"))
+            !createmode && (first_frame = load(first_frame_file))
 
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
@@ -109,10 +108,13 @@ end
             img = read(v)
 
             # Find the first non-trivial image
+            i=1
             while isblank(img)
                 read!(v, img)
+                i += 1
             end
-            createmode && save(first_frame_file,"img",collect(img))
+            println("First non-blank frame: $i")
+            createmode && save(first_frame_file,img)
             !createmode && (@test img == first_frame)
 
             for i in 1:50
@@ -154,8 +156,8 @@ end
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".jld"))
-            first_frame = load(first_frame_file,"img")
+            first_frame_file = joinpath(testdir, swapext(name, ".png"))
+            first_frame = load(first_frame_file)
 
             filename = joinpath(videodir, name)
             v = VideoIO.openvideo(open(filename))

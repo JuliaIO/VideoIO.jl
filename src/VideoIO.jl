@@ -12,7 +12,7 @@ elseif Sys.isapple()
 else
     const execenv = ("LD_LIBRARY_PATH" => VideoIO.libpath)
 end
-    
+
 
 include("init.jl")
 include("util.jl")
@@ -39,7 +39,7 @@ include("testvideos.jl")
 using .TestVideos
 
 if Sys.islinux()
-    import Glob    
+    import Glob
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
         DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
@@ -116,9 +116,9 @@ function __init__()
     # TODO remove uncessary ENV["LD_LIBRARY_PATH"] from check_deps, so that
     # it doesn't mess with LD_LIBRARY_PATH, which was causing CI download issues due to issues with julia's curl
     # since check_deps is optional, I hope this is ok for now
-    
+
     #check_deps()
-    
+
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()

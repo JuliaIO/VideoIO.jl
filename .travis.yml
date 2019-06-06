@@ -1,0 +1,24 @@
+# Documentation: http://docs.travis-ci.com/user/languages/julia/
+language: julia
+sudo: false
+addons:
+  apt:
+    packages:
+    - imagemagick
+os:
+  - linux
+  - osx
+julia:
+  - 1.0
+  - 1.1
+  - 1.2
+  - nightly
+matrix:
+  allow_failures:
+    - julia: nightly
+notifications:
+  email: false
+
+after_success:
+  # push coverage results to Coveralls and Codecov
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder()); Codecov.submit(process_folder())'
