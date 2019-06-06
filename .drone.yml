@@ -8,7 +8,6 @@ platform:
 steps:
 - name: build
   image: julia:1.0
-  privileged: true
   commands:
       - apt-get update && apt-get install arm-none-eabi-gcc
       - uname -a
