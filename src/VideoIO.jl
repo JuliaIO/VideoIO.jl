@@ -131,8 +131,8 @@ function __init__()
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
         # Define read and retrieve for Images
-        function play(f; flipx=false, flipy=false)
-            scene = Makie.Scene(resolution = (f.width, f.height))
+        function play(f; flipx=false, flipy=false, pixelaspectratio=1.0)
+            scene = Makie.Scene(resolution = (f.width*pixelaspectratio, f.height))
             buf = read(f)
             makieimg = Makie.image!(scene,buf, show_axis = false, scale_plot = false)[end]
             Makie.rotate!(scene, -0.5pi)
