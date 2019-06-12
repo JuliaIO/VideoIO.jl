@@ -150,16 +150,16 @@ function __init__()
             end
         end
 
-        function playvideo(video;flipx=false,flipy=false)
+        function playvideo(video;flipx=false,flipy=false,pixelaspectratio=1.0)
             f = VideoIO.openvideo(video)
-            play(f,flipx=flipx,flipy=flipy)
+            play(f,flipx=flipx,flipy=flipy,pixelaspectratio=pixelaspectratio)
         end
 
         if have_avdevice()
-            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
+            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=1.0)
                 init_camera_settings()
                 camera = opencamera(device[], format[])
-                play(camera, flipx=true)
+                play(camera, flipx=true, pixelaspectratio=pixelaspectratio)
                 close(camera)
             end
         end
