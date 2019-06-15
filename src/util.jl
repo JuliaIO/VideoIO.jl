@@ -35,3 +35,12 @@ function collectexecoutput(exec::Cmd)
     err_s = readlines(err); out_s = readlines(out)
     return (length(out_s) > length(err_s)) ? out_s : err_s
 end
+
+# a convenience function for getting the aspect ratio
+function aspect_ratio(f)
+    if iszero(f.aspect_ratio) || isnan(f.aspect_ratio) || isinf(f.aspect_ratio) # if the stored aspect ratio is nonsense then we default to one. OBS, this might still be wrong for some videos and an unnecessary test for most
+        1//1
+    else
+        f.aspect_ratio
+    end
+end

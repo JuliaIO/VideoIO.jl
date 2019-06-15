@@ -131,10 +131,15 @@ function __init__()
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
         # Define read and retrieve for Images
-        function play(f; flipx=false, flipy=false, pixelaspectratio=1.0)
-            scene = Makie.Scene(resolution = (f.width*pixelaspectratio, f.height))
+        function play(f; flipx=false, flipy=false, pixelaspectratio=nothing)
+            if pixelaspectratio ≡ nothing # if user did not specify the aspect ratio we'll try to use the one stored in the video file
+                pixelaspectratio = aspect_ratio(f)
+            end
+            h = f.height
+            w = round(typeof(h), f.width*pixelaspectratio) # has to be an integer
+            scene = Makie.Scene(resolution = (w, h))
             buf = read(f)
-            makieimg = Makie.image!(scene,buf, show_axis = false, scale_plot = false)[end]
+            makieimg = Makie.image!(scene, 1:h, 1:w, buf, show_axis = false, scale_plot = false)[end]
             Makie.rotate!(scene, -0.5pi)
             if flipx && flipy
                 Makie.scale!(scene, -1, -1, 1)
@@ -145,18 +150,19 @@ function __init__()
             display(scene)
             while !eof(f) && isopen(scene)
                 read!(f, buf)
-                makieimg[1] = buf
+                makieimg[3] = buf
                 sleep(1 / f.framerate)
             end
+
         end
 
-        function playvideo(video;flipx=false,flipy=false,pixelaspectratio=1.0)
+        function playvideo(video;flipx=false,flipy=false,pixelaspectratio=nothing)
             f = VideoIO.openvideo(video)
             play(f,flipx=flipx,flipy=flipy,pixelaspectratio=pixelaspectratio)
         end
 
         if have_avdevice()
-            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=1.0)
+            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
                 init_camera_settings()
                 camera = opencamera(device[], format[])
                 play(camera, flipx=true, pixelaspectratio=pixelaspectratio)
