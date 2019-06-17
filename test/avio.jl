@@ -251,4 +251,10 @@ end
     end
 end
 
+@testset "Storage Aspect Ratio: SAR" begin
+    # currently, the SAR of all the test videos is 1, we should get another video with a valid SAR that is not equal to 1
+    vids = Dict("ladybird.mp4" => 1, "black_hole.webm" => 1, "crescent-moon.ogv" => 1, "annie_oakley.ogg" => 1)
+    @test all(VideoIO.aspect_ratio(VideoIO.openvideo(joinpath(videodir, k))) == v for (k,v) in vids)
+end
+
 #VideoIO.TestVideos.remove_all()
