@@ -120,7 +120,7 @@ function __init__()
     #check_deps()
 
     loglevel!(AVUtil.AV_LOG_FATAL)
-    @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `?VideoIO.loglevel!()` for options"
+    @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `? VideoIO.loglevel!` for options"
 
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
