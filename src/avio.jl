@@ -193,7 +193,6 @@ function AVInput(
     ) where T <: Union{IO,AbstractString}
 
     # Register all codecs and formats
-    av_log_set_level(AVUtil.AV_LOG_ERROR)
 
     aPacket = [AVPacket()]
     apFormatContext = Ptr{AVFormatContext}[avformat_alloc_context()]
@@ -635,7 +634,7 @@ if have_avdevice()
     function get_camera_devices(ffmpeg, idev, idev_name)
         camera_devices = String[]
 
-        read_vid_devs = false        
+        read_vid_devs = false
         lines = collectexecoutput(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
 
         for line in lines

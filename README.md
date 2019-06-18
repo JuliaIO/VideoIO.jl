@@ -17,10 +17,7 @@ or encoded iteratively in custom loops.
 
 ### Platform Nodes: 
 
-- FreeBSD: Not currently supported due to an issue during build
-
-- ARM: There is a known issue on ARM that results in small precision differences when reading/writing video files. 
-As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed
+- ARM: There is a known issue on ARM that results in very small and rare precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
 
 Installation
@@ -103,10 +100,15 @@ close(f)
 
 ### Video Writing
 
-Given an image stack:
+Given an image stack.. say, where image files `1.png`, `2.png`,`3.png` etc. are in the current directory:
 ```julia
-imgstack = map(x->rand(UInt8,2048,1536),1:100)
-100-element Array{Array{UInt8,2},1}
+filenames = filter(x->occursin(".png",x),readdir()) # Populate list of all .pngs
+intstrings =  map(x->split(x,".")[1],filenames) # Extract index from filenames
+p = sortperm(parse.(Int,intstrings)) #sort files numerically
+imgstack = []
+for filename in filenames[p]
+    push!(imgstack,read(filename))
+end
 ```
 
 Encode entire imgstack in one go:
@@ -124,17 +126,17 @@ Encode by appending within a custom loop:
 ```julia
 using VideoIO, ProgressMeter
 filename = "manual.mp4"
-props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-codec_name = "libx264"
 framerate = 24
 
-encoder = prepareencoder(imgstack[1],codec_name,framerate,props)
+firstimg = read(filenames[1])
+encoder = prepareencoder(imgstack[1], framerate=30.0)
 
 io = Base.open("temp.stream","w")
 p = Progress(length(imgstack), 1)
 index = 1
-for img in imgstack
+for filename in filenames
     global index
+    img = read(filename)
     appendencode!(encoder, io, img, index)
     next!(p)
     index += 1
