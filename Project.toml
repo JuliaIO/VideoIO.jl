@@ -1,6 +1,6 @@
 name = "VideoIO"
 uuid = "d6d074c3-1acf-5d4c-9a43-ef38773959a2"
-version = "0.6.5"
+version = "0.6.6"
 
 [deps]
 BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
