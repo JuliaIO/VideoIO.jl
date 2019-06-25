@@ -129,7 +129,7 @@ filename = "manual.mp4"
 framerate = 24
 
 firstimg = read(filenames[1])
-encoder = prepareencoder(imgstack[1], framerate=30.0)
+encoder = prepareencoder(firstimg, framerate=30.0)
 
 io = Base.open("temp.stream","w")
 p = Progress(length(imgstack), 1)
