@@ -6,7 +6,8 @@
 
 Functionality based on a dedicated build of ffmpeg 4.1 via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
 
-**Docs** [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url]
+**Docs** 
+[![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url]
 
 | **Platform**                                                               | **Build Status**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
@@ -68,7 +69,7 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [drone-img]: https://cloud.drone.io/api/badges/JuliaIO/VideoIO.jl/status.svg
 [drone-url]: https://cloud.drone.io/JuliaIO/VideoIO.jl
 
-[cirrus-img]: https://api.cirrus-ci.com/github/JuliaIO/VideoIO.svg
+[cirrus-img]: https://api.cirrus-ci.com/github/JuliaIO/VideoIO.jl.svg
 [cirrus-url]: https://cirrus-ci.com/github/JuliaIO/VideoIO.jl
 
 [codecov-img]: https://codecov.io/gh/JuliaIO/VideoIO.jl/branch/master/graph/badge.svg
