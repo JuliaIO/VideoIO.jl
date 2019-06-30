@@ -1,13 +1,20 @@
 
-# VideoIO
+<img style="float: left; width: 70px;" src="docs/src/assets/logo.png">
+# VideoIO.jl
 
 *Reading and writing of video files in Julia.*
 
 Functionality is based on a dedicated build of ffmpeg 4.1, provided via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
 
-| **VideoIO**                                                               | **Build Status**                                                                                |
+**Docs** [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url]
+
+| **Platform**                                                               | **Build Status**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
+| Linux & MacOS x86 | [![][travis-img]][travis-url] |
+| Windows 32/64-bit | [![][appveyor-img]][appveyor-url] |
+| Linux ARM 32/64-bit | [![][drone-img]][drone-url] | 
+| FreeBSD x86 | [![][cirrus-img]][cirrus-url] |
+|  | [![][codecov-img]][codecov-url] |
 
 
 ## Installation
@@ -44,7 +51,7 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [discourse-tag-url]: https://discourse.julialang.org/tags/videoio
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-dev-url]: https://juliadocs.github.io/Documenter.jl/latest
+[docs-dev-url]: https://juliaio.github.io/VideoIO.jl/latest
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://juliadocs.github.io/VideoIO.jl/stable
@@ -52,8 +59,14 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [travis-img]: https://travis-ci.org/JuliaIO/VideoIO.jl.svg?branch=master
 [travis-url]: https://travis-ci.org/JuliaIO/VideoIO.jl
 
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/xx7nimfpnl1r4gx0?svg=true
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/c1nc5aavymq76xun?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/JuliaIO/videoio-jl
+
+[drone-img]: https://cloud.drone.io/api/badges/JuliaIO/VideoIO.jl/status.svg
+[drone-url]: https://cloud.drone.io/JuliaIO/VideoIO.jl
+
+[cirrus-img]: https://api.cirrus-ci.com/github/JuliaIO/VideoIO.svg
+[cirrus-url]: https://cirrus-ci.com/github/JuliaIO/VideoIO.jl
 
 [codecov-img]: https://codecov.io/gh/JuliaIO/VideoIO.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/JuliaIO/VideoIO.jl
