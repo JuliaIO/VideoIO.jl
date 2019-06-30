@@ -14,3 +14,6 @@ makedocs(
         "Index"                    => "functionindex.md",
         ]
     )
+deploydocs(
+    repo = "github.com/JuliaIO/VideoIO.jl.git",
+)

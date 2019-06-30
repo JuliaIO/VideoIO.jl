@@ -29,9 +29,3 @@ jobs:
         - julia --project=docs/ docs/make.jl
       name: "HTML"
       after_success: skip
-    - script:
-        - julia --project=docs/pdf/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.build("VideoIO"); Pkg.instantiate()'
-        - julia --project=docs/pdf/ docs/pdf/make.jl
-      name: "PDF"
-      after_success: skip
-      services: docker
