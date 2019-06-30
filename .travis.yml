@@ -16,16 +16,24 @@ notifications:
   email: false
 
 after_success:
-  # push coverage results to Coveralls and Codecov
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder()); Codecov.submit(process_folder())'
-
+    - if [[ $TRAVIS_JULIA_VERSION = 1.1 ]] && [[ $TRAVIS_OS_NAME = linux ]]; then
+      julia --project=coverage/ -e 'using Pkg; Pkg.instantiate();
+          using Coverage; Codecov.submit(Codecov.process_folder())';
+    fi
+    
 jobs:
   include:
     - stage: "Documentation"
       julia: 1.0
       os: linux
       script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
-                                               Pkg.instantiate()'
+        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
+      name: "HTML"
       after_success: skip
+    - script:
+        - julia --project=docs/pdf/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        - julia --project=docs/pdf/ docs/pdf/make.jl
+      name: "PDF"
+      after_success: skip
+      services: docker
