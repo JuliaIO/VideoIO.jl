@@ -6,7 +6,7 @@ Functionality is based on a dedicated build of ffmpeg 4.1, provided via [FFMPEGB
 
 ### Platform Nodes: 
 
-- ARM: For truly lossless usage, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
+- ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
 Installation
 ------------
