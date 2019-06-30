@@ -1,12 +1,10 @@
 
 # VideoIO.jl
-<img align="right" width="70" src="docs/src/assets/logo.png">
+<img align="right" width="90" src="docs/src/assets/logo.png">
 
 *Reading and writing of video files in Julia.*
 
-
-
-Functionality is based on a dedicated build of ffmpeg 4.1, provided via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
+Functionality based on a dedicated build of ffmpeg 4.1 via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
 
 **Docs** [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url]
 
@@ -43,6 +41,9 @@ julia> import Pkg; Pkg.add("VideoIO")
 
 The package is tested against, and being developed for, Julia `1.0` and above on Linux, macOS, and Windows, for x86, x86_64, armv7 and armv8 (aarch64).
 
+### Platform Nodes: 
+
+- ARM: For truly lossless usage, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
 ## Questions and Contributions
 
