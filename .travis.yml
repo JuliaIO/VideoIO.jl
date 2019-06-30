@@ -26,6 +26,6 @@ jobs:
       os: linux
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.build("VideoIO"); Pkg.instantiate()'
-        - julia --project=docs/ docs/make.jl
+        - env TRAVIS_PULL_REQUEST=192 julia --project=docs/ docs/make.jl
       name: "HTML"
       after_success: skip
