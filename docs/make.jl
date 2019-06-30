@@ -1,5 +1,7 @@
 using Documenter, VideoIO
 
+ENV["TRAVIS_PULL_REQUEST"] = "true"
+
 makedocs(
     modules = [VideoIO],
     format = Documenter.HTML(
