@@ -8,3 +8,4 @@ Manifest.toml
 deps/build_*
 test/precisiontest_gray_test.mp4
 test/ordertest_gray_test.mp4
+docs/build/
