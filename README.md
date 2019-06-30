@@ -1,7 +1,9 @@
-<img align="right" style="width: 70px;" src="docs/src/assets/logo.png">
+
 # VideoIO.jl
 
 *Reading and writing of video files in Julia.*
+
+<img align="right" style="width: 70px;" src="docs/src/assets/logo.png">
 
 Functionality is based on a dedicated build of ffmpeg 4.1, provided via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
 
