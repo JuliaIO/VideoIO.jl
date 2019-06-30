@@ -1,5 +1,4 @@
-<img style="float: right; width: 70px;" src="docs/src/assets/logo.png">
-
+<img align="right" style="width: 70px;" src="docs/src/assets/logo.png">
 # VideoIO.jl
 
 *Reading and writing of video files in Julia.*
