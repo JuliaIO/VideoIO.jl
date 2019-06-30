@@ -44,18 +44,3 @@ change some from version to version.
 Note that, in general, the low-level functions are not very fun to use,
 so it is good to focus initially on enabling a nice, higher-level
 function for these interfaces.
-
-## Test Videos
-
-A small number of test videos are available through VideoIO.TestVideos.
-These are short videos in a variety of formats with non-restrictive
-(public domain or Creative Commons) licenses.
-
-* `VideoIO.TestVideos.available()` prints a list of all available test videos.
-* `VideoIO.testvideo("annie_oakley")` returns an AVInput object for the
-  `"annie_oakley"` video.  The video will be downloaded if it isn't available.
-* `VideoIO.TestVideos.download_all()` downloads all test videos
-* `VideoIO.TestVideos.remove_all()` removes all test videos
-
-
-

@@ -44,7 +44,7 @@ The package is tested against, and being developed for, Julia `1.0` and above on
 
 ### Platform Nodes: 
 
-- ARM: For truly lossless usage, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
+- ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
 ## Questions and Contributions
 

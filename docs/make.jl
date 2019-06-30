@@ -10,6 +10,7 @@ makedocs(
         "Introduction"             => "index.md",
         "Reading Videos"           => "reading.md",
         "Writing Videos"           => "writing.md",
+        "Utilities"                => "utilities.md",
         "Low Level Functionality"  => "lowlevel.md",
         "Index"                    => "functionindex.md",
         ]

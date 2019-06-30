@@ -63,6 +63,11 @@ const videofiles  =  Dict(
                                                    ),
                      )
 
+"""
+    testvideo(name, ops...)
+
+Returns an `AVInput` object for the given video name. The video will be downloaded if it isn't available.
+"""
 function testvideo(name, ops...)
     videofile = joinpath(videodir, name)
     if !isfile(videofile)
@@ -85,7 +90,6 @@ function testvideo(name, ops...)
     VideoIO.open(videofile, ops...) # Returns an AVInput, which in turn must be opened with openvideo, openaudio, etc.
 end
 
-
 function write_info(v::VideoFile)
     credit_file = joinpath(videodir, "$(v.name).txt")
     Base.open(credit_file,"w") do f
@@ -98,7 +102,11 @@ function download(v::VideoFile)
     println(stderr, "Downloading $(v.name) to $videodir")
     download(v.download_url, joinpath(videodir, v.name))
 end
+"""
+    available()
 
+Print a list of all available test videos.
+"""
 function available()
     for v in values(videofiles)
         println(v)
@@ -107,6 +115,11 @@ end
 
 names() = collect(keys(videofiles))
 
+"""
+    download_all()
+
+Downloads all test videos.
+"""
 function download_all()
     for (filename, v) in videofiles
         videofile = joinpath(videodir, filename)
@@ -118,6 +131,11 @@ function download_all()
     end
 end
 
+"""
+    remove_all()
+
+Remove all test videos.
+"""
 function remove_all()
     for filename in keys(videofiles)
         videofile = joinpath(videodir, filename)
