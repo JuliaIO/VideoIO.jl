@@ -6,11 +6,18 @@ Functionality is based on a dedicated build of ffmpeg 4.1, provided via [FFMPEGB
 
 ### Platform Nodes: 
 
-- ARM: There is a known issue on ARM that results in very small and rare precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
+- ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
-Installation
-------------
-Use the Julia package manager.  Within Julia, do:
+## Installation
+The package can be installed with the Julia package manager.
+From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```
+pkg> add VideoIO
+```
+
+Or, equivalently, via the `Pkg` API:
+
 ```julia
-]add VideoIO
+julia> import Pkg; Pkg.add("VideoIO")
 ```
