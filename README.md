@@ -58,7 +58,7 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [docs-dev-url]: https://juliaio.github.io/VideoIO.jl/latest
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://juliadocs.github.io/VideoIO.jl/stable
+[docs-stable-url]: https://juliaio.github.io/VideoIO.jl/stable
 
 [travis-img]: https://travis-ci.org/JuliaIO/VideoIO.jl.svg?branch=master
 [travis-url]: https://travis-ci.org/JuliaIO/VideoIO.jl
