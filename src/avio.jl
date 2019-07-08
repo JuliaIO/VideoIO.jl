@@ -482,9 +482,9 @@ end
 Return timestamp of current position in seconds.
 """
 function gettime(s::VideoReader;video_stream::Integer=1)
-    stream = s.avin.video_info[video_stream].stream
+    time_base = stream.time_base
     frameindex = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
-    return frameindex * (stream.time_base.num/stream.time_base.den)
+    return frameindex * (time_base.num/time_base.den)
 end
 
 function seek(s::VideoReader, seconds::AbstractFloat,
