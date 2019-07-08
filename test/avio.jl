@@ -101,7 +101,7 @@ end
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
             
-            time_seconds = gettime(v)
+            time_seconds = VideoIO.gettime(v)
             @test time_seconds == 0
 
             if !createmode && (size(first_frame, 1) > v.height)
