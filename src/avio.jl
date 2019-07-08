@@ -2,7 +2,7 @@
 
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
-export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play
+export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play, gettime
 
 mutable struct StreamInfo
     stream_index0::Int             # zero-based
@@ -482,7 +482,7 @@ end
 Return timestamp of current position in seconds.
 """
 function gettime(s::VideoReader;video_stream::Integer=1)
-    time_base = stream.time_base
+    time_base = s.avin.video_info[video_stream].stream.time_base
     frameindex = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
     return frameindex * (time_base.num/time_base.den)
 end
