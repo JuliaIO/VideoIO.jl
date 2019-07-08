@@ -476,6 +476,17 @@ function seconds_to_timestamp(s::Float64, time_base::AVRational)
     return round(Int64, floor(s *  convert(Float64, time_base.den) / convert(Float64, time_base.num)))
 end
 
+"""
+    gettime(s::VideoReader;video_stream::Integer=1)
+
+Return timestamp of current position in seconds.
+"""
+function gettime(s::VideoReader;video_stream::Integer=1)
+    stream = s.avin.video_info[video_stream].stream
+    frameindex = s.aVideoFrame[video_stream].pkt_dts   #av_frame_get_best_effort_timestamp(s.aVideoFrame)
+    return frameindex * (stream.time_base.num/stream.time_base.den)
+end
+
 function seek(s::VideoReader, seconds::AbstractFloat,
               seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0,
               video_stream::Integer=1, forward::Bool=false)
