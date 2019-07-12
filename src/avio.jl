@@ -635,7 +635,7 @@ if FFMPEG.have_avdevice()
         camera_devices = String[]
 
         read_vid_devs = false
-        lines = collectexecoutput(FFMPEG.ffmpeg_exe(`-list_devices true -f $idev -i $idev_name`))
+        lines = FFMPEG.exe(`-list_devices true -f $idev -i $idev_name`,collect=true)
 
         for line in lines
             if occursin("video devices",line)
