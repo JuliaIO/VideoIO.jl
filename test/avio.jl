@@ -1,5 +1,5 @@
 using Test
-using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, FixedPointNumbers, Statistics
+using ColorTypes, FileIO, ImageCore, ImageMagick, Dates, Statistics
 using Statistics, StatsBase
 
 import VideoIO
