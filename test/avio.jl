@@ -200,9 +200,9 @@ end
 @testset "Reading video duration, start date, and duration" begin
     # tesing the duration and date & time functions:
     file = joinpath(videodir, "annie_oakley.ogg")
-    @test VideoIO.get_duration(file) == Dates.Microsecond(24224200)
+    @test VideoIO.get_duration(file) == 24224200/1e6
     @test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
-    @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), Dates.Microsecond(24224200))
+    @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), 24224200/1e6)
 end
 
 @testset "Lossless video encoding (read, encode, read, compare)" begin
