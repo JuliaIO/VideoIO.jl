@@ -22,18 +22,6 @@ isarm() = Base.Sys.ARCH in (:arm,:arm32,:arm7l,:armv7l,:arm8l,:armv8l,:aarch64,:
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
-# tesing that the executables run by testing the standard first line output
-@testset "Executable functionality (ffmpeg & ffprobe)" begin
-    withenv(VideoIO.execenv) do
-        out = VideoIO.collectexecoutput(`$(VideoIO.ffmpeg)`)
-        @test occursin("ffmpeg version ",out[1])
-    end
-    withenv(VideoIO.execenv) do
-        out = VideoIO.collectexecoutput(`$(VideoIO.ffprobe)`)
-        @test occursin("ffprobe version ",out[1])
-    end
-end
-
 @testset "UInt8 accuracy during read & encode" begin
     # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
     f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)

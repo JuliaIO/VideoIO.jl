@@ -630,12 +630,12 @@ const CAMERA_DEVICES = String[]
 const DEFAULT_CAMERA_DEVICE = Ref{String}()
 const DEFAULT_CAMERA_OPTIONS = AVDict()
 
-if have_avdevice()
+if FFMPEG.have_avdevice()
     function get_camera_devices(ffmpeg, idev, idev_name)
         camera_devices = String[]
 
         read_vid_devs = false
-        lines = collectexecoutput(`$ffmpeg -list_devices true -f $idev -i $idev_name`)
+        lines = FFMPEG.exe(`-list_devices true -f $idev -i $idev_name`,collect=true)
 
         for line in lines
             if occursin("video devices",line)
