@@ -4,7 +4,7 @@
 
 *Reading and writing of video files in Julia.*
 
-Functionality based on a dedicated build of ffmpeg 4.1 via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
+Functionality based on a dedicated build of ffmpeg 4.1 via [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl) (based on the cross-platform [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder))
 
 **Docs** 
 [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url]
