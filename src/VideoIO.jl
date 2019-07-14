@@ -2,7 +2,7 @@ module VideoIO
 
 using Libdl                                             #0.227492 seconds
 using Requires, Dates, ProgressMeter                    #0.001749 seconds
-using ColorTypes: RGB, Gray, N0f8                       #0.973723 seconds
+using ColorTypes: RGB, Gray, N0f8                       #0.562192 seconds
 using ImageCore: permuteddimsview, channelview, rawview #0.723065 seconds
 
 const libpath = joinpath(@__DIR__, "..", "deps", "usr", "lib")
