@@ -215,18 +215,16 @@ mux(srcfilename,destfilename,framerate;silent=false)
 Multiplex stream object into video container.
 """
 function mux(srcfilename,destfilename,framerate;silent=false)
-    withenv(execenv) do
-        muxout = collectexecoutput(`$(ffmpeg) -y -framerate $framerate -i $srcfilename -c copy $destfilename`)
-        filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
-        if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
-            rm("$srcfilename")
-            !silent && (@info "Video file saved: $(pwd())/$destfilename")
-            !silent && (@info muxout[end-1])
-            !silent && (@info muxout[end])
-        else
-            @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
-            println.(muxout)
-        end
+    muxout = FFMPEG.exe(`-y -framerate $framerate -i $srcfilename -c copy $destfilename`, collect=true)
+    filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
+    if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
+        rm("$srcfilename")
+        !silent && (@info "Video file saved: $(pwd())/$destfilename")
+        !silent && (@info muxout[end-1])
+        !silent && (@info muxout[end])
+    else
+        @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
+        println.(muxout)
     end
 end
 
