@@ -5,17 +5,6 @@ using Requires, Dates, ProgressMeter                    #0.001749 seconds
 using ColorTypes: RGB, Gray, N0f8                       #0.562192 seconds
 using ImageCore: permuteddimsview, channelview, rawview #0.723065 seconds
 
-const libpath = joinpath(@__DIR__, "..", "deps", "usr", "lib")
-
-if Sys.iswindows()
-    const execenv = ("PATH" => string(VideoIO.libpath,";",Sys.BINDIR))
-elseif Sys.isapple()
-    const execenv = ("DYLD_LIBRARY_PATH" => VideoIO.libpath)
-else
-    const execenv = ("LD_LIBRARY_PATH" => VideoIO.libpath)
-end
-
-
 include("init.jl")
 include("util.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
@@ -29,7 +18,7 @@ using .AVCodecs
 using .AVFormat
 using .SWScale
 
-if have_avdevice()
+if FFMPEG.have_avdevice()
     import .AVDevice
 end
 
@@ -106,7 +95,7 @@ function playvideo(video;flipx=false,flipy=false)
     error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
 end
 function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-    if have_avdevice()
+    if FFMPEG.have_avdevice()
         error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
     else
         error("No AV device detected")
@@ -128,7 +117,7 @@ function __init__()
 
     av_register_all()
 
-    if have_avdevice()
+    if FFMPEG.have_avdevice()
         AVDevice.avdevice_register_all()
         init_camera_devices()
         init_camera_settings()
@@ -166,7 +155,7 @@ function __init__()
             play(f,flipx=flipx,flipy=flipy,pixelaspectratio=pixelaspectratio)
         end
 
-        if have_avdevice()
+        if FFMPEG.have_avdevice()
             function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
                 init_camera_settings()
                 camera = opencamera(device[], format[])
