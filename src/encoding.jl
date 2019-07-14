@@ -1,4 +1,3 @@
-using ColorTypes, ProgressMeter, FixedPointNumbers, ImageTransformations, ImageCore
 
 export encodevideo, encode!, prepareencoder, appendencode!, finishencode!, mux
 
