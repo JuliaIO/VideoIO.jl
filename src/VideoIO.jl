@@ -4,6 +4,7 @@ using Libdl                                             #0.227492 seconds
 using Requires, Dates, ProgressMeter                    #0.001749 seconds
 using ImageCore: permuteddimsview, channelview, rawview #0.723065 seconds
 using ColorTypes: RGB, Gray, N0f8, YCbCr                #? seconds
+using ImageTransformations
 
 include("init.jl")
 include("util.jl")
