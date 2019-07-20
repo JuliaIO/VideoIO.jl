@@ -29,7 +29,7 @@ f = VideoIO.openvideo(io)
 seek(f,2.5)  ## The second parameter is the time in seconds and must be Float64
 img = read(f)
 scene = Makie.Scene(resolution = size(img))
-makieimg = Makie.image!(scene, buf, show_axis = false, scale_plot = false)[end]
+makieimg = Makie.image!(scene, img, show_axis = false, scale_plot = false)[end]
 Makie.rotate!(scene, -0.5pi)
 display(scene)
 

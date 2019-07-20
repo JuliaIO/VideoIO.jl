@@ -23,64 +23,6 @@ isarm() = Base.Sys.ARCH in (:arm,:arm32,:arm7l,:armv7l,:arm8l,:armv8l,:aarch64,:
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
-@testset "UInt8 accuracy during read & encode" begin
-    # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
-    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
-    frame_truth = collect(rawview(channelview(read(f))))
-    h_truth = fit(Histogram, frame_truth[:], 0:256)
-    @test h_truth.weights == fill(1,256) #Test that reading is precise
-
-    # Test that encoding new test video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
-    img = Array{UInt8}(undef,16,16)
-    for i in 1:256
-        img[i] = UInt8(i-1)
-    end
-    imgstack = []
-    for i=1:24
-        push!(imgstack,img)
-    end
-    props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-    VideoIO.encodevideo(joinpath(testdir,"precisiontest_gray_test.mp4"), imgstack,
-    AVCodecContextProperties = props,silent=true)
-    f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_test.mp4"),
-    target_format=VideoIO.AV_PIX_FMT_GRAY8)
-    frame_test = collect(rawview(channelview(read(f))))
-    h_test = fit(Histogram, frame_test[:], 0:256)
-    @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
-end
-
-@testset "Correct frame order when reading & encoding" begin
-    @testset "Frame order when reading ground truth video" begin
-        # Test that reading a video with frame-incremental pixel values is read in in-order
-        f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
-        frame_ids_truth = []
-        while !eof(f)
-            img = collect(rawview(channelview(read(f))))
-            push!(frame_ids_truth,img[1,1])
-        end
-        @test frame_ids_truth == collect(0:255) #Test that reading is in correct frame order
-    end
-    @testset "Frame order when encoding, then reading video" begin
-        # Test that writing and reading a video with frame-incremental pixel values is read in in-order
-        imgstack = []
-        img = Array{UInt8}(undef,16,16)
-        for i in 0:255
-            push!(imgstack,fill(UInt8(i),(16,16)))
-        end
-        props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-        VideoIO.encodevideo(joinpath(testdir,"ordertest_gray_test.mp4"), imgstack,
-        AVCodecContextProperties = props,silent=true)
-        f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_test.mp4"),
-        target_format=VideoIO.AV_PIX_FMT_GRAY8)
-        frame_ids_test = []
-        while !eof(f)
-            img = collect(rawview(channelview(read(f))))
-            push!(frame_ids_test,img[1,1])
-        end
-        @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
-    end
-end
-
 @testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
         @testset "Reading $name" begin
@@ -89,7 +31,7 @@ end
 
             f = VideoIO.testvideo(name)
             v = VideoIO.openvideo(f)
-            
+
             time_seconds = VideoIO.gettime(v)
             @test time_seconds == 0
 
@@ -185,16 +127,35 @@ end
     @test_throws ErrorException VideoIO.testvideo("rickroll")
     @test_throws ErrorException VideoIO.testvideo("")
 end
-
-@testset "Reading video duration, start date, and duration" begin
-    # tesing the duration and date & time functions:
-    file = joinpath(videodir, "annie_oakley.ogg")
-    @test VideoIO.get_duration(file) == 24224200/1e6
-    @test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
-    @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), 24224200/1e6)
+@testset "Reading video metadata" begin
+    @testset "Reading Storage Aspect Ratio: SAR" begin
+        # currently, the SAR of all the test videos is 1, we should get another video with a valid SAR that is not equal to 1
+        vids = Dict("ladybird.mp4" => 1, "black_hole.webm" => 1, "crescent-moon.ogv" => 1, "annie_oakley.ogg" => 1)
+        @test all(VideoIO.aspect_ratio(VideoIO.openvideo(joinpath(videodir, k))) == v for (k,v) in vids)
+    end
+    @testset "Reading video duration, start date, and duration" begin
+        # tesing the duration and date & time functions:
+        file = joinpath(videodir, "annie_oakley.ogg")
+        @test VideoIO.get_duration(file) == 24224200/1e6
+        @test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
+        @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), 24224200/1e6)
+    end
 end
 
-@testset "Lossless video encoding (read, encode, read, compare)" begin
+
+@testset "Encoding video across all supported colortypes" begin
+    for el in [UInt8, RGB{N0f8}]
+        @testset "Encoding $el imagestack" begin
+            imgstack = map(x->rand(el,100,100),1:100)
+            props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+            encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,framerate=30,AVCodecContextProperties=props, silent=true)
+            @test stat(encodedvideopath).size > 100
+            rm(encodedvideopath)
+        end
+    end
+end
+
+@testset "Video encode/decode accuracy (read, encode, read, compare)" begin
     file = joinpath(videodir, "annie_oakley.ogg")
     f = VideoIO.openvideo(file)
     imgstack_rgb = []
@@ -241,12 +202,66 @@ end
         @test size(imgstack_rgb[1]) == size(imgstack_rgb_copy[1])
         @test !any(.!(imgstack_rgb .== imgstack_rgb_copy))
     end
+
+    @testset "UInt8 accuracy during read & lossless encode" begin
+        # Test that reading truth video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
+        f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+        frame_truth = collect(rawview(channelview(read(f))))
+        h_truth = fit(Histogram, frame_truth[:], 0:256)
+        @test h_truth.weights == fill(1,256) #Test that reading is precise
+
+        # Test that encoding new test video has one of each UInt8 value pixels (16x16 frames = 256 pixels)
+        img = Array{UInt8}(undef,16,16)
+        for i in 1:256
+            img[i] = UInt8(i-1)
+        end
+        imgstack = []
+        for i=1:24
+            push!(imgstack,img)
+        end
+        props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+        VideoIO.encodevideo(joinpath(testdir,"precisiontest_gray_test.mp4"), imgstack,
+            AVCodecContextProperties = props,silent=true)
+        f = VideoIO.openvideo(joinpath(testdir,"precisiontest_gray_test.mp4"),
+            target_format=VideoIO.AV_PIX_FMT_GRAY8)
+        frame_test = collect(rawview(channelview(read(f))))
+        h_test = fit(Histogram, frame_test[:], 0:256)
+        @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
+    end
+
+    @testset "Correct frame order when reading & encoding" begin
+        @testset "Frame order when reading ground truth video" begin
+            # Test that reading a video with frame-incremental pixel values is read in in-order
+            f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_truth.mp4"),target_format=VideoIO.AV_PIX_FMT_GRAY8)
+            frame_ids_truth = []
+            while !eof(f)
+                img = collect(rawview(channelview(read(f))))
+                push!(frame_ids_truth,img[1,1])
+            end
+            @test frame_ids_truth == collect(0:255) #Test that reading is in correct frame order
+        end
+        @testset "Frame order when encoding, then reading video" begin
+            # Test that writing and reading a video with frame-incremental pixel values is read in in-order
+            imgstack = []
+            img = Array{UInt8}(undef,16,16)
+            for i in 0:255
+                push!(imgstack,fill(UInt8(i),(16,16)))
+            end
+            props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
+            VideoIO.encodevideo(joinpath(testdir,"ordertest_gray_test.mp4"), imgstack,
+                AVCodecContextProperties = props,silent=true)
+            f = VideoIO.openvideo(joinpath(testdir,"ordertest_gray_test.mp4"),
+                target_format=VideoIO.AV_PIX_FMT_GRAY8)
+            frame_ids_test = []
+            while !eof(f)
+                img = collect(rawview(channelview(read(f))))
+                push!(frame_ids_test,img[1,1])
+            end
+            @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
+        end
+    end
 end
 
-@testset "Storage Aspect Ratio: SAR" begin
-    # currently, the SAR of all the test videos is 1, we should get another video with a valid SAR that is not equal to 1
-    vids = Dict("ladybird.mp4" => 1, "black_hole.webm" => 1, "crescent-moon.ogv" => 1, "annie_oakley.ogg" => 1)
-    @test all(VideoIO.aspect_ratio(VideoIO.openvideo(joinpath(videodir, k))) == v for (k,v) in vids)
-end
+
 
 #VideoIO.TestVideos.remove_all()
