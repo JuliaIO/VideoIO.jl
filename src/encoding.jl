@@ -233,7 +233,7 @@ encodevideo(filename::String,imgstack::Array;
     codec_name = "libx264",
     framerate = 24)
 
-Encode image stack to video file
+Encode image stack to video file and return filepath.
 
 """
 function encodevideo(filename::String,imgstack::Array;
@@ -254,4 +254,5 @@ function encodevideo(filename::String,imgstack::Array;
     finishencode!(encoder, io)
     close(io)
     mux("temp.stream",filename,framerate,silent=silent)
+    return filename
 end
