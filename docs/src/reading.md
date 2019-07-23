@@ -4,7 +4,7 @@ Note: Reading of audio streams is not yet implemented
 ## Reading Video Files
 
 VideoIO contains a simple high-level interface which allows reading of
-video frames from a supported video file, or from a camera device:
+video frames from a supported video file (or from a camera device, shown later).
 
 ```julia
 using VideoIO
@@ -41,7 +41,7 @@ end
 close(f)
 ```
 
-## Playing back videos
+## Video Playback
 
 A trivial video player interface exists (no audio) through `Makie.jl`.
 Note: `Makie` must be imported first to enable playback functionality.
