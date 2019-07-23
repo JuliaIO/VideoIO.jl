@@ -487,6 +487,11 @@ function gettime(s::VideoReader;video_stream::Integer=1)
     return frameindex * (time_base.num/time_base.den)
 end
 
+"""
+    seek(s::VideoReader, seconds::AbstractFloat, seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0, video_stream::Integer=1, forward::Bool=false)
+
+Seek through VideoReader object.
+"""
 function seek(s::VideoReader, seconds::AbstractFloat,
               seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0,
               video_stream::Integer=1, forward::Bool=false)
@@ -522,6 +527,11 @@ function seek(s::VideoReader, seconds::AbstractFloat,
     return(s)
 end
 
+"""
+    seek(s::VideoReader, seconds::AbstractFloat, seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0, video_stream::Integer=1, forward::Bool=false)
+
+Seek through AVInput object.
+"""
 function seek(avin::AVInput{T}, seconds::AbstractFloat,
               seconds_min::AbstractFloat=-1.0,  seconds_max::AbstractFloat=-1.0,
               video_stream::Integer=1, forward::Bool=false) where T <: AbstractString
@@ -569,11 +579,20 @@ function seek(avin::AVInput{T}, seconds::AbstractFloat,
 
     return avin
 end
+"""
+    seekstart(s::VideoReader, video_stream=1)
 
+Seek to start of VideoReader object.
+"""
 function seekstart(s::VideoReader, video_stream=1)
     return seek(s, 0.0, 0.0, 0.0, video_stream, false)
 end
 
+"""
+    seekstart(avin::AVInput{T}, video_stream=1) where T <: AbstractString
+
+Seek to start of AVInput object.
+"""
 function seekstart(avin::AVInput{T}, video_stream=1) where T <: AbstractString
     return seek(avin, 0.0, 0.0, 0.0, video_stream, false)
 end
