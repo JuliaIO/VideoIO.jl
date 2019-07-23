@@ -33,7 +33,7 @@ VideoIO.seekstart
 It can be helpful to be explicit in which pixel format you wish to read frames as.
 Here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
 ```julia
-f = VideoIO.openvideo(filename,target_format=VideoIO.AV_PIX_FMT_GRAY8)
+f = VideoIO.openvideo(filename, target_format=VideoIO.AV_PIX_FMT_GRAY8)
 
 while !eof(f)
     img = reinterpret(UInt8, read(f))
