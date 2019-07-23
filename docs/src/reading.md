@@ -21,7 +21,7 @@ end
 close(f)
 ```
 
-Seeking forward through the video can be achieved via `seek(f, seconds::Float64)` and `seekstart(f)` to return to the start.
+Seeking through the video can be achieved via `seek(f, seconds::Float64)` and `seekstart(f)` to return to the start.
 ```@docs
 VideoIO.seek
 ```
