@@ -9,7 +9,9 @@ video frames from a supported video file (or from a camera device, shown later).
 ```julia
 using VideoIO
 
-io = VideoIO.open(video_file)
+#io = VideoIO.open(video_file)
+io = VideoIO.testvideo("annie_oakley") # for testing purposes
+
 f = VideoIO.openvideo(io)
 
 img = read(f)
@@ -60,12 +62,13 @@ Customization of playback can be achieved by looking at the basic expanded versi
 import Makie
 import VideoIO
 
-io = VideoIO.open(video_file)
+#io = VideoIO.open(video_file)
+io = VideoIO.testvideo("annie_oakley") # for testing purposes
 f = VideoIO.openvideo(io)
 
 img = read(f)
-scene = Makie.Scene(resolution = size(img))
-makieimg = Makie.image!(scene, img, show_axis = false, scale_plot = false)[end]
+scene = Makie.Scene(resolution = reverse(size(img)))
+makieimg = Makie.image!(scene, img, show_axis = false, scale_plot = true)[end]
 Makie.rotate!(scene, -0.5pi)
 display(scene)
 
