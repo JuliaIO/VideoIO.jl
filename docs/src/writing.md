@@ -34,7 +34,7 @@ VideoIO.encodevideo
 
 ## Iterative Encoding
 
-Alternatively, videos can be encoded iteratively within custom loops. 
+Alternatively, videos can be encoded iteratively within custom loops.
 The encoding steps follow:
 1. Initialize encoder with `prepareencoder`
 2. Iteratively add frames with `appendencode`
@@ -96,7 +96,7 @@ Encoding of the following image element color types currently supported:
 - `Gray{N0f8}`
 - `RGB{N0f8}`
 
-## Encoder settings
+## Encoder Settings
 
 The `AVCodecContextProperties` object allows control of the majority of settings required.
 Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodecContext.html).
@@ -110,12 +110,12 @@ A few helpful presets for h264:
 | Lossless compression.<br>Slowest, smallest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultraslow")]``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```[:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]``` |
 
-## Lossless encoding
+## Lossless Encoding
 ### Lossless RGB
 If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires using `codec_name = "libx264rgb"`, to avoid the lossy RGB->YUV420 conversion, and `"crf" => "0"`.
 
 ### Lossless Grayscale
-If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `"crf" => "0"` should be set, as well as `:color_range=>2` to ensure full 8-bit pixel color representation. i.e. 
+If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `"crf" => "0"` should be set, as well as `:color_range=>2` to ensure full 8-bit pixel color representation. i.e.
 ```[:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]```
 
 ### Encoding Performance
