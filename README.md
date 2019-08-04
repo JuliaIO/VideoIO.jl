@@ -78,4 +78,4 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 
 ____
 
-<sub>* Note that code coverage is low because of the presence of the vast `Clang.jl`-generated wrappers for the breadth of low-level FFMPEG functionality, the majority of which is currently un-utilized by VideoIO</sub>
+<sub>* Note that code coverage ignores the `Clang.jl`-generated wrappers for FFMPEG, given the vast majority of functions are unused, and just serve as linkage</sub>
