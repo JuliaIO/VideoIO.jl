@@ -1,0 +1,8 @@
+ignore:
+    - "src/ffmpeg/AVCodecs/v58"
+    - "src/ffmpeg/AVDevice/v58"
+    - "src/ffmpeg/AVFilters/v7"
+    - "src/ffmpeg/AVFormat/v58"
+    - "src/ffmpeg/AVUtil/v56"
+    - "src/ffmpeg/SWResample/v0"
+    - "src/ffmpeg/SWScale/v5"
