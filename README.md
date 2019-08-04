@@ -78,4 +78,4 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 
 ____
 
-<sub>* Note that code coverage ignores the `Clang.jl`-generated wrappers for FFMPEG, given the vast majority of functions are unused, and just serve as linkage</sub>
+<sub>* Note that code coverage ignores the `Clang.jl`-generated wrappers for FFMPEG, given they just serve as linkage (and the vast majority of FFMPEG functions are currently unused)</sub>
