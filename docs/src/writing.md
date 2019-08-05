@@ -8,12 +8,13 @@ Videos can be encoded directly from image stack using `encodevideo(filename::Str
 
 For instance, say an image stack has been constructed from reading a series of image files `1.png`, `2.png`,`3.png` etc. :
 ```julia
+using FileIO
 imgnames = filter(x->occursin(".png",x),readdir()) # Populate list of all .pngs
 intstrings =  map(x->split(x,".")[1],imgnames) # Extract index from filenames
 p = sortperm(parse.(Int,intstrings)) #sort files numerically
 imgstack = []
 for imgname in imgnames[p]
-    push!(imgstack,read(imgname))
+    push!(imgstack,load(imgname))
 end
 ```
 
