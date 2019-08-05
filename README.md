@@ -15,7 +15,7 @@ Functionality based on a dedicated build of ffmpeg 4.1 via [FFMPEG.jl](https://g
 | Windows 32/64-bit | [![][appveyor-img]][appveyor-url] |
 | Linux ARM 32/64-bit | [![][drone-img]][drone-url] | 
 | FreeBSD x86 | [![][cirrus-img]][cirrus-url] |
-|  | [![Coverage Status](https://coveralls.io/repos/github/JuliaIO/VideoIO.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaIO/VideoIO.jl?branch=master) * |
+|  | [![][codecov-img]][codecov-url]<br>[![Coverage Status](https://coveralls.io/repos/github/JuliaIO/VideoIO.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaIO/VideoIO.jl?branch=master) * |
 
 ## Installation
 
@@ -78,4 +78,4 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 
 ____
 
-<sub>* Note that code coverage includes all of the `Clang.jl`-generated wrappers for FFMPEG, the majority of which are currently unused</sub>
+<sub>* Note that coveralls.io code coverage includes all of the `Clang.jl`-generated wrappers for FFMPEG, the majority of which are currently unused</sub>
