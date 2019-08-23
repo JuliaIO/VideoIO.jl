@@ -6,14 +6,13 @@
 
 Functionality based on a dedicated build of ffmpeg 4.1 via [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl) (based on the cross-platform [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder))
 
-**Docs** 
+**Docs**
 [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] [![Join the julia slack](https://img.shields.io/badge/chat-slack%23video-yellow.svg)](https://slackinvite.julialang.org)
 
 | **Platform**                                                               | **Build Status**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| Linux & MacOS x86 | [![][travis-img]][travis-url] |
-| Windows 32/64-bit | [![][appveyor-img]][appveyor-url] |
-| Linux ARM 32/64-bit | [![][drone-img]][drone-url] | 
+| Linux 32/64-bit, MacOS 64-bit, Windows 32/64-bit | [![][travis-img]][travis-url] |
+| Linux ARM 32/64-bit | [![][drone-img]][drone-url] |
 | FreeBSD x86 | [![][cirrus-img]][cirrus-url] |
 |  | [![][codecov-img]][codecov-url]<br>[![Coverage Status](https://coveralls.io/repos/github/JuliaIO/VideoIO.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaIO/VideoIO.jl?branch=master) * |
 
@@ -41,7 +40,7 @@ julia> import Pkg; Pkg.add("VideoIO")
 
 The package is tested against, and being developed for, Julia `1.0` and above on Linux, macOS, and Windows, for x86, x86_64, armv7 and armv8 (aarch64).
 
-### Platform Nodes: 
+### Platform Nodes:
 
 - ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
