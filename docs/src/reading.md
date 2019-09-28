@@ -102,23 +102,23 @@ VideoIO.viewcam()
 
 An expanded version of this approach:
 ```julia
-import Makie
-import VideoIO
+import Makie, VideoIO
 
-io = VideoIO.open(video_file)
-f = VideoIO.openvideo(io)
+cam = VideoIO.opencamera()
 
-img = read(f)
-scene = Makie.Scene(resolution = size(img))
+img = read(cam)
+scene = Makie.Scene(resolution = size(img'))
 makieimg = Makie.image!(scene, img, show_axis = false, scale_plot = false)[end]
 Makie.rotate!(scene, -0.5pi)
 display(scene)
 
-while !eof(f)
-    read!(f, img)
+while isopen(scene)
+    read!(cam, img)
     makieimg[1] = img
-    sleep(1/f.framerate)
+    sleep(1/cam.framerate)
 end
+
+close(cam)
 ```
 
 ## Video Properties & Metadata
