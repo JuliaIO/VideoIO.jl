@@ -89,7 +89,7 @@ using VideoIO
 cam = VideoIO.opencamera()
 for i in 1:100
     img = read(cam)
-    sleep(1/framerate)
+    sleep(1/cam.framerate)
 end
 ```
 ### Webcam playback
