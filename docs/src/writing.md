@@ -44,6 +44,26 @@ The encoding steps follow:
 
 For instance:
 ```julia
+using VideoIO
+framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
+
+props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+framerate=24
+encoder = prepareencoder(framestack[1], framerate=framerate, AVCodecContextProperties=props)
+
+open("temp.stream", "w") do io
+    for i in 1:length(framestack)
+        appendencode!(encoder, io, framestack[i], i)
+    end
+    finishencode!(encoder, io)
+end
+
+mux("temp.stream", "video.mp4", framerate) #Multiplexes the stream into a video container
+```
+
+A working example to save a series of png files as a video:
+
+```julia
 using VideoIO, ProgressMeter
 
 dir = "" #path to directory holding images
