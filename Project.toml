@@ -14,8 +14,10 @@ ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
+ColorTypes = "0.9"
 FFMPEG = "≥ 0.2.0"
 ImageTransformations = "0.8"
+ImageCore = "0.8"
 julia = "≥ 0.7.0"
 
 [extras]
