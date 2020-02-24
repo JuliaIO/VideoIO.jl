@@ -44,29 +44,45 @@ The encoding steps follow:
 
 For instance:
 ```julia
+using VideoIO
+framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
+
+props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+framerate=24
+encoder = prepareencoder(framestack[1], framerate=framerate, AVCodecContextProperties=props)
+
+open("temp.stream", "w") do io
+    for i in 1:length(framestack)
+        appendencode!(encoder, io, framestack[i], i)
+    end
+    finishencode!(encoder, io)
+end
+
+mux("temp.stream", "video.mp4", framerate) #Multiplexes the stream into a video container
+```
+
+A working example to save a series of png files as a video:
+
+```julia
 using VideoIO, ProgressMeter
 
-imgnames = filter(x->occursin(".png",x),readdir()) # Populate list of all .pngs
+dir = "" #path to directory holding images
+imgnames = filter(x->occursin(".png",x),readdir(dir)) # Populate list of all .pngs
 intstrings =  map(x->split(x,".")[1],imgnames) # Extract index from filenames
 p = sortperm(parse.(Int,intstrings)) #sort files numerically
 imgnames = imgnames[p]
 
-filename = "manual.mp4"
+filename = "video.mp4"
 framerate = 24
 props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
 
-firstimg = read(imgnames[1])
+firstimg = load(joinpath(dir,imgnames[1]))
 encoder = prepareencoder(firstimg, framerate=framerate, AVCodecContextProperties=props)
 
 io = Base.open("temp.stream","w")
-p = Progress(length(imgstack), 1)
-index = 1
-for imgname in imgnames
-    global index
-    img = read(imgname)
-    appendencode!(encoder, io, img, index)
-    next!(p)
-    index += 1
+@showprogress "Encoding video frames.." for i in 1:length(imgnames)
+    img = load(joinpath(dir,imgnames[i]))
+    appendencode!(encoder, io, img, i)
 end
 
 finishencode!(encoder, io)
