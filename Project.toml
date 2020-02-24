@@ -15,6 +15,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 FFMPEG = "≥ 0.2.0"
+ImageCore = "0.8"
 julia = "≥ 0.7.0"
 
 [extras]
