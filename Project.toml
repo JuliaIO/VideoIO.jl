@@ -15,13 +15,13 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 ColorTypes = "0.9"
-FFMPEG = "≥ 0.2.0"
+FFMPEG = "0.2"
 ImageTransformations = "0.8"
 ProgressMeter = "1.2"
 Requires = "1.0"
 Glob = "1.2"
 ImageCore = "0.8"
-julia = "≥ 0.7.0"
+julia = "0.7, 1.0"
 
 [extras]
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
