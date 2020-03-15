@@ -167,7 +167,7 @@ function __init__()
     end
 end
 
-# include("../deps/SnoopCompile/precompile/precompile_VideoIO.jl")
-# _precompile_()
+include("../deps/SnoopCompile/precompile/precompile_VideoIO.jl")
+_precompile_()
 
 end # VideoIO
