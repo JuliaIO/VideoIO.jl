@@ -1,0 +1,29 @@
+name: InvalidationFlagger
+on:
+  - pull_request
+jobs:
+  CompatHelper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: nightly
+      - name: Install package and precompile
+        run: julia --project -e 'using Pkg;Pkg.instantiate();using VideoIO'
+      - name: Test for invalidations
+        run: julia --project -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO' &> ./invalidationdump.txt
+      - name: Parse log for invalidations
+        run: sed -n '/\>\> /p' ./invalidationdump.txt > ./invalidated.txt
+      - name: Read invalidated list 
+        id: logfile
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./invalidated.txt
+      - name: Comment on PR
+        uses: unsplash/comment-on-pr@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: """${{ steps.logfile.outputs.content }}"""
+          check_for_duplicate_msg: false  # OPTIONAL
