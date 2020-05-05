@@ -11,12 +11,12 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: nightly
-      - name: Install package
-        run: julia --project -e 'using Pkg;Pkg.instantiate()'
+      - name: Install package and precompile
+        run: julia --project -e 'using Pkg;Pkg.instantiate();using VideoIO'
       - name: Test for invalidations
         run: julia --project -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO' &> /tmp/invalidationdump.log
       - name: Parse log
-        run: sed -n '\>\>' /tmp/invalidationdump.log > /tmp/invalidated.log
+        run: sed -n '/\>\>/p' /tmp/invalidationdump.log >> /tmp/invalidated.log
       - uses: harupy/comment-on-pr@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
