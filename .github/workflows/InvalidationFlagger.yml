@@ -1,8 +1,6 @@
 name: InvalidationFlagger
-
 on:
   - pull_request
-
 jobs:
   CompatHelper:
     runs-on: ubuntu-latest
