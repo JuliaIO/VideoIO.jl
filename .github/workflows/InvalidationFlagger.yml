@@ -16,7 +16,7 @@ jobs:
       - name: Test for invalidations
         run: julia --project -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO' &> ./invalidationdump.log
       - name: Parse log
-        run: sed -n '/\>\>/p' ./invalidationdump.log >> ./invalidated.log
+        run: sed -n '/\>\>/p' ./invalidationdump.log > ./invalidated.log
       - name: Read invalidated.log
         id: logfile
         uses: juliangruber/read-file-action@v1
