@@ -1,0 +1,15 @@
+name: InvalidationFlagger
+
+on:
+  - push
+
+jobs:
+  CompatHelper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: nightly
+      - name: Install custom registries
+        run: julia -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO'
