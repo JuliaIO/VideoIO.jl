@@ -11,5 +11,5 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: nightly
-      - name: Install custom registries
-        run: julia -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO'
+      - name: Test for invalidations
+        run: julia --project -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO'
