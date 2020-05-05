@@ -1,7 +1,7 @@
 name: InvalidationFlagger
 
 on:
-  - push
+  - pull_request
 
 jobs:
   CompatHelper:
