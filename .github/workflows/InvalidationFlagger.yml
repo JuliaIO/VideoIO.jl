@@ -11,5 +11,7 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: nightly
+      - name: Set up package
+        run: julia --project -e 'using Pkg;Pkg.instantiate()'
       - name: Test for invalidations
         run: julia --project -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using VideoIO'
