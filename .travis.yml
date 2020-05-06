@@ -4,16 +4,27 @@ sudo: false
 os:
   - linux
   - osx
+  - freebsd
 julia:
   - 1.0
-  - 1.1
-  - 1.2
+  - 1.4
   - nightly
 matrix:
   allow_failures:
     - julia: nightly
 notifications:
   email: false
+
+branches:
+  only:
+  - master
+  - gh-pages # For building documentation
+  - /^testing-.*$/ # testing branches
+  - /^v[0-9]+\.[0-9]+\.[0-9]+$/ # version tags
+
+cache:
+  directories:
+  - $HOME/.julia/artifacts
 
 after_success:
   # push coverage results to Coveralls and Codecov

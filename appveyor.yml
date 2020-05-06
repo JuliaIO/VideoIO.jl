@@ -1,8 +1,7 @@
 environment:
   matrix:
   - julia_version: 1.0
-  - julia_version: 1.1
-  - julia_version: 1.2
+  - julia_version: 1.4
   - julia_version: latest
 
 platform:
@@ -19,6 +18,9 @@ branches:
   only:
     - master
     - /release-.*/
+
+cache:
+  - '%USERPROFILE%\.julia\artifacts'
 
 notifications:
   - provider: Email
