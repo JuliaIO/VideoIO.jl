@@ -1,5 +1,6 @@
+---
 kind: pipeline
-name: linux-arm-1.0
+name: linux - arm - Julia 1.0
 
 platform:
   os: linux
@@ -9,29 +10,25 @@ steps:
 - name: build
   image: julia:1.0
   commands:
-      - uname -a
-      - julia --project=. -e 'using Pkg; Pkg.build(); Pkg.test(coverage=true)'
-
-#---
-#
-#kind: pipeline
-#name: linux-arm-1.1
-#
-#platform:
-#  os: linux
-#  arch: arm
-#
-#steps:
-#- name: build
-#  image: julia:1.1
-#  commands:
-#      - uname -a
-#      - julia --project=. -e 'using Pkg; Pkg.build(); Pkg.test(coverage=true)'
+  - "julia --project=. --check-bounds=yes --color=yes -e 'using InteractiveUtils; versioninfo(verbose=true); using Pkg; Pkg.build(); Pkg.test(coverage=true)'"
 
 ---
-
 kind: pipeline
-name: linux-aarch64-1.0
+name: linux - arm - Julia 1.4
+
+platform:
+  os: linux
+  arch: arm
+
+steps:
+- name: build
+  image: julia:1.4
+  commands:
+  - "julia --project=. --check-bounds=yes --color=yes -e 'using InteractiveUtils; versioninfo(verbose=true); using Pkg; Pkg.build(); Pkg.test(coverage=true)'"
+
+---
+kind: pipeline
+name: linux - arm64 - Julia 1.0
 
 platform:
   os: linux
@@ -41,13 +38,11 @@ steps:
 - name: build
   image: julia:1.0
   commands:
-      - uname -a
-      - julia --project=. -e 'using Pkg; Pkg.build(); Pkg.test(coverage=true)'
+  - "julia --project=. --check-bounds=yes --color=yes -e 'using InteractiveUtils; versioninfo(verbose=true); using Pkg; Pkg.build(); Pkg.test(coverage=true)'"
 
 ---
-
 kind: pipeline
-name: linux-aarch64-1.1
+name: linux - arm64 - Julia 1.4
 
 platform:
   os: linux
@@ -55,7 +50,8 @@ platform:
 
 steps:
 - name: build
-  image: julia:1.1
+  image: julia:1.4
   commands:
-      - uname -a
-      - julia --project=. -e 'using Pkg; Pkg.build(); Pkg.test(coverage=true)'
+  - "julia --project=. --check-bounds=yes --color=yes -e 'using InteractiveUtils; versioninfo(verbose=true); using Pkg; Pkg.build(); Pkg.test(coverage=true)'"
+
+...
