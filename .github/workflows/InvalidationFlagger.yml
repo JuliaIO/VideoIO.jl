@@ -1,0 +1,53 @@
+name: InvalidationFlagger
+on:
+  - pull_request
+jobs:
+  CompatHelper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: nightly
+      - name: Get package name
+        id: pkg
+        run: |
+          REPONAME="${{ github.event.repository.name }}"
+          PACKAGENAME=${REPONAME%.jl}
+          echo "::set-output name=name::$PACKAGENAME"
+      - name: Install package and precompile
+        run: julia --project -e 'using Pkg;Pkg.instantiate(); using ${{ steps.pkg.outputs.name }}'
+      - name: Test for invalidations during \`using ${{ steps.pkg.outputs.name }}\`
+        id: test
+        run: |
+          mkdir -p outputs/
+          REPONAME="${{ github.event.repository.name }}"
+          PACKAGENAME=${REPONAME%.jl}
+          julia --project -e 'unsafe_store!(cglobal(:jl_debug_method_invalidation, Cint), 1); using ${{ steps.pkg.outputs.name }}' &> outputs/invalidationdump.log
+          sed -n '/>> /p' outputs/invalidationdump.log >> outputs/invalidationpoints.log
+          COUNT=$(wc -l < outputs/invalidationpoints.log)
+          echo "::set-output name=count::$COUNT"
+      - name: Parse invalidations
+        if: steps.test.outputs.count > 0
+        run: |    
+          GITHUB_WORKFLOW_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          printf "InvalidationFlagger Bot found ${{ steps.test.outputs.count }} sources of compillation invalidation during \`using ${{ steps.pkg.outputs.name }}\`\n\n" > outputs/msg.log
+          printf "<details>\n" >> outputs/msg.log
+          printf "  <summary>Click to expand invalidation points</summary>\n\n" >> outputs/msg.log
+          printf "\`\`\`\n" >> outputs/msg.log
+          printf "$(cat outputs/invalidationpoints.log)" >> outputs/msg.log 
+          printf  "\n\`\`\`\n\n" >> outputs/msg.log
+          printf "</details>\n\n" >> outputs/msg.log
+          echo "Full log available in job artifacts: [invalidationdump]($GITHUB_WORKFLOW_URL)" >> outputs/msg.log
+      - uses: actions/upload-artifact@v1
+        if: steps.test.outputs.count > 0
+        with:
+          name: invalidationdump
+          path: outputs/invalidationdump.log
+      - name: Add bot comment to PR
+        if: steps.test.outputs.count > 0
+        uses: machine-learning-apps/pr-comment@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: outputs/msg.log
