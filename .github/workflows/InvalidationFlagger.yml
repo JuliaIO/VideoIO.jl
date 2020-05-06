@@ -31,7 +31,7 @@ jobs:
         if: steps.test.outputs.count > 0
         run: |    
           GITHUB_WORKFLOW_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-          printf "InvalidationFlagger Bot found ${{ steps.test.outputs.count }} sources of compillation invalidation during \`using ${{ steps.pkg.outputs.name }}\`\n\n" > outputs/msg.log
+          printf "InvalidationFlagger found ${{ steps.test.outputs.count }} sources of compillation invalidation during \`using ${{ steps.pkg.outputs.name }}\`\n\n" > outputs/msg.log
           printf "<details>\n" >> outputs/msg.log
           printf "  <summary>Click to expand invalidation points</summary>\n\n" >> outputs/msg.log
           printf "\`\`\`\n" >> outputs/msg.log
