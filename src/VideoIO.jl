@@ -18,10 +18,7 @@ using .AVUtil
 using .AVCodecs
 using .AVFormat
 using .SWScale
-
-if FFMPEG.have_avdevice()
-    import .AVDevice
-end
+import .AVDevice
 
 include("info.jl")
 include("avdictionary.jl")
@@ -96,11 +93,7 @@ function playvideo(video;flipx=false,flipy=false)
     error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
 end
 function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-    if FFMPEG.have_avdevice()
-        error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
-    else
-        error("No AV device detected")
-    end
+    error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
 end
 
 function __init__()
@@ -118,11 +111,9 @@ function __init__()
 
     av_register_all()
 
-    if FFMPEG.have_avdevice()
-        AVDevice.avdevice_register_all()
-        init_camera_devices()
-        init_camera_settings()
-    end
+    AVDevice.avdevice_register_all()
+    init_camera_devices()
+    init_camera_settings()
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
         # Define read and retrieve for Images
@@ -156,14 +147,13 @@ function __init__()
             play(f,flipx=flipx,flipy=flipy,pixelaspectratio=pixelaspectratio)
         end
 
-        if FFMPEG.have_avdevice()
-            function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
-                init_camera_settings()
-                camera = opencamera(device[], format[])
-                play(camera, flipx=true, pixelaspectratio=pixelaspectratio)
-                close(camera)
-            end
+        function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
+            init_camera_settings()
+            camera = opencamera(device[], format[])
+            play(camera, flipx=true, pixelaspectratio=pixelaspectratio)
+            close(camera)
         end
+
     end
 end
 

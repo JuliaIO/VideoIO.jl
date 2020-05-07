@@ -660,47 +660,45 @@ const CAMERA_DEVICES = String[]
 const DEFAULT_CAMERA_DEVICE = Ref{String}()
 const DEFAULT_CAMERA_OPTIONS = AVDict()
 
-if FFMPEG.have_avdevice()
-    function get_camera_devices(ffmpeg, idev, idev_name)
-        camera_devices = String[]
+function get_camera_devices(ffmpeg, idev, idev_name)
+    camera_devices = String[]
 
-        read_vid_devs = false
-        lines = FFMPEG.exe(`-list_devices true -f $idev -i $idev_name`,collect=true)
+    read_vid_devs = false
+    lines = FFMPEG.exe(`-list_devices true -f $idev -i $idev_name`,collect=true)
 
-        for line in lines
-            if occursin("video devices",line)
-                read_vid_devs = true
-                continue
-            elseif occursin("audio devices",line) || occursin("exit", line) || occursin("error", line)
-                read_vid_devs = false
-                continue
-            end
-
-            if read_vid_devs
-                m = match(r"""\[.*"(.*)".?""", line)
-                if m != nothing
-                    push!(camera_devices, m.captures[1])
-                end
-
-                # Alternative format (TODO: could be combined with the regex above)
-                m = match(r"""\[.*\] \[[0-9]\] (.*)""", line)
-                if m != nothing
-                    push!(camera_devices, m.captures[1])
-                end
-            end
+    for line in lines
+        if occursin("video devices",line)
+            read_vid_devs = true
+            continue
+        elseif occursin("audio devices",line) || occursin("exit", line) || occursin("error", line)
+            read_vid_devs = false
+            continue
         end
 
-        return camera_devices
+        if read_vid_devs
+            m = match(r"""\[.*"(.*)".?""", line)
+            if m != nothing
+                push!(camera_devices, m.captures[1])
+            end
+
+            # Alternative format (TODO: could be combined with the regex above)
+            m = match(r"""\[.*\] \[[0-9]\] (.*)""", line)
+            if m != nothing
+                push!(camera_devices, m.captures[1])
+            end
+        end
     end
 
-    function opencamera(
-            device=DEFAULT_CAMERA_DEVICE[],
-            format=DEFAULT_CAMERA_FORMAT[],
-            options = DEFAULT_CAMERA_OPTIONS,
-            args...;
-            kwargs...
-        )
-        camera = AVInput(device, format, options)
-        VideoReader(camera, args...; kwargs...)
-    end
+    return camera_devices
+end
+
+function opencamera(
+        device=DEFAULT_CAMERA_DEVICE[],
+        format=DEFAULT_CAMERA_FORMAT[],
+        options = DEFAULT_CAMERA_OPTIONS,
+        args...;
+        kwargs...
+    )
+    camera = AVInput(device, format, options)
+    VideoReader(camera, args...; kwargs...)
 end
