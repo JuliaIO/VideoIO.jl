@@ -1,6 +1,6 @@
 using Test
 using ColorTypes: RGB, Gray, N0f8
-using FileIO, ImageCore, ImageMagick, Dates, Statistics
+using FileIO, ImageCore, Dates, Statistics
 using Statistics, StatsBase
 
 import VideoIO
