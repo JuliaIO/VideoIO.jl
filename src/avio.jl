@@ -633,16 +633,20 @@ function skipframes(s::VideoReader, n::Int; throwEOF=true)
 end
 
 """
-    countframes(s::VideoReader)
+    counttotalframes(s::VideoReader)
     
-Count the number of frames remaining in the video by skipping through each frame.
+Count the total number of frames in the video by seeking to start, skipping through 
+each frame, and seeking back to the start.
 """
-function countframes(s::VideoReader)
+function counttotalframes(s::VideoReader)
+    seekstart(s)
     n = 1
     while true
-        skipframe(s, throwEOF = false) && return n
+        skipframe(s, throwEOF = false) && break
         n += 1
     end
+    seekstart(s)
+    return n
 end
 
 function eof(avin::AVInput)
