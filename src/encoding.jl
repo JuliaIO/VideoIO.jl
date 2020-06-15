@@ -11,7 +11,7 @@ mutable struct VideoEncoder
 end
 
 """
-encode(encoder::VideoEncoder, io::IO)
+    encode(encoder::VideoEncoder, io::IO)
 
 Encode frame in memory
 """
@@ -56,7 +56,7 @@ end
 isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) != nothing)
 
 """
-prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
+    prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
 
 Prepare encoder and return AV objects.
 """
@@ -150,7 +150,7 @@ function prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_da
 end
 
 """
-appendencode(encoder::VideoEncoder, io::IO, img, index::Integer)
+    appendencode(encoder::VideoEncoder, io::IO, img, index::Integer)
 
 Send image object to ffmpeg encoder and encode
 """
@@ -196,7 +196,7 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 end
 
 """
-function finishencode(encoder::VideoEncoder, io::IO)
+    finishencode(encoder::VideoEncoder, io::IO)
 
 End encoding by sending endencode package to ffmpeg, and close objects.
 """
@@ -209,7 +209,7 @@ function finishencode!(encoder::VideoEncoder, io::IO)
 end
 
 """
-mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
+    mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
 
 Multiplex stream file into video container. Deletes stream file by default.
 """
@@ -228,10 +228,10 @@ function mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
 end
 
 """
-encodevideo(filename::String,imgstack::Array;
-    AVCodecContextProperties = AVCodecContextPropertiesDefault,
-    codec_name = "libx264",
-    framerate = 24)
+    encodevideo(filename::String,imgstack::Array;
+        AVCodecContextProperties = AVCodecContextPropertiesDefault,
+        codec_name = "libx264",
+        framerate = 24)
 
 Encode image stack to video file and return filepath.
 
