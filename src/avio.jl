@@ -3,6 +3,7 @@
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play, gettime
+export skipframe, skipframes, counttotalframes
 
 mutable struct StreamInfo
     stream_index0::Int             # zero-based
@@ -640,7 +641,7 @@ each frame, and seeking back to the start.
 """
 function counttotalframes(s::VideoReader)
     seekstart(s)
-    n = 1
+    n = 0
     while true
         skipframe(s, throwEOF = false) && break
         n += 1
