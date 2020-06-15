@@ -601,6 +601,49 @@ end
 #seekstart{T<:IO}(avin::AVInput{T}, video_stream = 1) = seekstart(avin.io)
 seekstart(avin::AVInput{T}, video_stream=1) where {T <: IO} = throw(ErrorException("Sorry, Seeking is not supported from IO streams"))
 
+"""
+    skipframe(s::VideoReader; throwEOF=true)
+    
+Skip the next frame. If End of File is reached, EOFError thrown if throwEOF=true.
+Otherwise returns true if EOF reached, false otherwise.
+"""
+function skipframe(s::VideoReader; throwEOF=true)
+    while !have_frame(s)
+        idx = pump(s.avin)
+        idx == s.stream_index0 && break
+        if idx == -1
+            throwEOF && throw(EOFError())
+            return true
+        end
+    end
+    reset_frame_flag!(s)
+    return false
+end
+
+"""
+    skipframes(s::VideoReader, n::Int)
+    
+Skip the next `n` frames. If End of File is reached, EOFError to be thrown.
+With `throwEOF = true` the number of frames that were skipped to be returned without error.
+"""
+function skipframes(s::VideoReader, n::Int; throwEOF=true)
+    for _ in 1:n
+        skipframe(s, throwEOF=throwEOF) && return n
+    end
+end
+
+"""
+    countframes(s::VideoReader)
+    
+Count the number of frames remaining in the video by skipping through each frame.
+"""
+function countframes(s::VideoReader)
+    n = 1
+    while true
+        skipframe(s, throwEOF = false) && return n
+        n += 1
+    end
+end
 
 function eof(avin::AVInput)
     !isopen(avin) && return true
