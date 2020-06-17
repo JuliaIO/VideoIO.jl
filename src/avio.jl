@@ -295,8 +295,8 @@ function VideoReader(avin::AVInput, video_stream=1;
                                  width, height, target_format,
                                  transcode_interpolation, C_NULL, C_NULL, C_NULL)
 
-    align = 16
-    offset = 64 # length of data
+    align = 16  # PyAV use the value: https://github.com/PyAV-Org/PyAV/blob/main/av/video/frame.pyx#L99
+    offset = Sys.WORD_SIZE ÷ 8 * 8  # length of AVFrame.data  https://ffmpeg.org/doxygen/2.7/structAVFrame.html
     ccall((:av_image_alloc, libavutil), 
         Cint, 
         (Ref{Ptr{UInt8}}, Ref{Cint}, Cint, Cint, AVPixelFormat, Cint), 
