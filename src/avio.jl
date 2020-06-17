@@ -444,12 +444,13 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T <: Eight
     end
 
     height, width = size(buf)
+
+    o_buf_p = pointer(o_buf)
     
     for h in 1:height
-        bp = p + (h-1) * i_stride
-        for w in 1:width
-            o_buf[(h-1)*width+w] = unsafe_load(bp, w)
-        end
+        op = o_buf_p + (h-1)*width*bytes_per_pixel
+        ip = p + (h-1) * i_stride
+        unsafe_copyto!(op, ip, width)
     end
 
     reset_frame_flag!(r)
