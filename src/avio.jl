@@ -619,8 +619,8 @@ eof(r::VideoReader) = eof(r.avin)
 
 close(r::VideoReader) = close(r.avin)
 function _close(r::VideoReader)
-    avcodec_close(r.pVideoCodecContext)
     sws_freeContext(r.transcodeContext.transcode_context)
+    avcodec_close(r.pVideoCodecContext)
 end
 
 # Free AVIOContext object when done
@@ -638,6 +638,7 @@ function close(avin::AVInput)
 
     # Fix for segmentation fault issue #44
     empty!(avin.listening)
+    empty!(avin.stream_contexts)
 
     Base.sigatomic_begin()
     if avin.apFormatContext[1] != C_NULL
