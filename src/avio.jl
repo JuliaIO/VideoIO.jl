@@ -618,7 +618,10 @@ end
 eof(r::VideoReader) = eof(r.avin)
 
 close(r::VideoReader) = close(r.avin)
-_close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
+function _close(r::VideoReader)
+    avcodec_close(r.pVideoCodecContext)
+    sws_freeContext(r.transcodeContext.transcode_context)
+end
 
 # Free AVIOContext object when done
 function close(avin::AVInput)
