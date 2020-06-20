@@ -3,6 +3,7 @@
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play, gettime
+export skipframe, skipframes, counttotalframes
 
 mutable struct StreamInfo
     stream_index0::Int             # zero-based
@@ -622,6 +623,53 @@ end
 #seekstart{T<:IO}(avin::AVInput{T}, video_stream = 1) = seekstart(avin.io)
 seekstart(avin::AVInput{T}, video_stream=1) where {T <: IO} = throw(ErrorException("Sorry, Seeking is not supported from IO streams"))
 
+"""
+    skipframe(s::VideoReader; throwEOF=true)
+    
+Skip the next frame. If End of File is reached, EOFError thrown if throwEOF=true.
+Otherwise returns true if EOF reached, false otherwise.
+"""
+function skipframe(s::VideoReader; throwEOF=true)
+    while !have_frame(s)
+        idx = pump(s.avin)
+        idx == s.stream_index0 && break
+        if idx == -1
+            throwEOF && throw(EOFError())
+            return true
+        end
+    end
+    reset_frame_flag!(s)
+    return false
+end
+
+"""
+    skipframes(s::VideoReader, n::Int)
+    
+Skip the next `n` frames. If End of File is reached, EOFError to be thrown.
+With `throwEOF = true` the number of frames that were skipped to be returned without error.
+"""
+function skipframes(s::VideoReader, n::Int; throwEOF=true)
+    for _ in 1:n
+        skipframe(s, throwEOF=throwEOF) && return n
+    end
+end
+
+"""
+    counttotalframes(s::VideoReader)
+    
+Count the total number of frames in the video by seeking to start, skipping through 
+each frame, and seeking back to the start.
+"""
+function counttotalframes(s::VideoReader)
+    seekstart(s)
+    n = 0
+    while true
+        skipframe(s, throwEOF = false) && break
+        n += 1
+    end
+    seekstart(s)
+    return n
+end
 
 function eof(avin::AVInput)
     !isopen(avin) && return true
@@ -639,7 +687,10 @@ end
 eof(r::VideoReader) = eof(r.avin)
 
 close(r::VideoReader) = close(r.avin)
-_close(r::VideoReader) = avcodec_close(r.pVideoCodecContext)
+function _close(r::VideoReader)
+    sws_freeContext(r.transcodeContext.transcode_context)
+    avcodec_close(r.pVideoCodecContext)
+end
 
 # Free AVIOContext object when done
 function close(avin::AVInput)
@@ -656,6 +707,7 @@ function close(avin::AVInput)
 
     # Fix for segmentation fault issue #44
     empty!(avin.listening)
+    empty!(avin.stream_contexts)
 
     Base.sigatomic_begin()
     if avin.apFormatContext[1] != C_NULL

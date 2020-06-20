@@ -86,6 +86,12 @@ end
             else
                 !createmode && (@test img == first_frame)
             end
+            
+            # Skipping & frame counting
+            VideoIO.seekstart(v)
+            VideoIO.skipframe(v)
+            VideoIO.skipframes(v, 10)
+            @test VideoIO.counttotalframes(v) == VideoIO.TestVideos.videofiles[name].numframes
 
             close(v)
         end
@@ -146,10 +152,14 @@ end
 @testset "Encoding video across all supported colortypes" begin
     for el in [UInt8, RGB{N0f8}]
         @testset "Encoding $el imagestack" begin
-            imgstack = map(x->rand(el,100,100),1:100)
+            n = 100
+            imgstack = map(x->rand(el,100,100),1:n)
             props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
             encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,framerate=30,AVCodecContextProperties=props, silent=true)
             @test stat(encodedvideopath).size > 100
+            f = VideoIO.openvideo(encodedvideopath)
+            @test VideoIO.counttotalframes(f) == n-4 # videos encoded with crf > 0 have 4 fewer frames
+            close(f)
             rm(encodedvideopath)
         end
     end
@@ -227,6 +237,8 @@ end
         frame_test = collect(rawview(channelview(read(f))))
         h_test = fit(Histogram, frame_test[:], 0:256)
         @test h_test.weights == fill(1,256) #Test that encoding is precise (if above passes)
+
+        @test VideoIO.counttotalframes(f) == 24
     end
 
     @testset "Correct frame order when reading & encoding" begin
@@ -239,6 +251,7 @@ end
                 push!(frame_ids_truth,img[1,1])
             end
             @test frame_ids_truth == collect(0:255) #Test that reading is in correct frame order
+            @test VideoIO.counttotalframes(f) == 256
         end
         @testset "Frame order when encoding, then reading video" begin
             # Test that writing and reading a video with frame-incremental pixel values is read in in-order
@@ -258,6 +271,58 @@ end
                 push!(frame_ids_test,img[1,1])
             end
             @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
+            @test VideoIO.counttotalframes(f) == 256
+        end
+    end
+end
+
+@testset "c api memory leak test" begin
+
+    if(Sys.islinux())  # TODO: find a method to get cross platform memory usage, see: https://discourse.julialang.org/t/how-to-get-current-julia-process-memory-usage/41734/4
+    
+        function get_memory_usage()
+            open("/proc/$(getpid())/statm") do io
+                split(read(io, String))[1]
+            end            
+        end
+    
+        file = joinpath(videodir, "annie_oakley.ogg")
+
+        @testset "open file test" begin
+            check_size = 10
+            usage_vec = Vector{String}(undef, check_size)
+
+            for i in 1:check_size
+            
+                f = VideoIO.openvideo(file)
+                close(f)
+                GC.gc()
+
+                usage_vec[i] = get_memory_usage()
+            end
+
+            println(usage_vec)
+
+            @test usage_vec[end-1] == usage_vec[end]
+        end
+
+        @testset "open and read file test" begin
+            check_size = 10
+            usage_vec = Vector{String}(undef, check_size)
+
+            for i in 1:check_size
+            
+                f = VideoIO.openvideo(file)
+                img = read(f)
+                close(f)
+                GC.gc()
+
+                usage_vec[i] = get_memory_usage()
+            end
+
+            println(usage_vec)
+
+            @test usage_vec[end-1] == usage_vec[end]
         end
     end
 end

@@ -122,9 +122,9 @@ A few helpful presets for h264:
 
 | Goal | `AVCodecContextProperties` value |
 |:----:|:------|
-| Perceptual compression, h264 default.<br>Best for most cases | ```[:priv_data => ("crf"=>"23","preset"=>"medium")``` |
-| Lossless compression.<br>Fastest, largest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultrafast")]``` |
-| Lossless compression.<br>Slowest, smallest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultraslow")]``` |
+| Perceptual compression, h264 default. Best for most cases | ```[:priv_data => ("crf"=>"23","preset"=>"medium")``` |
+| Lossless compression. Fastest, largest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultrafast")]``` |
+| Lossless compression. Slowest, smallest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultraslow")]``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```[:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]``` |
 
 ## Lossless Encoding

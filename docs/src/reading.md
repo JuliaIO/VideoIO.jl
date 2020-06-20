@@ -31,6 +31,22 @@ VideoIO.seek
 VideoIO.seekstart
 ```
 
+Frames can be skipped without reading frame content via `skipframe(f)` and `skipframes(f, n)`
+```@docs
+VideoIO.skipframe
+```
+```@docs
+VideoIO.skipframes
+```
+
+Total available frame count is available via `counttotalframes(f)`
+```@docs
+VideoIO.counttotalframes
+```
+
+!!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames 
+available for reading.
+
 ### Changing the target pixel format for reading
 It can be helpful to be explicit in which pixel format you wish to read frames as.
 Here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
