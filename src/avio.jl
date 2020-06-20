@@ -688,6 +688,7 @@ eof(r::VideoReader) = eof(r.avin)
 
 close(r::VideoReader) = close(r.avin)
 function _close(r::VideoReader)
+    av_freep(r.transcodeContext.aTargetVideoFrame)
     sws_freeContext(r.transcodeContext.transcode_context)
     avcodec_close(r.pVideoCodecContext)
 end
