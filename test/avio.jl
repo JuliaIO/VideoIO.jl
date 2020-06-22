@@ -276,7 +276,7 @@ end
     end
 end
 
-@testset "c api memory leak test" begin
+@testset "c api memory leak test" begin # Issue https://github.com/JuliaIO/VideoIO.jl/issues/246
 
     if(Sys.islinux())  # TODO: find a method to get cross platform memory usage, see: https://discourse.julialang.org/t/how-to-get-current-julia-process-memory-usage/41734/4
     
