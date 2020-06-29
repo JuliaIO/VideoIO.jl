@@ -1,16 +1,16 @@
----
-kind: pipeline
-name: linux - arm - Julia 1.4
+# ---
+# kind: pipeline
+# name: linux - arm - Julia 1.4
 
-platform:
-  os: linux
-  arch: arm
+# platform:
+#   os: linux
+#   arch: arm
 
-steps:
-- name: build
-  image: julia:1.4
-  commands:
-  - "julia --project=. --check-bounds=yes --color=yes -e 'using InteractiveUtils; versioninfo(verbose=true); using Pkg; Pkg.build(); Pkg.test(coverage=true)'"
+# steps:
+# - name: build
+#   image: julia:1.4
+#   commands:
+#   - "julia --project=. --check-bounds=yes --color=yes -e 'using InteractiveUtils; versioninfo(verbose=true); using Pkg; Pkg.build(); Pkg.test(coverage=true)'"
 
 ---
 kind: pipeline
