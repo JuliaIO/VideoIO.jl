@@ -296,7 +296,14 @@ function VideoReader(avin::AVInput, video_stream=1;
                                  width, height, target_format,
                                  transcode_interpolation, C_NULL, C_NULL, C_NULL)
 
-    avpicture_fill(pointer(aTargetVideoFrame), target_buf, target_format, width, height)
+    align = 16  # PyAV use the value: https://github.com/PyAV-Org/PyAV/blob/main/av/video/frame.pyx#L99
+    offset = Sys.WORD_SIZE ÷ 8 * 8  # length of AVFrame.data  https://ffmpeg.org/doxygen/2.7/structAVFrame.html
+    ccall((:av_image_alloc, libavutil), 
+        Cint, 
+        (Ref{Ptr{UInt8}}, Ref{Cint}, Cint, Cint, AVPixelFormat, Cint), 
+        Ptr{Ptr{UInt8}}(pointer(aTargetVideoFrame)),  Ptr{Int32}(pointer(aTargetVideoFrame) + offset),  width, height, target_format, align
+    )
+
     apTargetDataBuffers = reinterpret(Ptr{UInt8}, [aTargetVideoFrame[1].data])
     apTargetLineSizes   = reinterpret(Cint,       [aTargetVideoFrame[1].linesize])
 
@@ -408,17 +415,6 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T <: Eight
 
     t = r.transcodeContext
 
-    # Set up target buffer
-    if pointer(buf) != t.apTargetDataBuffers[1]
-        avpicture_fill(pointer(t.aTargetVideoFrame),
-                       buf,
-                       t.target_pix_fmt,
-                       r.width, r.height)
-        t.apTargetDataBuffers = reinterpret(Ptr{UInt8}, [t.aTargetVideoFrame[1].data])
-        t.apTargetLineSizes   = reinterpret(Cint,       [t.aTargetVideoFrame[1].linesize])
-
-    end
-
     apSourceDataBuffers = isempty(r.frame_queue) ? reinterpret(Ptr{UInt8}, [r.aVideoFrame[1].data]) :
                                                    reinterpret(Ptr{UInt8}, [popfirst!(r.frame_queue)])
     apSourceLineSizes   = reinterpret(Cint, [r.aVideoFrame[1].linesize])
@@ -432,6 +428,31 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T <: Eight
               t.apTargetDataBuffers,
               t.apTargetLineSizes)
     Base.sigatomic_end()
+
+    bytes_per_pixel = t.target_bits_per_pixel >> 3
+
+    i_buf = Ptr{UInt8}(pointer(r.transcodeContext.aTargetVideoFrame))
+    i_stride = unsafe_load(pointer(r.transcodeContext.aTargetVideoFrame)).linesize[1]
+    o_stride = unsafe_load(pointer(r.transcodeContext.aTargetVideoFrame)).width * bytes_per_pixel
+    o_size = unsafe_load(pointer(r.transcodeContext.aTargetVideoFrame)).height * o_stride
+    o_buf = buf.parent
+
+    _p = r.transcodeContext.aTargetVideoFrame[1].data[1]
+    if t.target_bits_per_pixel == 8
+        p = Ptr{Gray{N0f8}}(Int(_p))
+    else
+        p = Ptr{RGB{N0f8}}(Int(_p))
+    end
+
+    height, width = size(buf)
+
+    o_buf_p = pointer(o_buf)
+    
+    for h in 1:height
+        op = o_buf_p + (h-1)*width*bytes_per_pixel
+        ip = p + (h-1) * i_stride
+        unsafe_copyto!(op, ip, width)
+    end
 
     reset_frame_flag!(r)
 
@@ -667,6 +688,7 @@ eof(r::VideoReader) = eof(r.avin)
 
 close(r::VideoReader) = close(r.avin)
 function _close(r::VideoReader)
+    av_freep(r.transcodeContext.aTargetVideoFrame)
     sws_freeContext(r.transcodeContext.transcode_context)
     avcodec_close(r.pVideoCodecContext)
 end
