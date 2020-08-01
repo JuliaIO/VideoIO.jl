@@ -165,6 +165,24 @@ end
     end
 end
 
+@testset "Encoding video with rational frame rates" begin
+    n = 100
+    fr = 59 // 2 # 29.5
+    target_dur = 3.39
+    @testset "Encoding with frame rate $(float(fr))" begin
+        imgstack = map(x->rand(UInt8,100,100),1:n)
+        props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+        encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,
+                                               framerate=fr,
+                                               AVCodecContextProperties=props,
+                                               silent=true)
+        @test stat(encodedvideopath).size > 100
+        measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(encodedvideopath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
+        @test parse(Float64, measured_dur_str[1]) == target_dur
+        rm(encodedvideopath)
+    end
+end
+
 @testset "Video encode/decode accuracy (read, encode, read, compare)" begin
     file = joinpath(videodir, "annie_oakley.ogg")
     f = VideoIO.openvideo(file)
