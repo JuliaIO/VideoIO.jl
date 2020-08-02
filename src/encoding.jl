@@ -60,7 +60,7 @@ isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) !=
 
 Prepare encoder and return AV objects.
 """
-function prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
+function prepareencoder(firstimg;framerate::Union{Rational, Integer}=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
     height = size(firstimg,1)
     width = size(firstimg,2)
     ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
@@ -117,8 +117,9 @@ function prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_da
 
     av_setfield(apCodecContext[1],:width,width)
     av_setfield(apCodecContext[1],:height,height)
-    av_setfield(apCodecContext[1],:time_base,AVRational(1, framerate))
-    av_setfield(apCodecContext[1],:framerate,AVRational(framerate, 1))
+    framerate_rat = Rational(framerate)
+    av_setfield(apCodecContext[1],:time_base,AVRational(1/framerate_rat))
+    av_setfield(apCodecContext[1],:framerate,AVRational(framerate_rat))
     av_setfield(apCodecContext[1],:pix_fmt,pix_fmt)
 
     codecContext = unsafe_load(apCodecContext[1])
@@ -208,13 +209,17 @@ function finishencode!(encoder::VideoEncoder, io::IO)
     av_packet_free(encoder.apPacket)
 end
 
+ffmpeg_framerate_string(fr::Integer) = string(fr)
+ffmpeg_framerate_string(fr::Rational) = "$(numerator(fr))/$(denominator(fr))"
+
 """
     mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
 
 Multiplex stream file into video container. Deletes stream file by default.
 """
-function mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
-    muxout = FFMPEG.exe(`-y -framerate $framerate -i $srcfilename -c copy $destfilename`, collect=true)
+function mux(srcfilename,destfilename,framerate::Union{Integer,Rational};silent=false,deletestream=true)
+    fr_str = ffmpeg_framerate_string(framerate)
+    muxout = FFMPEG.exe(`-y -framerate $fr_str -i $srcfilename -c copy $destfilename`, collect=true)
     filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
     if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
         deletestream && rm("$srcfilename")
