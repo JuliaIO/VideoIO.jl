@@ -74,7 +74,7 @@ function prepareencoder(firstimg;framerate::Union{Rational, Integer}=30,AVCodecC
     apPacket = Ptr{AVPacket}[av_packet_alloc()]
     apPacket == [C_NULL] && error("av_packet_alloc() error")
 
-    if eltype(firstimg) == UInt8 && (codec_name == "libx264")
+    if eltype(firstimg) == UInt8 && (codec_name in ["libx264", "h264_nvenc"])
         if islossless(AVCodecContextProperties)
             if !isfullcolorrange(AVCodecContextProperties)
                 @warn """Encoding output not lossless.
@@ -84,7 +84,7 @@ function prepareencoder(firstimg;framerate::Union{Rational, Integer}=30,AVCodecC
             end
         end
         pix_fmt = AV_PIX_FMT_GRAY8
-    elseif eltype(firstimg) == Gray{N0f8} && (codec_name == "libx264")
+    elseif eltype(firstimg) == Gray{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
         if islossless(AVCodecContextProperties)
             if !isfullcolorrange(AVCodecContextProperties)
                 @warn """Encoding output not lossless.
@@ -103,7 +103,7 @@ function prepareencoder(firstimg;framerate::Union{Rational, Integer}=30,AVCodecC
             will give better playback results"""
         end
         pix_fmt = AV_PIX_FMT_RGB24
-    elseif eltype(firstimg) == RGB{N0f8} && (codec_name == "libx264")
+    elseif eltype(firstimg) == RGB{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
         if islossless(AVCodecContextProperties)
             @warn """Encoding output not lossless.
             libx264 does not support lossless RGB planes. RGB will be downsampled
