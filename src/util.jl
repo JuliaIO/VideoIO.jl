@@ -2,7 +2,7 @@
 
 # Set the value of a field of a pointer
 # Equivalent to s->name = value
-function av_setfield(s::Ptr{T}, name::Symbol, value) where T
+@inline function av_setfield(s::Ptr{T}, name::Symbol, value) where T
     field_pos = Base.fieldindex(T, name)
     byteoffset = fieldoffset(T, field_pos)
     S = fieldtype(T, name)
