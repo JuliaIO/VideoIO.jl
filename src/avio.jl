@@ -433,9 +433,6 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T <: Eight
 
     i_buf = Ptr{UInt8}(pointer(r.transcodeContext.aTargetVideoFrame))
     i_stride = unsafe_load(pointer(r.transcodeContext.aTargetVideoFrame)).linesize[1]
-    o_stride = unsafe_load(pointer(r.transcodeContext.aTargetVideoFrame)).width * bytes_per_pixel
-    o_size = unsafe_load(pointer(r.transcodeContext.aTargetVideoFrame)).height * o_stride
-    o_buf = buf.parent
 
     _p = r.transcodeContext.aTargetVideoFrame[1].data[1]
     if t.target_bits_per_pixel == 8
@@ -444,12 +441,13 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}) where T <: Eight
         p = Ptr{RGB{N0f8}}(Int(_p))
     end
 
-    height, width = size(buf)
+    height = t.height
+    width = t.width
 
-    o_buf_p = pointer(o_buf)
-    
+    buf_p = pointer(buf)
+
     for h in 1:height
-        op = o_buf_p + (h-1)*width*bytes_per_pixel
+        op = buf_p + (h-1)*width*bytes_per_pixel
         ip = p + (h-1) * i_stride
         unsafe_copyto!(op, ip, width)
     end
@@ -478,6 +476,13 @@ open(filename::AbstractString) = AVInput(filename)
 openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
 read(r::VideoReader) = retrieve(r)
+
+"""
+    read!(r::VideoReader, buf::Union{PermutedArray{T,N}, Array{T,N}}) where T<:EightBitTypes
+
+Read a frame from `r` into array `buf`, which can either be a regular array or a
+permuted view of a regular array.
+"""
 read!(r::VideoReader, buf::AbstractArray{T}) where {T <: EightBitTypes} = retrieve!(r, buf)
 
 isopen(avin::AVInput{I}) where {I <: IO} = isopen(avin.io)
