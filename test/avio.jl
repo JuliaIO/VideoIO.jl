@@ -23,6 +23,24 @@ isarm() = Base.Sys.ARCH in (:arm,:arm32,:arm7l,:armv7l,:arm8l,:armv8l,:aarch64,:
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
+# Helper functions
+function test_compare_frames(test_frame, ref_frame)
+    if isarm()
+        @test_skip test_frame == ref_frame
+    else
+        @test test_frame == ref_frame
+    end
+end
+
+# uses read!
+function get_first_frame!(img, v)
+    seekstart(v)
+    read!(v, img)
+    while isblank(img)
+        read!(v, img)
+    end
+end
+
 @testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
         @testset "Reading $name" begin
@@ -47,11 +65,10 @@ end
                 i += 1
             end
             # println("$name vs. $first_frame_file - First non-blank frame: $i") # for debugging
-            createmode && save(first_frame_file,img)
-            if isarm()
-                !createmode && (@test_skip img == first_frame)
+            if createmode
+                save(first_frame_file,img)
             else
-                !createmode && (@test img == first_frame)
+                test_compare_frames(img, first_frame)
             end
 
             for i in 1:50
@@ -73,20 +90,24 @@ end
             @test img == fiftieth_frame
 
             # read first frames again, and compare
-            seekstart(v)
+            get_first_frame!(img, v)
+            createmode || test_compare_frames(img, first_frame)
 
-            read!(v, img)
+            # make sure read! works with both PermutedDimsArray and Array
+            # The above tests already use read! for PermutedDimsArray, so just test the type of img
+            @test typeof(img) <: PermutedDimsArray
 
-            while isblank(img)
-                read!(v, img)
-            end
+            img_p = parent(img)
+            @assert typeof(img_p) <: Array
+            # img is a view of img_p, so calling read! on img_p should alter img
+            #
+            # first, zero img out to be sure we get the desired result from calls to read on img_p!
+            fill!(img, zero(eltype(img)))
+            # Then get the first frame, which uses read!
+            get_first_frame!(img_p, v)
+            # Finally compare the result to make sure it's right
+            createmode || test_compare_frames(img, first_frame)
 
-            if isarm()
-                !createmode && (@test_skip img == first_frame)
-            else
-                !createmode && (@test img == first_frame)
-            end
-            
             # Skipping & frame counting
             VideoIO.seekstart(v)
             VideoIO.skipframe(v)
