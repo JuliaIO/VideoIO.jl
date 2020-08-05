@@ -209,8 +209,10 @@ function finishencode!(encoder::VideoEncoder, io::IO)
     av_packet_free(encoder.apPacket)
 end
 
-ffmpeg_framerate_string(fr) = string(fr)
+ffmpeg_framerate_string(fr::Real) = string(fr)
+ffmpeg_framerate_string(fr::String) = fr
 ffmpeg_framerate_string(fr::Rational) = "$(numerator(fr))/$(denominator(fr))"
+ffmpeg_framerate_string(fr) = error("Framerate type not valid. Mux framerate should be a subtype of Real (Integer, Float64, Rational etc.), or String")
 
 """
     mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
