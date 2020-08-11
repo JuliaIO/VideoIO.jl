@@ -60,7 +60,7 @@ isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) !=
 
 Prepare encoder and return AV objects.
 """
-function prepareencoder(firstimg;framerate::Union{Rational, Integer}=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
+function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")], codec_name::String="libx264")
     height = size(firstimg,1)
     width = size(firstimg,2)
     ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
@@ -209,15 +209,17 @@ function finishencode!(encoder::VideoEncoder, io::IO)
     av_packet_free(encoder.apPacket)
 end
 
-ffmpeg_framerate_string(fr::Integer) = string(fr)
+ffmpeg_framerate_string(fr::Real) = string(fr)
+ffmpeg_framerate_string(fr::String) = fr
 ffmpeg_framerate_string(fr::Rational) = "$(numerator(fr))/$(denominator(fr))"
+ffmpeg_framerate_string(fr) = error("Framerate type not valid. Mux framerate should be a subtype of Real (Integer, Float64, Rational etc.), or String")
 
 """
     mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
 
 Multiplex stream file into video container. Deletes stream file by default.
 """
-function mux(srcfilename,destfilename,framerate::Union{Integer,Rational};silent=false,deletestream=true)
+function mux(srcfilename, destfilename, framerate; silent=false, deletestream=true)
     fr_str = ffmpeg_framerate_string(framerate)
     muxout = FFMPEG.exe(`-y -framerate $fr_str -i $srcfilename -c copy $destfilename`, collect=true)
     filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
