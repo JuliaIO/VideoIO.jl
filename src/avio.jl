@@ -84,8 +84,8 @@ mutable struct VideoReader{transcode} <: StreamContext
     format::Cint
     width::Cint
     height::Cint
-    framerate::Rational
-    aspect_ratio::Rational
+    framerate::Rational{Cint}
+    aspect_ratio::Rational{Cint}
 
     frame_queue::Vector{Vector{UInt8}}
     transcodeContext::VideoTranscodeContext
