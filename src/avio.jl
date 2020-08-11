@@ -686,7 +686,7 @@ end
 function eof(avin::AVInput{I}) where I <: IO
     !isopen(avin) && return true
     have_frame(avin) && return false
-    return eof(avin.io)
+    return eof(avin.io)::Bool
 end
 
 eof(r::VideoReader) = eof(r.avin)
