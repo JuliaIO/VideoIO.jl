@@ -6,6 +6,8 @@ using ImageCore: permuteddimsview, channelview, rawview #0.723065 seconds
 using ColorTypes: RGB, Gray, N0f8, YCbCr                #0.529263 seconds
 using ImageTransformations: restrict                    #3.156594 seconds!!
 
+import Base: iterate, IteratorSize, IteratorEltype
+
 include("init.jl")
 include("util.jl")
 include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))

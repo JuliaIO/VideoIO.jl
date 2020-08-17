@@ -123,12 +123,13 @@ end
     for name in VideoIO.TestVideos.names()
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
-        @testset "Testing $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            first_frame = load(first_frame_file)
 
-            filename = joinpath(videodir, name)
-            v = VideoIO.openvideo(open(filename))
+        first_frame_file = joinpath(testdir, swapext(name, ".png"))
+        first_frame = load(first_frame_file)
+        filename = joinpath(videodir, name)
+
+        @testset "Testing $name" begin
+            v = VideoIO.openvideo(VideoIO.open(filename))
 
             if size(first_frame, 1) > v.height
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
@@ -147,6 +148,15 @@ end
             while !eof(v)
                 read!(v, img)
             end
+
+            # Iterator interface
+            VT = typeof(v)
+            @test Base.IteratorSize(VT) === Base.SizeUnknown()
+            @test Base.IteratorEltype(VT) === Base.EltypeUnknown()
+
+            VideoIO.seekstart(v)
+            @test length(collect(v)) == VideoIO.TestVideos.videofiles[name].numframes
+            @test length(collect(v)) == 0
         end
     end
 
@@ -154,6 +164,7 @@ end
     @test_throws ErrorException VideoIO.testvideo("rickroll")
     @test_throws ErrorException VideoIO.testvideo("")
 end
+
 @testset "Reading video metadata" begin
     @testset "Reading Storage Aspect Ratio: SAR" begin
         # currently, the SAR of all the test videos is 1, we should get another video with a valid SAR that is not equal to 1

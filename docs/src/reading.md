@@ -9,10 +9,12 @@ video frames from a supported video file (or from a camera device, shown later).
 ```julia
 using VideoIO
 
-#io = VideoIO.open(video_file)
+# Construct a AVInput object to access the video and audio streams in a video container
+# io = VideoIO.open(video_file)
 io = VideoIO.testvideo("annie_oakley") # for testing purposes
 
-f = VideoIO.openvideo(io)
+# Access the video stream in an AVInput, and return a VideoReader object:
+f = VideoIO.openvideo(io) # you can also use a file name, instead of a AVInput
 
 img = read(f)
 
@@ -22,6 +24,37 @@ while !eof(f)
 end
 close(f)
 ```
+
+Alternatively, you can open the video stream in a file directly with
+`VideoIO.openvideo(filename)`, without making an intermediate `AVInput`
+object, if you only need the video.
+
+VideoIO also provides an iterator interface for [`VideoReader`](@ref), which
+behaves like other mutable iterators in Julia (e.g. Channels). If iteration is
+stopped early, for example with a `break` statement, then it can be resumed in
+the same spot by iterating on the same `VideoReader` object. Consequently, if
+you have already iterated over all the frames of a `VideoReader` object, then it
+will be empty for further iteration unless its position in the video is changed
+with `seek`.
+
+```julia
+using VideoIO
+
+
+io = VideoIO.testvideo("annie_oakley")
+f = VideoIO.openvideo(io)
+
+for img in f
+    # Do something with img
+end
+
+# You can also use collect(f) to get all of the frames
+
+# Further iteration will show that f is now empty!
+
+close(f)
+```
+
 
 Seeking through the video can be achieved via `seek(f, seconds::Float64)` and `seekstart(f)` to return to the start.
 ```@docs
