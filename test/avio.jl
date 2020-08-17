@@ -166,6 +166,14 @@ end
         @test VideoIO.get_duration(file) == 24224200/1e6
         @test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
         @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), 24224200/1e6)
+        @test VideoIO.get_number_frames(file) === nothing
+    end
+    @testset "Reading the number of frames from container" begin
+        file = joinpath(videodir, "ladybird.mp4")
+        @test VideoIO.get_number_frames(file) == 398
+        @test VideoIO.get_number_frames(file, 0) == 398
+        @test_throws ArgumentError VideoIO.get_number_frames(file, -1)
+        @test_throws ErrorException VideoIO.get_number_frames("Not_a_file")
     end
 end
 

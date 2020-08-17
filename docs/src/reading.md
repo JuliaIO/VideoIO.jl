@@ -147,3 +147,6 @@ VideoIO.get_time_duration
 ```@docs
 VideoIO.get_duration
 ```
+```@docs
+VideoIO.get_number_frames
+```
