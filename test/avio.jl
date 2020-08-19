@@ -162,11 +162,7 @@ end
 
             ## Test that iterator is mutable, and continues where iteration last
             ## stopped.
-            i = 0
-            for _ in v
-                i += 1
-            end
-            @test i == 0
+            @test iterate(v) === nothing
         end
     end
 
