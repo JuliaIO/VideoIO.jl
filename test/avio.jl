@@ -155,10 +155,20 @@ end
 
             VideoIO.seekstart(v)
             i = 0
-            for _ in v
+            local first_frame
+            local last_frame
+            for frame in v
                 i += 1
+                if i == 1
+                    first_frame = frame
+                end
+                last_frame = frame
             end
             @test i == VideoIO.TestVideos.videofiles[name].numframes
+            # test that the frames returned by the iterator have distinct storage
+            if i > 1
+                @test first_frame !== last_frame
+            end
 
             ## Test that iterator is mutable, and continues where iteration last
             ## stopped.
