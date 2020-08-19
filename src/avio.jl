@@ -93,6 +93,15 @@ end
 
 show(io::IO, vr::VideoReader) = print(io, "VideoReader(...)")
 
+function iterate(r::VideoReader, state = 0)
+    eof(r) && return
+    return read(r), state + 1
+end
+
+IteratorSize(::Type{<:VideoReader}) = Base.SizeUnknown()
+
+IteratorEltype(::Type{<:VideoReader}) = Base.EltypeUnknown()
+
 # Pump input for data
 function pump(c::AVInput)
     pFormatContext = c.apFormatContext[1]

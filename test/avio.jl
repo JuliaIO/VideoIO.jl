@@ -128,7 +128,7 @@ end
             first_frame = load(first_frame_file)
 
             filename = joinpath(videodir, name)
-            v = VideoIO.openvideo(open(filename))
+            v = VideoIO.openvideo(VideoIO.open(filename))
 
             if size(first_frame, 1) > v.height
                 first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
@@ -147,6 +147,32 @@ end
             while !eof(v)
                 read!(v, img)
             end
+
+            # Iterator interface
+            VT = typeof(v)
+            @test Base.IteratorSize(VT) === Base.SizeUnknown()
+            @test Base.IteratorEltype(VT) === Base.EltypeUnknown()
+
+            VideoIO.seekstart(v)
+            i = 0
+            local first_frame
+            local last_frame
+            for frame in v
+                i += 1
+                if i == 1
+                    first_frame = frame
+                end
+                last_frame = frame
+            end
+            @test i == VideoIO.TestVideos.videofiles[name].numframes
+            # test that the frames returned by the iterator have distinct storage
+            if i > 1
+                @test first_frame !== last_frame
+            end
+
+            ## Test that iterator is mutable, and continues where iteration last
+            ## stopped.
+            @test iterate(v) === nothing
         end
     end
 
@@ -154,6 +180,7 @@ end
     @test_throws ErrorException VideoIO.testvideo("rickroll")
     @test_throws ErrorException VideoIO.testvideo("")
 end
+
 @testset "Reading video metadata" begin
     @testset "Reading Storage Aspect Ratio: SAR" begin
         # currently, the SAR of all the test videos is 1, we should get another video with a valid SAR that is not equal to 1
