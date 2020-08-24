@@ -2,7 +2,7 @@
 
 function _get_fc(file::String) # convenience function for `get_duration` and `get_start_time`
     v = open(file)
-    return unsafe_load(v.apFormatContext[1])
+    return unsafe_load(v.apFormatContext[1]), v
 end
 get_duration(fc::AVFormatContext) = fc.duration / 1e6
 
@@ -11,7 +11,12 @@ get_duration(fc::AVFormatContext) = fc.duration / 1e6
 
 Return the duration of the video `file` in seconds (float).
 """
-get_duration(file::String) = get_duration(_get_fc(file))
+function get_duration(file::String) 
+    fc, v = _get_fc(file)
+    duration = get_duration(fc)
+    close(v)
+    return duration
+end
 
 get_start_time(fc::AVFormatContext) = Dates.unix2datetime(fc.start_time_realtime)
 
@@ -20,7 +25,12 @@ get_start_time(fc::AVFormatContext) = Dates.unix2datetime(fc.start_time_realtime
 
 Return the starting date & time of the video `file`. Note that if the starting date & time are missing, this function will return the Unix epoch (00:00 1st January 1970).
 """
-get_start_time(file::String) = get_start_time(_get_fc(file))
+function get_start_time(file::String)
+    fc, v = _get_fc(file)
+    starttime = get_start_time(fc)
+    close(v)
+    return starttime
+end
 
 get_time_duration(fc::AVFormatContext) = (get_start_time(fc), get_duration(fc))
 
@@ -29,7 +39,12 @@ get_time_duration(fc::AVFormatContext) = (get_start_time(fc), get_duration(fc))
 
 Return the starting date & time as well as the duration of the video `file`. Note that if the starting date & time are missing, this function will return the Unix epoch (00:00 1st January 1970).
 """
-get_time_duration(file::String) = get_time_duration(_get_fc(file))
+function get_time_duration(file::String)
+    fc, v = _get_fc(file)
+    starttime, duration = get_time_duration(fc)
+    close(v)
+    return starttime, duration
+end
 
 """
     get_number_frames(file [, streamno])
