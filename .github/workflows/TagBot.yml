@@ -1,5 +1,6 @@
 name: TagBot
 on:
+  workflow_dispatch:
   schedule:
     - cron: 0 * * * *
 jobs:
@@ -10,3 +11,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ssh: ${{ secrets.DOCUMENTER_KEY }}
+          lookback: 365
