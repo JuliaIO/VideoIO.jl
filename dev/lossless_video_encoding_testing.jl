@@ -1,3 +1,4 @@
+# A tool for testing lossless video encoding
 
 using VideoIO, ColorTypes, FixedPointNumbers, DataFrames
 
