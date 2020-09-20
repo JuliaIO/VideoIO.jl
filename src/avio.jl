@@ -307,9 +307,9 @@ function VideoReader(avin::AVInput, video_stream=1;
 
     align = 16  # PyAV use the value: https://github.com/PyAV-Org/PyAV/blob/main/av/video/frame.pyx#L99
     offset = Sys.WORD_SIZE ÷ 8 * 8  # length of AVFrame.data  https://ffmpeg.org/doxygen/2.7/structAVFrame.html
-    ccall((:av_image_alloc, libavutil), 
-        Cint, 
-        (Ref{Ptr{UInt8}}, Ref{Cint}, Cint, Cint, AVPixelFormat, Cint), 
+    ccall((:av_image_alloc, libavutil),
+        Cint,
+        (Ref{Ptr{UInt8}}, Ref{Cint}, Cint, Cint, AVPixelFormat, Cint),
         Ptr{Ptr{UInt8}}(pointer(aTargetVideoFrame)),  Ptr{Int32}(pointer(aTargetVideoFrame) + offset),  width, height, target_format, align
     )
 
@@ -480,10 +480,21 @@ end
 
 # Utility functions
 
-# Not exported
-open(filename::AbstractString) = AVInput(filename)
+open(filename::AbstractString) = AVInput(filename) # not exported
+
+"""
+    r = openvideo(filename)
+    r = openvideo(stream)
+
+Open a video file or stream and return a `VideoReader` object `r`.
+"""
 openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
+"""
+    frame = read(r::VideoReader)
+
+Return the next frame from `r`.
+"""
 read(r::VideoReader) = retrieve(r)
 
 """
@@ -639,7 +650,7 @@ seekstart(avin::AVInput{T}, video_stream=1) where {T <: IO} = throw(ErrorExcepti
 
 """
     skipframe(s::VideoReader; throwEOF=true)
-    
+
 Skip the next frame. If End of File is reached, EOFError thrown if throwEOF=true.
 Otherwise returns true if EOF reached, false otherwise.
 """
@@ -658,7 +669,7 @@ end
 
 """
     skipframes(s::VideoReader, n::Int)
-    
+
 Skip the next `n` frames. If End of File is reached, EOFError to be thrown.
 With `throwEOF = true` the number of frames that were skipped to be returned without error.
 """
@@ -670,8 +681,8 @@ end
 
 """
     counttotalframes(s::VideoReader)
-    
-Count the total number of frames in the video by seeking to start, skipping through 
+
+Count the total number of frames in the video by seeking to start, skipping through
 each frame, and seeking back to the start.
 """
 function counttotalframes(s::VideoReader)

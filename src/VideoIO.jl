@@ -159,4 +159,27 @@ function __init__()
     end
 end
 
+"""
+VideoIO supports reading and writing video files.
+
+- `openvideo` and `opencamera` provide access to video files and livestreams
+- `read` and `read!` allow reading frames
+- `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
+- `prepareencoder`, `encode`, `encode!`, `appendencode!`, and `finishencode!` allow writing frames to a file
+- `gettime` and `counttotalframes` provide information
+- `play`, `playvideo`, and `encodevideo` provide higher-level convenience functions for much of the above functionality
+
+Here's a brief demo stepping through each frame of a video:
+
+```julia
+using VideoIO
+r = openvideo(filename)
+img = read(r)
+while !eof(r)
+    read!(r, img)
+end
+```
+"""
+VideoIO
+
 end # VideoIO
