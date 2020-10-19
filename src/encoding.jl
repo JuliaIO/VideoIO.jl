@@ -91,14 +91,10 @@ function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_
     apPacket == [C_NULL] && error("av_packet_alloc() error")
 
     elt = eltype(firstimg)
-    if elt == UInt8 && (codec_name in ["libx264", "h264_nvenc"])
+    if elt <: Union{UInt8, N0f8, Gray{N0f8}} && (codec_name in ["libx264", "h264_nvenc"])
         lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
                                        elt, 8)
 
-        pix_fmt = AV_PIX_FMT_GRAY8
-    elseif elt == Gray{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
-        lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
-                                       elt, 8)
         pix_fmt = AV_PIX_FMT_GRAY8
     elseif elt == Gray{N0f8} && (codec_name == "libx264rgb")
         pix_fmt = AV_PIX_FMT_RGB24
