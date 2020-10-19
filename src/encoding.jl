@@ -55,6 +55,22 @@ end
 
 isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) != nothing)
 
+lossless_colorrange_ok(AVCodecContextProperties) =
+    ! islossless(AVCodecContextProperties) ||
+    isfullcolorrange(AVCodecContextProperties)
+
+function lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
+                                        elt, nbit)
+    if !lossless_colorrange_ok(AVCodecContextProperties)
+        @warn """
+Encoding output not lossless.
+Lossless $(codec_name) encoding of $(elt) requires
+:color_range=>2 within AVCodecContextProperties, to represent
+full $(nbit)-bit pixel value range.
+"""
+    end
+end
+
 """
     prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
 
@@ -74,44 +90,38 @@ function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_
     apPacket = Ptr{AVPacket}[av_packet_alloc()]
     apPacket == [C_NULL] && error("av_packet_alloc() error")
 
-    if eltype(firstimg) == UInt8 && (codec_name in ["libx264", "h264_nvenc"])
-        if islossless(AVCodecContextProperties)
-            if !isfullcolorrange(AVCodecContextProperties)
-                @warn """Encoding output not lossless.
-                Lossless libx264 encoding of UInt8 requires
-                :color_range=>2 within AVCodecContextProperties, to represent
-                full 8-bit pixel value range."""
-            end
-        end
+    elt = eltype(firstimg)
+    if elt == UInt8 && (codec_name in ["libx264", "h264_nvenc"])
+        lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
+                                       elt, 8)
+
         pix_fmt = AV_PIX_FMT_GRAY8
-    elseif eltype(firstimg) == Gray{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
-        if islossless(AVCodecContextProperties)
-            if !isfullcolorrange(AVCodecContextProperties)
-                @warn """Encoding output not lossless.
-                Lossless libx264 encoding of Gray{N0f8} requires
-                :color_range=>2 within AVCodecContextProperties, to represent
-                full 8-bit pixel value range."""
-            end
-        end
+    elseif elt == Gray{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
+        lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
+                                       elt, 8)
         pix_fmt = AV_PIX_FMT_GRAY8
-    elseif eltype(firstimg) == Gray{N0f8} && (codec_name == "libx264rgb")
+    elseif elt == Gray{N0f8} && (codec_name == "libx264rgb")
         pix_fmt = AV_PIX_FMT_RGB24
-    elseif eltype(firstimg) == RGB{N0f8} && (codec_name == "libx264rgb")
+    elseif elt == RGB{N0f8} && (codec_name == "libx264rgb")
         if !islossless(AVCodecContextProperties)
             @warn """Codec libx264rgb has limited playback support. Given that
             selected encoding settings are not lossless (crf!=0), codec_name="libx264"
             will give better playback results"""
         end
         pix_fmt = AV_PIX_FMT_RGB24
-    elseif eltype(firstimg) == RGB{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
+    elseif elt == RGB{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
         if islossless(AVCodecContextProperties)
             @warn """Encoding output not lossless.
             libx264 does not support lossless RGB planes. RGB will be downsampled
             to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
         end
         pix_fmt = AV_PIX_FMT_YUV420P
+    elseif elt <: Union{Gray{N6f10}, N6f10, UInt16} && codec_name == "libx264"
+        lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
+                                       elt, 10)
+        pix_fmt = AV_PIX_FMT_GRAY10LE
     else
-        error("VideoIO: Encoding image element type $(eltype(firstimg)) with
+        error("VideoIO: Encoding image element type $(elt) with
         codec $codec_name not currently supported")
     end
 
@@ -151,7 +161,7 @@ function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_
 end
 
 """
-    appendencode(encoder::VideoEncoder, io::IO, img, index::Integer)
+    appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 
 Send image object to ffmpeg encoder and encode
 """
@@ -189,6 +199,17 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
             unsafe_store!(frame.data[2], round(UInt8,img_YCbCr_half[r,c].cb), ((r-1)*frame.linesize[2])+c)
             unsafe_store!(frame.data[3], round(UInt8,img_YCbCr_half[r,c].cr), ((r-1)*frame.linesize[3])+c)
         end
+    elseif img_eltype == UInt16 && encoder.pix_fmt == AV_PIX_FMT_GRAY10LE
+        for r in 1:frame.height
+            line_offset = (r - 1) * frame.linesize[1]
+            for c in 1:frame.width
+                LSB = convert(UInt8, img[r, c] & 0x00FF)
+                MSB = convert(UInt8, (img[r, c] & 0xFF00) >> 8)
+                px_offset = line_offset + sizeof(img_eltype) * (c - 1) + 1
+                unsafe_store!(frame.data[1], LSB, px_offset)
+                unsafe_store!(frame.data[1], MSB, px_offset + 1)
+            end
+        end
     else
         error("Array element type not supported")
     end
@@ -196,8 +217,18 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     encode!(encoder, io)
 end
 
+function appendencode!(encoder::VideoEncoder, io::IO,
+                       img::AbstractMatrix{N6f10}, index::Integer)
+    appendencode!(encoder, io, rawview(img), index)
+end
+
+function appendencode!(encoder::VideoEncoder, io::IO,
+                       img::AbstractMatrix{Gray{N6f10}}, index::Integer)
+    appendencode!(encoder, io, rawview(channelview(img)), index)
+end
+
 """
-    finishencode(encoder::VideoEncoder, io::IO)
+    finishencode!(encoder::VideoEncoder, io::IO)
 
 End encoding by sending endencode package to ffmpeg, and close objects.
 """
