@@ -2,7 +2,7 @@ module VideoIO
 
 using Libdl                                             #0.227492 seconds
 using Requires, Dates, ProgressMeter                    #0.001749 seconds
-using ImageCore: permuteddimsview, channelview, rawview #0.723065 seconds
+using ImageCore: channelview, rawview #0.723065 seconds
 using ColorTypes: RGB, Gray, N0f8, YCbCr                #0.529263 seconds
 using ImageTransformations: restrict                    #3.156594 seconds!!
 
