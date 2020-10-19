@@ -71,6 +71,77 @@ full $(nbit)-bit pixel value range.
     end
 end
 
+_pix_type_not_supported(::Type{T}, codec_name) where T = error(
+    """
+VideoIO: Encoding image element type $T with codec $codec_name not currently
+supported
+"""
+)
+
+function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
+                            props) where {T<:UInt8, S}
+    if codec_name in ["libx264", "h264_nvenc"]
+        lossless_colorrange_check_warn(props, codec_name,
+                                       T, 8)
+        pix_fmt = AV_PIX_FMT_GRAY8
+    elseif codec_name == "libx264rgb"
+        pix_fmt = AV_PIX_FMT_RGB24
+    else
+        _pix_type_not_supported(S, codec_name)
+    end
+    pix_fmt
+end
+
+function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
+                            props) where {T<:UInt16, S}
+    if codec_name == "libx264"
+        lossless_colorrange_check_warn(props, codec_name,
+                                       T, 10)
+        pix_fmt = AV_PIX_FMT_GRAY10LE
+    else
+        _pix_type_not_supported(S, codec_name)
+    end
+    pix_fmt
+end
+
+function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
+                            ) where {T<:RGB{N0f8}, S}
+    if codec_name == "libx264rgb"
+        if !islossless(props)
+            @warn """Codec libx264rgb has limited playback support. Given that
+                selected encoding settings are not lossless (crf!=0), codec_name="libx264"
+                will give better playback results"""
+        end
+        pix_fmt = AV_PIX_FMT_RGB24
+    elseif codec_name in ["libx264", "h264_nvenc"]
+        if islossless(props)
+            @warn """Encoding output not lossless.
+                libx264 does not support lossless RGB planes. RGB will be downsampled
+                to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
+        end
+        pix_fmt = AV_PIX_FMT_YUV420P
+    else
+        _pix_type_not_supported(S, codec_name)
+    end
+    pix_fmt
+end
+
+function _determine_pix_fmt(::Type{X}, ::Type{S}, codec_name, props
+                            ) where {T, X<:Normed{T}, S}
+    _determine_pix_fmt(T, S, codec_name, props)
+end
+
+function _determine_pix_fmt(::Type{X}, ::Type{S}, codec_name, props
+                            ) where {T, X<:Gray{T}, S}
+    _determine_pix_fmt(T, S, codec_name, props)
+end
+
+_determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, ::Any) where {T, S} =
+    _pix_type_not_supported(T, codec_name)
+
+_determine_pix_fmt(::Type{T}, codec_name, props) where T =
+    _determine_pix_fmt(T, T, codec_name, props)
+
 """
     prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
 
@@ -91,35 +162,7 @@ function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_
     apPacket == [C_NULL] && error("av_packet_alloc() error")
 
     elt = eltype(firstimg)
-    if elt <: Union{UInt8, N0f8, Gray{N0f8}} && (codec_name in ["libx264", "h264_nvenc"])
-        lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
-                                       elt, 8)
-
-        pix_fmt = AV_PIX_FMT_GRAY8
-    elseif elt == Gray{N0f8} && (codec_name == "libx264rgb")
-        pix_fmt = AV_PIX_FMT_RGB24
-    elseif elt == RGB{N0f8} && (codec_name == "libx264rgb")
-        if !islossless(AVCodecContextProperties)
-            @warn """Codec libx264rgb has limited playback support. Given that
-            selected encoding settings are not lossless (crf!=0), codec_name="libx264"
-            will give better playback results"""
-        end
-        pix_fmt = AV_PIX_FMT_RGB24
-    elseif elt == RGB{N0f8} && (codec_name in ["libx264", "h264_nvenc"])
-        if islossless(AVCodecContextProperties)
-            @warn """Encoding output not lossless.
-            libx264 does not support lossless RGB planes. RGB will be downsampled
-            to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
-        end
-        pix_fmt = AV_PIX_FMT_YUV420P
-    elseif elt <: Union{Gray{N6f10}, N6f10, UInt16} && codec_name == "libx264"
-        lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
-                                       elt, 10)
-        pix_fmt = AV_PIX_FMT_GRAY10LE
-    else
-        error("VideoIO: Encoding image element type $(elt) with
-        codec $codec_name not currently supported")
-    end
+    pix_fmt = _determine_pix_fmt(elt, codec_name, AVCodecContextProperties)
 
     av_setfield(apCodecContext[1],:width,width)
     av_setfield(apCodecContext[1],:height,height)
