@@ -156,6 +156,68 @@ function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_
     return VideoEncoder(codec_name, apCodecContext, apFrame, apPacket, pix_fmt)
 end
 
+_unsupported_append_encode_type() = error("Array element type not supported")
+
+function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt8})
+    if pix_fmt == AV_PIX_FMT_GRAY8
+        for r = 1:frame.height, c = 1:frame.width
+            unsafe_store!(frame.data[1], img[r,c], ((r-1)*frame.linesize[1])+c)
+        end
+    elseif pix_fmt == AV_PIX_FMT_RGB24
+        img_uint8 = repeat(PermutedDimsArray(img, (2,1))[:], inner = 3)
+        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
+    else
+        _unsupported_append_encode_type()
+    end
+end
+
+function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt16})
+    if pix_fmt == AV_PIX_FMT_GRAY10LE
+        for r in 1:frame.height
+            line_offset = (r - 1) * frame.linesize[1]
+            for c in 1:frame.width
+                LSB = convert(UInt8, img[r, c] & 0x00FF)
+                MSB = convert(UInt8, (img[r, c] & 0xFF00) >> 8)
+                px_offset = line_offset + sizeof(img_eltype) * (c - 1) + 1
+                unsafe_store!(frame.data[1], LSB, px_offset)
+                unsafe_store!(frame.data[1], MSB, px_offset + 1)
+            end
+        end
+    else
+        _unsupported_append_encode_type()
+    end
+end
+
+_appendencode!(frame, pix_fmt, img::AbstractMatrix{<:Normed}) =
+    _appendencode!(frame, pix_fmt, rawview(img))
+
+_appendencode!(frame, pix_fmt, img::AbstractMatrix{<:Gray}) =
+    _appendencode!(frame, pix_fmt, channelview(img))
+
+function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N0f8}})
+    if pix_fmt == AV_PIX_FMT_RGB24
+        img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
+        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
+    elseif pix_fmt == AV_PIX_FMT_YUV420P
+        img_YCbCr = convert.(YCbCr{Float64}, img)
+        img_YCbCr_half = convert.(YCbCr{Float64}, restrict(img))
+        for r = 1:frame.height, c = 1:frame.width
+            unsafe_store!(frame.data[1], round(UInt8, img_YCbCr[r,c].y),
+                          ((r-1)*frame.linesize[1])+c)
+        end
+        for r = 1:Int64(frame.height/2), c = 1:Int64(frame.width/2)
+            unsafe_store!(frame.data[2], round(UInt8, img_YCbCr_half[r,c].cb),
+                          ((r-1)*frame.linesize[2])+c)
+            unsafe_store!(frame.data[3], round(UInt8, img_YCbCr_half[r,c].cr),
+                          ((r-1)*frame.linesize[3])+c)
+        end
+    else
+        _unsupported_append_encode_type()
+    end
+end
+
+_appendencode!(frame, pix_fmt, img) = _unsuported_append_encode_type()
+
 """
     appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 
@@ -168,59 +230,9 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     ret < 0 && error("av_frame_make_writable() error")
 
     frame = unsafe_load(encoder.apFrame[1]) #grab data from c memory
-    img_eltype = eltype(img)
-
-    if (img_eltype == UInt8) && (encoder.pix_fmt == AV_PIX_FMT_GRAY8)
-        for r = 1:frame.height, c = 1:frame.width
-            unsafe_store!(frame.data[1], img[r,c], ((r-1)*frame.linesize[1])+c)
-        end
-    elseif (img_eltype == Gray{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_GRAY8)
-        img_uint8 = rawview(channelview(img))
-        for r = 1:frame.height, c = 1:frame.width
-            unsafe_store!(frame.data[1], img_uint8[r,c], ((r-1)*frame.linesize[1])+c)
-        end
-    elseif (img_eltype == Gray{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_RGB24)
-        img_uint8 = repeat(PermutedDimsArray(rawview(channelview(img)),(2,1))[:],inner=3)
-        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
-    elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_RGB24)
-        img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
-        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
-    elseif (img_eltype  == RGB{N0f8}) && (encoder.pix_fmt == AV_PIX_FMT_YUV420P)
-        img_YCbCr = convert.(YCbCr{Float64}, img)
-        img_YCbCr_half = convert.(YCbCr{Float64}, restrict(img))
-        for r = 1:frame.height, c = 1:frame.width
-            unsafe_store!(frame.data[1], round(UInt8,img_YCbCr[r,c].y), ((r-1)*frame.linesize[1])+c)
-        end
-        for r = 1:Int64(frame.height/2), c = 1:Int64(frame.width/2)
-            unsafe_store!(frame.data[2], round(UInt8,img_YCbCr_half[r,c].cb), ((r-1)*frame.linesize[2])+c)
-            unsafe_store!(frame.data[3], round(UInt8,img_YCbCr_half[r,c].cr), ((r-1)*frame.linesize[3])+c)
-        end
-    elseif img_eltype == UInt16 && encoder.pix_fmt == AV_PIX_FMT_GRAY10LE
-        for r in 1:frame.height
-            line_offset = (r - 1) * frame.linesize[1]
-            for c in 1:frame.width
-                LSB = convert(UInt8, img[r, c] & 0x00FF)
-                MSB = convert(UInt8, (img[r, c] & 0xFF00) >> 8)
-                px_offset = line_offset + sizeof(img_eltype) * (c - 1) + 1
-                unsafe_store!(frame.data[1], LSB, px_offset)
-                unsafe_store!(frame.data[1], MSB, px_offset + 1)
-            end
-        end
-    else
-        error("Array element type not supported")
-    end
+    _appendencode!(frame, encoder.pix_fmt, img)
     av_setfield(encoder.apFrame[1],:pts,index)
     encode!(encoder, io)
-end
-
-function appendencode!(encoder::VideoEncoder, io::IO,
-                       img::AbstractMatrix{N6f10}, index::Integer)
-    appendencode!(encoder, io, rawview(img), index)
-end
-
-function appendencode!(encoder::VideoEncoder, io::IO,
-                       img::AbstractMatrix{Gray{N6f10}}, index::Integer)
-    appendencode!(encoder, io, rawview(channelview(img)), index)
 end
 
 """

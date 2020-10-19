@@ -3,9 +3,7 @@ module VideoIO
 using Libdl
 using Requires, Dates, ProgressMeter
 using ImageCore: channelview, rawview
-using ColorTypes: RGB, Gray, N0f8, YCbCr
-using ImageTransformations: restrict
-using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr
+using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed
 using ImageTransformations: restrict
 
 import Base: iterate, IteratorSize, IteratorEltype
