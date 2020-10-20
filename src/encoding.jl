@@ -126,6 +126,21 @@ function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
     pix_fmt
 end
 
+function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
+                            ) where {T<:RGB{N6f10}, S}
+    if  codec_name in ["libx264", "h264_nvenc"]
+        if islossless(props)
+            @warn """Encoding output not lossless.
+                libx264 does not support lossless RGB planes. RGB will be downsampled
+                to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
+        end
+        pix_fmt = AV_PIX_FMT_YUV420P10LE
+    else
+        _pix_type_not_supported(S, codec_name)
+    end
+    pix_fmt
+end
+
 function _determine_pix_fmt(::Type{X}, ::Type{S}, codec_name, props
                             ) where {T, X<:Normed{T}, S}
     _determine_pix_fmt(T, S, codec_name, props)
@@ -214,16 +229,26 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt8})
     end
 end
 
+@inline function bytes_of_uint16(x::UInt16)
+    lsb = convert(UInt8, x & 0x00FF)
+    msb = convert(UInt8, (x & 0xFF00) >> 8)
+    lsb, msb
+end
+
+@inline function store_uint16_in_10le_frame!(data, x, px_offset)
+    lsb, msb = bytes_of_uint16(x)
+    unsafe_store!(data, lsb, px_offset)
+    unsafe_store!(data, msb, px_offset + 1)
+end
+
 function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt16})
+    input_el_size = sizeof(eltype(img))
     if pix_fmt == AV_PIX_FMT_GRAY10LE
         for r in 1:frame.height
             line_offset = (r - 1) * frame.linesize[1]
             for c in 1:frame.width
-                LSB = convert(UInt8, img[r, c] & 0x00FF)
-                MSB = convert(UInt8, (img[r, c] & 0xFF00) >> 8)
-                px_offset = line_offset + sizeof(img_eltype) * (c - 1) + 1
-                unsafe_store!(frame.data[1], LSB, px_offset)
-                unsafe_store!(frame.data[1], MSB, px_offset + 1)
+                px_offset = line_offset + input_el_size * (c - 1) + 1
+                store_uint16_in_10le_frame!(frame.data[1], imgs[r, c], px_offset)
             end
         end
     else
@@ -242,17 +267,61 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N0f8}})
         img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
         unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
     elseif pix_fmt == AV_PIX_FMT_YUV420P
-        img_YCbCr = convert.(YCbCr{Float64}, img)
-        img_YCbCr_half = convert.(YCbCr{Float64}, restrict(img))
         for r = 1:frame.height, c = 1:frame.width
-            unsafe_store!(frame.data[1], round(UInt8, img_YCbCr[r,c].y),
+            px_luma = convert(YCbCr, img[r, c]).y
+            unsafe_store!(frame.data[1], round(UInt8, px_luma),
                           ((r-1)*frame.linesize[1])+c)
         end
-        for r = 1:Int64(frame.height/2), c = 1:Int64(frame.width/2)
-            unsafe_store!(frame.data[2], round(UInt8, img_YCbCr_half[r,c].cb),
+        img_half = restrict(img)
+        for r = 1:div(frame.height, 2), c = 1:div(frame.width, 2)
+            px_ycbcr = convert(YCbCr, img_half[r, c])
+            unsafe_store!(frame.data[2], round(UInt8, px_ycbcr.cb),
                           ((r-1)*frame.linesize[2])+c)
-            unsafe_store!(frame.data[3], round(UInt8, img_YCbCr_half[r,c].cr),
+            unsafe_store!(frame.data[3], round(UInt8, px_ycbcr.cr),
                           ((r-1)*frame.linesize[3])+c)
+        end
+    else
+        _unsupported_append_encode_type()
+    end
+end
+
+# convert from bt601 to bt709/bt2020 colorspace by multiplying by four
+@inline bt601_to_bt709_codepoint(x) = round(UInt16, 4 * x)
+
+function convert_store_bt601_codepoint!(data, x, line_offset, input_el_size, c)
+    px_cp = bt601_to_bt709_codepoint(x)
+    px_offset = line_offset + input_el_size * (c - 1) + 1
+    store_uint16_in_10le_frame!(data, px_cp, px_offset)
+end
+
+function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
+    input_el_size = sizeof(eltype(img))
+    if pix_fmt == AV_PIX_FMT_YUV420P10LE
+        # Luma
+        linesize_y = frame.linesize[1]
+        for r in 1:frame.height
+            line_offset = (r - 1) * linesize_y
+            for c in 1:frame.width
+                px_luma_601 = convert(YCbCr, img[r, c]).y
+                convert_store_bt601_codepoint!(frame.data[1], px_luma_601,
+                                               line_offset, input_el_size, c)
+            end
+        end
+        # Chroma
+        img_half = restrict(img) # For 4:2:0 chroma downsampling, lossy
+        half_width = div(frame.width, 2)
+        linesize_cb = frame.linesize[2]
+        linesize_cr = frame.linesize[3]
+        for r in 1:div(frame.height, 2)
+            line_offset_cb = (r - 1) * linesize_cb
+            line_offset_cr = (r - 1) * linesize_cr
+            for c in 1:half_width
+                px_ycbcr = convert(YCbCr, img_half[r, c])
+                convert_store_bt601_codepoint!(frame.data[2], px_ycbcr.cb,
+                                               line_offset_cb, input_el_size, c)
+                convert_store_bt601_codepoint!(frame.data[3], px_ycbcr.cr,
+                                               line_offset_cr, input_el_size, c)
+            end
         end
     else
         _unsupported_append_encode_type()
