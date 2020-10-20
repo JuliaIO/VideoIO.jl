@@ -242,13 +242,13 @@ end
 end
 
 function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt16})
-    input_el_size = sizeof(eltype(img))
+    output_el_size = 2
     if pix_fmt == AV_PIX_FMT_GRAY10LE
         for r in 1:frame.height
             line_offset = (r - 1) * frame.linesize[1]
             for c in 1:frame.width
-                px_offset = line_offset + input_el_size * (c - 1) + 1
-                store_uint16_in_10le_frame!(frame.data[1], imgs[r, c], px_offset)
+                px_offset = line_offset + output_el_size * (c - 1) + 1
+                store_uint16_in_10le_frame!(frame.data[1], img[r, c], px_offset)
             end
         end
     else
@@ -288,14 +288,14 @@ end
 # convert from bt601 to bt709/bt2020 colorspace by multiplying by four
 @inline bt601_to_bt709_codepoint(x) = round(UInt16, 4 * x)
 
-function convert_store_bt601_codepoint!(data, x, line_offset, input_el_size, c)
+function convert_store_bt601_codepoint!(data, x, line_offset, output_el_size, c)
     px_cp = bt601_to_bt709_codepoint(x)
-    px_offset = line_offset + input_el_size * (c - 1) + 1
+    px_offset = line_offset + output_el_size * (c - 1) + 1
     store_uint16_in_10le_frame!(data, px_cp, px_offset)
 end
 
 function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
-    input_el_size = sizeof(eltype(img))
+    output_el_size = 2
     if pix_fmt == AV_PIX_FMT_YUV420P10LE
         # Luma
         linesize_y = frame.linesize[1]
@@ -304,7 +304,7 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
             for c in 1:frame.width
                 px_luma_601 = convert(YCbCr, img[r, c]).y
                 convert_store_bt601_codepoint!(frame.data[1], px_luma_601,
-                                               line_offset, input_el_size, c)
+                                               line_offset, output_el_size, c)
             end
         end
         # Chroma
@@ -318,9 +318,9 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
             for c in 1:half_width
                 px_ycbcr = convert(YCbCr, img_half[r, c])
                 convert_store_bt601_codepoint!(frame.data[2], px_ycbcr.cb,
-                                               line_offset_cb, input_el_size, c)
+                                               line_offset_cb, output_el_size, c)
                 convert_store_bt601_codepoint!(frame.data[3], px_ycbcr.cr,
-                                               line_offset_cr, input_el_size, c)
+                                               line_offset_cr, output_el_size, c)
             end
         end
     else
