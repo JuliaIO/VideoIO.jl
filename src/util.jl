@@ -3,7 +3,7 @@
 # Set the value of a field of a pointer
 # Equivalent to s->name = value
 @inline function av_setfield(s::Ptr{T}, name::Symbol, value) where T
-    field_pos = Base.fieldindex(T, name)
+    field_pos = fieldindex(T, name)
     byteoffset = fieldoffset(T, field_pos)
     S = fieldtype(T, name)
 
@@ -12,7 +12,7 @@
 end
 
 function av_pointer_to_field(s::Ptr{T}, name::Symbol) where T
-    field_pos = Base.fieldindex(T, name)
+    field_pos = fieldindex(T, name)
     byteoffset = fieldoffset(T, field_pos)
     return s + byteoffset
 end
@@ -90,4 +90,15 @@ function aspect_ratio(f)
     else
         f.aspect_ratio
     end
+end
+
+@inline function unsafe_field_ptr(::Type{S}, a::Ref{T}, field::Symbol) where {S,T}
+    struct_pointer = Base.unsafe_convert(Ptr{T}, a)
+    fieldpos = fieldindex(T, field)
+    field_pointer = convert(Ptr{S}, struct_pointer) + fieldoffset(T, fieldpos)
+    return field_pointer
+end
+
+@inline function unsafe_field_ptr(a::Ref{T}, field::Symbol) where T
+    unsafe_field_ptr(fieldtype(T, field), a, field)
 end

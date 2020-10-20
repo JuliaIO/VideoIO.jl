@@ -216,7 +216,7 @@ end
 
 _unsupported_append_encode_type() = error("Array element type not supported")
 
-function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt8})
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8})
     if pix_fmt == AV_PIX_FMT_GRAY8
         for r = 1:frame.height, c = 1:frame.width
             unsafe_store!(frame.data[1], img[r,c], ((r-1)*frame.linesize[1])+c)
@@ -230,24 +230,24 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt8})
 end
 
 @inline function bytes_of_uint16(x::UInt16)
-    lsb = convert(UInt8, x & 0x00FF)
     msb = convert(UInt8, (x & 0xFF00) >> 8)
-    lsb, msb
+    lsb = convert(UInt8, x & 0x00FF)
+    msb, lsb
 end
 
 @inline function store_uint16_in_10le_frame!(data, x, px_offset)
-    lsb, msb = bytes_of_uint16(x)
+    msb, lsb = bytes_of_uint16(x)
     unsafe_store!(data, lsb, px_offset)
     unsafe_store!(data, msb, px_offset + 1)
 end
 
-function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt16})
-    output_el_size = 2
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16})
+    sample_el_size = 2
     if pix_fmt == AV_PIX_FMT_GRAY10LE
         for r in 1:frame.height
             line_offset = (r - 1) * frame.linesize[1]
             for c in 1:frame.width
-                px_offset = line_offset + output_el_size * (c - 1) + 1
+                px_offset = line_offset + sample_el_size * (c - 1) + 1
                 store_uint16_in_10le_frame!(frame.data[1], img[r, c], px_offset)
             end
         end
@@ -256,13 +256,13 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{UInt16})
     end
 end
 
-_appendencode!(frame, pix_fmt, img::AbstractMatrix{<:Normed}) =
-    _appendencode!(frame, pix_fmt, rawview(img))
+transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Normed}) =
+    transfer_img_buf_to_frame!(frame, pix_fmt, rawview(img))
 
-_appendencode!(frame, pix_fmt, img::AbstractMatrix{<:Gray}) =
-    _appendencode!(frame, pix_fmt, channelview(img))
+transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Gray}) =
+    transfer_img_buf_to_frame!(frame, pix_fmt, channelview(img))
 
-function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N0f8}})
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N0f8}})
     if pix_fmt == AV_PIX_FMT_RGB24
         img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
         unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
@@ -288,14 +288,14 @@ end
 # convert from bt601 to bt709/bt2020 colorspace by multiplying by four
 @inline bt601_to_bt709_codepoint(x) = round(UInt16, 4 * x)
 
-function convert_store_bt601_codepoint!(data, x, line_offset, output_el_size, c)
+function convert_store_bt601_codepoint!(data, x, line_offset, sample_el_size, c)
     px_cp = bt601_to_bt709_codepoint(x)
-    px_offset = line_offset + output_el_size * (c - 1) + 1
+    px_offset = line_offset + sample_el_size * (c - 1) + 1
     store_uint16_in_10le_frame!(data, px_cp, px_offset)
 end
 
-function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
-    output_el_size = 2
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10}})
+    sample_el_size = 2
     if pix_fmt == AV_PIX_FMT_YUV420P10LE
         # Luma
         linesize_y = frame.linesize[1]
@@ -304,7 +304,7 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
             for c in 1:frame.width
                 px_luma_601 = convert(YCbCr, img[r, c]).y
                 convert_store_bt601_codepoint!(frame.data[1], px_luma_601,
-                                               line_offset, output_el_size, c)
+                                               line_offset, sample_el_size, c)
             end
         end
         # Chroma
@@ -318,9 +318,9 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
             for c in 1:half_width
                 px_ycbcr = convert(YCbCr, img_half[r, c])
                 convert_store_bt601_codepoint!(frame.data[2], px_ycbcr.cb,
-                                               line_offset_cb, output_el_size, c)
+                                               line_offset_cb, sample_el_size, c)
                 convert_store_bt601_codepoint!(frame.data[3], px_ycbcr.cr,
-                                               line_offset_cr, output_el_size, c)
+                                               line_offset_cr, sample_el_size, c)
             end
         end
     else
@@ -328,7 +328,8 @@ function _appendencode!(frame, pix_fmt, img::AbstractMatrix{RGB{N6f10}})
     end
 end
 
-_appendencode!(frame, pix_fmt, img) = _unsuported_append_encode_type()
+# Fallback
+transfer_img_buf_to_frame!(frame, pix_fmt, img) = _unsuported_append_encode_type()
 
 """
     appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
@@ -342,7 +343,7 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     ret < 0 && error("av_frame_make_writable() error")
 
     frame = unsafe_load(encoder.apFrame[1]) #grab data from c memory
-    _appendencode!(frame, encoder.pix_fmt, img)
+    transfer_img_buf_to_frame!(frame, encoder.pix_fmt, img)
     av_setfield(encoder.apFrame[1],:pts,index)
     encode!(encoder, io)
 end
