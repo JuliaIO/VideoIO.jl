@@ -75,9 +75,9 @@ end
                 read!(v,img)
             end
             fiftieth_frame = img
-            timebase = v.avin.video_info[1].stream.time_base
+            timebase = v.avin.format_context.streams[1].time_base
             tstamp = v.srcframe.pkt_dts
-            video_tstamp = v.avin.video_info[1].stream.first_dts
+            video_tstamp = v.avin.format_context.streams[1].first_dts
             fiftytime = (tstamp-video_tstamp)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
 
             while !eof(v)
@@ -214,7 +214,7 @@ end
             encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,framerate=30,AVCodecContextProperties=props, silent=true)
             @test stat(encodedvideopath).size > 100
             f = VideoIO.openvideo(encodedvideopath)
-            @test_broken VideoIO.counttotalframes(f) == n-4 # videos encoded with crf > 0 have 4 fewer frames
+            @test VideoIO.counttotalframes(f) == n # videos encoded with crf > 0 have 4 fewer frames
             close(f)
             rm(encodedvideopath)
         end
@@ -370,13 +370,13 @@ end
 @testset "c api memory leak test" begin # Issue https://github.com/JuliaIO/VideoIO.jl/issues/246
 
     if(Sys.islinux())  # TODO: find a method to get cross platform memory usage, see: https://discourse.julialang.org/t/how-to-get-current-julia-process-memory-usage/41734/4
-    
+
         function get_memory_usage()
             open("/proc/$(getpid())/statm") do io
                 split(read(io, String))[1]
-            end            
+            end
         end
-    
+
         file = joinpath(videodir, "annie_oakley.ogg")
 
         @testset "open file test" begin
@@ -384,7 +384,7 @@ end
             usage_vec = Vector{String}(undef, check_size)
 
             for i in 1:check_size
-            
+
                 f = VideoIO.openvideo(file)
                 close(f)
                 GC.gc()
@@ -402,7 +402,7 @@ end
             usage_vec = Vector{String}(undef, check_size)
 
             for i in 1:check_size
-            
+
                 f = VideoIO.openvideo(file)
                 img = read(f)
                 close(f)

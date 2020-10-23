@@ -68,11 +68,11 @@ function av_image_get_buffer_size(pix_fmt::AVPixelFormat, width::Integer, height
 end
 
 function av_image_copy_to_buffer(dst, dst_size::Integer,
-                                 src_data::Ref{Ptr{UInt8}},
-                                 src_linesize::Ref{Cint},
+                                 src_data::Union{Ref{Ptr{UInt8}}, Ref{NTuple{N, Ptr{UInt8}}}},
+                                 src_linesize::Union{Ref{Cint}, Ref{NTuple{M, Cint}}},
                                  pix_fmt::AVPixelFormat,
                                  width::Integer, height::Integer,
-                                 align::Integer)
+                                 align::Integer) where {M, N}
     ccall((:av_image_copy_to_buffer, libavutil), Cint, (Ref{UInt8}, Cint,
                                                         Ref{Ptr{UInt8}}, Ref{Cint},
                                                         AVPixelFormat, Cint,

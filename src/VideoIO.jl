@@ -6,8 +6,12 @@ using ImageCore: channelview, rawview
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed
 using ImageTransformations: restrict
 
-import Base: iterate, IteratorSize, IteratorEltype, fieldindex, setproperty!,
-    getproperty
+using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
+import Base: iterate, IteratorSize, IteratorEltype, setproperty!, convert,
+    getproperty, unsafe_convert, propertynames, getindex, setindex!, parent,
+    position, unsafe_wrap
+
+const VIDEOIO_LOCK = ReentrantLock()
 
 include("init.jl")
 include("util.jl")
@@ -22,6 +26,8 @@ using .AVCodecs
 using .AVFormat
 using .SWScale
 import .AVDevice
+
+include("avptr.jl")
 
 include("info.jl")
 include("avdictionary.jl")

@@ -1,5 +1,6 @@
 # Helpful utility functions
 
+const VIO_AVERROR_EOF = -541478725 # AVERROR_EOF
 # Set the value of a field of a pointer
 # Equivalent to s->name = value
 @inline function av_setfield(s::Ptr{T}, name::Symbol, value) where T
@@ -92,13 +93,19 @@ function aspect_ratio(f)
     end
 end
 
-@inline function unsafe_field_ptr(::Type{S}, a::Ref{T}, field::Symbol) where {S,T}
-    struct_pointer = Base.unsafe_convert(Ptr{T}, a)
+@inline function field_ptr(::Type{S}, struct_pointer::Ptr{T}, field::Symbol,
+                           index::Integer = 1) where {S,T}
     fieldpos = fieldindex(T, field)
-    field_pointer = convert(Ptr{S}, struct_pointer) + fieldoffset(T, fieldpos)
+    field_pointer = convert(Ptr{S}, struct_pointer) +
+        fieldoffset(T, fieldpos) + (index - 1) * sizeof(S)
     return field_pointer
 end
 
-@inline function unsafe_field_ptr(a::Ref{T}, field::Symbol) where T
-    unsafe_field_ptr(fieldtype(T, field), a, field)
+@inline field_ptr(a::Ptr{T}, field::Symbol, args...) where T =
+    field_ptr(fieldtype(T, field), a, field, args...)
+
+function check_ptr_valid(p::Ptr, err::Bool = true)
+    valid = p != C_NULL
+    err && !valid && error("Invalid pointer")
+    valid
 end

@@ -1,13 +1,28 @@
+export encodevideo, encode!, prepareencoder, appendencode!, startencode!, finishencode!, mux
 
-export encodevideo, encode!, prepareencoder, appendencode!, finishencode!, mux
+const SettingsT = Union{AbstractDict{Symbol, <:Any},
+                        AbstractDict{Union{}, Union{}},
+                        NamedTuple}
 
 # A struct collecting encoder objects for easy passing
 mutable struct VideoEncoder
     codec_name::String
-    apCodecContext::Array{Ptr{AVCodecContext}}
-    apFrame::Array{Ptr{AVFrame}}
-    apPacket::Array{Ptr{AVPacket}}
-    pix_fmt::Integer
+    codec_context::AVCodecContextPtr
+    format_context::AVFormatContextPtr
+    stream_index0::Int
+    frame::AVFramePtr
+    packet::AVPacketPtr
+    pix_fmt::Cint
+    scanline_major::Bool
+end
+
+mutable struct VideoWriter
+    format_context::AVFormatContextPtr
+    codec_context::AVCodecContextPtr
+    frame::AVFramePtr
+    packet::AVPacketPtr
+    stream_index0::Int
+    scanline_major::Bool
 end
 
 """
@@ -16,26 +31,78 @@ end
 Encode frame in memory
 """
 function encode!(encoder::VideoEncoder, io::IO; flush=false)
+    av_init_packet(encoder.packet)
     if flush
-        ret = avcodec_send_frame(encoder.apCodecContext[1],C_NULL)
+        fret = avcodec_send_frame(encoder.codec_context, C_NULL)
     else
-        ret = avcodec_send_frame(encoder.apCodecContext[1],encoder.apFrame[1])
+        fret = avcodec_send_frame(encoder.codec_context, encoder.frame)
     end
-    ret < 0 && error("Error $ret sending a frame for encoding")
+    if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
+        error("Error $fret sending a frame for encoding")
+    end
 
-    while ret >= 0
-        ret = avcodec_receive_packet(encoder.apCodecContext[1], encoder.apPacket[1])
-        if (ret == -35 || ret == -11 || ret == -541478725) # -35=EAGAIN or -11.  -541478725=AVERROR_EOF
-             return
-        elseif (ret < 0)
-            error("Error $ret during encoding")
+    pret = Cint(0)
+    while pret >= 0
+        pret = avcodec_receive_packet(encoder.codec_context, encoder.packet)
+        @show encoder.packet.pts, encoder.packet.dts, encoder.packet.duration
+        if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
+             break
+        elseif pret < 0
+            error("Error $pret during encoding")
         end
-        pkt = unsafe_load(encoder.apPacket[1])
-        @debug println("Write packet $(pkt.pts) (size=$(pkt.size))")
-        data = unsafe_wrap(Array,pkt.data,pkt.size)
-        write(io,data)
-        av_packet_unref(encoder.apPacket[1])
+        @debug println("Write packet $(encoder.packet.pts) (size=$(encoder.packet.size))")
+        data = unsafe_wrap(Array, encoder.packet.data, encoder.packet.size)
+        write(io, data)
+        av_packet_unref(encoder.packet)
     end
+    if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
+        fret = avcodec_send_frame(encoder.codec_context, encoder.frame)
+        if fret < 0 && fret != VIO_AVERROR_EOF
+            error("Error $fret sending a frame for encoding")
+        end
+    end
+    return pret
+end
+
+function encode_mux!(writer::VideoWriter, flush = false)
+    pkt = writer.packet
+    if flush
+        fret = avcodec_send_frame(writer.codec_context, C_NULL)
+    else
+        fret = avcodec_send_frame(writer.codec_context, writer.frame)
+    end
+    if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
+        error("Error $fret sending a frame for encoding")
+    end
+
+    pret = Cint(0)
+    while pret >= 0
+        pret = avcodec_receive_packet(writer.codec_context, pkt)
+        if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
+             break
+        elseif pret < 0
+            error("Error $pret during encoding")
+        end
+        if writer.packet.duration == 0
+            codec_pts_duration = round(Int, 1 / (
+                convert(Rational, writer.codec_context.framerate) *
+                convert(Rational, writer.codec_context.time_base)))
+            writer.packet.duration = codec_pts_duration
+        end
+        stream = writer.format_context.streams[writer.stream_index0 + 1]
+        av_packet_rescale_ts(pkt, writer.codec_context.time_base, stream.time_base)
+        pkt.stream_index = writer.stream_index0
+        ret = av_interleaved_write_frame(writer.format_context, pkt)
+        # No packet_unref, av_interleaved_write_frame now owns packet.
+        ret != 0 && error("Error muxing packet")
+    end
+    if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
+        fret = avcodec_send_frame(writer.codec_context, writer.frame)
+        if fret < 0 && fret != VIO_AVERROR_EOF
+            error("Error $fret sending a frame for encoding")
+        end
+    end
+    return pret
 end
 
 const AVCodecContextPropertiesDefault =[:priv_data => ("crf"=>"22","preset"=>"medium")]
@@ -158,72 +225,103 @@ _determine_pix_fmt(::Type{T}, codec_name, props) where T =
     _determine_pix_fmt(T, T, codec_name, props)
 
 """
-    prepareencoder(firstimg;framerate=30,AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")],codec_name::String="libx264")
+    prepareencoder(firstimg; framerate=30,
+                   AVCodecContextProperties = AVCodecContextPropertiesDefault,
+                   codec_name::String="libx264")
 
-Prepare encoder and return AV objects.
+Prepare encoder and return a `VideoEncoder` object. The dimensions and pixel
+format of the video will be determined from `firstimg`. The number of rows of
+`firstimg` determines the height of the frame, while the number of columns
+determines the width.
 """
-function prepareencoder(firstimg; framerate=30, AVCodecContextProperties=[:priv_data => ("crf"=>"22","preset"=>"medium")], codec_name::String="libx264")
-    height = size(firstimg,1)
-    width = size(firstimg,2)
+function prepareencoder(firstimg; framerate=30,
+                        AVCodecContextProperties = AVCodecContextPropertiesDefault,
+                        #color_range::Int = 1,
+                        codec_name::String = "libx264",
+                        scanline_major::Bool = false, gop = 12)
+    if scanline_major
+        width, height = size(firstimg)
+    else
+        height, width = size(firstimg)
+    end
+
     ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
+
+    elt = eltype(firstimg)
+    pix_fmt = _determine_pix_fmt(elt, codec_name, AVCodecContextProperties)
+    framerate_rat = Rational(framerate)
 
     codec = avcodec_find_encoder_by_name(codec_name)
     codec == C_NULL && error("Codec '$codec_name' not found")
 
-    apCodecContext = Ptr{AVCodecContext}[avcodec_alloc_context3(codec)]
-    apCodecContext == [C_NULL] && error("Could not allocate video codec context")
+    codec_context = AVCodecContextPtr(codec)
+    codec_context.width = width
+    codec_context.height = height
+    codec_context.time_base = AVRational(1/framerate_rat)
+    codec_context.framerate = AVRational(framerate_rat)
+    codec_context.pix_fmt = pix_fmt
+    codec_context.gop_size = gop
+    # codec_context.max_b_frames = -1
+    codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
 
-    apPacket = Ptr{AVPacket}[av_packet_alloc()]
-    apPacket == [C_NULL] && error("av_packet_alloc() error")
-
-    elt = eltype(firstimg)
-    pix_fmt = _determine_pix_fmt(elt, codec_name, AVCodecContextProperties)
-
-    av_setfield(apCodecContext[1],:width,width)
-    av_setfield(apCodecContext[1],:height,height)
-    framerate_rat = Rational(framerate)
-    av_setfield(apCodecContext[1],:time_base,AVRational(1/framerate_rat))
-    av_setfield(apCodecContext[1],:framerate,AVRational(framerate_rat))
-    av_setfield(apCodecContext[1],:pix_fmt,pix_fmt)
-
-    codecContext = unsafe_load(apCodecContext[1])
+    priv_data_ptr = codec_context.priv_data
     for prop in AVCodecContextProperties
         if prop[1] == :priv_data
             for pd in prop[2]
-                av_opt_set(codecContext.priv_data, string(pd[1]), string(pd[2]), AV_OPT_SEARCH_CHILDREN)
+                av_opt_set(priv_data_ptr, string(pd[1]), string(pd[2]),
+                           AV_OPT_SEARCH_CHILDREN)
             end
         else
-            av_setfield(apCodecContext[1],prop[1],prop[2])
+            av_setfield(codec_context,prop[1],prop[2])
         end
     end
 
-    # open it
-    ret = avcodec_open2(apCodecContext[1], codec, C_NULL)
+    sigatomic_begin()
+    lock(VIDEOIO_LOCK)
+    ret = avcodec_open2(codec_context, codec, C_NULL)
+    unlock(VIDEOIO_LOCK)
+    sigatomic_end()
     ret < 0 && error("Could not open codec: Return code $(ret)")
 
-    apFrame = Ptr{VideoIO.AVFrame}[VideoIO.av_frame_alloc()]
-    apFrame == [C_NULL] && error("Could not allocate video frame")
+    frame = AVFramePtr()
+    frame.format = pix_fmt
+    frame.width = width
+    frame.height = height
+    # frame.color_range = color_range == 1 ? AVCOL_RANGE_MPEG : AVCOL_RANGE_JPEG
 
-    av_setfield(apFrame[1],:format,pix_fmt)
-    av_setfield(apFrame[1],:width,width)
-    av_setfield(apFrame[1],:height,height)
+    format_context = AVFormatContextPtr(Ptr{AVFormatContext}())
 
-    ret = av_frame_get_buffer(apFrame[1], 32)
+    ret = av_frame_get_buffer(frame, 0)
     ret < 0 && error("Could not allocate the video frame data")
 
-    return VideoEncoder(codec_name, apCodecContext, apFrame, apPacket, pix_fmt)
+    packet = AVPacketPtr()
+    return VideoEncoder(codec_name, codec_context, format_context, -1, frame,
+                        packet, pix_fmt, scanline_major)
 end
 
 _unsupported_append_encode_type() = error("Array element type not supported")
 
 function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8})
+    width = frame.width
+    height = frame.height
+    lss = frame.linesize
+    fdata = frame.data
     if pix_fmt == AV_PIX_FMT_GRAY8
-        for r = 1:frame.height, c = 1:frame.width
-            unsafe_store!(frame.data[1], img[r,c], ((r-1)*frame.linesize[1])+c)
+        @inbounds for r = 1:height
+            line_offset = (r-1) * lss[1]
+            for c = 1:width
+                unsafe_store!(fdata[1], img[r,c], line_offset + c)
+            end
         end
     elseif pix_fmt == AV_PIX_FMT_RGB24
-        img_uint8 = repeat(PermutedDimsArray(img, (2,1))[:], inner = 3)
-        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
+        @inbounds for r = 1:height
+            line_offset = (r-1) * lss[1]
+            for c = 1:width
+                for s in 0:2
+                    unsafe_store!(fdata[1], img[r,c], line_offset + c + s)
+                end
+            end
+        end
     else
         _unsupported_append_encode_type()
     end
@@ -244,11 +342,15 @@ end
 function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16})
     sample_el_size = 2
     if pix_fmt == AV_PIX_FMT_GRAY10LE
-        for r in 1:frame.height
-            line_offset = (r - 1) * frame.linesize[1]
-            for c in 1:frame.width
+        width = frame.width
+        height = frame.height
+        @inbounds ls = frame.linesize[1]
+        @inbounds datap = frame.data[1]
+        @inbounds for r in 1:height
+            line_offset = (r - 1) * ls
+            for c in 1:width
                 px_offset = line_offset + sample_el_size * (c - 1) + 1
-                store_uint16_in_10le_frame!(frame.data[1], img[r, c], px_offset)
+                store_uint16_in_10le_frame!(datap, img[r, c], px_offset)
             end
         end
     else
@@ -262,23 +364,40 @@ transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Normed}) =
 transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Gray}) =
     transfer_img_buf_to_frame!(frame, pix_fmt, channelview(img))
 
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N0f8}})
+function transfer_img_buf_to_frame!(frame, pix_fmt,
+                                    img::AbstractArray{RGB{N0f8}})
+    width = frame.width
+    height = frame.height
+    lss = frame.linesize
+    fdata = frame.data
     if pix_fmt == AV_PIX_FMT_RGB24
-        img_uint8 = PermutedDimsArray(rawview(channelview(img)),(1,3,2))[:]
-        unsafe_copyto!(frame.data[1], pointer(img_uint8), length(img_uint8))
+        pixel_stride = 3
+        @inbounds for h in 1:height
+            line_offset = (h - 1) * lss[1]
+            for w in 1:width
+                px_offset = line_offset + (w - 1) * pixel_stride + 1
+                unsafe_store!(fdata[1], reinterpret(img[h, w].r), px_offset)
+                unsafe_store!(fdata[1], reinterpret(img[h, w].g), px_offset + 1)
+                unsafe_store!(fdata[1], reinterpret(img[h, w].b), px_offset + 2)
+            end
+        end
     elseif pix_fmt == AV_PIX_FMT_YUV420P
-        for r = 1:frame.height, c = 1:frame.width
-            px_luma = convert(YCbCr, img[r, c]).y
-            unsafe_store!(frame.data[1], round(UInt8, px_luma),
-                          ((r-1)*frame.linesize[1])+c)
+        @inbounds for r = 1:height
+            line_offset = (r-1)*lss[1]
+            for c = 1:width
+                px_luma = convert(YCbCr, img[r, c]).y
+                unsafe_store!(fdata[1], round(UInt8, px_luma), line_offset+c)
+            end
         end
         img_half = restrict(img)
-        for r = 1:div(frame.height, 2), c = 1:div(frame.width, 2)
-            px_ycbcr = convert(YCbCr, img_half[r, c])
-            unsafe_store!(frame.data[2], round(UInt8, px_ycbcr.cb),
-                          ((r-1)*frame.linesize[2])+c)
-            unsafe_store!(frame.data[3], round(UInt8, px_ycbcr.cr),
-                          ((r-1)*frame.linesize[3])+c)
+        @inbounds for r = 1:div(height, 2)
+            line_offset_cb = (r-1)*lss[2]
+            line_offset_cr = (r-1)*lss[3]
+            for c = 1:div(width, 2)
+                px_ycbcr = convert(YCbCr, img_half[r, c])
+                unsafe_store!(fdata[2], round(UInt8, px_ycbcr.cb), line_offset_cb+c)
+                unsafe_store!(fdata[3], round(UInt8, px_ycbcr.cr), line_offset_cr+c)
+            end
         end
     else
         _unsupported_append_encode_type()
@@ -298,28 +417,31 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10
     sample_el_size = 2
     if pix_fmt == AV_PIX_FMT_YUV420P10LE
         # Luma
-        linesize_y = frame.linesize[1]
-        for r in 1:frame.height
+        fdata = frame.data
+        @inbounds linesize_y = frame.linesize[1]
+        width = frame.width
+        height = frame.height
+        for r in 1:height
             line_offset = (r - 1) * linesize_y
-            for c in 1:frame.width
+            for c in 1:width
                 px_luma_601 = convert(YCbCr, img[r, c]).y
-                convert_store_bt601_codepoint!(frame.data[1], px_luma_601,
+                convert_store_bt601_codepoint!(fdata[1], px_luma_601,
                                                line_offset, sample_el_size, c)
             end
         end
         # Chroma
         img_half = restrict(img) # For 4:2:0 chroma downsampling, lossy
-        half_width = div(frame.width, 2)
-        linesize_cb = frame.linesize[2]
-        linesize_cr = frame.linesize[3]
-        for r in 1:div(frame.height, 2)
+        half_width = div(width, 2)
+        @inbounds linesize_cb = frame.linesize[2]
+        @inbounds linesize_cr = frame.linesize[3]
+        @inbounds for r in 1:div(height, 2)
             line_offset_cb = (r - 1) * linesize_cb
             line_offset_cr = (r - 1) * linesize_cr
             for c in 1:half_width
                 px_ycbcr = convert(YCbCr, img_half[r, c])
-                convert_store_bt601_codepoint!(frame.data[2], px_ycbcr.cb,
+                convert_store_bt601_codepoint!(fdata[2], px_ycbcr.cb,
                                                line_offset_cb, sample_el_size, c)
-                convert_store_bt601_codepoint!(frame.data[3], px_ycbcr.cr,
+                convert_store_bt601_codepoint!(fdata[3], px_ycbcr.cr,
                                                line_offset_cr, sample_el_size, c)
             end
         end
@@ -334,18 +456,26 @@ transfer_img_buf_to_frame!(frame, pix_fmt, img) = _unsuported_append_encode_type
 """
     appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 
-Send image object to ffmpeg encoder and encode
+Send image object to ffmpeg encoder and encode. The rows of `img` must span the
+vertical axis of the image, and the columns must span the horizontal axis.
 """
 function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
-
-    flush(stdout)
-    ret = av_frame_make_writable(encoder.apFrame[1])
+    ret = av_frame_make_writable(encoder.frame)
     ret < 0 && error("av_frame_make_writable() error")
 
-    frame = unsafe_load(encoder.apFrame[1]) #grab data from c memory
-    transfer_img_buf_to_frame!(frame, encoder.pix_fmt, img)
-    av_setfield(encoder.apFrame[1],:pts,index)
+    transfer_img_buf_to_frame!(encoder.frame, encoder.pix_fmt, img)
+    encoder.frame.pts = index
     encode!(encoder, io)
+end
+
+
+# Indices should start from zero
+function append_encode_mux!(writer, img, index)
+    ret = av_frame_make_writable(writer.frame)
+    ret < 0 && error("av_frame_make_writable() error")
+    writer.frame.pts = index
+    transfer_img_buf_to_frame!(writer.frame, writer.frame.format, img)
+    encode_mux!(writer)
 end
 
 """
@@ -355,11 +485,10 @@ End encoding by sending endencode package to ffmpeg, and close objects.
 """
 function finishencode!(encoder::VideoEncoder, io::IO)
     encode!(encoder, io, flush=true) # flush the encoder
-    write(io,UInt8[0, 0, 1, 0xb7]) # add sequence end code to have a real MPEG file
-    avcodec_free_context(encoder.apCodecContext)
-    av_frame_free(encoder.apFrame)
-    av_packet_free(encoder.apPacket)
+    write(io, UInt8[0, 0, 1, 0xb7]) # add sequence end code to have a real MPEG file
 end
+
+startencode!(io::IO) = write(io, 0x000001b3)
 
 ffmpeg_framerate_string(fr::Real) = string(fr)
 ffmpeg_framerate_string(fr::String) = fr
@@ -386,32 +515,176 @@ function mux(srcfilename, destfilename, framerate; silent=false, deletestream=tr
     end
 end
 
+@inline function set_class_option(ptr::NestedCStruct{T}, key, val) where T
+    raw_ptr = unsafe_convert(Ptr{T}, ptr)
+    void_ptr = unsafe_convert(Ptr{Nothing}, raw_ptr)
+    ret = av_opt_set(void_ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)
+    ret < 0 && error("Could not set class option $key to $val: got error $ret")
+end
+
+function set_class_options(ptr; kwargs...)
+    for (key, val) in kwargs
+        set_class_option(ptr, key, val)
+    end
+end
+
+function close_video_out!(writer::VideoWriter)
+    if check_ptr_valid(writer.format_context, false)
+        encode_mux!(writer, true) # flush
+        format_context = writer.format_context
+        ret = av_write_trailer(format_context)
+        ret < 0 && error("Could not write trailer")
+        if format_context.oformat.flags & AVFMT_NOFILE == 0
+            pb_ptr = field_ptr(format_context, :pb)
+            ret = GC.@preserve writer avio_closep(pb_ptr)
+            ret < 0 && error("Could not free AVIOContext")
+        end
+    end
+    # Free allocated memory through finalizers
+    writer.format_context = AVFormatContextPtr(C_NULL)
+    writer.codec_context = AVCodecContextPtr(C_NULL)
+    writer.frame = AVFramePtr(C_NULL)
+    writer.packet = AVPacketPtr(C_NULL)
+    writer.stream_index0 = -1
+    writer
+end
+
+function open_video_out!(filename::AbstractString, ::Type{T},
+                         sz::NTuple{2, Integer};
+                         codec_name::Union{AbstractString, Nothing} = "libx264",
+                         framerate::Real = 24, 
+                         scanline_major::Bool = false,
+                         encoder_settings::SettingsT = (;),
+                         encoder_private_settings::SettingsT = (;),
+                         format_settings::SettingsT = (;)) where T
+    framerate > 0 || error("Framerate must be strictly positive")
+    if scanline_major
+        width, height = sz
+    else
+        height, width = sz
+    end
+    ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
+    pix_fmt = _determine_pix_fmt(T, codec_name, encoder_settings)
+
+    format_context = output_AVFormatContextPtr(filename)
+
+    codec_p = avcodec_find_encoder_by_name(codec_name)
+    codec_p == C_NULL && error("Codec '$codec_name' not found")
+    codec = AVCodecPtr(codec_p)
+
+    ret = avformat_query_codec(format_context.oformat, codec.id,
+                               AVCodecs.FF_COMPLIANCE_NORMAL)
+    ret != 1 && error("Format not compatible with encoder")
+
+    codec_context = AVCodecContextPtr(codec)
+    codec_context.width = width
+    codec_context.height = height
+    framerate_rat = Rational(framerate)
+    target_timebase = 1/framerate_rat
+    codec_context.time_base = target_timebase
+    codec_context.framerate = framerate_rat
+    codec_context.pix_fmt = pix_fmt
+
+    if format_context.oformat.flags & AVFMT_GLOBALHEADER != 0
+        codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
+    end
+
+    set_class_options(codec_context; encoder_settings...)
+    set_class_options(codec_context.priv_data; encoder_private_settings...)
+
+    sigatomic_begin()
+    lock(VIDEOIO_LOCK)
+    ret = avcodec_open2(codec_context, codec, C_NULL)
+    unlock(VIDEOIO_LOCK)
+    sigatomic_end()
+    ret < 0 && error("Could not open codec: Return code $(ret)")
+
+    stream_p = avformat_new_stream(format_context, C_NULL)
+    check_ptr_valid(stream_p, false) || error("Could not allocate output stream")
+    stream = AVStreamPtr(stream_p)
+    stream_index0 = stream.index
+    stream.time_base = codec_context.time_base
+    stream.avg_frame_rate = 1 / convert(Rational, stream.time_base)
+    stream.r_frame_rate = stream.avg_frame_rate
+    ret = avcodec_parameters_from_context(stream.codecpar, codec_context)
+    ret < 0 && error("Could not set parameters of stream")
+
+    if format_context.oformat.flags & AVFMT_NOFILE == 0
+        pb_ptr = field_ptr(format_context, :pb)
+        ret = GC.@preserve format_context avio_open(pb_ptr, filename, AVIO_FLAG_WRITE)
+        ret < 0 && error("Could not open file $filename for writing")
+    end
+    avformat_write_header(format_context, C_NULL)
+    ret < 0 && error("Could not write header")
+
+    frame = AVFramePtr()
+    frame.format = pix_fmt
+    frame.width = width
+    frame.height = height
+    # frame.color_range = color_range == 1 ? AVCOL_RANGE_MPEG : AVCOL_RANGE_JPEG
+
+    ret = av_frame_get_buffer(frame, 0)
+    ret < 0 && error("Could not allocate the video frame data")
+
+    packet = AVPacketPtr()
+
+    VideoWriter(format_context, codec_context, frame, packet, stream_index0,
+                scanline_major)
+end
+
+open_video_out!(filename, img::AbstractMatrix{T}; kwargs...) where T =
+    open_video_out!(filename, T, size(img); kwargs...)
+
 """
     encodevideo(filename::String,imgstack::Array;
         AVCodecContextProperties = AVCodecContextPropertiesDefault,
         codec_name = "libx264",
         framerate = 24)
 
-Encode image stack to video file and return filepath.
-
+Encode image stack to video file and return filepath. The rows of each image in
+`imgstack` must span the vertical axis of the image, and the columns must span
+the horizontal axis.
 """
 function encodevideo(filename::String,imgstack::Array;
-    AVCodecContextProperties = AVCodecContextPropertiesDefault,
-    codec_name = "libx264",
-    framerate = 24,
-    silent=false)
+                     AVCodecContextProperties = AVCodecContextPropertiesDefault,
+                     codec_name = "libx264", framerate = 24, silent=false,
+                     scanline_major = false)
 
     io = Base.open("temp.stream","w")
-    encoder = prepareencoder(imgstack[1],codec_name=codec_name,framerate=framerate,AVCodecContextProperties=AVCodecContextProperties)
-    !silent && (p = Progress(length(imgstack), 1))   # minimum update interval: 1 second
-    index = 1
-    for img in imgstack
-        appendencode!(encoder, io, img, index)
+    startencode!(io)
+    encoder = prepareencoder(imgstack[1], codec_name = codec_name,
+                             framerate = framerate,
+                             AVCodecContextProperties = AVCodecContextProperties,
+                             scanline_major = scanline_major)
+    if !silent
+        p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
+    end
+    for (i, img) in enumerate(imgstack)
+        appendencode!(encoder, io, img, i)
         !silent && next!(p)
-        index += 1
     end
     finishencode!(encoder, io)
     close(io)
     mux("temp.stream",filename,framerate,silent=silent)
+    return filename
+end
+
+"""
+    encodevideo_mux(filename::String,imgstack::Array;
+        AVCodecContextProperties = AVCodecContextPropertiesDefault,
+        codec_name = "libx264",
+        framerate = 24)
+
+Encode image stack to video file and return filepath. The rows of each image in
+`imgstack` must span the vertical axis of the image, and the columns must span
+the horizontal axis.
+"""
+function encode_video_mux(filename::String, imgstack; kwargs...)
+    writer = open_video_out!(filename, first(imgstack); kwargs...)
+    for (i, img) in enumerate(imgstack)
+        append_encode_mux!(writer, img, i - 1)
+    end
+    encode_mux!(writer, true)
+    close_video_out!(writer)
     return filename
 end
