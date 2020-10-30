@@ -1,32 +1,6 @@
 # Helpful utility functions
 
 const VIO_AVERROR_EOF = -541478725 # AVERROR_EOF
-# Set the value of a field of a pointer
-# Equivalent to s->name = value
-@inline function av_setfield(s::Ptr{T}, name::Symbol, value) where T
-    field_pos = fieldindex(T, name)
-    byteoffset = fieldoffset(T, field_pos)
-    S = fieldtype(T, name)
-
-    p = convert(Ptr{S}, s + byteoffset)
-    unsafe_store!(p, convert(S, value))
-end
-
-function av_pointer_to_field(s::Ptr{T}, name::Symbol) where T
-    field_pos = fieldindex(T, name)
-    byteoffset = fieldoffset(T, field_pos)
-    return s + byteoffset
-end
-
-av_pointer_to_field(s::Array, name::Symbol) = av_pointer_to_field(pointer(s), name)
-
-function collectexecoutput(exec::Cmd)
-    out = Pipe(); err = Pipe()
-    p = Base.open(pipeline(ignorestatus(exec), stdout=out, stderr=err))
-    close(out.in); close(err.in)
-    err_s = readlines(err); out_s = readlines(out)
-    return (length(out_s) > length(err_s)) ? out_s : err_s
-end
 
 """
 loglevel!(loglevel::Integer)

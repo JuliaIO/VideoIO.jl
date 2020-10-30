@@ -2,11 +2,19 @@
 
 using VideoIO, ColorTypes, FixedPointNumbers, DataFrames
 
+function collectexecoutput(exec::Cmd)
+    out = Pipe(); err = Pipe()
+    p = Base.open(pipeline(ignorestatus(exec), stdout=out, stderr=err))
+    close(out.in); close(err.in)
+    err_s = readlines(err); out_s = readlines(out)
+    return (length(out_s) > length(err_s)) ? out_s : err_s
+end
+
 function createtestvideo(;filename::String="$(tempname()).mp4",duration::Real=5,
     width::Int64=1280,height::Int64=720,framerate::Real=30,testtype::String="testsrc2",
     encoder::String="libx264rgb")
     withenv(VideoIO.execenv) do
-        VideoIO.collectexecoutput(`$(VideoIO.ffmpeg) -y -f lavfi -i
+        collectexecoutput(`$(VideoIO.ffmpeg) -y -f lavfi -i
             $testtype=duration=$duration:size=$(width)x$(height):rate=$framerate
             -c:v $encoder -preset slow -crf 0 -c:a copy $filename`)
     end

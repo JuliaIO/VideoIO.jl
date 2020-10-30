@@ -274,7 +274,7 @@ function prepareencoder(firstimg; framerate=30,
                            AV_OPT_SEARCH_CHILDREN)
             end
         else
-            av_setfield(codec_context,prop[1],prop[2])
+            setproperty!(codec_context, prop[1], prop[2])
         end
     end
 
