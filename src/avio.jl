@@ -22,6 +22,7 @@ convert(::Type{Rational}, r::AVRational) = Rational(r.num, r.den)
 convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(r))
 
 # TODO: move this to Base
+# NOTE: pointer adjacency will NOT correspond with normal indexing
 Base.unsafe_convert(::Type{Ptr{T}}, A::PermutedArray{T}) where {T} =
     Base.unsafe_convert(Ptr{T}, parent(A))
 

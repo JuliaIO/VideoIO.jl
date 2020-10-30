@@ -252,7 +252,7 @@ function prepareencoder(firstimg; framerate=30,
     framerate_rat = Rational(framerate)
 
     codec = avcodec_find_encoder_by_name(codec_name)
-    codec == C_NULL && error("Codec '$codec_name' not found")
+    check_ptr_valid(codec, flase) || error("Codec '$codec_name' not found")
 
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
@@ -301,26 +301,71 @@ end
 
 _unsupported_append_encode_type() = error("Array element type not supported")
 
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8})
+function transfer_img_bytes_to_frame_plane!(data_ptr, img_ptr, px_width,
+                                            px_height, data_linesize,
+                                            bytes_per_sample = 1)
+    img_line_nbytes = px_width * bytes_per_sample
+    @inbounds for r = 1:px_height
+        data_line_ptr = data_ptr + (r-1) * data_linesize
+        img_line_ptr = img_ptr + (r-1) * img_line_nbytes
+        unsafe_copyto!(data_line_ptr, img_line_ptr, img_line_nbytes)
+    end
+end
+
+function make_into_sl_col_mat(img::AbstractVector{Union{RGB, <:Unsigned}}, width, height)
+    img_mat = reshape(img, (height, width))
+    PermutedDimsArray(img_mat, (2, 1))
+end
+make_into_sl_col_mat(img::AbstractMatrix{Union{RGB, <:Unsigned}}, args...) =
+    PermutedDimsArray(img, (2, 1))
+
+function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8})
+    pix_fmt == AV_PIX_FMT_RGB24 || _unsupported_append_encode_type()
     width = frame.width
     height = frame.height
-    lss = frame.linesize
-    fdata = frame.data
+    ls = frame.linesize[1]
+    data_p = frame.data[1]
+    @inbounds for r = 1:height
+        line_offset = (r-1) * ls
+        for c = 1:width
+            val = img[c, r]
+            row_offset = line_offset + c
+            for s in 0:2
+                GC.@preserve frame unsafe_store!(data_p, val,
+                                                 row_offset + s)
+            end
+        end
+    end
+end
+
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8},
+                                    scanline_major)
     if pix_fmt == AV_PIX_FMT_GRAY8
-        @inbounds for r = 1:height
-            line_offset = (r-1) * lss[1]
-            for c = 1:width
-                unsafe_store!(fdata[1], img[r,c], line_offset + c)
+        width = frame.width
+        height = frame.height
+        ls = frame.linesize[1]
+        data_p = frame.data[1]
+        if scanline_major
+            img_p = pointer(img)
+            GC.@preserve frame img transfer_img_bytes_to_frame_plane!(data_p,
+                                                                      img_p,
+                                                                      width,
+                                                                      height,
+                                                                      ls)
+        else
+            @inbounds for r = 1:height
+                line_offset = (r-1) * ls
+                for c = 1:width
+                    GC.@preserve frame unsafe_store!(data_p, img[r,c], line_offset + c)
+                end
             end
         end
     elseif pix_fmt == AV_PIX_FMT_RGB24
-        @inbounds for r = 1:height
-            line_offset = (r-1) * lss[1]
-            for c = 1:width
-                for s in 0:2
-                    unsafe_store!(fdata[1], img[r,c], line_offset + c + s)
-                end
-            end
+        if scanline_major
+            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img)
+        else
+            img_sl_col_mat = make_into_sl_col_mat(img)
+            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img_sl_col_mat)
         end
     else
         _unsupported_append_encode_type()
@@ -339,18 +384,34 @@ end
     unsafe_store!(data, msb, px_offset + 1)
 end
 
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16})
-    sample_el_size = 2
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16}, scanline_major)
+    bytes_per_sample = 2
     if pix_fmt == AV_PIX_FMT_GRAY10LE
         width = frame.width
         height = frame.height
-        @inbounds ls = frame.linesize[1]
-        @inbounds datap = frame.data[1]
-        @inbounds for r in 1:height
-            line_offset = (r - 1) * ls
-            for c in 1:width
-                px_offset = line_offset + sample_el_size * (c - 1) + 1
-                store_uint16_in_10le_frame!(datap, img[r, c], px_offset)
+        ls = frame.linesize[1]
+        datap = frame.data[1]
+        if scanline_major
+            if ENDIAN_BOM != 0x04030201
+                error("Writing scanline_major AV_PIX_FMT_GRAY10LE on
+                        big-endian machines not yet supported, use scanline_major = false")
+            end
+            img_p = pointer(reinterpret(UInt8, img))
+            GC.@preserve frame img transfer_img_bytes_to_frame_plane!(datap,
+                                                                      img_p,
+                                                                      width,
+                                                                      height,
+                                                                      ls,
+                                                                      bytes_per_sample)
+        else
+            @inbounds for r in 1:height
+                line_offset = (r - 1) * ls
+                for c in 1:width
+                    px_offset = line_offset + bytes_per_sample * (c - 1) + 1
+                    GC.@preserve frame store_uint16_in_10le_frame!(datap,
+                                                                   img[r, c],
+                                                                   px_offset)
+                end
             end
         end
     else
@@ -358,46 +419,72 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16})
     end
 end
 
-transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Normed}) =
-    transfer_img_buf_to_frame!(frame, pix_fmt, rawview(img))
+transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Normed}, args...) =
+    transfer_img_buf_to_frame!(frame, pix_fmt, rawview(img), args...)
 
-transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Gray}) =
-    transfer_img_buf_to_frame!(frame, pix_fmt, channelview(img))
+transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Gray}, args...) =
+    transfer_img_buf_to_frame!(frame, pix_fmt, channelview(img), args...)
 
-function transfer_img_buf_to_frame!(frame, pix_fmt,
-                                    img::AbstractArray{RGB{N0f8}})
+function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N0f8}})
+    pix_fmt == AV_PIX_FMT_YUV420P || _unsupported_append_encode_type()
     width = frame.width
     height = frame.height
     lss = frame.linesize
     fdata = frame.data
+    @inbounds for r = 1:height
+        line_offset = (r-1)*lss[1]
+        for c = 1:width
+            px_luma = convert(YCbCr, img[c, r]).y
+            unsafe_store!(fdata[1], round(UInt8, px_luma), line_offset+c)
+        end
+    end
+    img_half = restrict(img)
+    @inbounds for r = 1:div(height, 2)
+        line_offset_cb = (r-1)*lss[2]
+        line_offset_cr = (r-1)*lss[3]
+        for c = 1:div(width, 2)
+            px_ycbcr = convert(YCbCr, img_half[c, r])
+            unsafe_store!(fdata[2], round(UInt8, px_ycbcr.cb), line_offset_cb+c)
+            unsafe_store!(fdata[3], round(UInt8, px_ycbcr.cr), line_offset_cr+c)
+        end
+    end
+end
+
+
+function transfer_img_buf_to_frame!(frame, pix_fmt,
+                                    img::AbstractMatrix{RGB{N0f8}}, scanline_major)
     if pix_fmt == AV_PIX_FMT_RGB24
-        pixel_stride = 3
-        @inbounds for h in 1:height
-            line_offset = (h - 1) * lss[1]
-            for w in 1:width
-                px_offset = line_offset + (w - 1) * pixel_stride + 1
-                unsafe_store!(fdata[1], reinterpret(img[h, w].r), px_offset)
-                unsafe_store!(fdata[1], reinterpret(img[h, w].g), px_offset + 1)
-                unsafe_store!(fdata[1], reinterpret(img[h, w].b), px_offset + 2)
+        width = frame.width
+        height = frame.height
+        lss = frame.linesize
+        fdata = frame.data
+        nbyte_per_pixel = 3
+        if scanline_major
+            data_p = fdata[1]
+            img_p = pointer(img)
+            GC.@preserve frame img transfer_img_bytes_to_frame_plane!(data_p,
+                                                                      img_p,
+                                                                      width,
+                                                                      height,
+                                                                      lss[1],
+                                                                      bytes_per_pixel)
+        else
+            @inbounds for h in 1:height
+                line_offset = (h - 1) * lss[1]
+                for w in 1:width
+                    px_offset = line_offset + (w - 1) * nbyte_per_pixel + 1
+                    unsafe_store!(fdata[1], reinterpret(img[h, w].r), px_offset)
+                    unsafe_store!(fdata[1], reinterpret(img[h, w].g), px_offset + 1)
+                    unsafe_store!(fdata[1], reinterpret(img[h, w].b), px_offset + 2)
+                end
             end
         end
     elseif pix_fmt == AV_PIX_FMT_YUV420P
-        @inbounds for r = 1:height
-            line_offset = (r-1)*lss[1]
-            for c = 1:width
-                px_luma = convert(YCbCr, img[r, c]).y
-                unsafe_store!(fdata[1], round(UInt8, px_luma), line_offset+c)
-            end
-        end
-        img_half = restrict(img)
-        @inbounds for r = 1:div(height, 2)
-            line_offset_cb = (r-1)*lss[2]
-            line_offset_cr = (r-1)*lss[3]
-            for c = 1:div(width, 2)
-                px_ycbcr = convert(YCbCr, img_half[r, c])
-                unsafe_store!(fdata[2], round(UInt8, px_ycbcr.cb), line_offset_cb+c)
-                unsafe_store!(fdata[3], round(UInt8, px_ycbcr.cr), line_offset_cr+c)
-            end
+        if scanline_major
+            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img)
+        else
+            img_sl_col_mat = make_into_sl_col_mat(img)
+            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img_sl_col_mat)
         end
     else
         _unsupported_append_encode_type()
@@ -407,46 +494,52 @@ end
 # convert from bt601 to bt709/bt2020 colorspace by multiplying by four
 @inline bt601_to_bt709_codepoint(x) = round(UInt16, 4 * x)
 
-function convert_store_bt601_codepoint!(data, x, line_offset, sample_el_size, c)
+function convert_store_bt601_codepoint!(data, x, line_offset, bytes_per_sample, c)
     px_cp = bt601_to_bt709_codepoint(x)
-    px_offset = line_offset + sample_el_size * (c - 1) + 1
+    px_offset = line_offset + bytes_per_sample * (c - 1) + 1
     store_uint16_in_10le_frame!(data, px_cp, px_offset)
 end
 
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10}})
-    sample_el_size = 2
-    if pix_fmt == AV_PIX_FMT_YUV420P10LE
-        # Luma
-        fdata = frame.data
-        @inbounds linesize_y = frame.linesize[1]
-        width = frame.width
-        height = frame.height
-        for r in 1:height
-            line_offset = (r - 1) * linesize_y
-            for c in 1:width
-                px_luma_601 = convert(YCbCr, img[r, c]).y
-                convert_store_bt601_codepoint!(fdata[1], px_luma_601,
-                                               line_offset, sample_el_size, c)
-            end
+function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10}})
+    pix_fmt == AV_PIX_FMT_YUV420P10LE || _unsupported_append_encode_type()
+    bytes_per_sample = 2
+    # Luma
+    fdata = frame.data
+    linesize_y = frame.linesize[1]
+    width = frame.width
+    height = frame.height
+    for r in 1:height
+        line_offset = (r - 1) * linesize_y
+        for c in 1:width
+            px_luma_601 = convert(YCbCr, img[c, r]).y
+            convert_store_bt601_codepoint!(fdata[1], px_luma_601,
+                                           line_offset, bytes_per_sample, c)
         end
-        # Chroma
-        img_half = restrict(img) # For 4:2:0 chroma downsampling, lossy
-        half_width = div(width, 2)
-        @inbounds linesize_cb = frame.linesize[2]
-        @inbounds linesize_cr = frame.linesize[3]
-        @inbounds for r in 1:div(height, 2)
-            line_offset_cb = (r - 1) * linesize_cb
-            line_offset_cr = (r - 1) * linesize_cr
-            for c in 1:half_width
-                px_ycbcr = convert(YCbCr, img_half[r, c])
-                convert_store_bt601_codepoint!(fdata[2], px_ycbcr.cb,
-                                               line_offset_cb, sample_el_size, c)
-                convert_store_bt601_codepoint!(fdata[3], px_ycbcr.cr,
-                                               line_offset_cr, sample_el_size, c)
-            end
+    end
+    # Chroma
+    img_half = restrict(img) # For 4:2:0 chroma downsampling, lossy
+    half_width = div(width, 2)
+    linesize_cb = frame.linesize[2]
+    linesize_cr = frame.linesize[3]
+    @inbounds for r in 1:div(height, 2)
+        line_offset_cb = (r - 1) * linesize_cb
+        line_offset_cr = (r - 1) * linesize_cr
+        for c in 1:half_width
+            px_ycbcr = convert(YCbCr, img_half[c, r])
+            convert_store_bt601_codepoint!(fdata[2], px_ycbcr.cb,
+                                           line_offset_cb, bytes_per_sample, c)
+            convert_store_bt601_codepoint!(fdata[3], px_ycbcr.cr,
+                                           line_offset_cr, bytes_per_sample, c)
         end
+    end
+end
+
+function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10}}, scanline_major)
+    if scanline_major
+        transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img)
     else
-        _unsupported_append_encode_type()
+        img_sl_col_mat = img_sl_col_mat = make_into_sl_col_mat(img)
+        transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img_sl_col_mat)
     end
 end
 
@@ -463,7 +556,8 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
     ret = av_frame_make_writable(encoder.frame)
     ret < 0 && error("av_frame_make_writable() error")
 
-    transfer_img_buf_to_frame!(encoder.frame, encoder.pix_fmt, img)
+    transfer_img_buf_to_frame!(encoder.frame, encoder.pix_fmt, img,
+                               encoder.scanline_major)
     encoder.frame.pts = index
     encode!(encoder, io)
 end
@@ -474,7 +568,8 @@ function append_encode_mux!(writer, img, index)
     ret = av_frame_make_writable(writer.frame)
     ret < 0 && error("av_frame_make_writable() error")
     writer.frame.pts = index
-    transfer_img_buf_to_frame!(writer.frame, writer.frame.format, img)
+    transfer_img_buf_to_frame!(writer.frame, writer.frame.format, img,
+                               writer.scanline_major)
     encode_mux!(writer)
 end
 
@@ -516,9 +611,7 @@ function mux(srcfilename, destfilename, framerate; silent=false, deletestream=tr
 end
 
 @inline function set_class_option(ptr::NestedCStruct{T}, key, val) where T
-    raw_ptr = unsafe_convert(Ptr{T}, ptr)
-    void_ptr = unsafe_convert(Ptr{Nothing}, raw_ptr)
-    ret = av_opt_set(void_ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)
+    ret = av_opt_set(ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)
     ret < 0 && error("Could not set class option $key to $val: got error $ret")
 end
 
@@ -552,7 +645,7 @@ end
 function open_video_out!(filename::AbstractString, ::Type{T},
                          sz::NTuple{2, Integer};
                          codec_name::Union{AbstractString, Nothing} = "libx264",
-                         framerate::Real = 24, 
+                         framerate::Real = 24,
                          scanline_major::Bool = false,
                          encoder_settings::SettingsT = (;),
                          encoder_private_settings::SettingsT = (;),
@@ -569,7 +662,7 @@ function open_video_out!(filename::AbstractString, ::Type{T},
     format_context = output_AVFormatContextPtr(filename)
 
     codec_p = avcodec_find_encoder_by_name(codec_name)
-    codec_p == C_NULL && error("Codec '$codec_name' not found")
+    check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
     codec = AVCodecPtr(codec_p)
 
     ret = avformat_query_codec(format_context.oformat, codec.id,
