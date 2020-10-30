@@ -1,4 +1,6 @@
-export encodevideo, encode!, prepareencoder, appendencode!, startencode!, finishencode!, mux
+export encodevideo, encode!, prepareencoder, appendencode!, startencode!,
+    finishencode!, mux, open_video_out!, encode_mux!, append_encode_mux!,
+    close_video_out!, encode_mux_video
 
 const SettingsT = Union{AbstractDict{Symbol, <:Any},
                         AbstractDict{Union{}, Union{}},
@@ -301,25 +303,30 @@ end
 
 _unsupported_append_encode_type() = error("Array element type not supported")
 
-function transfer_img_bytes_to_frame_plane!(data_ptr, img_ptr, px_width,
-                                            px_height, data_linesize,
+# bytes_per_sample is the number of bytes per pixel sample, not the size of the
+# element type of img
+function transfer_img_bytes_to_frame_plane!(data_ptr, img::StridedArray,
+                                            px_width, px_height, data_linesize,
                                             bytes_per_sample = 1)
+    stride(img, 1) == 1 || error("stride(img, 1) must be equal to one")
     img_line_nbytes = px_width * bytes_per_sample
     @inbounds for r = 1:px_height
         data_line_ptr = data_ptr + (r-1) * data_linesize
-        img_line_ptr = img_ptr + (r-1) * img_line_nbytes
+        img_line_ptr = pointer(img,  px_width * (r-1))
         unsafe_copyto!(data_line_ptr, img_line_ptr, img_line_nbytes)
     end
 end
 
-function make_into_sl_col_mat(img::AbstractVector{Union{RGB, <:Unsigned}}, width, height)
+function make_into_sl_col_mat(img::AbstractVector{Union{RGB, <:Unsigned}},
+                              width, height)
     img_mat = reshape(img, (height, width))
     PermutedDimsArray(img_mat, (2, 1))
 end
 make_into_sl_col_mat(img::AbstractMatrix{Union{RGB, <:Unsigned}}, args...) =
     PermutedDimsArray(img, (2, 1))
 
-function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8})
+function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt,
+                                           img::AbstractArray{UInt8})
     pix_fmt == AV_PIX_FMT_RGB24 || _unsupported_append_encode_type()
     width = frame.width
     height = frame.height
@@ -346,12 +353,9 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8},
         ls = frame.linesize[1]
         data_p = frame.data[1]
         if scanline_major
-            img_p = pointer(img)
-            GC.@preserve frame img transfer_img_bytes_to_frame_plane!(data_p,
-                                                                      img_p,
-                                                                      width,
-                                                                      height,
-                                                                      ls)
+            GC.@preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
+                                                                  width, height,
+                                                                  ls)
         else
             @inbounds for r = 1:height
                 line_offset = (r-1) * ls
@@ -396,13 +400,11 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16}, 
                 error("Writing scanline_major AV_PIX_FMT_GRAY10LE on
                         big-endian machines not yet supported, use scanline_major = false")
             end
-            img_p = pointer(reinterpret(UInt8, img))
-            GC.@preserve frame img transfer_img_bytes_to_frame_plane!(datap,
-                                                                      img_p,
-                                                                      width,
-                                                                      height,
-                                                                      ls,
-                                                                      bytes_per_sample)
+            img_raw = reinterpret(UInt8, img)
+            GC.@preserve frame transfer_img_bytes_to_frame_plane!(datap, img_raw,
+                                                                  width, height,
+                                                                  ls,
+                                                                  bytes_per_sample)
         else
             @inbounds for r in 1:height
                 line_offset = (r - 1) * ls
@@ -461,13 +463,10 @@ function transfer_img_buf_to_frame!(frame, pix_fmt,
         nbyte_per_pixel = 3
         if scanline_major
             data_p = fdata[1]
-            img_p = pointer(img)
-            GC.@preserve frame img transfer_img_bytes_to_frame_plane!(data_p,
-                                                                      img_p,
-                                                                      width,
-                                                                      height,
-                                                                      lss[1],
-                                                                      bytes_per_pixel)
+            GC.@preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
+                                                                  width, height,
+                                                                  lss[1],
+                                                                  bytes_per_pixel)
         else
             @inbounds for h in 1:height
                 line_offset = (h - 1) * lss[1]
@@ -726,7 +725,9 @@ function open_video_out!(filename::AbstractString, ::Type{T},
 end
 
 open_video_out!(filename, img::AbstractMatrix{T}; kwargs...) where T =
-    open_video_out!(filename, T, size(img); kwargs...)
+    open_video_out!(filename, img_params(img)...; kwargs...)
+
+img_params(img::AbstractMatrix{T}) where T = (T, size(img))
 
 """
     encodevideo(filename::String,imgstack::Array;
@@ -763,7 +764,7 @@ function encodevideo(filename::String,imgstack::Array;
 end
 
 """
-    encodevideo_mux(filename::String,imgstack::Array;
+    encode_mux_video(filename::String,imgstack::Array;
         AVCodecContextProperties = AVCodecContextPropertiesDefault,
         codec_name = "libx264",
         framerate = 24)
@@ -772,7 +773,7 @@ Encode image stack to video file and return filepath. The rows of each image in
 `imgstack` must span the vertical axis of the image, and the columns must span
 the horizontal axis.
 """
-function encode_video_mux(filename::String, imgstack; kwargs...)
+function encode_mux_video(filename::String, imgstack; kwargs...)
     writer = open_video_out!(filename, first(imgstack); kwargs...)
     for (i, img) in enumerate(imgstack)
         append_encode_mux!(writer, img, i - 1)
