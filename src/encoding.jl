@@ -778,7 +778,6 @@ function encode_mux_video(filename::String, imgstack; kwargs...)
     for (i, img) in enumerate(imgstack)
         append_encode_mux!(writer, img, i - 1)
     end
-    encode_mux!(writer, true)
     close_video_out!(writer)
     return filename
 end
