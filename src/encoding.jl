@@ -779,5 +779,5 @@ function encode_mux_video(filename::String, imgstack; kwargs...)
         append_encode_mux!(writer, img, i - 1)
     end
     close_video_out!(writer)
-    return filename
+    nothing
 end
