@@ -1,3 +1,5 @@
+# Utilities for working with pointers to nested C structs
+
 """
     mutable struct NestedCStruct{T}
 
@@ -7,24 +9,24 @@ mutable struct NestedCStruct{T}
     data::RefValue{Ptr{T}}
 end
 NestedCStruct{T}(a::Ptr) where T = NestedCStruct{T}(Ref(a))
-NestedCStruct{Nothing}(a::Ptr{Nothing}) = NestedCStruct{Nothing}(Ref(a))
 NestedCStruct{T}(a::Ptr{Nothing}) where T = NestedCStruct{T}(convert(Ptr{T}, a))
+# Needed to resolve method ambiguity
+NestedCStruct{Nothing}(a::Ptr{Nothing}) = NestedCStruct{Nothing}(Ref(a))
 NestedCStruct(a::Ptr{T}) where T = NestedCStruct{T}(a)
 
 unsafe_convert(::Type{Ptr{T}}, ap::NestedCStruct{T}) where T =
     getfield(ap, :data)[]
 unsafe_convert(::Type{Ptr{Ptr{T}}}, ap::NestedCStruct{T}) where T =
     unsafe_convert(Ptr{Ptr{T}}, getfield(ap, :data))
-unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{Nothing}) =
-    getfield(ap, :data)[]
-unsafe_convert(::Type{Ptr{Ptr{Nothing}}}, ap::NestedCStruct{Nothing}) =
-    unsafe_convert(Ptr{Ptr{Nothing}}, getfield(ap, :data))
-
-
 unsafe_convert(::Type{Ptr{Ptr{Nothing}}}, ap::NestedCStruct{T}) where T =
     convert(Ptr{Ptr{Nothing}}, unsafe_convert(Ptr{Ptr{T}}, ap))
 unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{T}) where T =
     convert(Ptr{Nothing}, unsafe_convert(Ptr{T}, ap))
+# Following two methods are needed to resolve method ambiguity
+unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{Nothing}) =
+    getfield(ap, :data)[]
+unsafe_convert(::Type{Ptr{Ptr{Nothing}}}, ap::NestedCStruct{Nothing}) =
+    unsafe_convert(Ptr{Ptr{Nothing}}, getfield(ap, :data))
 
 function check_ptr_valid(a::NestedCStruct{T}, args...) where T
     p = unsafe_convert(Ptr{T}, a)

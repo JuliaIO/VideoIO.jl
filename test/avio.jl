@@ -41,6 +41,8 @@ function get_first_frame!(img, v)
     end
 end
 
+include("avptr.jl")
+
 @testset "Reading of various example file formats" begin
     for name in VideoIO.TestVideos.names()
         @testset "Reading $name" begin
