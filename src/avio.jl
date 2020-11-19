@@ -405,7 +405,7 @@ function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
 
     # TODO: set actual dimensions ?
     buf_sz = avpicture_get_size(r.format, r.width, r.height)
-    buf = Array(UInt8, buf_sz)
+    buf = Array{UInt8}(undef, buf_sz)
 
     retrieve!(r, buf)
 end
@@ -476,6 +476,10 @@ function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}) where T <: Ei
     if !bufsize_check(r, buf)
         error("Buffer is the wrong size")
     end
+
+    unsafe_copyto!(pointer(buf), r.aVideoFrame[1].data[1], sizeof(buf))
+
+    return buf
 end
 
 # Utility functions
