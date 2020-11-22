@@ -479,6 +479,8 @@ function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}) where T <: Ei
 
     unsafe_copyto!(pointer(buf), r.aVideoFrame[1].data[1], sizeof(buf))
 
+    reset_frame_flag!(r)
+
     return buf
 end
 
