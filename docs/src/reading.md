@@ -29,7 +29,7 @@ Alternatively, you can open the video stream in a file directly with
 `VideoIO.openvideo(filename)`, without making an intermediate `AVInput`
 object, if you only need the video.
 
-VideoIO also provides an iterator interface for [`VideoReader`](@ref), which
+VideoIO also provides an iterator interface for `VideoReader`, which
 behaves like other mutable iterators in Julia (e.g. Channels). If iteration is
 stopped early, for example with a `break` statement, then it can be resumed in
 the same spot by iterating on the same `VideoReader` object. Consequently, if
@@ -77,7 +77,7 @@ Total available frame count is available via `counttotalframes(f)`
 VideoIO.counttotalframes
 ```
 
-!!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames 
+!!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames
 available for reading.
 
 ### Changing the target pixel format for reading

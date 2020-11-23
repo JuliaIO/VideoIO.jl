@@ -2,11 +2,11 @@
 
 This library provides methods for reading and writing video files.
 
-Functionality is based on a dedicated build of ffmpeg 4.1, provided via [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder)
+Functionality is based on a dedicated build of ffmpeg, provided via [JuliaPackaging/Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/F/FFMPEG)
 
 Explore the source at [github.com/JuliaIO/VideoIO.jl](https://github.com/JuliaIO/VideoIO.jl)
 
-### Platform Nodes: 
+### Platform Nodes:
 
 - ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
