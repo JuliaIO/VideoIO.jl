@@ -89,7 +89,7 @@ end
                         @test inner_ref isa Ref{Ptr{TestParentStruct}}
                         @test inner_ref[] == parent_ptr
                         void_pointer = convert(Ptr{Nothing}, parent_ptr)
-                        parent_nested_ptr_from_null = NestedCStruct{TestParentStruct}(void_ptr)
+                        parent_nested_ptr_from_null = NestedCStruct{TestParentStruct}(void_pointer)
                         @test parent_nested_ptr_from_null isa NestedCStruct{TestParentStruct}
                         inner_ref_from_null = getfield(parent_nested_ptr_from_null, :data)
                         @test inner_ref_from_null isa Ref{Ptr{TestParentStruct}}
