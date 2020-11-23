@@ -253,7 +253,7 @@ function prepareencoder(firstimg; framerate=30,
     framerate_rat = Rational(framerate)
 
     codec = avcodec_find_encoder_by_name(codec_name)
-    check_ptr_valid(codec, flase) || error("Codec '$codec_name' not found")
+    check_ptr_valid(codec, false) || error("Codec '$codec_name' not found")
 
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
