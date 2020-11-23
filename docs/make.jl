@@ -4,9 +4,11 @@ makedocs(
     modules = [VideoIO],
     format = Documenter.HTML(
         assets = ["assets/favicon.ico"],
-        analytics = "UA-143027902-2"),
+        analytics = "UA-143027902-2",
+        canonical = "https://juliaio.github.io/VideoIO.jl/stable/",
+    ),
     sitename="VideoIO.jl",
-    canonical = "https://juliaio.github.io/VideoIO.jl/stable/",
+
     pages    = Any[
         "Introduction"             => "index.md",
         "Reading Videos"           => "reading.md",
@@ -18,4 +20,5 @@ makedocs(
     )
 deploydocs(
     repo = "github.com/JuliaIO/VideoIO.jl.git",
+    push_preview = true
 )
