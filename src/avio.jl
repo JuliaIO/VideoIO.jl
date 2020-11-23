@@ -653,7 +653,7 @@ out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 out_img_check(r, buf) = out_img_size_check(r, buf) && out_img_eltype_check(r, buf)
 
 function out_bytes_size(fmt, width, height, align = VIDEOIO_ALIGN)
-    sz = av_image_get_buffer_size(fmt, width, height, VIDEOIO_ALIGN)
+    sz = av_image_get_buffer_size(fmt, width, height, align)
     sz < 0 && error("Could not determine the buffer size")
     sz
 end
