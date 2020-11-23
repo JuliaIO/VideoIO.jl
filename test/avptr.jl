@@ -144,8 +144,4 @@ end
             free(g)
         end
     end
-
-    @testset "@avptr" begin
-        @avptr AVPtrTestParentStruct TestParentStruct
-    end
 end
