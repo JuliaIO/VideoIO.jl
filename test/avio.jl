@@ -77,16 +77,13 @@ include("avptr.jl")
                 read!(v,img)
             end
             fiftieth_frame = img
-            timebase = v.avin.format_context.streams[1].time_base
-            tstamp = v.srcframe.pkt_dts
-            video_tstamp = v.avin.format_context.streams[1].first_dts
-            fiftytime = (tstamp-video_tstamp)/(convert(Float64,timebase.den)/convert(Float64,timebase.num))
+            fiftytime = VideoIO.gettime(v)
 
             while !eof(v)
                 read!(v, img)
             end
 
-            seek(v,float(fiftytime))
+            seek(v,fiftytime)
             read!(v,img)
 
             @test img == fiftieth_frame
