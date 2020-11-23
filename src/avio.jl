@@ -216,12 +216,10 @@ function AVInput(
                       [Int[] for i = 1:6]..., Set(Int[]),
                       Dict{Int, StreamContext}(), false, false)
 
-    # Make sure we deallocate everything on exit
-    # finalizer(close, avin)
-
     # Set up the format context and open the input, based on the type of source
     open_avinput(avin, source, input_format, options)
     avin.isopen = true
+
     # Get the stream information
     ret = avformat_find_stream_info(avin.format_context, C_NULL)
     ret < 0 && error("Unable to find stream information")

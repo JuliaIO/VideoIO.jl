@@ -37,41 +37,35 @@ nested_wrap(x::Ptr{T}) where T = NestedCStruct(x)
 nested_wrap(x) = x
 
 @inline function getproperty(ap::NestedCStruct{T}, s::Symbol) where T
-    # @boundscheck check_ptr_valid(ap)
     p = unsafe_convert(Ptr{T}, ap)
     res = GC.@preserve ap unsafe_load(field_ptr(p, s))
     nested_wrap(res)
 end
 
 @inline function setproperty!(ap::NestedCStruct{T}, s::Symbol, x) where T
-    # @boundscheck check_ptr_valid(ap)
     p = unsafe_convert(Ptr{T}, ap)
     fp = field_ptr(p, s)
     GC.@preserve ap unsafe_store!(fp, x)
 end
 
 @inline function getindex(ap::NestedCStruct{T}, i::Integer) where T
-    # @boundscheck check_ptr_valid(ap)
     p = unsafe_convert(Ptr{T}, ap)
     res = GC.@preserve ap unsafe_load(p, i)
     nested_wrap(res)
 end
 
 @inline function setindex!(ap::NestedCStruct{T}, i::Integer, x) where T
-    # @boundscheck check_ptr_valid(ap)
     p = unsafe_convert(Ptr{T}, ap)
     GC.@preserve ap unsafe_store!(p, x, i)
 end
 
 @inline function unsafe_wrap(::Type{T}, ap::NestedCStruct{S}, i) where {S, T}
-    # @boundscheck check_ptr_valid(ap)
     p = unsafe_convert(Ptr{S}, ap)
     GC.@preserve ap unsafe_wrap(T, p, i)
 end
 
 @inline function field_ptr(::Type{S}, a::NestedCStruct{T}, field::Symbol,
                            args...) where {S, T}
-    # @boundscheck check_ptr_valid(a)
     p = unsafe_convert(Ptr{T}, a)
     GC.@preserve a field_ptr(S, p, field, args...)
 end

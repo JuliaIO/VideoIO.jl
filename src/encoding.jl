@@ -46,7 +46,6 @@ function encode!(encoder::VideoEncoder, io::IO; flush=false)
     pret = Cint(0)
     while pret >= 0
         pret = avcodec_receive_packet(encoder.codec_context, encoder.packet)
-        @show encoder.packet.pts, encoder.packet.dts, encoder.packet.duration
         if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
              break
         elseif pret < 0
