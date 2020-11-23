@@ -240,8 +240,10 @@ function AVInput(
     avin
 end
 
-is_pixel_type_supported(pxfmt) = pxfmt in [AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY10LE,
-                                           AV_PIX_FMT_RGB24, AV_PIX_FMT_GBRP10LE]
+is_pixel_type_supported(pxfmt) = pxfmt in Set([AV_PIX_FMT_GRAY8,
+                                               AV_PIX_FMT_GRAY10LE,
+                                               AV_PIX_FMT_RGB24,
+                                               AV_PIX_FMT_GBRP10LE])
 
 get_stream(avin::AVInput, stream_index0) = avin.format_context.streams[stream_index0 + 1]
 get_stream(r::VideoReader) = get_stream(r.avin, r.stream_index0)
