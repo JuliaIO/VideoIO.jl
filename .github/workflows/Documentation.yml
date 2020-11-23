@@ -6,7 +6,7 @@ on:
       - master
     tags: '*'
   pull_request:
-  workflow-dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
