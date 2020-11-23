@@ -316,12 +316,12 @@ function transfer_img_bytes_to_frame_plane!(data_ptr, img::StridedArray,
     end
 end
 
-function make_into_sl_col_mat(img::AbstractVector{Union{RGB, <:Unsigned}},
+function make_into_sl_col_mat(img::AbstractVector{<:Union{RGB, Unsigned}},
                               width, height)
     img_mat = reshape(img, (height, width))
     PermutedDimsArray(img_mat, (2, 1))
 end
-make_into_sl_col_mat(img::AbstractMatrix{Union{RGB, <:Unsigned}}, args...) =
+make_into_sl_col_mat(img::AbstractMatrix{<:Union{RGB, Unsigned}}, args...) =
     PermutedDimsArray(img, (2, 1))
 
 function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt,
