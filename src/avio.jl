@@ -232,7 +232,7 @@ function AVInput(
                        codec_type == AVMEDIA_TYPE_SUBTITLE   ? avin.data_indices       :
                        codec_type == AVMEDIA_TYPE_ATTACHMENT ? avin.attachment_indices :
                                                                avin.unknown_indices
-        push!(target_array, i-1)
+        push!(target_array, i - 1)
         # Set the stream to discard all packets. Individual StreamContexts can
         # re-enable streams.
         format_context.streams[i].discard = AVDISCARD_ALL
