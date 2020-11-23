@@ -6,6 +6,7 @@ makedocs(
         assets = ["assets/favicon.ico"],
         analytics = "UA-143027902-2"),
     sitename="VideoIO.jl",
+    canonical = "https://juliaio.github.io/VideoIO.jl/stable/",
     pages    = Any[
         "Introduction"             => "index.md",
         "Reading Videos"           => "reading.md",
