@@ -748,11 +748,6 @@ end
 Seek through AVInput object.
 """
 function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer=1) where T <: AbstractString
-    # Using 10 seconds before and after the desired timestamp, since the seek
-    # function seek to the nearest keyframe, and 10 seconds is the longest GOP
-    # length seen in practical usage.
-
-    # Get stream information
     stream_index0 = avin.video_indices[video_stream]
     stream = get_stream(avin, stream_index0)
     time_base = convert(Rational, stream.time_base)
