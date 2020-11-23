@@ -239,7 +239,7 @@ function prepareencoder(firstimg; framerate=30,
                         AVCodecContextProperties = AVCodecContextPropertiesDefault,
                         #color_range::Int = 1,
                         codec_name::String = "libx264",
-                        scanline_major::Bool = false, gop = 12)
+                        scanline_major::Bool = false)
     if scanline_major
         width, height = size(firstimg)
     else
@@ -261,9 +261,6 @@ function prepareencoder(firstimg; framerate=30,
     codec_context.time_base = AVRational(1/framerate_rat)
     codec_context.framerate = AVRational(framerate_rat)
     codec_context.pix_fmt = pix_fmt
-    codec_context.gop_size = gop
-    # codec_context.max_b_frames = -1
-    codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
 
     priv_data_ptr = codec_context.priv_data
     for prop in AVCodecContextProperties
@@ -753,7 +750,7 @@ function encodevideo(filename::String,imgstack::Array;
         p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
     end
     for (i, img) in enumerate(imgstack)
-        appendencode!(encoder, io, img, i)
+        appendencode!(encoder, io, img, i - 1)
         !silent && next!(p)
     end
     finishencode!(encoder, io)
