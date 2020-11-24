@@ -108,6 +108,8 @@ end
 
 const AVCodecContextPropertiesDefault =[:priv_data => ("crf"=>"22","preset"=>"medium")]
 
+@inline prop_present_and_equal(nt::NamedTuple, prop, val) = hasproperty(nt, prop) && getproperty(nt, prop) == val
+
 function islossless(prop)
     for p in prop
         if p[1] == :priv_data
@@ -121,11 +123,14 @@ function islossless(prop)
     return false
 end
 
+islossless(props::NamedTuple) = prop_present_and_equal(props, :crf, 0)
+
 isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) != nothing)
 
-lossless_colorrange_ok(AVCodecContextProperties) =
-    ! islossless(AVCodecContextProperties) ||
-    isfullcolorrange(AVCodecContextProperties)
+isfullcolorrange(props::NamedTuple) = prop_present_and_equal(props,
+                                                             :color_range, 2)
+
+lossless_colorrange_ok(props) = ! islossless(props) || isfullcolorrange(props)
 
 function lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
                                         elt, nbit)
@@ -644,6 +649,8 @@ function open_video_out!(filename::AbstractString, ::Type{T},
                          codec_name::Union{AbstractString, Nothing} = "libx264",
                          framerate::Real = 24,
                          scanline_major::Bool = false,
+                         container_settings::SettingsT = (;),
+                         container_private_settings::SettingsT = (;),
                          encoder_settings::SettingsT = (;),
                          encoder_private_settings::SettingsT = (;),
                          format_settings::SettingsT = (;)) where T
@@ -679,6 +686,12 @@ function open_video_out!(filename::AbstractString, ::Type{T},
         codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
     end
 
+    set_class_options(format_context; container_settings...)
+    if check_ptr_valid(format_context.oformat.priv_class, false)
+        set_class_options(format_context.priv_data; container_private_settings...)
+    elseif !isempty(container_private_settings)
+        @warn "This container format does not support private settings, and will be ignored"
+    end
     set_class_options(codec_context; encoder_settings...)
     set_class_options(codec_context.priv_data; encoder_private_settings...)
 
