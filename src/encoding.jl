@@ -417,8 +417,10 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16}, 
     end
 end
 
+simple_rawview(a::AbstractArray{X}) where {T, X<:Normed{T}} = reinterpret(T, a)
+
 transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Normed}, args...) =
-    transfer_img_buf_to_frame!(frame, pix_fmt, rawview(img), args...)
+    transfer_img_buf_to_frame!(frame, pix_fmt, simple_rawview(img), args...)
 
 transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Gray}, args...) =
     transfer_img_buf_to_frame!(frame, pix_fmt, channelview(img), args...)
