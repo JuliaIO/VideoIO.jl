@@ -7,6 +7,7 @@ using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed
 using ImageTransformations: restrict
 
 using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
+using Base.GC: @preserve
 import Base: iterate, IteratorSize, IteratorEltype, setproperty!, convert,
     getproperty, unsafe_convert, propertynames, getindex, setindex!, parent,
     position, unsafe_wrap

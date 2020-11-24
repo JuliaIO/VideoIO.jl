@@ -334,7 +334,7 @@ function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt,
             val = img[c, r]
             row_offset = line_offset + c
             for s in 0:2
-                GC.@preserve frame unsafe_store!(data_p, val,
+                @preserve frame unsafe_store!(data_p, val,
                                                  row_offset + s)
             end
         end
@@ -349,14 +349,14 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8},
         ls = frame.linesize[1]
         data_p = frame.data[1]
         if scanline_major
-            GC.@preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
+            @preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
                                                                   width, height,
                                                                   ls)
         else
             @inbounds for r = 1:height
                 line_offset = (r-1) * ls
                 for c = 1:width
-                    GC.@preserve frame unsafe_store!(data_p, img[r,c], line_offset + c)
+                    @preserve frame unsafe_store!(data_p, img[r,c], line_offset + c)
                 end
             end
         end
@@ -397,7 +397,7 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16}, 
                         big-endian machines not yet supported, use scanline_major = false")
             end
             img_raw = reinterpret(UInt8, img)
-            GC.@preserve frame transfer_img_bytes_to_frame_plane!(datap, img_raw,
+            @preserve frame transfer_img_bytes_to_frame_plane!(datap, img_raw,
                                                                   width, height,
                                                                   ls,
                                                                   bytes_per_sample)
@@ -406,7 +406,7 @@ function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16}, 
                 line_offset = (r - 1) * ls
                 for c in 1:width
                     px_offset = line_offset + bytes_per_sample * (c - 1) + 1
-                    GC.@preserve frame store_uint16_in_10le_frame!(datap,
+                    @preserve frame store_uint16_in_10le_frame!(datap,
                                                                    img[r, c],
                                                                    px_offset)
                 end
@@ -461,7 +461,7 @@ function transfer_img_buf_to_frame!(frame, pix_fmt,
         nbyte_per_pixel = 3
         if scanline_major
             data_p = fdata[1]
-            GC.@preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
+            @preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
                                                                   width, height,
                                                                   lss[1],
                                                                   bytes_per_pixel)
@@ -626,7 +626,7 @@ function close_video_out!(writer::VideoWriter)
         ret < 0 && error("Could not write trailer")
         if format_context.oformat.flags & AVFMT_NOFILE == 0
             pb_ptr = field_ptr(format_context, :pb)
-            ret = GC.@preserve writer avio_closep(pb_ptr)
+            ret = @preserve writer avio_closep(pb_ptr)
             ret < 0 && error("Could not free AVIOContext")
         end
     end
@@ -701,7 +701,7 @@ function open_video_out!(filename::AbstractString, ::Type{T},
 
     if format_context.oformat.flags & AVFMT_NOFILE == 0
         pb_ptr = field_ptr(format_context, :pb)
-        ret = GC.@preserve format_context avio_open(pb_ptr, filename, AVIO_FLAG_WRITE)
+        ret = @preserve format_context avio_open(pb_ptr, filename, AVIO_FLAG_WRITE)
         ret < 0 && error("Could not open file $filename for writing")
     end
     avformat_write_header(format_context, C_NULL)

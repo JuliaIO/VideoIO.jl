@@ -564,7 +564,7 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
 
     t = r.transcodeContext
     src_ptr = unsafe_convert(Ptr{AVFrame}, r.srcframe)
-    GC.@preserve r begin
+    @preserve r begin
         # t is preserved if r is preserved, hopefully? A little confusing.
         src_data_ptr = field_ptr(src_ptr, :data)
         src_linesize_ptr = field_ptr(src_ptr, :linesize)
