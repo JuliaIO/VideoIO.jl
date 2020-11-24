@@ -4,8 +4,6 @@ import Base: read, read!, show, close, eof, isopen, seek, seekstart
 export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play, gettime
 export skipframe, skipframes, counttotalframes
 
-abstract type StreamContext end
-
 const ReaderBitTypes = Union{UInt8, UInt16}
 const ReaderNormedTypes = Normed{T} where T<: ReaderBitTypes
 const ReaderGrayTypes = Gray{T} where T<: ReaderNormedTypes
@@ -17,14 +15,18 @@ const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
 
 const VIDEOIO_ALIGN = 32
 
-convert(::Type{Rational{T}}, r::AVRational) where T = Rational{T}(r.num, r.den)
-convert(::Type{Rational}, r::AVRational) = Rational(r.num, r.den)
-convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(r))
+const VIO_PXFMT_DEF_ELTYPE_LU = Dict{Int32, DataType}(
+    AV_PIX_FMT_GRAY8    => Gray{N0f8 },
+    AV_PIX_FMT_GRAY10LE => Gray{N6f10},
+    AV_PIX_FMT_RGB24    => RGB{ N0f8 },
+    AV_PIX_FMT_GBRP10LE => RGB{ N6f10},
+)
 
-# TODO: move this to Base
-# NOTE: pointer adjacency will NOT correspond with normal indexing
-Base.unsafe_convert(::Type{Ptr{T}}, A::PermutedArray{T}) where {T} =
-    Base.unsafe_convert(Ptr{T}, parent(A))
+const VIO_DEF_ELTYPE_PXFMT_LU = Dict{DataType, Int32}(
+    (v => k for (k, v) in pairs(VIO_PXFMT_DEF_ELTYPE_LU))
+)
+
+abstract type StreamContext end
 
 # An audio-visual input stream/file
 mutable struct AVInput{I}
@@ -108,6 +110,15 @@ is_finished(r::VideoReader) = r.finished
 IteratorSize(::Type{<:VideoReader}) = Base.SizeUnknown()
 
 IteratorEltype(::Type{<:VideoReader}) = Base.EltypeUnknown()
+
+convert(::Type{Rational{T}}, r::AVRational) where T = Rational{T}(r.num, r.den)
+convert(::Type{Rational}, r::AVRational) = Rational(r.num, r.den)
+convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(r))
+
+# TODO: move this to Base
+# NOTE: pointer adjacency will NOT correspond with normal indexing
+Base.unsafe_convert(::Type{Ptr{T}}, A::PermutedArray{T}) where {T} =
+    Base.unsafe_convert(Ptr{T}, parent(A))
 
 # Pump input for data
 function pump(avin::AVInput)
@@ -240,10 +251,7 @@ function AVInput(
     avin
 end
 
-is_pixel_type_supported(pxfmt) = pxfmt in Set([AV_PIX_FMT_GRAY8,
-                                               AV_PIX_FMT_GRAY10LE,
-                                               AV_PIX_FMT_RGB24,
-                                               AV_PIX_FMT_GBRP10LE])
+is_pixel_type_supported(pxfmt) = haskey(VIO_PXFMT_DEF_ELTYPE_LU, pxfmt)
 
 get_stream(avin::AVInput, stream_index0) = avin.format_context.streams[stream_index0 + 1]
 get_stream(r::VideoReader) = get_stream(r.avin, r.stream_index0)
@@ -396,11 +404,7 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     if !is_pixel_type_supported(pxfmt)
         unsupported_retrieveal_format(pxfmt)
     end
-
-    elt = pxfmt == AV_PIX_FMT_GRAY8    ? Gray{N0f8 } :
-          pxfmt == AV_PIX_FMT_GRAY10LE ? Gray{N6f10} :
-          pxfmt == AV_PIX_FMT_RGB24    ? RGB{ N0f8 } :
-                                         RGB{ N6f10}
+    elt = VIO_PXFMT_DEF_ELTYPE_LU[pxfmt]
     buf = PermutedDimsArray(Matrix{elt}(undef, r.width, r.height), (2, 1))
 
     retrieve!(r, buf)
