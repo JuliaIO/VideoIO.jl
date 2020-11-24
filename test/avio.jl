@@ -213,9 +213,65 @@ end
             encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,framerate=30,AVCodecContextProperties=props, silent=true)
             @test stat(encodedvideopath).size > 100
             f = VideoIO.openvideo(encodedvideopath)
-            @test VideoIO.counttotalframes(f) == n - 2 # missing frames due to edit list bug?
+            @test_broken VideoIO.counttotalframes(f) == n # missing frames due to edit list bug?
             close(f)
             rm(encodedvideopath)
+        end
+    end
+end
+
+@testset "Simultaneous encoding and muxing" begin
+    testvid = "testvideo.mp4"
+    n = 100
+    encoder_settings = (color_range = 2,)
+    container_private_settings = (movflags = "+write_colr",)
+    for el in [Gray{N0f8}, Gray{N6f10}, RGB{N0f8}, RGB{N6f10}]
+        for scanline_arg in [true, false]
+            @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
+                img_stack = map(x -> rand(el, 100, 100), 1 : n)
+                lossless = el <: Gray
+                crf = lossless ? 0 : 20
+                encoder_private_settings = (crf = crf, preset = "medium")
+                VideoIO.encode_mux_video(testvid,
+                                         img_stack;
+                                         encoder_private_settings =
+                                         encoder_private_settings,
+                                         encoder_settings = encoder_settings,
+                                         container_private_settings =
+                                         container_private_settings,
+                                         scanline_major = scanline_arg)
+                @test stat(testvid).size > 100
+                f = VideoIO.openvideo(testvid, target_format =
+                                      VideoIO.VIO_DEF_ELTYPE_PXFMT_LU[el])
+                if lossless
+                    notempty = !eof(f)
+                    @test notempty
+                    if notempty
+                        img = read(f)
+                        test_img = scanline_arg ? parent(img) : img
+                        i = 1
+                        if el == Gray{N0f8}
+                            @test test_img == img_stack[i]
+                        else
+                            @test_broken test_img == img_stack[i]
+                        end
+                        while !eof(f) && i < n
+                            read!(f, img)
+                            i += 1
+                            if el == Gray{N0f8}
+                                @test test_img == img_stack[i]
+                            else
+                                @test_broken test_img == img_stack[i]
+                            end
+                        end
+                        @test i == n
+                    end
+                else
+                    @test VideoIO.counttotalframes(f) == n
+                end
+                close(f)
+                rm(testvid)
+            end
         end
     end
 end
