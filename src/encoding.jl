@@ -652,8 +652,7 @@ function open_video_out!(filename::AbstractString, ::Type{T},
                          container_settings::SettingsT = (;),
                          container_private_settings::SettingsT = (;),
                          encoder_settings::SettingsT = (;),
-                         encoder_private_settings::SettingsT = (;),
-                         format_settings::SettingsT = (;)) where T
+                         encoder_private_settings::SettingsT = (;)) where T
     framerate > 0 || error("Framerate must be strictly positive")
     if scanline_major
         width, height = sz
