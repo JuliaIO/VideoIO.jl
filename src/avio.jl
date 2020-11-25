@@ -410,10 +410,11 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     retrieve!(r, buf)
 end
 
-function retrieve(r::VideoReader{NO_TRANSCODE}) # false=don't transcode
+function retrieve(r::VideoReader{NO_TRANSCODE}, align = VIDEOIO_ALIGN) # false=don't transcode
+    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))
     pump_until_frame(r)
-    imgbuf = Vector{UInt8}(undef, out_bytes_size(r))
-    retrieve!(r, imgbuf)
+    retrieve!(r, imgbuf, align)
+    imgbuf, align
 end
 
 unsupported_retrieval_format(fmt) = error("Unsupported format $(fmt)")
@@ -594,11 +595,11 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
     return buf
 end
 
-function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidArray{T}
-                   ) where T <: ReaderElTypes
-    out_bytes_size_check(buf, r) || error("Buffer is the wrong size")
+function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{UInt8},
+                   align = VIDEOIO_ALIGN)
+    out_bytes_size_check(buf, r, align) || error("Buffer is the wrong size")
     pump_until_frame(r)
-    stash_source_planes!(buf, r)
+    stash_source_planes!(buf, r, align)
 end
 
 # Utility functions
@@ -618,7 +619,7 @@ openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 
 Return the next frame from `r`. See `read!`.
 """
-read(r::VideoReader) = retrieve(r)
+read(r::VideoReader, args...) = retrieve(r, args...)
 
 """
     read!(r::VideoReader, buf::Union{PermutedArray{T,N}, Array{T,N}}) where T<:ReaderElTypes
@@ -659,6 +660,7 @@ out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 out_img_check(r, buf) = out_img_size_check(r, buf) && out_img_eltype_check(r, buf)
 
 function out_bytes_size(fmt, width, height, align = VIDEOIO_ALIGN)
+    align > 0 || throw(ArgumentError("align must be greater than zero"))
     sz = av_image_get_buffer_size(fmt, width, height, align)
     sz < 0 && error("Could not determine the buffer size")
     sz
@@ -666,7 +668,7 @@ end
 out_bytes_size(r, args...) =
     out_bytes_size(out_frame_format(r), out_frame_size(r)..., args...)
 
-out_bytes_size_check(buf, r) = sizeof(buf) == out_bytes_size(r)
+out_bytes_size_check(buf, r, args...) = sizeof(buf) == out_bytes_size(r, args...)
 
 have_decoded_frame(r) = r.frame_ready # TODO: make sure the last frame was made available
 have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
