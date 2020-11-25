@@ -668,9 +668,20 @@ function open_video_out!(filename::AbstractString, ::Type{T},
     check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
     codec = AVCodecPtr(codec_p)
 
+    check_ptr_valid(codec.pix_fmts, false) || error("Codec has no supported pixel formats")
+    pix_compatible = false
+    i = 1
+    this_pix = codec.pix_fmts[i]
+    while !pix_compatible &&  this_pix != -1
+        pix_compatible = this_pix == pix_fmt
+        i += 1
+        this_pix = codec.pix_fmts[i]
+    end
+    pix_compatible || error("Pixel format $pix_fmt not compatible with codec $codec_name")
+
     ret = avformat_query_codec(format_context.oformat, codec.id,
                                AVCodecs.FF_COMPLIANCE_NORMAL)
-    ret != 1 && error("Format not compatible with encoder")
+    ret == 1 || error("Format not compatible with codec $codec_name")
 
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
