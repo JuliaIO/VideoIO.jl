@@ -373,7 +373,7 @@ function decode(r::VideoReader, packet)
     # Do we already have a complete frame that hasn't been consumed?
     r.finished && return
     if have_decoded_frame(r)
-        push!(r.frame_queue, stash_source_places(r))
+        push!(r.frame_queue, stash_source_planes(r))
         reset_frame_flag!(r)
     end
     if !r.flush
