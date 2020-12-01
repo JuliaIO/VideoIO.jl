@@ -1,5 +1,6 @@
 using Test
 using ColorTypes: RGB, Gray, N0f8
+import ColorVectorSpace
 using FileIO, ImageCore, Dates, Statistics
 using Statistics, StatsBase
 
@@ -54,9 +55,9 @@ include("avptr.jl")
 
             time_seconds = VideoIO.gettime(v)
             @test time_seconds == 0
-
-            if !createmode && (size(first_frame, 1) > v.height)
-                first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
+            width, height = VideoIO.out_frame_size(v)
+            if !createmode && (size(first_frame, 1) > height)
+                first_frame = first_frame[1+size(first_frame,1)-height:end,:]
             end
 
             # Find the first non-trivial image
@@ -242,7 +243,7 @@ end
                                          scanline_major = scanline_arg)
                 @test stat(testvid).size > 100
                 f = VideoIO.openvideo(testvid, target_format =
-                                      VideoIO.VIO_DEF_ELTYPE_PXFMT_LU[el])
+                                      VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU[el])
                 if lossless
                     notempty = !eof(f)
                     @test notempty

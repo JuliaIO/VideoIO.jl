@@ -13,18 +13,7 @@ const PermutedArray{T,N,perm,iperm,AA <: Array} =
     Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
 const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
 
-const VIDEOIO_ALIGN = 32
-
-const VIO_PXFMT_DEF_ELTYPE_LU = Dict{Int32, DataType}(
-    AV_PIX_FMT_GRAY8    => Gray{N0f8 },
-    AV_PIX_FMT_GRAY10LE => Gray{N6f10},
-    AV_PIX_FMT_RGB24    => RGB{ N0f8 },
-    AV_PIX_FMT_GBRP10LE => RGB{ N6f10},
-)
-
-const VIO_DEF_ELTYPE_PXFMT_LU = Dict{DataType, Int32}(
-    (v => k for (k, v) in pairs(VIO_PXFMT_DEF_ELTYPE_LU))
-)
+const VIO_ALIGN = 32
 
 abstract type StreamContext end
 
@@ -61,38 +50,19 @@ function show(io::IO, avin::AVInput)
     (len = length(avin.unknown_indices))    > 0 && println(io, "  $len unknown stream(s)")
 end
 
-mutable struct VideoTranscodeContext
-    sws_context::SwsContextPtr
-
-    transcode_interp::Cint
-    target_pix_fmt::Cint
-    target_bits_per_pixel::Int
-    width::Int
-    height::Int
-
-    destframe::AVFramePtr
-end
-
 const TRANSCODE = true
 const NO_TRANSCODE = false
 
-mutable struct VideoReader{transcode, I} <: StreamContext
+mutable struct VideoReader{transcode, T<:GraphType, I} <: StreamContext
     avin::AVInput{I}
-
     stream_index0::Int
-    codec_context::AVCodecContextPtr
-    pVideoCodec::Ptr{AVCodec}
-    srcframe::AVFramePtr
-    frame_ready::Bool
 
-    format::Cint
-    width::Cint
-    height::Cint
-    framerate::Rational{Cint}
-    aspect_ratio::Rational{Cint}
+    codec_context::AVCodecContextPtr
 
     frame_queue::Vector{Vector{UInt8}}
-    transcodeContext::VideoTranscodeContext
+    frame_graph::T
+    graph_input_occupied::Bool
+    bits_per_result_pixel::Int
 
     flush::Bool
     finished::Bool
@@ -115,11 +85,6 @@ convert(::Type{Rational{T}}, r::AVRational) where T = Rational{T}(r.num, r.den)
 convert(::Type{Rational}, r::AVRational) = Rational(r.num, r.den)
 convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(r))
 
-# TODO: move this to Base
-# NOTE: pointer adjacency will NOT correspond with normal indexing
-Base.unsafe_convert(::Type{Ptr{T}}, A::PermutedArray{T}) where {T} =
-    Base.unsafe_convert(Ptr{T}, parent(A))
-
 # Pump input for data
 function pump(avin::AVInput)
     while avin.isopen && !avin.finished
@@ -138,7 +103,7 @@ function pump(avin::AVInput)
             av_packet_unref(avin.packet)
 
             # If the frame is complete, we're done
-            have_frame(r) && return Int(stream_index)
+            frame_is_queued(r) && return Int(stream_index)
         else
             # If we're not listening to this stream, skip it
             av_packet_unref(avin.packet)
@@ -149,7 +114,7 @@ function pump(avin::AVInput)
             if !r.finished
                 decode(r, C_NULL) # Flush packet
                 r.flush = true
-                have_frame(r) && return stream_index
+                frame_is_queued(r) && return stream_index
             end
         end
     end
@@ -159,7 +124,7 @@ end
 pump(r::StreamContext) = pump(r.avin)
 
 function pump_until_frame(r, err = false)
-    while !have_frame(r)
+    while !frame_is_queued(r)
         idx = pump(r.avin)
         idx == r.stream_index0 && break
         if idx == -1
@@ -251,119 +216,153 @@ function AVInput(
     avin
 end
 
-is_pixel_type_supported(pxfmt) = haskey(VIO_PXFMT_DEF_ELTYPE_LU, pxfmt)
-
 get_stream(avin::AVInput, stream_index0) = avin.format_context.streams[stream_index0 + 1]
 get_stream(r::VideoReader) = get_stream(r.avin, r.stream_index0)
 
-function VideoReader(avin::AVInput{I}, video_stream=1;
-                     transcode::Bool=true,
-                     transcode_interpolation=SWS_BILINEAR,
-                     target_format=AV_PIX_FMT_RGB24) where I
-    if transcode && !is_pixel_type_supported(target_format)
-        error("Unsupported pixel format $target_format")
-    end
+function VideoReader(avin::AVInput{I}, video_stream = 1;
+                     transcode::Bool = true,
+                     transcode_interpolation = SWS_BILINEAR,
+                     target_format = nothing,
+                     pix_fmt_loss_mask = 0,
+                     target_colorspace_details = nothing,
+                     allow_vio_gray_transform = true,
+                     sws_kwargs...) where I
+    bad_px_type = transcode && target_format !== nothing &&
+        !is_pixel_type_supported(target_format)
+    bad_px_type && error("Unsupported pixel format $target_format")
 
-    1 <= video_stream <= length(avin.video_indices) || error("video stream $video_stream not found")
+    1 <= video_stream <= length(avin.video_indices) ||
+        error("video stream $video_stream not found")
 
     stream_index0 = avin.video_indices[video_stream]
 
     # Find decoder
     stream = get_stream(avin, stream_index0)
-    pVideoCodec = avcodec_find_decoder(stream.codecpar.codec_id)
-    check_ptr_valid(pVideoCodec, false) || error("Failed to find decoder")
+    codec = avcodec_find_decoder(stream.codecpar.codec_id)
+    check_ptr_valid(codec, false) || error("Failed to find decoder")
 
     # Tell the demuxer to retain packets from this stream
     stream.discard = AVDISCARD_DEFAULT
 
     # Create decoder context
-    codec_context = AVCodecContextPtr(pVideoCodec) # Allocates
+    codec_context = AVCodecContextPtr(codec) # Allocates
     # Transfer parameters to decoder context
     ret = avcodec_parameters_to_context(codec_context, stream.codecpar)
     ret < 0 && error("Could not copy the codec parameters to the decoder")
-    pix_fmt = codec_context.pix_fmt
-    pix_fmt < 0 && error("Unknown pixel format")
+    codec_context.pix_fmt < 0 && error("Unknown pixel format")
 
     # Open the decoder
     sigatomic_begin()
-    lock(VIDEOIO_LOCK)
-    ret = avcodec_open2(codec_context, pVideoCodec, C_NULL)
-    unlock(VIDEOIO_LOCK)
+    lock(VIO_LOCK)
+    ret = avcodec_open2(codec_context, codec, C_NULL)
+    unlock(VIO_LOCK)
     sigatomic_end()
     ret < 0 && error("Could not open codec")
 
-    # Set up transcoding
-    # TODO: this should be optional
-    pFmtDesc = av_pix_fmt_desc_get(target_format)
-    check_ptr_valid(pFmtDesc, false) || error("Unknown pixel format $target_format")
+    if target_format === nothing # automatically determine format
+        dst_pix_fmt, pix_fmt_loss = _vio_determine_best_pix_fmt(
+            codec_context.pix_fmt; loss_mask = pix_fmt_loss_mask
+        )
+    else
+        dst_pix_fmt = target_format
+    end
 
-    width, height = codec_context.width, codec_context.height
+    if target_colorspace_details === nothing
+        colorspace_details = get(VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS,
+                                 dst_pix_fmt,
+                                 VIO_DEFAULT_COLORSPACE_DETAILS)
+    else
+        colorspace_details = target_colorspace_details
+    end
+    bit_depth, padded_bits_per_pixel = pix_fmt_to_bits_per_pixel(dst_pix_fmt)
+    width = codec_context.width
+    height = codec_context.height
 
-    destframe = AVFramePtr()
-    destframe.format = target_format
-    destframe.width = width
-    destframe.height = height
-    av_frame_get_buffer(destframe, 0) # Allocate picture buffers
-    bits_per_pixel = av_get_padded_bits_per_pixel(pFmtDesc)
+    use_vio_gray_transform = transcode &&
+        codec_context.pix_fmt == dst_pix_fmt && allow_vio_gray_transform &&
+        dst_pix_fmt in VIO_GRAY_SCALE_TYPES &&
+        colorspace_details.color_range != codec_context.color_range
+    if use_vio_gray_transform
+        frame_graph = GrayTransform()
+        set_basic_frame_properties!(frame_graph.dstframe, width, height,
+                                    dst_pix_fmt)
+        frame_graph.src_depth = frame_graph.dst_depth = bits_per_pixel
+        frame_graph.dstframe.color_range = colorspace_details.color_range
+    elseif ! transcode || codec_context.pix_fmt == dst_pix_fmt
+        frame_graph = AVFramePtr()
+    else
+        frame_graph = SwsTransform(width, height, codec_context.pix_fmt,
+                                   dst_pix_fmt, transcode_interpolation)
+        src_color_range = codec_context.color_range
+        inv_table = _vio_primaries_to_sws_table(codec_context.color_primaries)
+        table = _vio_primaries_to_sws_table(colorspace_details.color_primaries)
 
-    sws_context = SwsContextPtr(width, height, pix_fmt, target_format,
-                                transcode_interpolation)
-    transcodeContext = VideoTranscodeContext(sws_context,
-                                             transcode_interpolation,
-                                             target_format, bits_per_pixel,
-                                             width, height, destframe)
-    srcframe = AVFramePtr()
+        sws_update_color_details(frame_graph.sws_context;
+                                 inv_table = inv_table,
+                                 src_range = src_color_range,
+                                 table = table,
+                                 dst_range = colorspace_details.color_range,
+                                 sws_kwargs...)
 
-    framerate = codec_context.time_base.den // codec_context.time_base.num
-    aspect_num = codec_context.sample_aspect_ratio.num
-    aspect_den = codec_context.sample_aspect_ratio.den
-    aspect_ratio = (aspect_den == 0) ? Cint(0) // Cint(1) :
-        aspect_num // aspect_den
+        set_basic_frame_properties!(frame_graph.dstframe, width, height,
+                                    dst_pix_fmt)
+    end
 
-    vr = VideoReader{transcode, I}(avin,
-
-                                   stream_index0,
-                                   codec_context,
-                                   pVideoCodec,
-                                   srcframe,
-                                   false,
-
-                                   pix_fmt,
-                                   width,
-                                   height,
-                                   framerate,
-                                   aspect_ratio,
-
-                                   Vector{UInt8}[],
-                                   transcodeContext,
-                                   false,
-                                   false)
+    vr = VideoReader{transcode, typeof(frame_graph), I}(avin, stream_index0,
+                                                        codec_context,
+                                                        Vector{UInt8}[],
+                                                        frame_graph, false,
+                                                        padded_bits_per_pixel,
+                                                        false, false)
 
     push!(avin.listening, stream_index0)
     avin.stream_contexts[stream_index0] = vr
+
     vr
 end
 
 VideoReader(s::T, args...; kwargs...) where {T <: Union{IO,AbstractString}} =
     VideoReader(AVInput(s), args...; kwargs... )
 
+# a convenience function for getting the aspect ratio
+function aspect_ratio(f::VideoReader)
+    aspect_num = f.codec_context.sample_aspect_ratio.num
+    aspect_den = f.codec_context.sample_aspect_ratio.den
+    aspect_ratio = (aspect_den == 0) ? Cint(0) // Cint(1) :
+        aspect_num // aspect_den
+    # if the stored aspect ratio is nonsense then we default to one. OBS, this
+    # might still be wrong for some videos and an unnecessary test for most
+    if iszero(aspect_ratio) || isnan(aspect_ratio) || isinf(aspect_ratio)
+        fixed_aspect = 1//1
+    else
+        fixed_aspect = aspect_ratio
+    end
+    fixed_aspect
+end
+
+framerate(f::VideoReader) =
+    f.codec_context.time_base.den // f.codec_context.time_base.num
+
+
 # Does not check input size, meant for internal use only
-function stash_source_planes!(imgbuf, r::VideoReader, align = VIDEOIO_ALIGN)
-    frame = r.srcframe
+function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)
+    frame = graph_input_frame(r)
     av_image_copy_to_buffer(imgbuf, length(imgbuf), Ref(frame.data),
-                            Ref(frame.linesize), r.format, r.width, r.height,
+                            Ref(frame.linesize), r.codec_context.pix_fmt,
+                            r.codec_context.width, r.codec_context.height,
                             align)
     return imgbuf
 end
 
-stash_source_planes(r, align = VIDEOIO_ALIGN) =
-    stash_source_planes!(Vector{UInt8}(undef, out_bytes_size(r, align)), r, align)
+stash_graph_input(r, align = VIO_ALIGN) =
+    stash_graph_input!(Vector{UInt8}(undef, out_bytes_size(r, align)), r, align)
 
 function unpack_stashed_planes!(r::VideoReader, imgbuf)
-    frame = r.srcframe
+    frame = graph_input_frame(r)
     av_make_writable(frame)
-    av_image_fill_arrays(frame.data, frame.linesize, imgbuf,
-                         r.format, r.width, r.height, VIDEOIO_ALIGN)
+    av_image_fill_arrays(frame, frame.linesize, imgbuf, r.codec_context.pix_fmt,
+                         r.codec_context.width, r.codec_context.height,
+                         VIO_ALIGN)
     return r
 end
 
@@ -372,17 +371,17 @@ check_send_packet_return(r) = (r < 0 && r != -Libc.EAGAIN) && error("Could not s
 function decode(r::VideoReader, packet)
     # Do we already have a complete frame that hasn't been consumed?
     r.finished && return
-    if have_decoded_frame(r)
-        push!(r.frame_queue, stash_source_planes(r))
-        reset_frame_flag!(r)
+    if graph_blocked(r)
+        push!(r.frame_queue, stash_graph_input(r))
+        remove_graph_input!(r)
     end
     if !r.flush
         pret = avcodec_send_packet(r.codec_context, packet)
         check_send_packet_return(pret)
     end
-    fret = avcodec_receive_frame(r.codec_context, r.srcframe)
+    fret = avcodec_receive_frame(r.codec_context, graph_input_frame(r))
     if fret == 0
-        r.frame_ready = true
+        r.graph_input_occupied = true
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
     elseif fret != -Libc.EAGAIN
@@ -395,141 +394,18 @@ function decode(r::VideoReader, packet)
     return
 end
 
-# Converts a grabbed frame to the correct format (RGB by default)
-# TODO: type stability?
-function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
-    pump_until_frame(r)
-    t = r.transcodeContext
-    pxfmt = t.target_pix_fmt
-    if !is_pixel_type_supported(pxfmt)
-        unsupported_retrieveal_format(pxfmt)
-    end
-    elt = VIO_PXFMT_DEF_ELTYPE_LU[pxfmt]
-    buf = PermutedDimsArray(Matrix{elt}(undef, r.width, r.height), (2, 1))
-
-    retrieve!(r, buf)
-end
-
-function retrieve(r::VideoReader{NO_TRANSCODE}, align = VIDEOIO_ALIGN) # false=don't transcode
-    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))
-    pump_until_frame(r)
-    retrieve!(r, imgbuf, align)
-    imgbuf, align
-end
+graph_input_frame(r::VideoReader) = graph_input_frame(r.frame_graph)
+graph_output_frame(r::VideoReader) = graph_output_frame(r.frame_graph)
 
 unsupported_retrieval_format(fmt) = error("Unsupported format $(fmt)")
 
-# Transfer bytes from AVFrame to buffer
-function _transfer_frame_bytes_to_img_buf!(buf::AbstractArray{UInt8}, frame,
-                                           bytes_per_pixel)
-    width = frame.width
-    height = frame.height
-    ip = frame.data[1]
-    op = pointer(buf)
-    out_linesize = width * bytes_per_pixel
-    for h in 1:height
-        out_line_p = op + (h - 1) * out_linesize
-        in_line_p = ip + (h - 1) * frame.linesize[1]
-        unsafe_copyto!(out_line_p, in_line_p, out_linesize)
-    end
-    buf
-end
-
-# Read a 8 bit monochrome frame
-function transfer_frame_to_img_buf!(buf::AbstractArray{UInt8}, frame,
-                                    bytes_per_pixel)
-    target_format = frame.format
-    if target_format == AV_PIX_FMT_GRAY8
-        _transfer_frame_bytes_to_img_buf!(buf, frame, bytes_per_pixel)
-    else
-        unsupported_retrieval_format(target_format)
-    end
-    buf
-end
-
-# Read a 10 bit monochrome frame
-function transfer_frame_to_img_buf!(buf::AbstractArray{UInt16}, frame,
-                                    bytes_per_pixel)
-    target_format = frame.format
-    if target_format == AV_PIX_FMT_GRAY10LE
-        if ENDIAN_BOM != 0x04030201
-            error("Reading AV_PIX_FMT_GRAY10LE on big-endian machines not yet supported")
-        end
-        _transfer_frame_bytes_to_img_buf!(reinterpret(UInt8, buf), frame, bytes_per_pixel)
-    else
-        unsupported_retrieval_format(target_format)
-    end
-    buf
-end
-
-transfer_frame_to_img_buf!(buf::AbstractArray{X}, args...) where {T, X<:Normed{T}} =
-    transfer_frame_to_img_buf!(reinterpret(T, buf), args...)
-
-transfer_frame_to_img_buf!(buf::AbstractArray{<:Gray}, args...) =
-    transfer_frame_to_img_buf!(channelview(buf), args...)
-
-# Read a 8 bit RGB frame
-function transfer_frame_to_img_buf!(buf::AbstractArray{RGB{N0f8}}, frame,
-                                    bytes_per_pixel)
-    target_format = frame.format
-    if target_format == AV_PIX_FMT_RGB24
-        _transfer_frame_bytes_to_img_buf!(reinterpret(UInt8, buf), frame,
-                                          bytes_per_pixel)
-    else
-        unsupported_retrieval_format(target_format)
-    end
-    buf
-end
-
-@inline uint16_from_bytes(msb, lsb) = (convert(UInt16, msb) << 8) | lsb
-
-function load_uint16_from_le_bytes(data, pos)
-    lsb = unsafe_load(data, pos)
-    msb = unsafe_load(data, pos + 1)
-    uint16_from_bytes(msb, lsb)
-end
-
-load_n6f10_from_le_bytes(data, pos) =
-    reinterpret(N6f10, load_uint16_from_le_bytes(data, pos))
-
-# Read a 10 bit RGB frame
-function transfer_frame_to_img_buf!(buf::AbstractArray{RGB{N6f10}}, frame,
-                                    ::Any)
-    target_format = frame.format
-    if target_format == AV_PIX_FMT_GBRP10LE
-        bytes_per_sample = 2
-        width = frame.width
-        height = frame.height
-        size(buf) == (width, height) || error("buffer wrong size")
-        ls = frame.linesize
-        @inbounds linesizes = ntuple(i -> ls[i], 3)
-        @inbounds for r in 1:height
-            line_offsets = (r - 1) .* linesizes
-            @simd ivdep for c in 1:width
-                col_pos = (c - 1) * bytes_per_sample + 1
-                line_poss = line_offsets .+ col_pos
-                rg = load_n6f10_from_le_bytes(frame.data[1], line_poss[1])
-                rb = load_n6f10_from_le_bytes(frame.data[2], line_poss[2])
-                rr = load_n6f10_from_le_bytes(frame.data[3], line_poss[3])
-                buf[c, r] = RGB{N6f10}(rr, rg, rb) # scanline-major!
-            end
-        end
-    else
-        unsupported_retrieval_format(target_format)
-    end
-    buf
-end
-
-transfer_frame_to_img_buf!(buf::PermutedDimsArray, frame, bytes_per_sample) =
-    transfer_frame_to_img_buf!(parent(buf), frame, bytes_per_sample)
-
 function drop_frame!(r::VideoReader)
     if isempty(r.frame_queue)
-        have_decoded_frame(r) && reset_frame_flag!(r)
+        graph_blocked(r) && remove_graph_input!(r)
     else
-        if r.frame_ready
-            push!(r.frame_queue, stash_source_planes(r))
-            reset_frame_flag!(r)
+        if r.graph_input_occupied
+            push!(r.frame_queue, stash_graph_input(r))
+            remove_graph_input!(r)
         end
         popfirst!(r.frame_queue)
     end
@@ -538,10 +414,35 @@ end
 
 function drop_frames!(r::VideoReader)
     empty!(r.frame_queue)
-    reset_frame_flag!(r)
+    remove_graph_input!(r)
 end
 
-n_queued_frames(r::VideoReader) = length(r.frame_queue) + r.frame_ready
+n_queued_frames(r::VideoReader) = length(r.frame_queue) + r.graph_input_occupied
+
+function fill_graph_input!(r::VideoReader)
+    pump_until_frame(r)
+
+    # Get the oldest frame stored by VideoReader
+
+    # If we have an unprocessed frames in the queue
+    if !isempty(r.frame_queue)
+        # But also a decoded frame
+        if graph_blocked(r)
+            # Then move the decoded frame to the back of the queue
+            push!(r.frame_queue, stash_graph_input(r))
+        end
+        unpack_stashed_planes!(r, popfirst!(r.frame_queue))
+        r.graph_input_occupied = true
+    end
+end
+
+execute_graph!(r::VideoReader) = exec!(r.frame_graph)
+
+function transfer_graph_output!(buf, r::VideoReader)
+    bytes_per_pixel, nrem = divrem(r.bits_per_result_pixel, 8)
+    nrem > 0 && error("Unsupported pixel size")
+    transfer_frame_to_img_buf!(buf, graph_output_frame(r), bytes_per_pixel)
+end
 
 # Converts a grabbed frame to the correct format (RGB by default)
 function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
@@ -550,57 +451,44 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
         error("Buffer is the wrong size")
     end
 
-    pump_until_frame(r)
-
-    # Get the oldest frame stored by VideoReader
-
-    # If we have an unprocessed frames in the queue
-    if !isempty(r.frame_queue)
-        # But also a decoded frame
-        if have_decoded_frame(r)
-            # Then move the decoded frame to the back of the queue
-            push!(r.frame_queue, stash_source_planes(r))
-        end
-        unpack_stashed_planes!(r, popfirst!(r.frame_queue))
-        r.frame_ready = true
-    end
-
-    # Do colorspace scaling
-
-    t = r.transcodeContext
-    src_ptr = unsafe_convert(Ptr{AVFrame}, r.srcframe)
-    @preserve r begin
-        # t is preserved if r is preserved, hopefully? A little confusing.
-        src_data_ptr = field_ptr(src_ptr, :data)
-        src_linesize_ptr = field_ptr(src_ptr, :linesize)
-        dest_ptr = unsafe_convert(Ptr{AVFrame}, t.destframe)
-        dest_data_ptr = field_ptr(dest_ptr, :data)
-        dest_linesize_ptr = field_ptr(dest_ptr, :linesize)
-
-        sigatomic_begin()
-        ret = sws_scale(t.sws_context, src_data_ptr, src_linesize_ptr,
-                        0, r.height, dest_data_ptr, dest_linesize_ptr)
-        sigatomic_end()
-    end
-
-    # Transfer frame data to output buffer
-    bytes_per_pixel, nrem = divrem(t.target_bits_per_pixel, 8)
-    nrem > 0 && error("Unsupported pixel size")
-
-    transfer_frame_to_img_buf!(buf, t.destframe, bytes_per_pixel)
-
-    # Mark frame as done, and tell FFMPEG that we are no longer using its picture
-    reset_frame_flag!(r)
-
+    fill_graph_input!(r)
+    execute_graph!(r)
+    transfer_graph_output!(buf, r)
+    remove_graph_input!(r)
     return buf
 end
 
-function retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{UInt8},
-                   align = VIDEOIO_ALIGN)
+function retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
     out_bytes_size_check(buf, r, align) || error("Buffer is the wrong size")
-    pump_until_frame(r)
-    stash_source_planes!(buf, r, align)
+    fill_graph_input!(r)
+    stash_graph_input!(buf, r, align)
+    remove_graph_input!(r)
+    return buf
 end
+
+# Converts a grabbed frame to the correct format (RGB by default)
+# TODO: type stability?
+function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
+    pix_fmt = out_frame_format(r)
+    if !is_pixel_type_supported(pix_fmt)
+        unsupported_retrieveal_format(pix_fmt)
+    end
+    elt = VIO_PIX_FMT_DEF_ELTYPE_LU[pix_fmt]
+    width, height = out_frame_size(r)
+    buf = PermutedDimsArray(Matrix{elt}(undef, width, height), (2, 1))
+
+    retrieve!(r, buf)
+end
+
+retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{UInt8}, args...) =
+    retrieve_raw!(r, buf, args...)
+
+function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
+    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))
+    retrieve_raw!(r, imgbuf, align)
+end
+
+retrieve(r::VideoReader{NO_TRANSCODE}, args...) = retrieve_raw(r, args...)
 
 # Utility functions
 
@@ -620,6 +508,7 @@ openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
 Return the next frame from `r`. See `read!`.
 """
 read(r::VideoReader, args...) = retrieve(r, args...)
+read_raw(r::VideoReader, args...) = retrieve_raw(r, args...)
 
 """
     read!(r::VideoReader, buf::Union{PermutedArray{T,N}, Array{T,N}}) where T<:ReaderElTypes
@@ -632,17 +521,20 @@ in memory.
 read!(r::VideoReader, buf::AbstractArray{T}) where {T <: ReaderElTypes} =
     retrieve!(r, buf)
 
+read_raw!(r::VideoReader, buf, args...) = read_raw!(r, buf, args...)
+
 isopen(avin::AVInput{I}) where {I <: IO} = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
 isopen(r::VideoReader) = isopen(r.avin)
 
-out_frame_size(r::VideoReader{NO_TRANSCODE}) = (r.width, r.height)
-out_frame_size(t::VideoTranscodeContext) = (t.width, t.height)
-out_frame_size(r::VideoReader{TRANSCODE}) = out_frame_size(r.transcodeContext)
+out_frame_size(r::VideoReader{<:Any, AVFramePtr}) = (r.codec_context.width,
+                                                     r.codec_context.height)
+out_frame_size(t::SwsTransform) = (t.dstframe.width, t.dstframe.height)
+out_frame_size(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_size(r.frame_graph)
 
-out_frame_format(r::VideoReader{NO_TRANSCODE}) = r.format
-out_frame_format(t::VideoTranscodeContext) = t.target_pix_fmt
-out_frame_format(r::VideoReader{TRANSCODE}) = out_frame_format(r.transcodeContext)
+out_frame_format(r::VideoReader{<:Any, AVFramePtr}) = r.codec_context.pix_fmt
+out_frame_format(t::SwsTransform) = t.dstframe.format
+out_frame_format(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_format(r.frame_graph)
 
 out_img_size_check(r, buf) = size(buf) == out_frame_size(r)
 out_img_size_check(r, buf::PermutedDimsArray) = out_img_size_check(r, parent(buf))
@@ -659,7 +551,7 @@ out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 
 out_img_check(r, buf) = out_img_size_check(r, buf) && out_img_eltype_check(r, buf)
 
-function out_bytes_size(fmt, width, height, align = VIDEOIO_ALIGN)
+function out_bytes_size(fmt, width, height, align = VIO_ALIGN)
     align > 0 || throw(ArgumentError("align must be greater than zero"))
     sz = av_image_get_buffer_size(fmt, width, height, align)
     sz < 0 && error("Could not determine the buffer size")
@@ -670,13 +562,13 @@ out_bytes_size(r, args...) =
 
 out_bytes_size_check(buf, r, args...) = sizeof(buf) == out_bytes_size(r, args...)
 
-have_decoded_frame(r) = r.frame_ready # TODO: make sure the last frame was made available
-have_frame(r::StreamContext) = !isempty(r.frame_queue) || have_decoded_frame(r)
-have_frame(avin::AVInput) = mapreduce(have_frame, |, values(avin.stream_contexts), init = false)
+graph_blocked(r) = r.graph_input_occupied # TODO: make sure the last frame was made available
+frame_is_queued(r::StreamContext) = !isempty(r.frame_queue) || graph_blocked(r)
+frame_is_queued(avin::AVInput) = mapreduce(frame_is_queued, |, values(avin.stream_contexts), init = false)
 
-function reset_frame_flag!(r::VideoReader)
-    av_frame_unref(r.srcframe)
-    r.frame_ready = false
+function remove_graph_input!(r::VideoReader)
+    av_frame_unref(graph_input_frame(r))
+    r.graph_input_occupied = false
 end
 
 seconds_to_timestamp(s, time_base::Rational) = round(Int, s / time_base)
@@ -741,8 +633,10 @@ function seek_trim(r::VideoReader, seconds::Number)
     frame_period_timebase = round(Int64,  1 / (frame_rate * time_base))
     gotframe = pump_until_frame(r, false)
     # If advancing another frame would still leave us before the target
-    while gotframe && r.srcframe.pts != AV_NOPTS_VALUE &&
-          r.srcframe.pts + frame_period_timebase <= target_pts
+
+    frame = graph_input_frame(r)
+    while gotframe && frame.pts != AV_NOPTS_VALUE &&
+          frame.pts + frame_period_timebase <= target_pts
         drop_frame!(r)
         gotframe = pump_until_frame(r, false)
     end
@@ -829,7 +723,7 @@ end
 
 function eof(avin::AVInput)
     !isopen(avin) && return true
-    have_frame(avin) && return false
+    frame_is_queued(avin) && return false
     allfinished = mapreduce(is_finished, &, values(avin.stream_contexts),
                             init = true)
     allfinished && return true

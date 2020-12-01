@@ -1,31 +1,36 @@
 export encodevideo, encode!, prepareencoder, appendencode!, startencode!,
-    finishencode!, mux, open_video_out!, encode_mux!, append_encode_mux!,
+    finishencode!, mux, open_video_out, encode_mux!, append_encode_mux!,
     close_video_out!, encode_mux_video
 
 const SettingsT = Union{AbstractDict{Symbol, <:Any},
                         AbstractDict{Union{}, Union{}},
                         NamedTuple}
 
+
 # A struct collecting encoder objects for easy passing
-mutable struct VideoEncoder
+mutable struct VideoEncoder{T<:GraphType}
     codec_name::String
     codec_context::AVCodecContextPtr
-    format_context::AVFormatContextPtr
     stream_index0::Int
-    frame::AVFramePtr
+    frame_graph::T
     packet::AVPacketPtr
-    pix_fmt::Cint
     scanline_major::Bool
 end
 
-mutable struct VideoWriter
+mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
     codec_context::AVCodecContextPtr
-    frame::AVFramePtr
+    frame_graph::T
     packet::AVPacketPtr
     stream_index0::Int
     scanline_major::Bool
 end
+
+graph_input_frame(r::VideoEncoder) = graph_input_frame(r.frame_graph)
+graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
+
+graph_output_frame(r::VideoEncoder) = graph_output_frame(r.frame_graph)
+graph_output_frame(r::VideoWriter) = graph_output_frame(r.frame_graph)
 
 """
     encode(encoder::VideoEncoder, io::IO)
@@ -34,10 +39,11 @@ Encode frame in memory
 """
 function encode!(encoder::VideoEncoder, io::IO; flush=false)
     av_init_packet(encoder.packet)
+    frame = graph_output_frame(writer)
     if flush
         fret = avcodec_send_frame(encoder.codec_context, C_NULL)
     else
-        fret = avcodec_send_frame(encoder.codec_context, encoder.frame)
+        fret = avcodec_send_frame(encoder.codec_context, frame)
     end
     if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
         error("Error $fret sending a frame for encoding")
@@ -57,7 +63,7 @@ function encode!(encoder::VideoEncoder, io::IO; flush=false)
         av_packet_unref(encoder.packet)
     end
     if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
-        fret = avcodec_send_frame(encoder.codec_context, encoder.frame)
+        fret = avcodec_send_frame(encoder.codec_context, frame)
         if fret < 0 && fret != VIO_AVERROR_EOF
             error("Error $fret sending a frame for encoding")
         end
@@ -67,10 +73,12 @@ end
 
 function encode_mux!(writer::VideoWriter, flush = false)
     pkt = writer.packet
+    av_init_packet(pkt)
+    frame = graph_output_frame(writer)
     if flush
         fret = avcodec_send_frame(writer.codec_context, C_NULL)
     else
-        fret = avcodec_send_frame(writer.codec_context, writer.frame)
+        fret = avcodec_send_frame(writer.codec_context, frame)
     end
     if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
         error("Error $fret sending a frame for encoding")
@@ -84,11 +92,11 @@ function encode_mux!(writer::VideoWriter, flush = false)
         elseif pret < 0
             error("Error $pret during encoding")
         end
-        if writer.packet.duration == 0
+        if pkt.duration == 0
             codec_pts_duration = round(Int, 1 / (
                 convert(Rational, writer.codec_context.framerate) *
                 convert(Rational, writer.codec_context.time_base)))
-            writer.packet.duration = codec_pts_duration
+            pkt.duration = codec_pts_duration
         end
         stream = writer.format_context.streams[writer.stream_index0 + 1]
         av_packet_rescale_ts(pkt, writer.codec_context.time_base, stream.time_base)
@@ -98,7 +106,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
         ret != 0 && error("Error muxing packet")
     end
     if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
-        fret = avcodec_send_frame(writer.codec_context, writer.frame)
+        fret = avcodec_send_frame(writer.codec_context, frame)
         if fret < 0 && fret != VIO_AVERROR_EOF
             error("Error $fret sending a frame for encoding")
         end
@@ -106,9 +114,10 @@ function encode_mux!(writer::VideoWriter, flush = false)
     return pret
 end
 
-const AVCodecContextPropertiesDefault =[:priv_data => ("crf"=>"22","preset"=>"medium")]
+const AVCodecContextPropertiesDefault = [:priv_data => ("crf"=>"22","preset"=>"medium")]
 
-@inline prop_present_and_equal(nt::NamedTuple, prop, val) = hasproperty(nt, prop) && getproperty(nt, prop) == val
+@inline prop_present_and_equal(nt::NamedTuple, prop, val) =
+    hasproperty(nt, prop) && getproperty(nt, prop) == val
 
 function islossless(prop)
     for p in prop
@@ -156,13 +165,10 @@ function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
     if codec_name in ["libx264", "h264_nvenc"]
         lossless_colorrange_check_warn(props, codec_name,
                                        T, 8)
-        pix_fmt = AV_PIX_FMT_GRAY8
-    elseif codec_name == "libx264rgb"
-        pix_fmt = AV_PIX_FMT_RGB24
-    else
+    elseif codec_name != "libx264rgb"
         _pix_type_not_supported(S, codec_name)
     end
-    pix_fmt
+    get_transfer_pix_fmt(S)
 end
 
 function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
@@ -170,11 +176,10 @@ function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
     if codec_name == "libx264"
         lossless_colorrange_check_warn(props, codec_name,
                                        T, 10)
-        pix_fmt = AV_PIX_FMT_GRAY10LE
     else
         _pix_type_not_supported(S, codec_name)
     end
-    pix_fmt
+    get_transfer_pix_fmt(S)
 end
 
 function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
@@ -185,18 +190,16 @@ function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
                 selected encoding settings are not lossless (crf!=0), codec_name="libx264"
                 will give better playback results"""
         end
-        pix_fmt = AV_PIX_FMT_RGB24
     elseif codec_name in ["libx264", "h264_nvenc"]
         if islossless(props)
             @warn """Encoding output not lossless.
                 libx264 does not support lossless RGB planes. RGB will be downsampled
                 to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
         end
-        pix_fmt = AV_PIX_FMT_YUV420P
     else
         _pix_type_not_supported(S, codec_name)
     end
-    pix_fmt
+    get_transfer_pix_fmt(S)
 end
 
 function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
@@ -207,11 +210,10 @@ function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
                 libx264 does not support lossless RGB planes. RGB will be downsampled
                 to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
         end
-        pix_fmt = AV_PIX_FMT_YUV420P10LE
     else
         _pix_type_not_supported(S, codec_name)
     end
-    pix_fmt
+    get_transfer_pix_fmt(S)
 end
 
 function _determine_pix_fmt(::Type{X}, ::Type{S}, codec_name, props
@@ -231,41 +233,57 @@ _determine_pix_fmt(::Type{T}, codec_name, props) where T =
     _determine_pix_fmt(T, T, codec_name, props)
 
 """
-    prepareencoder(firstimg; framerate=30,
-                   AVCodecContextProperties = AVCodecContextPropertiesDefault,
-                   codec_name::String="libx264")
+    VideoEncoder(firstimg; framerate=30,
+                 AVCodecContextProperties = AVCodecContextPropertiesDefault,
+                 codec_name::String="libx264")
 
 Prepare encoder and return a `VideoEncoder` object. The dimensions and pixel
 format of the video will be determined from `firstimg`. The number of rows of
 `firstimg` determines the height of the frame, while the number of columns
 determines the width.
 """
-function prepareencoder(firstimg; framerate=30,
-                        AVCodecContextProperties = AVCodecContextPropertiesDefault,
-                        #color_range::Int = 1,
-                        codec_name::String = "libx264",
-                        scanline_major::Bool = false)
+function VideoEncoder(firstimg; framerate=30,
+                      AVCodecContextProperties = AVCodecContextPropertiesDefault,
+                      codec_name::String = "libx264",
+                      scanline_major::Bool = false,
+                      target_pix_fmt::Union{Nothing, Cint} = nothing,
+                      pix_fmt_loss_mask = 0,
+                      input_colorspace_details = nothing,
+                      sws_kwargs...)
     if scanline_major
         width, height = size(firstimg)
     else
         height, width = size(firstimg)
     end
 
-    ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
+    if isodd(width) || isodd(height)
+        throw(ArgumentError("Encoding error: Image dims must be a multiple of two"))
+    end
 
     elt = eltype(firstimg)
-    pix_fmt = _determine_pix_fmt(elt, codec_name, AVCodecContextProperties)
+    transfer_pix_fmt = _determine_pix_fmt(elt, codec_name, AVCodecContextProperties)
+    if input_colorspace_details === nothing
+        transfer_colorspace_details = get(VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS,
+                                          transfer_pix_fmt,
+                                          VIO_DEFAULT_COLORSPACE_DETAILS)
+    else
+        transfer_colorspace_details = input_colorspace_details
+    end
     framerate_rat = Rational(framerate)
 
     codec = avcodec_find_encoder_by_name(codec_name)
     check_ptr_valid(codec, false) || error("Codec '$codec_name' not found")
+
+    encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
+                                                      transfer_pix_fmt, codec,
+                                                      pix_fmt_loss_mask)
 
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
     codec_context.height = height
     codec_context.time_base = AVRational(1/framerate_rat)
     codec_context.framerate = AVRational(framerate_rat)
-    codec_context.pix_fmt = pix_fmt
+    codec_context.pix_fmt = encoding_pix_fmt
 
     priv_data_ptr = codec_context.priv_data
     for prop in AVCodecContextProperties
@@ -280,273 +298,48 @@ function prepareencoder(firstimg; framerate=30,
     end
 
     sigatomic_begin()
-    lock(VIDEOIO_LOCK)
+    lock(VIO_LOCK)
     ret = avcodec_open2(codec_context, codec, C_NULL)
-    unlock(VIDEOIO_LOCK)
+    unlock(VIO_LOCK)
     sigatomic_end()
     ret < 0 && error("Could not open codec: Return code $(ret)")
 
-    frame = AVFramePtr()
-    frame.format = pix_fmt
-    frame.width = width
-    frame.height = height
-    # frame.color_range = color_range == 1 ? AVCOL_RANGE_MPEG : AVCOL_RANGE_JPEG
-
-    format_context = AVFormatContextPtr(Ptr{AVFormatContext}())
-
+    if transfer_pix_fmt == encoding_pix_fmt
+        maybe_configure_codec_context_colorspace_details!(codec_context,
+                                                          transfer_colorspace_details)
+    end
+    frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
+                                              encoding_pix_fmt, width, height,
+                                              scale_interpolation,
+                                              codec_context.color_primaries,
+                                              codec_context.color_trc,
+                                              codec_context.colorspace,
+                                              codec_context.color_range;
+                                              sws_kwargs...)
     ret = av_frame_get_buffer(frame, 0)
     ret < 0 && error("Could not allocate the video frame data")
 
     packet = AVPacketPtr()
-    return VideoEncoder(codec_name, codec_context, format_context, -1, frame,
-                        packet, pix_fmt, scanline_major)
+    return VideoEncoder(codec_name, codec_context, -1, frame_graph,
+                        packet, scanline_major)
 end
 
-_unsupported_append_encode_type() = error("Array element type not supported")
+"""
+    prepareencoder(...)
 
-# bytes_per_sample is the number of bytes per pixel sample, not the size of the
-# element type of img
-function transfer_img_bytes_to_frame_plane!(data_ptr, img::StridedArray,
-                                            px_width, px_height, data_linesize,
-                                            bytes_per_sample = 1)
-    stride(img, 1) == 1 || error("stride(img, 1) must be equal to one")
-    img_line_nbytes = px_width * bytes_per_sample
-    @inbounds for r = 1:px_height
-        data_line_ptr = data_ptr + (r-1) * data_linesize
-        img_line_ptr = pointer(img,  img_line_nbytes * (r-1) + 1)
-        unsafe_copyto!(data_line_ptr, img_line_ptr, img_line_nbytes)
-    end
+See `VideoEncoder`.
+"""
+prepareencoder(args...; kwargs...) = VideoEncoder(args...; kwargs...)
+
+function prepare_video_frame!(writer, img, index)
+    dstframe = graph_output_frame(writer)
+    ret = av_frame_make_writable(dstframe)
+    ret < 0 && error("av_frame_make_writable() error")
+    dstframe.pts = index
+    transfer_img_buf_to_frame!(graph_input_frame(writer), img,
+                               writer.scanline_major)
+    execute_graph!(writer)
 end
-
-function make_into_sl_col_mat(img::AbstractVector{<:Union{RGB, Unsigned}},
-                              width, height)
-    img_mat = reshape(img, (height, width))
-    PermutedDimsArray(img_mat, (2, 1))
-end
-make_into_sl_col_mat(img::AbstractMatrix{<:Union{RGB, Unsigned}}, args...) =
-    PermutedDimsArray(img, (2, 1))
-
-function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt,
-                                           img::AbstractArray{UInt8})
-    pix_fmt == AV_PIX_FMT_RGB24 || _unsupported_append_encode_type()
-    width = frame.width
-    height = frame.height
-    ls = frame.linesize[1]
-    data_p = frame.data[1]
-    @inbounds for r = 1:height
-        line_offset = (r-1) * ls
-        for c = 1:width
-            val = img[c, r]
-            row_offset = line_offset + c
-            for s in 0:2
-                @preserve frame unsafe_store!(data_p, val,
-                                                 row_offset + s)
-            end
-        end
-    end
-end
-
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt8},
-                                    scanline_major)
-    if pix_fmt == AV_PIX_FMT_GRAY8
-        width = frame.width
-        height = frame.height
-        ls = frame.linesize[1]
-        data_p = frame.data[1]
-        if scanline_major
-            @preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
-                                                                  width, height,
-                                                                  ls)
-        else
-            @inbounds for r = 1:height
-                line_offset = (r-1) * ls
-                for c = 1:width
-                    @preserve frame unsafe_store!(data_p, img[r,c], line_offset + c)
-                end
-            end
-        end
-    elseif pix_fmt == AV_PIX_FMT_RGB24
-        if scanline_major
-            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img)
-        else
-            img_sl_col_mat = make_into_sl_col_mat(img)
-            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img_sl_col_mat)
-        end
-    else
-        _unsupported_append_encode_type()
-    end
-end
-
-@inline function bytes_of_uint16(x::UInt16)
-    msb = convert(UInt8, (x & 0xFF00) >> 8)
-    lsb = convert(UInt8, x & 0x00FF)
-    msb, lsb
-end
-
-@inline function store_uint16_in_10le_frame!(data, x, px_offset)
-    msb, lsb = bytes_of_uint16(x)
-    unsafe_store!(data, lsb, px_offset)
-    unsafe_store!(data, msb, px_offset + 1)
-end
-
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{UInt16}, scanline_major)
-    bytes_per_sample = 2
-    if pix_fmt == AV_PIX_FMT_GRAY10LE
-        width = frame.width
-        height = frame.height
-        ls = frame.linesize[1]
-        datap = frame.data[1]
-        if scanline_major
-            if ENDIAN_BOM != 0x04030201
-                error("Writing scanline_major AV_PIX_FMT_GRAY10LE on
-                        big-endian machines not yet supported, use scanline_major = false")
-            end
-            img_raw = reinterpret(UInt8, img)
-            @preserve frame transfer_img_bytes_to_frame_plane!(datap, img_raw,
-                                                                  width, height,
-                                                                  ls,
-                                                                  bytes_per_sample)
-        else
-            @inbounds for r in 1:height
-                line_offset = (r - 1) * ls
-                for c in 1:width
-                    px_offset = line_offset + bytes_per_sample * (c - 1) + 1
-                    @preserve frame store_uint16_in_10le_frame!(datap,
-                                                                   img[r, c],
-                                                                   px_offset)
-                end
-            end
-        end
-    else
-        _unsupported_append_encode_type()
-    end
-end
-
-simple_rawview(a::AbstractArray{X}) where {T, X<:Normed{T}} = reinterpret(T, a)
-
-transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Normed}, args...) =
-    transfer_img_buf_to_frame!(frame, pix_fmt, simple_rawview(img), args...)
-
-transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{<:Gray}, args...) =
-    transfer_img_buf_to_frame!(frame, pix_fmt, channelview(img), args...)
-
-function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N0f8}})
-    pix_fmt == AV_PIX_FMT_YUV420P || _unsupported_append_encode_type()
-    width = frame.width
-    height = frame.height
-    lss = frame.linesize
-    fdata = frame.data
-    @inbounds for r = 1:height
-        line_offset = (r-1)*lss[1]
-        for c = 1:width
-            px_luma = convert(YCbCr, img[c, r]).y
-            unsafe_store!(fdata[1], round(UInt8, px_luma), line_offset+c)
-        end
-    end
-    img_half = restrict(img)
-    @inbounds for r = 1:div(height, 2)
-        line_offset_cb = (r-1)*lss[2]
-        line_offset_cr = (r-1)*lss[3]
-        for c = 1:div(width, 2)
-            px_ycbcr = convert(YCbCr, img_half[c, r])
-            unsafe_store!(fdata[2], round(UInt8, px_ycbcr.cb), line_offset_cb+c)
-            unsafe_store!(fdata[3], round(UInt8, px_ycbcr.cr), line_offset_cr+c)
-        end
-    end
-end
-
-
-function transfer_img_buf_to_frame!(frame, pix_fmt,
-                                    img::AbstractMatrix{RGB{N0f8}}, scanline_major)
-    if pix_fmt == AV_PIX_FMT_RGB24
-        width = frame.width
-        height = frame.height
-        lss = frame.linesize
-        fdata = frame.data
-        nbyte_per_pixel = 3
-        if scanline_major
-            data_p = fdata[1]
-            @preserve frame transfer_img_bytes_to_frame_plane!(data_p, img,
-                                                                  width, height,
-                                                                  lss[1],
-                                                                  bytes_per_pixel)
-        else
-            @inbounds for h in 1:height
-                line_offset = (h - 1) * lss[1]
-                for w in 1:width
-                    px_offset = line_offset + (w - 1) * nbyte_per_pixel + 1
-                    unsafe_store!(fdata[1], reinterpret(img[h, w].r), px_offset)
-                    unsafe_store!(fdata[1], reinterpret(img[h, w].g), px_offset + 1)
-                    unsafe_store!(fdata[1], reinterpret(img[h, w].b), px_offset + 2)
-                end
-            end
-        end
-    elseif pix_fmt == AV_PIX_FMT_YUV420P
-        if scanline_major
-            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img)
-        else
-            img_sl_col_mat = make_into_sl_col_mat(img)
-            transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img_sl_col_mat)
-        end
-    else
-        _unsupported_append_encode_type()
-    end
-end
-
-# convert from bt601 to bt709/bt2020 colorspace by multiplying by four
-@inline bt601_to_bt709_codepoint(x) = round(UInt16, 4 * x)
-
-function convert_store_bt601_codepoint!(data, x, line_offset, bytes_per_sample, c)
-    px_cp = bt601_to_bt709_codepoint(x)
-    px_offset = line_offset + bytes_per_sample * (c - 1) + 1
-    store_uint16_in_10le_frame!(data, px_cp, px_offset)
-end
-
-function transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10}})
-    pix_fmt == AV_PIX_FMT_YUV420P10LE || _unsupported_append_encode_type()
-    bytes_per_sample = 2
-    # Luma
-    fdata = frame.data
-    linesize_y = frame.linesize[1]
-    width = frame.width
-    height = frame.height
-    for r in 1:height
-        line_offset = (r - 1) * linesize_y
-        for c in 1:width
-            px_luma_601 = convert(YCbCr, img[c, r]).y
-            convert_store_bt601_codepoint!(fdata[1], px_luma_601,
-                                           line_offset, bytes_per_sample, c)
-        end
-    end
-    # Chroma
-    img_half = restrict(img) # For 4:2:0 chroma downsampling, lossy
-    half_width = div(width, 2)
-    linesize_cb = frame.linesize[2]
-    linesize_cr = frame.linesize[3]
-    @inbounds for r in 1:div(height, 2)
-        line_offset_cb = (r - 1) * linesize_cb
-        line_offset_cr = (r - 1) * linesize_cr
-        for c in 1:half_width
-            px_ycbcr = convert(YCbCr, img_half[c, r])
-            convert_store_bt601_codepoint!(fdata[2], px_ycbcr.cb,
-                                           line_offset_cb, bytes_per_sample, c)
-            convert_store_bt601_codepoint!(fdata[3], px_ycbcr.cr,
-                                           line_offset_cr, bytes_per_sample, c)
-        end
-    end
-end
-
-function transfer_img_buf_to_frame!(frame, pix_fmt, img::AbstractArray{RGB{N6f10}}, scanline_major)
-    if scanline_major
-        transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img)
-    else
-        img_sl_col_mat = img_sl_col_mat = make_into_sl_col_mat(img)
-        transfer_sl_col_img_buf_to_frame!(frame, pix_fmt, img_sl_col_mat)
-    end
-end
-
-# Fallback
-transfer_img_buf_to_frame!(frame, pix_fmt, img) = _unsuported_append_encode_type()
 
 """
     appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
@@ -555,23 +348,16 @@ Send image object to ffmpeg encoder and encode. The rows of `img` must span the
 vertical axis of the image, and the columns must span the horizontal axis.
 """
 function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
-    ret = av_frame_make_writable(encoder.frame)
-    ret < 0 && error("av_frame_make_writable() error")
-
-    transfer_img_buf_to_frame!(encoder.frame, encoder.pix_fmt, img,
-                               encoder.scanline_major)
-    encoder.frame.pts = index
+    prepare_video_frame!(encoder, img, index)
     encode!(encoder, io)
 end
+
+execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
 
 
 # Indices should start from zero
 function append_encode_mux!(writer, img, index)
-    ret = av_frame_make_writable(writer.frame)
-    ret < 0 && error("av_frame_make_writable() error")
-    writer.frame.pts = index
-    transfer_img_buf_to_frame!(writer.frame, writer.frame.format, img,
-                               writer.scanline_major)
+    prepare_video_frame!(writer, img, index)
     encode_mux!(writer)
 end
 
@@ -590,7 +376,10 @@ startencode!(io::IO) = write(io, 0x000001b3)
 ffmpeg_framerate_string(fr::Real) = string(fr)
 ffmpeg_framerate_string(fr::String) = fr
 ffmpeg_framerate_string(fr::Rational) = "$(numerator(fr))/$(denominator(fr))"
-ffmpeg_framerate_string(fr) = error("Framerate type not valid. Mux framerate should be a subtype of Real (Integer, Float64, Rational etc.), or String")
+ffmpeg_framerate_string(fr) = error("""
+Framerate type not valid. Mux framerate should be a subtype of Real
+(Integer, Float64, Rational etc.), or String
+""")
 
 """
     mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
@@ -638,47 +427,160 @@ function close_video_out!(writer::VideoWriter)
     # Free allocated memory through finalizers
     writer.format_context = AVFormatContextPtr(C_NULL)
     writer.codec_context = AVCodecContextPtr(C_NULL)
-    writer.frame = AVFramePtr(C_NULL)
+    writer.frame_graph = null_graph(writer.frame_graph)
     writer.packet = AVPacketPtr(C_NULL)
     writer.stream_index0 = -1
     writer
 end
 
-function open_video_out!(filename::AbstractString, ::Type{T},
-                         sz::NTuple{2, Integer};
-                         codec_name::Union{AbstractString, Nothing} = "libx264",
-                         framerate::Real = 24,
-                         scanline_major::Bool = false,
-                         container_settings::SettingsT = (;),
-                         container_private_settings::SettingsT = (;),
-                         encoder_settings::SettingsT = (;),
-                         encoder_private_settings::SettingsT = (;)) where T
+function get_array_from_avarray(ptr::Union{Ptr{T}, Ref{T}, NestedCStruct{T}},
+                                term; make_copy = true) where T
+    check_ptr_valid(ptr, false) || return Vector{T}()
+    i = 1
+    el = ptr[i]
+    while el != term
+        i += 1
+        el = ptr[i]
+    end
+    len = i - 1
+    if make_copy
+        dst = Vector{T}(undef, len)
+        unsafe_copyto!(dst, ptr, len)
+    else
+        dst = unsafe_wrap(Array, ptr, len)
+    end
+    dst
+end
+
+function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt,
+                                        codec, loss_mask = 0)
+    if target_pix_fmt === nothing
+        @preserve codec begin
+            encoding_pix_fmt, losses = _vio_determine_best_pix_fmt(
+                transfer_pix_fmt, codec.pix_fmts; loss_mask = loss_mask
+            )
+        end
+    else
+        @preserve codec begin
+            codec_pix_fmts = get_array_from_avarray(codec.pix_fmts,
+                                                    AV_PIX_FMT_NONE;
+                                                    make_copy = false)
+            target_pix_fmt in codec_pix_fmts || throw(ArgumentError(
+                "Pixel format $target_pix_fmt not compatible with codec $codec_name"
+            ))
+        end
+        encoding_pix_fmt = target_pix_fmt
+    end
+    encoding_pix_fmt
+end
+
+function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
+                                     height, interp, transfer_colorspace_details,
+                                     dst_color_primaries, dst_color_trc,
+                                     dst_colorspace, dst_color_range,
+                                     use_vio_gray_transform;
+                                     sws_kwargs...)
+    if use_vio_gray_transform
+        frame_graph = GrayTransform()
+        set_basic_frame_properties!(frame_graph.srcframe, width, height,
+                                    transfer_pix_fmt)
+        bit_depth, padded_bits_per_pixel =
+            pix_fmt_to_bits_per_pixel(encoding_pix_fmt)
+        frame_graph.src_depth = frame_graph.dst_depth = bit_depth
+        frame_graph.srcframe.color_range =
+            transfer_colorspace_details.color_range
+    elseif transfer_pix_fmt == encoding_pix_fmt
+        frame_graph = AVFramePtr()
+    else
+        frame_graph = SwsTransform(width, height, transfer_pix_fmt,
+                                   encoding_pix_fmt, interp)
+        inv_table = _vio_primaries_to_sws_table(
+            transfer_colorspace_details.color_primaries
+        )
+        table = _vio_primaries_to_sws_table(dst_color_primaries)
+
+        sws_update_color_details(frame_graph.sws_context; inv_table = inv_table,
+                                 src_range =
+                                 transfer_colorspace_details.color_range,
+                                 table = table, dst_range = dst_color_range,
+                                 sws_kwargs...)
+        set_basic_frame_properties!(frame_graph.srcframe, width, height,
+                                    transfer_pix_fmt)
+    end
+    dstframe = graph_output_frame(frame_graph)
+    dstframe.color_range = dst_color_range
+    dstframe.colorspace = dst_colorspace
+    dstframe.color_trc = dst_color_trc
+    dstframe.color_primaries = dst_color_primaries
+    set_basic_frame_properties!(dstframe, width, height, encoding_pix_fmt)
+    frame_graph
+end
+
+function maybe_configure_codec_context_colorspace_details!(codec_context,
+                                                     colorspace_details)
+    if codec_context.colorspace == AVCOL_SPC_UNSPECIFIED
+        codec_context.colorspace = colorspace_details.colorspace
+    end
+    if codec_context.color_primaries == AVCOL_PRI_UNSPECIFIED
+        codec_context.color_primaries = colorspace_details.color_primaries
+    end
+    if codec_context.color_trc == AVCOL_TRC_UNSPECIFIED
+        codec_context.color_trc = colorspace_details.color_trc
+    end
+    if codec_context.color_range == AVCOL_RANGE_UNSPECIFIED
+        codec_context.color_range = colorspace_details.color_range
+    end
+    nothing
+end
+
+function VideoWriter(filename::AbstractString, ::Type{T},
+                     sz::NTuple{2, Integer};
+                     codec_name::Union{AbstractString, Nothing} = "libx264",
+                     framerate::Real = 24,
+                     scanline_major::Bool = false,
+                     container_settings::SettingsT = (;),
+                     container_private_settings::SettingsT = (;),
+                     encoder_settings::SettingsT = (;),
+                     encoder_private_settings::SettingsT = (;),
+                     target_pix_fmt::Union{Nothing, Cint} = nothing,
+                     scale_interpolation = SWS_BILINEAR,
+                     pix_fmt_loss_mask = 0,
+                     input_colorspace_details = nothing,
+                     allow_vio_gray_transform = true,
+                     sws_kwargs...) where T
     framerate > 0 || error("Framerate must be strictly positive")
+    if ! is_eltype_transfer_supported(T)
+        throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
+    end
     if scanline_major
         width, height = sz
     else
         height, width = sz
     end
-    ((width % 2 !=0) || (height % 2 !=0)) && error("Encoding error: Image dims must be a multiple of two")
-    pix_fmt = _determine_pix_fmt(T, codec_name, encoder_settings)
+    if isodd(width) || isodd(height)
+        throw(ArgumentError("Encoding error: Image dims must be a multiple of two"))
+    end
+    transfer_pix_fmt = get_transfer_pix_fmt(T)
 
-    format_context = output_AVFormatContextPtr(filename)
+    if input_colorspace_details === nothing
+        transfer_colorspace_details = get(VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS,
+                                          transfer_pix_fmt,
+                                          VIO_DEFAULT_COLORSPACE_DETAILS)
+    else
+        transfer_colorspace_details = input_colorspace_details
+    end
 
     codec_p = avcodec_find_encoder_by_name(codec_name)
     check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
     codec = AVCodecPtr(codec_p)
 
-    check_ptr_valid(codec.pix_fmts, false) || error("Codec has no supported pixel formats")
-    pix_compatible = false
-    i = 1
-    this_pix = codec.pix_fmts[i]
-    while !pix_compatible &&  this_pix != -1
-        pix_compatible = this_pix == pix_fmt
-        i += 1
-        this_pix = codec.pix_fmts[i]
+    if ! check_ptr_valid(codec.pix_fmts, false)
+        error("Codec has no supported pixel formats")
     end
-    pix_compatible || error("Pixel format $pix_fmt not compatible with codec $codec_name")
-
+    encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
+                                                      transfer_pix_fmt, codec,
+                                                      pix_fmt_loss_mask)
+    format_context = output_AVFormatContextPtr(filename)
     ret = avformat_query_codec(format_context.oformat, codec.id,
                                AVCodecs.FF_COMPLIANCE_NORMAL)
     ret == 1 || error("Format not compatible with codec $codec_name")
@@ -690,7 +592,7 @@ function open_video_out!(filename::AbstractString, ::Type{T},
     target_timebase = 1/framerate_rat
     codec_context.time_base = target_timebase
     codec_context.framerate = framerate_rat
-    codec_context.pix_fmt = pix_fmt
+    codec_context.pix_fmt = encoding_pix_fmt
 
     if format_context.oformat.flags & AVFMT_GLOBALHEADER != 0
         codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
@@ -706,9 +608,9 @@ function open_video_out!(filename::AbstractString, ::Type{T},
     set_class_options(codec_context.priv_data; encoder_private_settings...)
 
     sigatomic_begin()
-    lock(VIDEOIO_LOCK)
+    lock(VIO_LOCK)
     ret = avcodec_open2(codec_context, codec, C_NULL)
-    unlock(VIDEOIO_LOCK)
+    unlock(VIO_LOCK)
     sigatomic_end()
     ret < 0 && error("Could not open codec: Return code $(ret)")
 
@@ -730,23 +632,34 @@ function open_video_out!(filename::AbstractString, ::Type{T},
     avformat_write_header(format_context, C_NULL)
     ret < 0 && error("Could not write header")
 
-    frame = AVFramePtr()
-    frame.format = pix_fmt
-    frame.width = width
-    frame.height = height
-    # frame.color_range = color_range == 1 ? AVCOL_RANGE_MPEG : AVCOL_RANGE_JPEG
-
-    ret = av_frame_get_buffer(frame, 0)
-    ret < 0 && error("Could not allocate the video frame data")
-
+    use_vio_gray_transform = transfer_pix_fmt == encoding_pix_fmt &&
+        allow_vio_gray_transform && transfer_pix_fmt in VIO_GRAY_SCALE_TYPES &&
+        transfer_colorspace_details.color_range != codec_context.color_range
+    if ! use_vio_gray_transform && transfer_pix_fmt == encoding_pix_fmt
+        maybe_configure_codec_context_colorspace_details!(
+            codec_context, transfer_colorspace_details
+        )
+    end
+    frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
+                                              encoding_pix_fmt, width, height,
+                                              scale_interpolation,
+                                              transfer_colorspace_details,
+                                              codec_context.color_primaries,
+                                              codec_context.color_trc,
+                                              codec_context.colorspace,
+                                              codec_context.color_range,
+                                              use_vio_gray_transform;
+                                              sws_kwargs...)
     packet = AVPacketPtr()
 
-    VideoWriter(format_context, codec_context, frame, packet, stream_index0,
-                scanline_major)
+    VideoWriter(format_context, codec_context, frame_graph, packet,
+                Int(stream_index0), scanline_major)
 end
 
-open_video_out!(filename, img::AbstractMatrix{T}; kwargs...) where T =
-    open_video_out!(filename, img_params(img)...; kwargs...)
+VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where T =
+    VideoWriter(filename, img_params(img)...; kwargs...)
+
+open_video_out(args...; kwargs...) = VideoWriter(args...; kwargs...)
 
 img_params(img::AbstractMatrix{T}) where T = (T, size(img))
 
@@ -795,7 +708,7 @@ Encode image stack to video file and return filepath. The rows of each image in
 the horizontal axis.
 """
 function encode_mux_video(filename::String, imgstack; kwargs...)
-    writer = open_video_out!(filename, first(imgstack); kwargs...)
+    writer = open_video_out(filename, first(imgstack); kwargs...)
     for (i, img) in enumerate(imgstack)
         append_encode_mux!(writer, img, i - 1)
     end

@@ -64,6 +64,16 @@ end
     @preserve ap unsafe_wrap(T, p, i)
 end
 
+@inline function unsafe_copyto!(dest::Ptr{T}, src::NestedCStruct{S}, N) where {S, T}
+    p = unsafe_convert(Ptr{S}, src)
+    @preserve src unsafe_copyto!(dest, p, N)
+end
+
+@inline function unsafe_copyto!(dest::NestedCStruct{S}, src::Ptr{T}, N) where {S, T}
+    p = unsafe_convert(Ptr{S}, dest)
+    @preserve dest unsafe_copyto!(p, src, N)
+end
+
 @inline function field_ptr(::Type{S}, a::NestedCStruct{T}, field::Symbol,
                            args...) where {S, T}
     p = unsafe_convert(Ptr{T}, a)
@@ -149,12 +159,19 @@ AVCodecContextPtr(codec::AVCodecPtr) = AVCodecContextPtr(unsafe_convert(Ptr{AVCo
 
 @avptr SwsContextPtr SwsContext
 
-function SwsContextPtr(width, height, pix_fmt, target_format,
-                       transcode_interpolation)
-    p = sws_getContext(width, height, pix_fmt, width, height, target_format,
-                       transcode_interpolation, C_NULL, C_NULL, C_NULL)
+function SwsContextPtr(src_width, src_height, src_pix_fmt, dst_width,
+                       dst_height, dst_pix_fmt, transcode_interpolation)
+    p = sws_getContext(src_width, src_height, src_pix_fmt, dst_width,
+                       dst_height, dst_pix_fmt, transcode_interpolation, C_NULL,
+                       C_NULL, C_NULL)
     check_ptr_valid(p) || error("Could not allocate SwsContext")
     obj = SwsContextPtr(p)
     finalizer(sws_freeContext, obj)
     return obj
 end
+
+SwsContextPtr(src_width, src_height, src_pix_fmt, dst_pix_fmt,
+              transcode_interpolation) = SwsContextPtr(src_width, src_height,
+                                                       src_pix_fmt, src_width,
+                                                       src_height, dst_pix_fmt,
+                                                       transcode_interpolation)
