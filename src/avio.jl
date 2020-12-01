@@ -352,7 +352,7 @@ function stash_source_planes!(imgbuf, r::VideoReader, align = VIDEOIO_ALIGN)
     frame = r.srcframe
     av_image_copy_to_buffer(imgbuf, length(imgbuf), Ref(frame.data),
                             Ref(frame.linesize), r.format, r.width, r.height,
-                            VIDEOIO_ALIGN)
+                            align)
     return imgbuf
 end
 
