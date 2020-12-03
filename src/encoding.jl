@@ -225,11 +225,11 @@ function mux(srcfilename, destfilename, framerate; silent=false, deletestream=tr
     filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
     if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
         deletestream && rm("$srcfilename")
-        !silent && (@info "Video file saved: $(pwd())/$destfilename")
+        !silent && (@info "Video file saved: $destfilename")
         !silent && (@info muxout[end-1])
         !silent && (@info muxout[end])
     else
-        @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
+        @warn "Stream Muxing may have failed: $srcfilename into $destfilename"
         println.(muxout)
     end
 end
