@@ -257,7 +257,7 @@ end
             @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
                 img_stack = map(x -> rand(el, 100, 100), 1 : n)
                 lossless = el <: Gray
-                crf = lossless ? 0 : 20
+                crf = lossless ? 0 : 23
                 encoder_private_settings = (crf = crf, preset = "medium")
                 VideoIO.encode_mux_video(testvid,
                                          img_stack;
