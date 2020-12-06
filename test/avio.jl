@@ -1,12 +1,12 @@
 using Test
-using ColorTypes: RGB, Gray, N0f8
+using ColorTypes: RGB, Gray, N0f8, red, green, blue
 import ColorVectorSpace
 using FileIO, ImageCore, Dates, Statistics
 using Statistics, StatsBase
 
-import VideoIO
+import FFMPEG
 
-createmode = false
+import VideoIO
 
 testdir = dirname(@__FILE__)
 videodir = joinpath(testdir, "..", "videos")
@@ -24,12 +24,24 @@ isarm() = Base.Sys.ARCH in (:arm,:arm32,:arm7l,:armv7l,:arm8l,:armv8l,:aarch64,:
     all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
 end
 
+function compare_colors(a::RGB, b::RGB, tol)
+    ok = true
+    for f in (red, green, blue)
+        ok &= abs(float(f(a)) - float(f(b))) <= tol
+    end
+    ok
+end
+
 # Helper functions
-function test_compare_frames(test_frame, ref_frame)
+function test_compare_frames(test_frame, ref_frame, tol = 0.05)
     if isarm()
         @test_skip test_frame == ref_frame
     else
-        @test test_frame == ref_frame
+        frames_similar = true
+        for (a, b) in zip(test_frame, ref_frame)
+            frames_similar &= compare_colors(a, b, tol)
+        end
+        @test frames_similar
     end
 end
 
@@ -42,37 +54,52 @@ function get_first_frame!(img, v)
     end
 end
 
+function make_comparison_frame_png(vidpath::AbstractString, frameno::Integer,
+                                   writedir = tempdir())
+    vid_basename = first(splitext(basename(vidpath)))
+    png_name = joinpath(writedir, "$(vid_basename)_$(frameno).png")
+    FFMPEG.exe(`-y -v error -i $(vidpath) -vf "select=eq(n\,$(frameno-1))" -vframes 1 $(png_name)`)
+    png_name
+end
+
+function make_comparison_frame_png(f, args...)
+    png_name = make_comparison_frame_png(args...)
+    try
+        f(png_name)
+    finally
+        rm(png_name, force = true)
+    end
+end
+
 include("avptr.jl")
 
+const required_accuracy = 0.07
 @testset "Reading of various example file formats" begin
-    for name in VideoIO.TestVideos.names()
-        @testset "Reading $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            !createmode && (first_frame = load(first_frame_file))
+    for testvid in values(VideoIO.TestVideos.videofiles)
+        name = testvid.name
+        test_frameno = testvid.testframe
+        @testset "Reading $(testvid.name)" begin
+            testvid_path = joinpath(@__DIR__, "../videos", name)
+            first_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
 
-            f = VideoIO.testvideo(name)
+            f = VideoIO.testvideo(testvid_path)
             v = VideoIO.openvideo(f)
 
             time_seconds = VideoIO.gettime(v)
             @test time_seconds == 0
             width, height = VideoIO.out_frame_size(v)
-            if !createmode && (size(first_frame, 1) > height)
+            if size(first_frame, 1) > height
                 first_frame = first_frame[1+size(first_frame,1)-height:end,:]
             end
 
             # Find the first non-trivial image
             img = read(v)
             i=1
-            while isblank(img)
+            while i < test_frameno
                 read!(v, img)
                 i += 1
             end
-            # println("$name vs. $first_frame_file - First non-blank frame: $i") # for debugging
-            if createmode
-                save(first_frame_file,img)
-            else
-                test_compare_frames(img, first_frame)
-            end
+            test_compare_frames(img, first_frame, required_accuracy)
 
             for i in 1:50
                 read!(v,img)
@@ -91,7 +118,7 @@ include("avptr.jl")
 
             # read first frames again, and compare
             get_first_frame!(img, v)
-            createmode || test_compare_frames(img, first_frame)
+            test_compare_frames(img, first_frame, required_accuracy)
 
             # make sure read! works with both PermutedDimsArray and Array
             # The above tests already use read! for PermutedDimsArray, so just test the type of img
@@ -106,7 +133,7 @@ include("avptr.jl")
             # Then get the first frame, which uses read!
             get_first_frame!(img_p, v)
             # Finally compare the result to make sure it's right
-            createmode || test_compare_frames(img, first_frame)
+            test_compare_frames(img, first_frame, required_accuracy)
 
             # Skipping & frame counting
             VideoIO.seekstart(v)
@@ -120,30 +147,29 @@ include("avptr.jl")
 end
 
 @testset "IO reading of various example file formats" begin
-    for name in VideoIO.TestVideos.names()
+    for testvid in values(VideoIO.TestVideos.videofiles)
+        name = testvid.name
+        test_frameno = testvid.testframe
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            first_frame_file = joinpath(testdir, swapext(name, ".png"))
-            first_frame = load(first_frame_file)
+            testvid_path = joinpath(@__DIR__, "../videos", name)
+            first_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
 
             filename = joinpath(videodir, name)
             v = VideoIO.openvideo(VideoIO.open(filename))
 
-            if size(first_frame, 1) > v.height
-                first_frame = first_frame[1+size(first_frame,1)-v.height:end,:]
+            width, height = VideoIO.out_frame_size(v)
+            if size(first_frame, 1) > height
+                first_frame = first_frame[1+size(first_frame,1)-height:end,:]
             end
             img = read(v)
-            # Find the first non-trivial image
-            while isblank(img)
+            i=1
+            while i < test_frameno
                 read!(v, img)
+                i += 1
             end
-
-            if isarm()
-                @test_skip img == first_frame
-            else
-                @test img == first_frame
-            end
+            test_compare_frames(img, first_frame, required_accuracy)
             while !eof(v)
                 read!(v, img)
             end
@@ -243,7 +269,7 @@ end
                                          scanline_major = scanline_arg)
                 @test stat(testvid).size > 100
                 f = VideoIO.openvideo(testvid, target_format =
-                                      VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU[el])
+                                      VideoIO.get_transfer_pix_fmt(el))
                 if lossless
                     notempty = !eof(f)
                     @test notempty

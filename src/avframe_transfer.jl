@@ -336,7 +336,7 @@ function transfer_img_buf_to_frame!(frame, img::AbstractMatrix{RGB{N0f8}},
                 line_offset = (h - 1) * lss[1]
                 @simd for w in 1:width
                     px = img[h, w]
-                    px_offset = line_offset + (w - 1) * nbyte_per_pixel + 1
+                    px_offset = line_offset + (w - 1) * bytes_per_pixel + 1
                     unsafe_store!(fdata[1], reinterpret(px.r), px_offset)
                     unsafe_store!(fdata[1], reinterpret(px.g), px_offset + 1)
                     unsafe_store!(fdata[1], reinterpret(px.b), px_offset + 2)

@@ -2,10 +2,6 @@ export encodevideo, encode!, prepareencoder, appendencode!, startencode!,
     finishencode!, mux, open_video_out, encode_mux!, append_encode_mux!,
     close_video_out!, encode_mux_video
 
-const SettingsT = Union{AbstractDict{Symbol, <:Any},
-                        AbstractDict{Union{}, Union{}},
-                        NamedTuple}
-
 
 # A struct collecting encoder objects for easy passing
 mutable struct VideoEncoder{T<:GraphType}
@@ -39,7 +35,7 @@ Encode frame in memory
 """
 function encode!(encoder::VideoEncoder, io::IO; flush=false)
     av_init_packet(encoder.packet)
-    frame = graph_output_frame(writer)
+    frame = graph_output_frame(encoder)
     if flush
         fret = avcodec_send_frame(encoder.codec_context, C_NULL)
     else
@@ -248,7 +244,10 @@ function VideoEncoder(firstimg; framerate=30,
                       scanline_major::Bool = false,
                       target_pix_fmt::Union{Nothing, Cint} = nothing,
                       pix_fmt_loss_mask = 0,
+                      scale_interpolation = SWS_BILINEAR,
+                      allow_vio_gray_transform = true,
                       input_colorspace_details = nothing,
+                      swscale_settings::SettingsT = (;),
                       sws_kwargs...)
     if scanline_major
         width, height = size(firstimg)
@@ -271,8 +270,9 @@ function VideoEncoder(firstimg; framerate=30,
     end
     framerate_rat = Rational(framerate)
 
-    codec = avcodec_find_encoder_by_name(codec_name)
-    check_ptr_valid(codec, false) || error("Codec '$codec_name' not found")
+    codec_p = avcodec_find_encoder_by_name(codec_name)
+    check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
+    codec = AVCodecPtr(codec_p)
 
     encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
                                                       transfer_pix_fmt, codec,
@@ -304,20 +304,26 @@ function VideoEncoder(firstimg; framerate=30,
     sigatomic_end()
     ret < 0 && error("Could not open codec: Return code $(ret)")
 
-    if transfer_pix_fmt == encoding_pix_fmt
-        maybe_configure_codec_context_colorspace_details!(codec_context,
-                                                          transfer_colorspace_details)
+    use_vio_gray_transform = transfer_pix_fmt == encoding_pix_fmt &&
+        allow_vio_gray_transform && transfer_pix_fmt in VIO_GRAY_SCALE_TYPES &&
+        transfer_colorspace_details.color_range != codec_context.color_range
+    if ! use_vio_gray_transform && transfer_pix_fmt == encoding_pix_fmt
+        maybe_configure_codec_context_colorspace_details!(
+            codec_context, transfer_colorspace_details
+        )
     end
+
     frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
                                               encoding_pix_fmt, width, height,
                                               scale_interpolation,
+                                              transfer_colorspace_details,
                                               codec_context.color_primaries,
                                               codec_context.color_trc,
                                               codec_context.colorspace,
-                                              codec_context.color_range;
+                                              codec_context.color_range,
+                                              use_vio_gray_transform,
+                                              swscale_settings;
                                               sws_kwargs...)
-    ret = av_frame_get_buffer(frame, 0)
-    ret < 0 && error("Could not allocate the video frame data")
 
     packet = AVPacketPtr()
     return VideoEncoder(codec_name, codec_context, -1, frame_graph,
@@ -353,7 +359,7 @@ function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
 end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
-
+execute_graph!(encoder::VideoEncoder) = exec!(encoder.frame_graph)
 
 # Indices should start from zero
 function append_encode_mux!(writer, img, index)
@@ -399,11 +405,6 @@ function mux(srcfilename, destfilename, framerate; silent=false, deletestream=tr
         @warn "Stream Muxing may have failed: $(pwd())/$srcfilename into $(pwd())/$destfilename"
         println.(muxout)
     end
-end
-
-@inline function set_class_option(ptr::NestedCStruct{T}, key, val) where T
-    ret = av_opt_set(ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)
-    ret < 0 && error("Could not set class option $key to $val: got error $ret")
 end
 
 function set_class_options(ptr; kwargs...)
@@ -478,7 +479,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                      height, interp, transfer_colorspace_details,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
-                                     use_vio_gray_transform;
+                                     use_vio_gray_transform, swscale_settings;
                                      sws_kwargs...)
     if use_vio_gray_transform
         frame_graph = GrayTransform()
@@ -504,6 +505,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                  transfer_colorspace_details.color_range,
                                  table = table, dst_range = dst_color_range,
                                  sws_kwargs...)
+        set_class_options(frame_graph.sws_context; swscale_settings...)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)
     end
@@ -542,6 +544,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      container_private_settings::SettingsT = (;),
                      encoder_settings::SettingsT = (;),
                      encoder_private_settings::SettingsT = (;),
+                     swscale_settings::SettingsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
                      scale_interpolation = SWS_BILINEAR,
                      pix_fmt_loss_mask = 0,
@@ -648,7 +651,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                                               codec_context.color_trc,
                                               codec_context.colorspace,
                                               codec_context.color_range,
-                                              use_vio_gray_transform;
+                                              use_vio_gray_transform,
+                                              swscale_settings;
                                               sws_kwargs...)
     packet = AVPacketPtr()
 

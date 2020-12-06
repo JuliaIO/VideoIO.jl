@@ -1,4 +1,7 @@
 # Utilities for working with pointers to nested C structs
+const SettingsT = Union{AbstractDict{Symbol, <:Any},
+                        AbstractDict{Union{}, Union{}},
+                        NamedTuple}
 
 """
     mutable struct NestedCStruct{T}
@@ -175,3 +178,8 @@ SwsContextPtr(src_width, src_height, src_pix_fmt, dst_pix_fmt,
                                                        src_pix_fmt, src_width,
                                                        src_height, dst_pix_fmt,
                                                        transcode_interpolation)
+
+@inline function set_class_option(ptr::NestedCStruct{T}, key, val) where T
+    ret = av_opt_set(ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)
+    ret < 0 && error("Could not set class option $key to $val: got error $ret")
+end

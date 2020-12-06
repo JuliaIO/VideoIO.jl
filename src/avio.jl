@@ -226,6 +226,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      pix_fmt_loss_mask = 0,
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
+                     swscale_settings::SettingsT = (;),
                      sws_kwargs...) where I
     bad_px_type = transcode && target_format !== nothing &&
         !is_pixel_type_supported(target_format)
@@ -303,7 +304,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                                  table = table,
                                  dst_range = colorspace_details.color_range,
                                  sws_kwargs...)
-
+        set_class_options(frame_graph.sws_context; swscale_settings...)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
     end
