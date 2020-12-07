@@ -73,6 +73,8 @@ end
 
 include("avptr.jl")
 
+testvidpath = "testvideo.mp4"
+
 const required_accuracy = 0.07
 @testset "Reading of various example file formats" begin
     for testvid in values(VideoIO.TestVideos.videofiles)
@@ -232,27 +234,24 @@ end
 
 
 @testset "Encoding video across all supported colortypes" begin
-    testvid = "testvideo.mp4"
     for el in [UInt8, RGB{N0f8}]
         @testset "Encoding $el imagestack" begin
             n = 100
             imgstack = map(x->rand(el,100,100),1:n)
             props = [:priv_data => ("crf"=>"23", "preset"=>"medium")]
-            VideoIO.encodevideo(testvid, imgstack,
+            VideoIO.encodevideo(testvidpath, imgstack,
                                                    framerate=30,
                                                    AVCodecContextProperties=props,
                                                    silent=true)
-            @test stat(encodedvideopath).size > 100
-            f = VideoIO.openvideo(encodedvideopath)
+            @test stat(testvidpath).size > 100
+            f = VideoIO.openvideo(testvidpath)
             @test_broken VideoIO.counttotalframes(f) == n # missing frames due to edit list bug?
             close(f)
         end
     end
-    rm(testvid)
 end
 
 @testset "Simultaneous encoding and muxing" begin
-    testvid = "testvideo.mp4"
     n = 100
     encoder_settings = (color_range = 2,)
     container_private_settings = (movflags = "+write_colr",)
@@ -263,7 +262,7 @@ end
                 lossless = el <: Gray
                 crf = lossless ? 0 : 23
                 encoder_private_settings = (crf = crf, preset = "medium")
-                VideoIO.encode_mux_video(testvid,
+                VideoIO.encode_mux_video(testvidpath,
                                          img_stack;
                                          encoder_private_settings =
                                          encoder_private_settings,
@@ -271,8 +270,8 @@ end
                                          container_private_settings =
                                          container_private_settings,
                                          scanline_major = scanline_arg)
-                @test stat(testvid).size > 100
-                f = VideoIO.openvideo(testvid, target_format =
+                @test stat(testvidpath).size > 100
+                f = VideoIO.openvideo(testvidpath, target_format =
                                       VideoIO.get_transfer_pix_fmt(el))
                 if lossless
                     notempty = !eof(f)
@@ -301,7 +300,6 @@ end
                     @test VideoIO.counttotalframes(f) == n
                 end
                 close(f)
-                rm(testvid)
             end
         end
     end
@@ -314,16 +312,14 @@ end
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
         props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-        encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,
-                                               framerate=fr,
-                                               AVCodecContextProperties=props,
-                                               silent=true)
-        @test stat(encodedvideopath).size > 100
-        measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(encodedvideopath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
+        VideoIO.encodevideo(testvidpath, imgstack, framerate=fr,
+                            AVCodecContextProperties = props, silent=true)
+        @test stat(testvidpath).size > 100
+        measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(testvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
         @test parse(Float64, measured_dur_str[1]) == target_dur
-        rm(encodedvideopath)
     end
 end
+
 @testset "Encoding video with float frame rates" begin
     n = 100
     fr = 29.5 # 59 // 2
@@ -331,14 +327,13 @@ end
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
         props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-        encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,
+        VideoIO.encodevideo(testvidpath,imgstack,
                                                framerate=fr,
                                                AVCodecContextProperties=props,
                                                silent=true)
-        @test stat(encodedvideopath).size > 100
-        measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(encodedvideopath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
+        @test stat(testvidpath).size > 100
+        measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(testvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
         @test parse(Float64, measured_dur_str[1]) == target_dur
-        rm(encodedvideopath)
     end
 end
 
@@ -452,6 +447,8 @@ end
         end
     end
 end
+
+rm(testvidpath, force = true)
 
 @testset "c api memory leak test" begin # Issue https://github.com/JuliaIO/VideoIO.jl/issues/246
 
