@@ -232,19 +232,23 @@ end
 
 
 @testset "Encoding video across all supported colortypes" begin
+    testvid = "testvideo.mp4"
     for el in [UInt8, RGB{N0f8}]
         @testset "Encoding $el imagestack" begin
             n = 100
             imgstack = map(x->rand(el,100,100),1:n)
-            props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-            encodedvideopath = VideoIO.encodevideo("testvideo.mp4",imgstack,framerate=30,AVCodecContextProperties=props, silent=true)
+            props = [:priv_data => ("crf"=>"23", "preset"=>"medium")]
+            VideoIO.encodevideo(testvid, imgstack,
+                                                   framerate=30,
+                                                   AVCodecContextProperties=props,
+                                                   silent=true)
             @test stat(encodedvideopath).size > 100
             f = VideoIO.openvideo(encodedvideopath)
             @test_broken VideoIO.counttotalframes(f) == n # missing frames due to edit list bug?
             close(f)
-            rm(encodedvideopath)
         end
     end
+    rm(testvid)
 end
 
 @testset "Simultaneous encoding and muxing" begin
