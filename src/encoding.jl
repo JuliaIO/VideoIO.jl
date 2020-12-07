@@ -680,14 +680,14 @@ the horizontal axis.
 function encodevideo(filename::String,imgstack::Array;
                      AVCodecContextProperties = AVCodecContextPropertiesDefault,
                      codec_name = "libx264", framerate = 24, silent=false,
-                     scanline_major = false)
+                     scanline_major = false, kwargs...)
 
     io = Base.open("temp.stream","w")
     startencode!(io)
-    encoder = prepareencoder(imgstack[1], codec_name = codec_name,
+    encoder = prepareencoder(imgstack[1]; codec_name = codec_name,
                              framerate = framerate,
                              AVCodecContextProperties = AVCodecContextProperties,
-                             scanline_major = scanline_major)
+                             scanline_major = scanline_major, kwargs...)
     if !silent
         p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
     end
