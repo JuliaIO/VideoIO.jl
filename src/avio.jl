@@ -522,7 +522,7 @@ in memory.
 read!(r::VideoReader, buf::AbstractArray{T}) where {T <: ReaderElTypes} =
     retrieve!(r, buf)
 
-read_raw!(r::VideoReader, buf, args...) = read_raw!(r, buf, args...)
+read_raw!(r::VideoReader, buf, args...) = retrieve_raw!(r, buf, args...)
 
 isopen(avin::AVInput{I}) where {I <: IO} = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
