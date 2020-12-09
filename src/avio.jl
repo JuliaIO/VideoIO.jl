@@ -1,8 +1,9 @@
 # AVIcodec_type
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
-export read, read!, pump, openvideo, opencamera, playvideo, viewcam, play, gettime
-export skipframe, skipframes, counttotalframes
+export read, read!, read_raw, read_raw!, pump, openvideo, opencamera,
+    playvideo, viewcam, play, gettime
+export skipframe, skipframes, counttotalframes, out_frame_size
 
 const ReaderBitTypes = Union{UInt8, UInt16}
 const ReaderNormedTypes = Normed{T} where T<: ReaderBitTypes
