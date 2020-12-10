@@ -489,6 +489,7 @@ retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{UInt8}, args...) =
 function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
     imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))
     retrieve_raw!(r, imgbuf, align)
+    imgbuf, align
 end
 
 retrieve(r::VideoReader{NO_TRANSCODE}, args...) = retrieve_raw(r, args...)
