@@ -448,12 +448,7 @@ function transfer_graph_output!(buf, r::VideoReader)
 end
 
 # Converts a grabbed frame to the correct format (RGB by default)
-function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
-                   ) where T <: ReaderElTypes
-    if !out_img_size_check(r, buf)
-        error("Buffer is the wrong size")
-    end
-
+function _retrieve!(r::VideoReader, buf)
     fill_graph_input!(r)
     execute_graph!(r)
     transfer_graph_output!(buf, r)
@@ -461,12 +456,24 @@ function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
     return buf
 end
 
-function retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
-    out_bytes_size_check(buf, r, align) || error("Buffer is the wrong size")
+function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
+                   ) where T <: ReaderElTypes
+    if !out_img_check(r, buf)
+        error("Buffer is the wrong size or element type")
+    end
+    _retrieve!(r, buf)
+end
+
+function _retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
     fill_graph_input!(r)
     stash_graph_input!(buf, r, align)
     remove_graph_input!(r)
     return buf
+end
+
+function retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
+    out_bytes_size_check(buf, r, align) || error("Buffer is the wrong size")
+    _retrieve_raw!(r, buf, align)
 end
 
 # Converts a grabbed frame to the correct format (RGB by default)
@@ -480,7 +487,7 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     width, height = out_frame_size(r)
     buf = PermutedDimsArray(Matrix{elt}(undef, width, height), (2, 1))
 
-    retrieve!(r, buf)
+    _retrieve!(r, buf)
 end
 
 retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{UInt8}, args...) =
@@ -539,9 +546,11 @@ out_frame_size(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_size(r.frame
 
 out_frame_format(r::VideoReader{<:Any, AVFramePtr}) = r.codec_context.pix_fmt
 out_frame_format(t::SwsTransform) = t.dstframe.format
+out_frame_format(t::GrayTransform) = t.dstframe.format
 out_frame_format(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_format(r.frame_graph)
+out_frame_format(r::VideoReader{TRANSCODE, GrayTransform}) = out_frame_format(r.frame_graph)
 
-out_img_size_check(r, buf) = size(buf) == out_frame_size(r)
+out_img_size_check(r, buf) = all(size(buf) .>= out_frame_size(r))
 out_img_size_check(r, buf::PermutedDimsArray) = out_img_size_check(r, parent(buf))
 
 out_img_eltype_check(::Type{T}, p) where T <: UInt8 = p == AV_PIX_FMT_GRAY8
@@ -551,7 +560,7 @@ out_img_eltype_check(::Type{X}, p) where {T, X <: Gray{T}} = out_img_eltype_chec
 out_img_eltype_check(::Type{T}, p) where T<:RGB{N0f8} = p == AV_PIX_FMT_RGB24
 out_img_eltype_check(::Type{T}, p) where T<:RGB{N6f10} = p == AV_PIX_FMT_GBRP10LE
 
-out_img_eltype_check(fmt::Integer, ::AbstractArray{T}) where T = out_img_eltype_check(T, r)
+out_img_eltype_check(fmt::Integer, ::AbstractArray{T}) where T = out_img_eltype_check(T, fmt)
 out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 
 out_img_check(r, buf) = out_img_size_check(r, buf) && out_img_eltype_check(r, buf)
