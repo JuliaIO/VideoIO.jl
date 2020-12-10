@@ -492,7 +492,8 @@ function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
     imgbuf, align
 end
 
-retrieve(r::VideoReader{NO_TRANSCODE}, args...) = retrieve_raw(r, args...)
+retrieve(r::VideoReader{NO_TRANSCODE}, align::Integer = 1) =
+    retrieve_raw(r, align)[1]
 
 # Utility functions
 
@@ -562,7 +563,7 @@ function out_bytes_size(fmt, width, height, align = VIO_ALIGN)
     sz
 end
 out_bytes_size(r, args...) =
-    out_bytes_size(out_frame_format(r), out_frame_size(r)..., args...)
+    out_bytes_size(r.codec_context.pix_fmt, out_frame_size(r)..., args...)
 
 out_bytes_size_check(buf, r, args...) = sizeof(buf) == out_bytes_size(r, args...)
 

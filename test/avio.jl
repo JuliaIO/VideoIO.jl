@@ -118,6 +118,19 @@ const required_accuracy = 0.07
 
             @test img == fiftieth_frame
 
+            seekstart(v)
+            buff, align = VideoIO.read_raw(v, 1)
+            @test align == 1
+            buff_bak = copy(buff)
+            seekstart(v)
+            VideoIO.read_raw!(v, buff, 1)
+            @test buff == buff_bak
+            v_raw = VideoIO.openvideo(testvid_path, transcode = false)
+            notranscode_buff = read(v_raw)
+            @test notranscode_buff == buff_bak
+
+
+
             # read first frames again, and compare
             get_first_frame!(img, v)
             test_compare_frames(img, first_frame, required_accuracy)
