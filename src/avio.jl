@@ -224,7 +224,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      transcode::Bool = true,
                      transcode_interpolation = SWS_BILINEAR,
                      target_format = nothing,
-                     pix_fmt_loss_mask = 0,
+                     pix_fmt_loss_flags = 0,
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
                      swscale_settings::SettingsT = (;),
@@ -263,7 +263,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
 
     if target_format === nothing # automatically determine format
         dst_pix_fmt, pix_fmt_loss = _vio_determine_best_pix_fmt(
-            codec_context.pix_fmt; loss_mask = pix_fmt_loss_mask
+            codec_context.pix_fmt; loss_flags = pix_fmt_loss_flags
         )
     else
         dst_pix_fmt = target_format

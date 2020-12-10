@@ -243,7 +243,7 @@ function VideoEncoder(firstimg; framerate=30,
                       codec_name::String = "libx264",
                       scanline_major::Bool = false,
                       target_pix_fmt::Union{Nothing, Cint} = nothing,
-                      pix_fmt_loss_mask = 0,
+                      pix_fmt_loss_flags = 0,
                       scale_interpolation = SWS_BILINEAR,
                       allow_vio_gray_transform = true,
                       input_colorspace_details = nothing,
@@ -276,7 +276,7 @@ function VideoEncoder(firstimg; framerate=30,
 
     encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
                                                       transfer_pix_fmt, codec,
-                                                      pix_fmt_loss_mask)
+                                                      pix_fmt_loss_flags)
 
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
@@ -454,11 +454,11 @@ function get_array_from_avarray(ptr::Union{Ptr{T}, Ref{T}, NestedCStruct{T}},
 end
 
 function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt,
-                                        codec, loss_mask = 0)
+                                        codec, loss_flags = 0)
     if target_pix_fmt === nothing
         @preserve codec begin
             encoding_pix_fmt, losses = _vio_determine_best_pix_fmt(
-                transfer_pix_fmt, codec.pix_fmts; loss_mask = loss_mask
+                transfer_pix_fmt, codec.pix_fmts; loss_flags = loss_flags
             )
         end
     else
@@ -547,7 +547,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      swscale_settings::SettingsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
                      scale_interpolation = SWS_BILINEAR,
-                     pix_fmt_loss_mask = 0,
+                     pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
                      sws_color_details::SettingsT = (;)) where T
@@ -582,7 +582,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     end
     encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
                                                       transfer_pix_fmt, codec,
-                                                      pix_fmt_loss_mask)
+                                                      pix_fmt_loss_flags)
     format_context = output_AVFormatContextPtr(filename)
     ret = avformat_query_codec(format_context.oformat, codec.id,
                                AVCodecs.FF_COMPLIANCE_NORMAL)

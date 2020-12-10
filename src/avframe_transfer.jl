@@ -44,8 +44,8 @@ const VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS =
 
 # avarray_dst_pix_fmts MUST be terminated properly, see `avcodec_find_best_pix_fmt_of_list`
 function _vio_determine_best_pix_fmt(src_pix_fmt, avarray_dst_pix_fmts =
-                                     VIO_SUPPORTED_PIX_FMTS_AVARRAY; loss_mask = 0)
-    loss_ptr = Ref{Cint}(loss_mask)
+                                     VIO_SUPPORTED_PIX_FMTS_AVARRAY; loss_flags = 0)
+    loss_ptr = Ref{Cint}(loss_flags)
     dst_pix_fmt = avcodec_find_best_pix_fmt_of_list(
         avarray_dst_pix_fmts, src_pix_fmt, 0, loss_ptr
     )
