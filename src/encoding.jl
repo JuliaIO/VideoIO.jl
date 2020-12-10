@@ -248,7 +248,7 @@ function VideoEncoder(firstimg; framerate=30,
                       allow_vio_gray_transform = true,
                       input_colorspace_details = nothing,
                       swscale_settings::SettingsT = (;),
-                      sws_kwargs...)
+                      sws_color_details::SettingsT = (;))
     if scanline_major
         width, height = size(firstimg)
     else
@@ -323,7 +323,7 @@ function VideoEncoder(firstimg; framerate=30,
                                               codec_context.color_range,
                                               use_vio_gray_transform,
                                               swscale_settings;
-                                              sws_kwargs...)
+                                              sws_color_details = sws_color_details)
 
     packet = AVPacketPtr()
     return VideoEncoder(codec_name, codec_context, -1, frame_graph,
@@ -480,7 +480,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
                                      use_vio_gray_transform, swscale_settings;
-                                     sws_kwargs...)
+                                     sws_color_details::SettingsT = (;))
     if use_vio_gray_transform
         frame_graph = GrayTransform()
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
@@ -504,7 +504,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                  src_range =
                                  transfer_colorspace_details.color_range,
                                  table = table, dst_range = dst_color_range,
-                                 sws_kwargs...)
+                                 sws_color_details...)
         set_class_options(frame_graph.sws_context; swscale_settings...)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)
@@ -550,7 +550,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      pix_fmt_loss_mask = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     sws_kwargs...) where T
+                     sws_color_details::SettingsT = (;)) where T
     framerate > 0 || error("Framerate must be strictly positive")
     if ! is_eltype_transfer_supported(T)
         throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
@@ -653,7 +653,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                                               codec_context.color_range,
                                               use_vio_gray_transform,
                                               swscale_settings;
-                                              sws_kwargs...)
+                                              sws_color_details =
+                                              sws_color_details)
     packet = AVPacketPtr()
 
     VideoWriter(format_context, codec_context, frame_graph, packet,

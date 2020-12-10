@@ -228,7 +228,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
                      swscale_settings::SettingsT = (;),
-                     sws_kwargs...) where I
+                     sws_color_details::SettingsT = (;)) where I
     bad_px_type = transcode && target_format !== nothing &&
         !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -303,8 +303,8 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                                  inv_table = inv_table,
                                  src_range = src_color_range,
                                  table = table,
-                                 dst_range = colorspace_details.color_range,
-                                 sws_kwargs...)
+                                       dst_range = colorspace_details.color_range,
+                                       sws_color_details...)
         set_class_options(frame_graph.sws_context; swscale_settings...)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)

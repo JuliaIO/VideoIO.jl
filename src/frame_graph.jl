@@ -158,19 +158,24 @@ function sws_set_color_details(sws_context, inv_table, src_range, table,
     ret != -1
 end
 
-function sws_update_color_details(sws_context; kwargs...)
+function sws_update_color_details(sws_context; inv_table = nothing,
+                                  src_range = nothing, table = nothing,
+                                  dst_range = nothing, brightness = nothing,
+                                  contrast = nothing, saturation = nothing)
     outs = sws_get_color_details(sws_context)
     outs === nothing && return false
-    inv_table, src_range, table, dst_range, brightness, contrast, saturation = outs
-    vals = (inv_table = inv_table, src_range = src_range, table = table,
-            dst_range = dst_range, brightness = brightness, contrast = contrast,
-            saturation = saturation)
-    valnames = keys(vals)
-    new_vals = ntuple(length(vals)) do i
-        key = keys(vals)[i]
-        get(kwargs, key, vals[i])
-    end
-    sws_set_color_details(sws_context, new_vals...)
+    def_inv_table, def_src_range, def_table, def_dst_range, def_brightness,
+    def_contrast, def_saturation = outs
+    new_inv_table = inv_table === nothing ? def_inv_table : inv_table
+    new_src_range = src_range === nothing ? def_src_range : src_range
+    new_table = table === nothing ? def_table : table
+    new_dst_range = dst_range === nothing ? def_dst_range : dst_range
+    new_brightness = brightness === nothing ? def_brightness : brightness
+    new_contrast = contrast === nothing ? def_contrast : contrast
+    new_saturation = saturation === nothing ? def_saturation : saturation
+    sws_set_color_details(sws_context, new_inv_table, new_src_range, new_table,
+                          new_dst_range, new_brightness, new_contrast,
+                          new_saturation)
 end
 
 function pix_fmt_to_bits_per_pixel(pix_fmt)
