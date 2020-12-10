@@ -299,12 +299,13 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
         inv_table = _vio_primaries_to_sws_table(codec_context.color_primaries)
         table = _vio_primaries_to_sws_table(colorspace_details.color_primaries)
 
-        sws_update_color_details(frame_graph.sws_context;
-                                 inv_table = inv_table,
-                                 src_range = src_color_range,
-                                 table = table,
+        ret = sws_update_color_details(frame_graph.sws_context;
+                                       inv_table = inv_table,
+                                       src_range = src_color_range,
+                                       table = table,
                                        dst_range = colorspace_details.color_range,
                                        sws_color_details...)
+        ret || error("Could not set sws color details")
         set_class_options(frame_graph.sws_context; swscale_settings...)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
