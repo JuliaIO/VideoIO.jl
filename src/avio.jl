@@ -3,7 +3,8 @@ import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read, read!, read_raw, read_raw!, pump, openvideo, opencamera,
     playvideo, viewcam, play, gettime
-export skipframe, skipframes, counttotalframes, out_frame_size
+export skipframe, skipframes, counttotalframes, raw_frame_size, out_frame_size,
+    raw_pixel_format, out_bytes_size
 
 const ReaderBitTypes = Union{UInt8, UInt16}
 const ReaderNormedTypes = Normed{T} where T<: ReaderBitTypes
@@ -459,7 +460,7 @@ end
 function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
                    ) where T <: ReaderElTypes
     if !out_img_check(r, buf)
-        error("Buffer is the wrong size or element type")
+        throw(ArgumentError("Buffer is the wrong size or element type"))
     end
     _retrieve!(r, buf)
 end
@@ -472,7 +473,9 @@ function _retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
 end
 
 function retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
-    out_bytes_size_check(buf, r, align) || error("Buffer is the wrong size")
+    if !out_bytes_size_check(buf, r, align)
+        throw(ArgumentError("Buffer is the wrong size"))
+    end
     _retrieve_raw!(r, buf, align)
 end
 
@@ -539,12 +542,17 @@ isopen(avin::AVInput{I}) where {I <: IO} = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
 isopen(r::VideoReader) = isopen(r.avin)
 
-out_frame_size(r::VideoReader{<:Any, AVFramePtr}) = (r.codec_context.width,
-                                                     r.codec_context.height)
-out_frame_size(t::SwsTransform) = (t.dstframe.width, t.dstframe.height)
-out_frame_size(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_size(r.frame_graph)
+raw_frame_size(r::VideoReader) = (r.codec_context.width, r.codec_context.height)
 
-out_frame_format(r::VideoReader{<:Any, AVFramePtr}) = r.codec_context.pix_fmt
+out_frame_size(r::VideoReader{<:Any, AVFramePtr}) = raw_frame_size(r)
+out_frame_size(t::SwsTransform) = (t.dstframe.width, t.dstframe.height)
+out_frame_size(r::VideoReader{TRANSCODE, SwsTransform}) =
+    out_frame_size(r.frame_graph)
+
+
+raw_pixel_format(r::VideoReader) = r.codec_context.pix_fmt
+
+out_frame_format(r::VideoReader{<:Any, AVFramePtr}) = raw_pixel_format(r)
 out_frame_format(t::SwsTransform) = t.dstframe.format
 out_frame_format(t::GrayTransform) = t.dstframe.format
 out_frame_format(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_format(r.frame_graph)
@@ -572,7 +580,7 @@ function out_bytes_size(fmt, width, height, align = VIO_ALIGN)
     sz
 end
 out_bytes_size(r, args...) =
-    out_bytes_size(r.codec_context.pix_fmt, out_frame_size(r)..., args...)
+    out_bytes_size(raw_pixel_format(r), out_frame_size(r)..., args...)
 
 out_bytes_size_check(buf, r, args...) = sizeof(buf) == out_bytes_size(r, args...)
 
