@@ -2,22 +2,23 @@ using ColorTypes: RGB, HSV
 using FixedPointNumbers: Normed, N6f10
 using Base: ReinterpretArray
 
-function test_tone!(a::AbstractMatrix{X}, offset = 0) where {T, X<:Normed{T}}
+function test_tone!(a::AbstractMatrix{X}, offset = 0, minval = 0,
+                    maxval = reinterpret(one(X))) where {T, X<:Normed{T}}
     maxcodept = reinterpret(one(X))
-    modsize = maxcodept + 1
+    modsize = maxval - minval + 1
     @inbounds for i in eachindex(a)
-        a[i] = reinterpret(X, T(mod(i + offset - 1, modsize)))
+        a[i] = reinterpret(X, T(minval + mod(i + offset - 1, modsize)))
     end
     a
 end
 
-function test_tone!(a::AbstractMatrix{C}, offset = 0
+function test_tone!(a::AbstractMatrix{C}, offset = 0, minval = 0,
+                    maxval = reinterpet(one(X))
                     ) where {T, X<:Normed{T}, C<:RGB{X}}
-    maxcodept = reinterpret(one(X))
-    modsize = maxcodept + 1
+    modsize = maxval - minval + 1
     @inbounds for i in eachindex(a)
         h = mod(i, 360)
-        v = mod(i + offset - 1, modsize) / maxcodept
+        v = minval + mod(i + offset - 1, modsize) / maxcodept
         hsv = HSV(h, 1, v)
         a[i] = convert(RGB{X}, hsv)
     end
@@ -29,10 +30,10 @@ test_tone(::Type{T}, nx::Integer, ny, args...) where T =
 
 test_tone(nx::Integer, ny, args...) = test_tone(N6f10, nx, ny, args...)
 
-function make_test_tones(::Type{T}, nx, ny, nf) where T
+function make_test_tones(::Type{T}, nx, ny, nf, args...) where T
     imgs = Vector{Matrix{T}}(undef, nf)
     @inbounds for i in 1:nf
-        imgs[i] = test_tone(T, nx, ny, i - 1)
+        imgs[i] = test_tone(T, nx, ny, i - 1, args...)
     end
     imgs
 end

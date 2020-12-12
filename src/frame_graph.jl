@@ -108,14 +108,23 @@ function gray_range(av_colrange, bitdepth)
     r
 end
 
-function exec!(s::GrayTransform)
-    r_src = gray_range(s.srcframe.color_range, s.src_depth)
-    r_dst = gray_range(s.dstframe.color_range, s.dst_depth)
-    src_range = r_src[2] - r_src[1]
-    dst_range = r_dst[2] - r_dst[1]
+function make_scale_function(src_t, src_bounds, dst_t, dst_bounds)
+    src_span = src_bounds[2] - src_bounds[1]
+    dst_span = dst_bounds[2] - dst_bounds[1]
+    f = x -> round(dst_t, (dst_span * UInt32(x - src_bounds[1])) //
+                   src_span + dst_bounds[1])
+end
+
+function make_scale_function(s::GrayTransform)
+    src_bounds = gray_range(s.srcframe.color_range, s.src_depth)
+    dst_bounds = gray_range(s.dstframe.color_range, s.dst_depth)
     dst_t = strip_interpretation(VIO_PIX_FMT_DEF_ELTYPE_LU[s.dstframe.format])
     src_t = strip_interpretation(VIO_PIX_FMT_DEF_ELTYPE_LU[s.srcframe.format])
-    f = x -> round(dst_t, (dst_range * UInt32(x - r_src[1])) // src_range + r_dst[1])
+    make_scale_function(src_t, src_bounds, dst_t, dst_bounds), src_t, dst_t
+end
+
+function exec!(s::GrayTransform)
+    f, src_t, dst_t = make_scale_function(s)
     scale_gray_frames!(f, s.dstframe, dst_t, src_t, s.srcframe)
 end
 
