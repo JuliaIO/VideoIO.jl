@@ -325,7 +325,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
     vr
 end
 
-VideoReader(s::T, args...; kwargs...) where {T <: Union{IO,AbstractString}} =
+VideoReader(s::Union{IO, AbstractString}, args...; kwargs...) =
     VideoReader(AVInput(s), args...; kwargs... )
 
 # a convenience function for getting the aspect ratio
