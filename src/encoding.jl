@@ -693,21 +693,21 @@ function encodevideo(filename::String,imgstack::Array;
                      codec_name = "libx264", framerate = 24, silent=false,
                      scanline_major = false, kwargs...)
 
-    io = Base.open("temp.stream","w")
-    startencode!(io)
-    encoder = prepareencoder(imgstack[1]; codec_name = codec_name,
-                             framerate = framerate,
-                             AVCodecContextProperties = AVCodecContextProperties,
-                             scanline_major = scanline_major, kwargs...)
-    if !silent
-        p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
+    Base.open("temp.stream","w") do io
+        startencode!(io)
+        encoder = prepareencoder(imgstack[1]; codec_name = codec_name,
+                                 framerate = framerate,
+                                 AVCodecContextProperties = AVCodecContextProperties,
+                                 scanline_major = scanline_major, kwargs...)
+        if !silent
+            p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
+        end
+        for (i, img) in enumerate(imgstack)
+            appendencode!(encoder, io, img, i - 1)
+            !silent && next!(p)
+        end
+        finishencode!(encoder, io)
     end
-    for (i, img) in enumerate(imgstack)
-        appendencode!(encoder, io, img, i - 1)
-        !silent && next!(p)
-    end
-    finishencode!(encoder, io)
-    close(io)
     mux("temp.stream",filename,framerate,silent=silent)
     return filename
 end
