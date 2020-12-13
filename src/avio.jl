@@ -515,7 +515,17 @@ open(filename::AbstractString) = AVInput(filename) # not exported
 
 Open a video file or stream and return a `VideoReader` object `r`.
 """
-openvideo(args...; kwargs...) = VideoReader(args...; kwargs...)
+openvideo(s::Union{IO, AbstractString, AVInput}, args...; kwargs...) =
+    VideoReader(s, args...; kwargs...)
+
+function openvideo(f, args...; kwargs...)
+    r = openvideo(args...; kwargs...)
+    try
+        f(r)
+    finally
+        close(r)
+    end
+end
 
 """
     frame = read(r::VideoReader)

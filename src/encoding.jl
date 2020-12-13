@@ -335,7 +335,7 @@ end
 
 See `VideoEncoder`.
 """
-prepareencoder(args...; kwargs...) = VideoEncoder(args...; kwargs...)
+prepareencoder(firstimg; kwargs...) = VideoEncoder(firstimg; kwargs...)
 
 function prepare_video_frame!(writer, img, index)
     dstframe = graph_output_frame(writer)
@@ -664,7 +664,17 @@ end
 VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where T =
     VideoWriter(filename, img_params(img)...; kwargs...)
 
-open_video_out(args...; kwargs...) = VideoWriter(args...; kwargs...)
+open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...;
+                                                                    kwargs...)
+
+function open_video_out(f, s::AbstractString, args...; kwargs...)
+    writer = open_video_out(s, args...; kwargs...)
+    try
+        f(writer)
+    finally
+        close_video_out!(writer)
+    end
+end
 
 img_params(img::AbstractMatrix{T}) where T = (T, size(img))
 
@@ -713,10 +723,10 @@ Encode image stack to video file and return filepath. The rows of each image in
 the horizontal axis.
 """
 function encode_mux_video(filename::String, imgstack; kwargs...)
-    writer = open_video_out(filename, first(imgstack); kwargs...)
-    for (i, img) in enumerate(imgstack)
-        append_encode_mux!(writer, img, i - 1)
+    open_video_out(filename, first(imgstack); kwargs...) do writer
+        for (i, img) in enumerate(imgstack)
+            append_encode_mux!(writer, img, i - 1)
+        end
     end
-    close_video_out!(writer)
     nothing
 end
