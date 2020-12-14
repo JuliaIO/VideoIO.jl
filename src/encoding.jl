@@ -1,6 +1,6 @@
 export encodevideo, encode!, prepareencoder, appendencode!, startencode!,
     finishencode!, mux, open_video_out, encode_mux!, append_encode_mux!,
-    close_video_out!, encode_mux_video
+    close_video_out!, encode_mux_video, get_codec_name
 
 
 # A struct collecting encoder objects for easy passing
@@ -535,6 +535,15 @@ function maybe_configure_codec_context_colorspace_details!(codec_context,
     nothing
 end
 
+function get_codec_name(w::VideoWriter)
+    if check_ptr_valid(v.codec_context, false) &&
+        check_ptr_valid(v.codec_context.codec, false)
+        return unsafe_string(v.codec_context.codec.long_name)
+    else
+        return "None"
+    end
+end
+
 function VideoWriter(filename::AbstractString, ::Type{T},
                      sz::NTuple{2, Integer};
                      codec_name::Union{AbstractString, Nothing} = "libx264",
@@ -573,21 +582,29 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         transfer_colorspace_details = input_colorspace_details
     end
 
-    codec_p = avcodec_find_encoder_by_name(codec_name)
-    check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
+    format_context = output_AVFormatContextPtr(filename)
+    default_codec = codec_name === nothing
+    if default_codec
+        codec_enum = format_context.oformat.video_codec
+        codec_enum == AV_CODEC_ID_NONE && error("No default codec found")
+        codec_p = avcodec_find_encoder(codec_enum)
+        check_ptr_valid(codec_p, false) || error("Default codec not found")
+    else
+        codec_p = avcodec_find_encoder_by_name(codec_name)
+        check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
+    end
     codec = AVCodecPtr(codec_p)
-
     if ! check_ptr_valid(codec.pix_fmts, false)
         error("Codec has no supported pixel formats")
     end
     encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
                                                       transfer_pix_fmt, codec,
                                                       pix_fmt_loss_flags)
-    format_context = output_AVFormatContextPtr(filename)
-    ret = avformat_query_codec(format_context.oformat, codec.id,
-                               AVCodecs.FF_COMPLIANCE_NORMAL)
-    ret == 1 || error("Format not compatible with codec $codec_name")
-
+    if ! default_codec
+        ret = avformat_query_codec(format_context.oformat, codec.id,
+                                   AVCodecs.FF_COMPLIANCE_NORMAL)
+        ret == 1 || error("Format not compatible with codec $codec_name")
+    end
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
     codec_context.height = height
