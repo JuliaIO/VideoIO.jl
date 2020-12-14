@@ -405,7 +405,7 @@ end
     end
 end
 
-@testset "monochrome rescaling" begin
+@testset "Monochrome rescaling" begin
     nw = nh = 100
     s = VideoIO.GrayTransform()
     s.srcframe.color_range = VideoIO.AVCOL_RANGE_JPEG
@@ -439,10 +439,11 @@ end
         # Output frame should be limited range
         copy_imgbuf_to_buf!(buff, bwidth, nh, writer.frame_graph.dstframe.data[1],
                             writer.frame_graph.dstframe.linesize[1])
+
+        @test extrema(raw_vals) == (0x0040, 0x03ac)
     finally
-        close(writer)
+        VideoIO.close_video_out!(writer)
     end
-    @test extrema(raw_vals) == (0x0040, 0x03ac)
 end
 
 @testset "Encoding monochrome videos" begin
