@@ -531,9 +531,9 @@ function maybe_configure_codec_context_colorspace_details!(codec_context,
 end
 
 function get_codec_name(w::VideoWriter)
-    if check_ptr_valid(v.codec_context, false) &&
-        check_ptr_valid(v.codec_context.codec, false)
-        return unsafe_string(v.codec_context.codec.long_name)
+    if check_ptr_valid(w.codec_context, false) &&
+        check_ptr_valid(w.codec_context.codec, false)
+        return unsafe_string(w.codec_context.codec.long_name)
     else
         return "None"
     end
