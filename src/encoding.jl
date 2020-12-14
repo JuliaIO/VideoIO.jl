@@ -228,16 +228,6 @@ _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, ::Any) where {T, S} =
 _determine_pix_fmt(::Type{T}, codec_name, props) where T =
     _determine_pix_fmt(T, T, codec_name, props)
 
-"""
-    VideoEncoder(firstimg; framerate=30,
-                 AVCodecContextProperties = AVCodecContextPropertiesDefault,
-                 codec_name::String="libx264")
-
-Prepare encoder and return a `VideoEncoder` object. The dimensions and pixel
-format of the video will be determined from `firstimg`. The number of rows of
-`firstimg` determines the height of the frame, while the number of columns
-determines the width.
-"""
 function VideoEncoder(firstimg; framerate=30,
                       AVCodecContextProperties = AVCodecContextPropertiesDefault,
                       codec_name::String = "libx264",
@@ -331,9 +321,14 @@ function VideoEncoder(firstimg; framerate=30,
 end
 
 """
-    prepareencoder(...)
+    prepareencoder(firstimg; framerate=30,
+                 AVCodecContextProperties = AVCodecContextPropertiesDefault,
+                 codec_name::String="libx264")
 
-See `VideoEncoder`.
+Prepare encoder and return a `VideoEncoder` object. The dimensions and pixel
+format of the video will be determined from `firstimg`. The number of rows of
+`firstimg` determines the height of the frame, while the number of columns
+determines the width.
 """
 prepareencoder(firstimg; kwargs...) = VideoEncoder(firstimg; kwargs...)
 
