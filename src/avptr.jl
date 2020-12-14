@@ -187,12 +187,12 @@ function vio_dealloc_AVIOContextPtr(obj)
     end
 end
 
-function AVIOContextPtr(avio_ctx_buffer_size, io_p, read_p)
+function AVIOContextPtr(avio_ctx_buffer_size, opaque_p, read_p)
     avio_ctx_buffer = av_malloc(avio_ctx_buffer_size)
     if ! check_ptr_valid(avio_ctx_buffer, false)
         error("Unable to allocate avio buffer")
     end
-    p = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, io_p,
+    p = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, opaque_p,
                            read_p, C_NULL, C_NULL)
     if ! check_ptr_valid(p, false)
         av_freep(Ref(avio_ctx_buffer))
