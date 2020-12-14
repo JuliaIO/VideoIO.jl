@@ -632,6 +632,7 @@ end
     end
 end
 
+GC.gc()
 rm(tempvidpath, force = true)
 
 @testset "c api memory leak test" begin # Issue https://github.com/JuliaIO/VideoIO.jl/issues/246
