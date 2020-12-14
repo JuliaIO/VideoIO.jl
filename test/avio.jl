@@ -87,9 +87,9 @@ function get_video_extrema(v)
 end
 
 function get_raw_luma_extrema(elt, vidpath, nw, nh)
-    v = VideoIO.openvideo(vidpath)
-    buff, align = VideoIO.read_raw(v, 1)
-    close(v)
+    buff, align = VideoIO.openvideo(vidpath) do v
+        VideoIO.read_raw(v, 1)
+    end
     luma_buff = view(buff, 1 : nw * nh * sizeof(elt))
     luma_vals = reinterpret(elt, luma_buff)
     reinterpret.(extrema(luma_vals))
@@ -343,12 +343,7 @@ end
             VideoIO.encodevideo(tempvidpath, imgstack, framerate = 30,
                                 AVCodecContextProperties = props, silent = true)
             @test stat(tempvidpath).size > 100
-            f = VideoIO.openvideo(tempvidpath)
-            try
-                @test_broken VideoIO.counttotalframes(f) == n # missing frames due to edit list bug?
-            finally
-                close(f)
-            end
+            @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
         end
     end
 end
@@ -432,17 +427,21 @@ end
     writer = VideoIO.open_video_out(tempvidpath, img_full_range;
                                     target_pix_fmt = VideoIO.AV_PIX_FMT_GRAY10LE,
                                     scanline_major = true)
-    VideoIO.append_encode_mux!(writer, img_full_range, 0)
-    bwidth = nw * 2
-    buff = Vector{UInt8}(undef, bwidth * nh)
-    # Input frame should be full range
-    copy_imgbuf_to_buf!(buff, bwidth, nh, writer.frame_graph.srcframe.data[1],
-                        writer.frame_graph.srcframe.linesize[1])
-    raw_vals = reinterpret(UInt16, buff)
-    @test extrema(raw_vals) == (0x0000, 0x03ff)
-    # Output frame should be limited range
-    copy_imgbuf_to_buf!(buff, bwidth, nh, writer.frame_graph.dstframe.data[1],
-                        writer.frame_graph.dstframe.linesize[1])
+    try
+        VideoIO.append_encode_mux!(writer, img_full_range, 0)
+        bwidth = nw * 2
+        buff = Vector{UInt8}(undef, bwidth * nh)
+        # Input frame should be full range
+        copy_imgbuf_to_buf!(buff, bwidth, nh, writer.frame_graph.srcframe.data[1],
+                            writer.frame_graph.srcframe.linesize[1])
+        raw_vals = reinterpret(UInt16, buff)
+        @test extrema(raw_vals) == (0x0000, 0x03ff)
+        # Output frame should be limited range
+        copy_imgbuf_to_buf!(buff, bwidth, nh, writer.frame_graph.dstframe.data[1],
+                            writer.frame_graph.dstframe.linesize[1])
+    finally
+        close(writer)
+    end
     @test extrema(raw_vals) == (0x0040, 0x03ac)
 end
 
@@ -617,13 +616,17 @@ end
                                 AVCodecContextProperties = props, silent = true)
             f = VideoIO.openvideo(tempvidpath,
                                   target_format = VideoIO.AV_PIX_FMT_GRAY8)
-            frame_ids_test = []
-            while !eof(f)
-                img = collect(rawview(channelview(read(f))))
-                push!(frame_ids_test,img[1,1])
+            try
+                frame_ids_test = []
+                while !eof(f)
+                    img = collect(rawview(channelview(read(f))))
+                    push!(frame_ids_test,img[1,1])
+                end
+                @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
+                @test VideoIO.counttotalframes(f) == 256
+            finally
+                close(f)
             end
-            @test frame_ids_test == collect(0:255) #Test that reading is in correct frame order
-            @test VideoIO.counttotalframes(f) == 256
         end
     end
 end
