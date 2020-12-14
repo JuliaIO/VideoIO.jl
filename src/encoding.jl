@@ -676,6 +676,75 @@ end
 VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where T =
     VideoWriter(filename, img_params(img)...; kwargs...)
 
+"""
+    open_video_out(filename, ::Type{T}, sz::NTuple{2, Integer};
+                   <keyword arguments>) -> VideoWriter
+    open_video_out(filename, first_img::Matrix; ...)
+
+Open file `filename` and prepare to encode a video stream into it. The size and
+element type of the video can either be specified by passing the first frame
+of the movie `first_img`, which will not be encoded, or instead the element type
+`T` and 2-tuple size `sz`. If the size is explicitly specified, the first
+element will be the height, and the second width, unless keyword argument
+`scanline_major = true`, in which case the order is reversed. The container type
+will be inferred from the `filename`.
+
+# Keyword Arguments
+- `codec_name::Union{AbstractString, Nothing} = "libx264"`: Name of the codec to
+    use. Must be a name accepted by [FFmpeg](https://ffmpeg.org/), and
+    compatible with the chosen container type, or `nothing`, in which case the
+    codec will be automatically selected by FFmpeg based on the container.
+- `framerate::Real = 24`: Framerate of the resulting video.
+- `scanline_major::Bool = false`: If `false`, then Julia arrays are assumed to
+    have image height in the first dimension, and image width on the second. If
+    `true`, then pixels that adjacent to eachother in the same scanline (i.e.
+    horizontal line of the video) are assumed to be adjacent to eachother in
+    memory. `scanline_major = true` videos must be `StridedArray`s with unit
+    stride in the first dimension. For normal arrays, this corresponds to a
+    matrix where image width is in the first dimension, and image height is in
+    the second.
+- `container_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
+    of settings for the container. Must correspond to option names and values
+    accepted by [FFmpeg](https://ffmpeg.org/).
+- `container_private_settings::SettingsT = (;)`: A `NamedTuple` or
+    `Dict{Symbol, Any}` of private settings for the container. Must correspond
+    to private options names and values accepted by
+    [FFmpeg](https://ffmpeg.org/) for the chosen container type.
+- `encoder_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
+    settings for the encoder context. Must correspond to option names and values
+    accepted by [FFmpeg](https://ffmpeg.org/).
+- `encoder_private_settings::SettingsT = (;)`: A `NamedTuple` or
+    `Dict{Symbol, Any}` of private settings for the encoder context. Must
+    correspond to private option names and values accepted by
+    [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
+- `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+    settings for the swscale object used to perform colorspcae scaling. Options
+    must correspond with options for FFmpeg's [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
+- `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
+    be used to input data into the encoder. This can either by a
+    `VideoIO.AV_PIX_FMT_*` value corresponding to a FFmpeg [`AVPixelFormat`](https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
+    and must then be a format supported by the encoder, or instead `nothing`,
+    in which case it will be chosen autmatically by FFmpeg.
+- `scale_interpolation = VideoIO.SWS_BILINEAR`: A interpolation format for,
+    sws_scale. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
+    [interpolation value](https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
+- `pix_fmt_loss_flags = 0`: Loss flags to control how encoding pixel format is
+    chosen. Only valid if `target_pix_fmt = nothing`. Flags must correspond to
+    FFmpeg [loss flags](http://ffmpeg.org/doxygen/2.5/pixdesc_8h.html#a445e6541dde2408332c216b8d0accb2d).
+- `input_colorspace_details = nothing`: Information about the color space
+    of input Julia arrays. If `nothing`, then this will correspond to a
+    best-effort interpretation of `Colors.jl` for the corresponding element type.
+    To override these defaults, create a `VideoIO.VioColorspaceDetails` object
+    using the appropriate `AVCOL_` definitions from FFmpeg, or use
+    `VideoIO.VioColorspaceDetails()` to use the FFmpeg defaults. If data in the
+    input Julia arrays is already in the mpeg color range, then set this to
+    `VideoIO.VioColorspaceDetails()` to avoid additional scaling by `sws_scale`.
+- `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
+    use a more accurate color space transformation implemented in `VideoIO` if
+    `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
+- `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
+    [sws_setColorspaceDetails](http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
+"""
 open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...;
                                                                     kwargs...)
 
