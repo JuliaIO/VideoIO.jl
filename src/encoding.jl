@@ -726,7 +726,7 @@ will be inferred from the `filename`.
     and must then be a format supported by the encoder, or instead `nothing`,
     in which case it will be chosen autmatically by FFmpeg.
 - `scale_interpolation = VideoIO.SWS_BILINEAR`: A interpolation format for,
-    sws_scale. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
+    `sws_scale`. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
     [interpolation value](https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
 - `pix_fmt_loss_flags = 0`: Loss flags to control how encoding pixel format is
     chosen. Only valid if `target_pix_fmt = nothing`. Flags must correspond to
