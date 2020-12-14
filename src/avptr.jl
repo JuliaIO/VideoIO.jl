@@ -158,6 +158,7 @@ function AVCodecContextPtr(codec::Ptr{AVCodec})
     finalizer(avcodec_free_context, obj)
     obj
 end
+
 AVCodecContextPtr(codec::AVCodecPtr) = AVCodecContextPtr(unsafe_convert(Ptr{AVCodec}, codec))
 
 @avptr SwsContextPtr SwsContext
@@ -178,6 +179,29 @@ SwsContextPtr(src_width, src_height, src_pix_fmt, dst_pix_fmt,
                                                        src_pix_fmt, src_width,
                                                        src_height, dst_pix_fmt,
                                                        transcode_interpolation)
+
+function vio_dealloc_AVIOContextPtr(obj)
+    if check_ptr_valid(obj, false)
+        av_freep(obj.buffer)
+        avio_context_free(obj)
+    end
+end
+
+function AVIOContextPtr(avio_ctx_buffer_size, io_p, read_p)
+    avio_ctx_buffer = av_malloc(avio_ctx_buffer_size)
+    if ! check_ptr_valid(avio_ctx_buffer, false)
+        error("Unable to allocate avio buffer")
+    end
+    p = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, io_p,
+                           read_p, C_NULL, C_NULL)
+    if ! check_ptr_valid(p, false)
+        av_freep(Ref(avio_ctx_buffer))
+        error("Unable to allocate AVIOContext")
+    end
+    obj = AVIOContextPtr(p)
+    finalizer(vio_dealloc_AVIOContextPtr, obj)
+    return obj
+end
 
 @inline function set_class_option(ptr::NestedCStruct{T}, key, val) where T
     ret = av_opt_set(ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)

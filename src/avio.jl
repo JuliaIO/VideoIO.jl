@@ -139,10 +139,15 @@ end
 # This will point to _read_packet, but is set in __init__()
 const read_packet = Ref{Ptr{Cvoid}}(C_NULL)
 
-function _read_packet(pavin::Ptr{AVInput}, pbuf::Ptr{UInt8}, buf_size::Cint)
-    avin = unsafe_pointer_to_objref(pavin)
+function _read_packet(pio::Ptr{IO}, pbuf::Ptr{UInt8}, buf_size::Cint)
+    io = unsafe_pointer_to_objref(pio)
     out = unsafe_wrap(Array, pbuf, (buf_size,))
-    convert(Cint, readbytes!(avin.io, out))
+    convert(Cint, readbytes!(io, out))
+end
+
+function AVIOContextPtr(avin::AVInput{<:IO})
+    io_ptr = field_ptr(pointer_from_objref(avin), :io)
+    AVIOContextPtr(avin.avio_ctx_buffer_size, io_ptr, read_packet[])
 end
 
 function open_avinput(avin::AVInput, io::IO, input_format=C_NULL, options=C_NULL)
@@ -157,7 +162,7 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL, options=C_NULL
 
     # Allocate the io buffer used by AVIOContext
     # Must be done with av_malloc, because it could be reallocated
-    avio_context = unsafe_AVIOContextPtr(avin)
+    avio_context = AVIOContextPtr(avin)
     avin.avio_context = avio_context
     avin.format_context.pb = avio_context
 
@@ -186,7 +191,7 @@ function AVInput(
 
     packet = AVPacketPtr()
     format_context = AVFormatContextPtr()
-    avio_context = AVIOContextPtr(Ptr{AVIOContext}(C_NULL))
+    avio_context = AVIOContextPtr(C_NULL)
 
     # Allocate this object (needed to pass into AVIOContext in open_avinput)
     avin = AVInput{T}(source, format_context, avio_context,
