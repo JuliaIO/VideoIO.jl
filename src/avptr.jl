@@ -182,7 +182,8 @@ SwsContextPtr(src_width, src_height, src_pix_fmt, dst_pix_fmt,
 
 function vio_dealloc_AVIOContextPtr(obj)
     if check_ptr_valid(obj, false)
-        check_ptr_valid(obj.buffer, false) && av_freep(obj.buffer)
+        buff_ptr = field_ptr(obj, :buffer)
+        av_freep(buff_ptr)
         avio_context_free(obj)
     end
 end
