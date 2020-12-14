@@ -541,7 +541,7 @@ end
 
 function VideoWriter(filename::AbstractString, ::Type{T},
                      sz::NTuple{2, Integer};
-                     codec_name::Union{AbstractString, Nothing} = "libx264",
+                     codec_name::Union{AbstractString, Nothing} = nothing,
                      framerate::Real = 24,
                      scanline_major::Bool = false,
                      container_settings::SettingsT = (;),
@@ -690,7 +690,7 @@ element will be the height, and the second width, unless keyword argument
 will be inferred from the `filename`.
 
 # Keyword Arguments
-- `codec_name::Union{AbstractString, Nothing} = "libx264"`: Name of the codec to
+- `codec_name::Union{AbstractString, Nothing} = nothing`: Name of the codec to
     use. Must be a name accepted by [FFmpeg](https://ffmpeg.org/), and
     compatible with the chosen container type, or `nothing`, in which case the
     codec will be automatically selected by FFmpeg based on the container.
