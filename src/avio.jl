@@ -774,14 +774,18 @@ close(r::VideoReader) = close(r.avin)
 
 # Free AVIOContext object when done
 function close(avin::AVInput)
-    !avin.isopen && return
+    avin.isopen || return
     avin.isopen = false
 
     empty!(avin.stream_contexts)
+    empty!(avin.listening)
     if check_ptr_valid(avin.format_context, false)
         # Replace the existing object in avin with a null pointer. The finalizer
         # for AVFormatContextPtr will close it and clean up its memory
         sigatomic_begin()
+        avformat_close_input(avin.format_context) # This is also done in the finalizer,
+        # but closing the input here means users won't have to wait for the GC to run
+        # before trying to remove the file
         avin.format_context = AVFormatContextPtr(Ptr{AVFormatContext}(C_NULL))
         sigatomic_end()
     end
@@ -793,6 +797,7 @@ function close(avin::AVInput)
         avin.avio_context = AVIOContextPtr(Ptr{AVIOContext}(C_NULL))
         sigatomic_end()
     end
+    nothing
 end
 
 function position(r::VideoReader)
