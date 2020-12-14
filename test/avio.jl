@@ -1,18 +1,22 @@
 using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
 import ColorVectorSpace
-using FileIO, ImageCore, Dates, Statistics
-using Statistics, StatsBase
+using FileIO, ImageCore, Dates, Statistics, StatsBase
 
 import FFMPEG
 
 import VideoIO
 
-testdir = dirname(@__FILE__)
-videodir = joinpath(testdir, "..", "videos")
+const testdir = dirname(@__FILE__)
+const videodir = joinpath(testdir, "..", "videos")
+const tempvidname = "testvideo.mp4"
+const tempvidpath = joinpath(tempdir(), tempvidname)
+const required_accuracy = 0.07
 
 VideoIO.TestVideos.available()
 VideoIO.TestVideos.download_all()
+
+include("test_tones.jl") # Testing utility functions
 
 swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
 
@@ -96,12 +100,7 @@ function get_raw_luma_extrema(elt, vidpath, nw, nh)
 end
 
 include("avptr.jl")
-include("test_tones.jl")
 
-tempvidname = "testvideo.mp4"
-tempvidpath = joinpath(tempdir(), tempvidname)
-
-const required_accuracy = 0.07
 @testset "Reading of various example file formats" begin
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
