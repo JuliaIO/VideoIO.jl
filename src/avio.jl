@@ -1,10 +1,10 @@
 # AVIcodec_type
 import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
-export read, read!, read_raw, read_raw!, pump, openvideo, opencamera,
-    playvideo, viewcam, play, gettime
-export skipframe, skipframes, counttotalframes, raw_frame_size, out_frame_size,
-    raw_pixel_format, out_bytes_size
+export read, read!, read_raw, read_raw!, pump, openvideo, opencamera, playvideo,
+    viewcam, play, gettime, skipframe, skipframes, counttotalframes,
+    raw_frame_size, out_frame_size, raw_pixel_format, out_bytes_size,
+    out_frame_eltype
 
 const ReaderBitTypes = Union{UInt8, UInt16}
 const ReaderNormedTypes = Normed{T} where T<: ReaderBitTypes
@@ -596,20 +596,37 @@ function openvideo(f, args...; kwargs...)
 end
 
 """
-    frame = read(r::VideoReader)
+    read(reader::VideoReader) -> frame::PermutedDimsArray{Matrix{T}}
 
-Return the next frame from `r`. See `read!`.
+Allocate a matrix `frame` and fill it with the next video frame from `reader`,
+advancing the video stream. For details about the frame matrix, see `read!`.
 """
 read(r::VideoReader, args...) = retrieve(r, args...)
+
+"""
+    read_raw(reader::VideoReader[, align = VideoIO.VIO_ALIGN]) ->
+        (buff::Vector{UInt8}, align::Int)
+
+Return the bytes and scanline memory alignment of the next untransformed frame
+of `reader`, advancing the video stream.
+"""
 read_raw(r::VideoReader, args...) = retrieve_raw(r, args...)
 
 """
-    read!(r::VideoReader, buf::Union{PermutedArray{T,N}, Array{T,N}}) where T<:ReaderElTypes
+    read!(reader::VideoReader, buf::Union{PermutedArray{T,N}, Array{T,N}}) where T<:ReaderElTypes
 
-Read a frame from `r` into array `buf`, which can either be a regular array or a
-permuted view of a regular array. `buf` must be scanline-major, meaning that
-adjacent pixels on the same horizontal line of the video frame are also adjacent
-in memory.
+Read a frame from `reader` into array `buf`, which can either be a regular array
+or a permuted view of a regular array, and advance the video stream. `buf` must
+be scanline-major, meaning that adjacent pixels on the same horizontal line of
+the video frame are also adjacent in memory. The element type of `buf` must be
+one of the supported element types, any key of
+`VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, and must match the pixel format chosen when
+`reader` was created. For any supported `Gray` element type, VideoIO will also
+support the corresponding `Normed` or `Unsigned` element types as well. The size
+of `buf` must correspond to the size of `out_frame_size`. If `buf` is a regular
+array, then frame width must correspond to the number of rows of `buf`, and
+conversely if `buf` is a `PermutedDimsArray` view, frame width must correspond
+to the number of columns in the view.
 """
 read!(r::VideoReader, buf::AbstractArray{T}) where {T <: ReaderElTypes} =
     retrieve!(r, buf)
@@ -620,14 +637,38 @@ isopen(avin::AVInput{I}) where {I <: IO} = isopen(avin.io)
 isopen(avin::AVInput) = avin.isopen
 isopen(r::VideoReader) = isopen(r.avin)
 
+"""
+    raw_frame_size(reader) -> (width, height)
+
+Return the dimensions of the raw frames returned by `reader`.
+"""
 raw_frame_size(r::VideoReader) = (r.codec_context.width, r.codec_context.height)
+
+"""
+    out_frame_size(reader) -> (width, height)
+
+Return frame dimensions, `(width, height)` of frames returned by `read(reader)`.
+`read` will return frames as `PermutedDimsArray` views of Julia matrices with
+the frame height spanning the rows of the matrix, and frame width spanning the
+columns. The underlying array has the opposite orientation.
+"""
+function out_frame_size end
 
 out_frame_size(r::VideoReader{<:Any, AVFramePtr}) = raw_frame_size(r)
 out_frame_size(t::SwsTransform) = (t.dstframe.width, t.dstframe.height)
 out_frame_size(r::VideoReader{TRANSCODE, SwsTransform}) =
     out_frame_size(r.frame_graph)
 
+"""
+    raw_pixel_format(reader) -> Cint
 
+Return the pixel format for frames of `reader`. The return value will be a
+`Cint` corresponding to `VideoIO.AV_PIX_FMT_*`, which corresponds to a
+[`AVPixelFormat`]
+(https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5).
+This will determine the format of byte arrays returned by `read_raw`, and
+`read_raw!`.
+"""
 raw_pixel_format(r::VideoReader) = r.codec_context.pix_fmt
 
 out_frame_format(r::VideoReader{<:Any, AVFramePtr}) = raw_pixel_format(r)
@@ -635,6 +676,13 @@ out_frame_format(t::SwsTransform) = t.dstframe.format
 out_frame_format(t::GrayTransform) = t.dstframe.format
 out_frame_format(r::VideoReader{TRANSCODE, SwsTransform}) = out_frame_format(r.frame_graph)
 out_frame_format(r::VideoReader{TRANSCODE, GrayTransform}) = out_frame_format(r.frame_graph)
+
+"""
+    out_frame_eltype(reader) -> T
+
+Return the Julia eltype `T` of matrices returned by `read(reader)`.
+"""
+out_frame_eltype(r::VideoReader) = VIO_PIX_FMT_DEF_ELTYPE_LU[out_frame_format(r)]
 
 out_img_size_check(r, buf) = all(size(buf) .>= out_frame_size(r))
 out_img_size_check(r, buf::PermutedDimsArray) = out_img_size_check(r, parent(buf))
@@ -650,6 +698,15 @@ out_img_eltype_check(fmt::Integer, ::AbstractArray{T}) where T = out_img_eltype_
 out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 
 out_img_check(r, buf) = out_img_size_check(r, buf) && out_img_eltype_check(r, buf)
+
+"""
+    out_bytes_size(reader[, align = VideoIO.VIO_ALIGN])
+
+Return the number required to store the raw frame data for frames of `reader`
+with memory alignment for each scanline `align`. Input bye buffers to
+`read_raw!` must be this length.
+"""
+function out_bytes_size end
 
 function out_bytes_size(fmt, width, height, align = VIO_ALIGN)
     align > 0 || throw(ArgumentError("align must be greater than zero"))
@@ -680,7 +737,7 @@ get_video_stream_index(s::VideoReader) =
 """
     gettime(s::VideoReader)
 
-Return timestamp of current position in seconds.
+Return timestamp of the last returned frame, if available. Else, return `0.0`.
 """
 function gettime(s::VideoReader)
     # No frame has been read
@@ -712,11 +769,11 @@ function get_frame_period_timebase(r::VideoReader)
 end
 
 """
-    seek(r::VideoReader, seconds::AbstractFloat, seconds_min::AbstractFloat=-1.0,
-         seconds_max::AbstractFloat=-1.0, forward::Bool=false)
+    seek(reader::VideoReader, seconds)
 
-Seek through VideoReader object.
-    """
+Seek through video stream in `reader` so that the next frame returned by
+`read(reader)` will have a timestamp equal to or greater than `seconds`.
+"""
 function seek(r::VideoReader, seconds::Number)
     !isopen(r) && throw(ErrorException("Video input stream is not open!"))
     video_stream_idx = get_video_stream_index(r)
@@ -764,9 +821,9 @@ function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer=1) where 
     return avin
 end
 """
-    seekstart(s::VideoReader)
+    seekstart(reader::VideoReader)
 
-Seek to start of VideoReader object.
+Seek to time zero of the video stream in `reader`.
 """
 seekstart(s::VideoReader, args...) = seek(s, 0, args...)
 
@@ -793,22 +850,23 @@ function skipframe(s::VideoReader; throwEOF=true)
 end
 
 """
-    skipframes(s::VideoReader, n::Int)
+    skipframes(s::VideoReader, n::Int; throwEOF=true) -> n
 
-Skip the next `n` frames. If End of File is reached, EOFError to be thrown.
-With `throwEOF = true` the number of frames that were skipped to be returned without error.
+Skip the next `n` frames. If End of File is reached and `throwEOF=true`,
+a `EOFError` will be thrown. Returns the number of frames that were skipped.
 """
 function skipframes(s::VideoReader, n::Int; throwEOF=true)
-    for _ in 1:n
-        skipframe(s, throwEOF=throwEOF) && return n
+    for i in 1:n
+        skipframe(s, throwEOF=throwEOF) && return i - 1
     end
+    return n
 end
 
 """
-    counttotalframes(s::VideoReader)
+    counttotalframes(reader) -> n::Int
 
-Count the total number of frames in the video by seeking to start, skipping through
-each frame, and seeking back to the start.
+Count the total number of frames in the video by seeking to start, skipping
+through each frame, and seeking back to the start.
 """
 function counttotalframes(s::VideoReader)
     seekstart(s)

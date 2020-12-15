@@ -706,9 +706,9 @@ the video can either be specified by passing the first frame of the movie
 be the height, and the second width, unless keyword argument `scanline_major =
 true`, in which case the order is reversed. Both height and width must be even.
 The element type `T` must be one of the supported element types, which is any
-key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead `Gray{x}`,
-`Gray{Normed{x}}`, or `Normed{x}` where `x` is any of the supported unsigned
-types. The container type will be inferred from `filename`.
+key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead the `Normed` or
+`Unsigned` type for a corresponding `Gray` element type. The container type will
+be inferred from `filename`.
 
 Frames are encoded with[ `append_encode_mux!`](@ref), which must use frames with
 the same size, element type, and obey the same value of `scanline_major`. The
