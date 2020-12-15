@@ -607,8 +607,8 @@ read(r::VideoReader, args...) = retrieve(r, args...)
     read_raw(reader::VideoReader[, align = VideoIO.VIO_ALIGN]) ->
         (buff::Vector{UInt8}, align::Int)
 
-Return the bytes and scanline memory alignment of the next untransformed frame
-of `reader`, advancing the video stream.
+Allocate a `Vector{UInt8}` and return the bytes and scanline memory alignment of
+the next untransformed frame of `reader`, advancing the video stream.
 """
 read_raw(r::VideoReader, args...) = retrieve_raw(r, args...)
 
@@ -631,6 +631,13 @@ to the number of columns in the view.
 read!(r::VideoReader, buf::AbstractArray{T}) where {T <: ReaderElTypes} =
     retrieve!(r, buf)
 
+"""
+    read_raw!(reader, buf[, align = VideoIO.VIO_ALIGN])
+
+Read the next frame in the video stream described by `reader`, and transfer the
+untransformed bytes into `buf`, which has scanline memory alignment `align`.
+`buf` must be `out_bytes_size` long.
+"""
 read_raw!(r::VideoReader, buf, args...) = retrieve_raw!(r, buf, args...)
 
 isopen(avin::AVInput{I}) where {I <: IO} = isopen(avin.io)

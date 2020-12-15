@@ -546,6 +546,11 @@ function maybe_configure_codec_context_colorspace_details!(codec_context,
     nothing
 end
 
+"""
+    get_codec_name(writer) -> String
+
+Get the name of the encoder used by `writer`.
+"""
 function get_codec_name(w::VideoWriter)
     if check_ptr_valid(w.codec_context, false) &&
         check_ptr_valid(w.codec_context.codec, false)
