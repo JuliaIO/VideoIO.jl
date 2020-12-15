@@ -794,14 +794,21 @@ function encodevideo(filename::String,imgstack::Array;
 end
 
 """
-    encode_mux_video(filename::String,imgstack::Array;
-        AVCodecContextProperties = AVCodecContextPropertiesDefault,
-        codec_name = "libx264",
-        framerate = 24)
+    encode_mux_video(filename::String, imgstack; ...)
 
-Encode image stack to video file and return filepath. The rows of each image in
-`imgstack` must span the vertical axis of the image, and the columns must span
-the horizontal axis.
+Create a video container `filename` and encode the set of images `imgstack` into
+it. `imgstack` must be an iterable of matrices, with either the rows of each
+image spanning the vertical dimension of each frame, and the columns spanning
+the horizontal, or the opposite if keyword argument `scanline_major = true`. In
+this second case, pixels that are adjacent to each other on the same horizontal
+scanline must also be adjacent in memory. Each image must have the same
+dimensions and element type. Additionally, image dimensions must both be even,
+and the element type must be one of the supported element types, which is any
+key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or additionally either `Gray{x}`,
+`Gray{Normed{x}}`, or `Normed{x}` of any of the unsigned supported types.
+
+Encoding settings and other details can be configured through the keyword
+arguments, see [`open_video_out`](@ref) for more details.
 """
 function encode_mux_video(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
