@@ -356,7 +356,15 @@ end
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
 execute_graph!(encoder::VideoEncoder) = exec!(encoder.frame_graph)
 
-# Indices should start from zero
+"""
+    append_encode_mux(writer, img, index)
+
+Prepare frame `img` for encoding, encode it, mux it, and either cache it or
+write it to the file described by `writer`. Indices must start at zero, i.e. for
+the first frame set `index = 0`, and subsequent calls increment `index` by one.
+`img` must be the same size and element type as the size and element type that
+was used to create `writer`.
+"""
 function append_encode_mux!(writer, img, index)
     prepare_video_frame!(writer, img, index)
     encode_mux!(writer)
@@ -408,6 +416,14 @@ function set_class_options(ptr; kwargs...)
     end
 end
 
+"""
+    close_video_out!(writer)
+
+Write all frames cached in `writer` to the video container that it describes,
+and then close the file. Once all frames in a video have been added to `writer`,
+then it must be closed with this function to flush any cached frames to the file,
+and then finally close the file and release resources associated with `writer`.
+"""
 function close_video_out!(writer::VideoWriter)
     if check_ptr_valid(writer.format_context, false)
         encode_mux!(writer, true) # flush
@@ -565,7 +581,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         height, width = sz
     end
     if isodd(width) || isodd(height)
-        throw(ArgumentError("Encoding error: Image dims must be a multiple of two"))
+        throw(ArgumentError("Encoding error: Frame dims must be a multiple of two"))
     end
     transfer_pix_fmt = get_transfer_pix_fmt(T)
 
@@ -678,16 +694,31 @@ VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where T =
 
 """
     open_video_out(filename, ::Type{T}, sz::NTuple{2, Integer};
-                   <keyword arguments>) -> VideoWriter
+                   <keyword arguments>) -> writer
     open_video_out(filename, first_img::Matrix; ...)
+    open_video_out(f, ...; ...)
 
-Open file `filename` and prepare to encode a video stream into it. The size and
-element type of the video can either be specified by passing the first frame
-of the movie `first_img`, which will not be encoded, or instead the element type
-`T` and 2-tuple size `sz`. If the size is explicitly specified, the first
-element will be the height, and the second width, unless keyword argument
-`scanline_major = true`, in which case the order is reversed. The container type
-will be inferred from the `filename`.
+Open file `filename` and prepare to encode a video stream into it, returning
+object `writer` that can be used to encode frames. The size and element type of
+the video can either be specified by passing the first frame of the movie
+`first_img`, which will not be encoded, or instead the element type `T` and
+2-tuple size `sz`. If the size is explicitly specified, the first element will
+be the height, and the second width, unless keyword argument `scanline_major =
+true`, in which case the order is reversed. Both height and width must be even.
+The element type `T` must be one of the supported element types, which is any
+key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead `Gray{x}`,
+`Gray{Normed{x}}`, or `Normed{x}` where `x` is any of the supported unsigned
+types. The container type will be inferred from `filename`.
+
+Frames are encoded with[ `append_encode_mux!`](@ref), which must use frames with
+the same size, element type, and obey the same value of `scanline_major`. The
+video must be closed once all frames are encoded with
+[`close_video_out!`](@ref).
+
+If called with a function as the first argument, `f`, then the function will be
+called with the writer object `writer` as its only argument. This `writer` object
+will be closed once the call is complete, regardless of whether or not an error
+occurred.
 
 # Keyword Arguments
 - `codec_name::Union{AbstractString, Nothing} = nothing`: Name of the codec to
@@ -696,12 +727,12 @@ will be inferred from the `filename`.
     codec will be automatically selected by FFmpeg based on the container.
 - `framerate::Real = 24`: Framerate of the resulting video.
 - `scanline_major::Bool = false`: If `false`, then Julia arrays are assumed to
-    have image height in the first dimension, and image width on the second. If
+    have frame height in the first dimension, and frame width on the second. If
     `true`, then pixels that adjacent to eachother in the same scanline (i.e.
     horizontal line of the video) are assumed to be adjacent to eachother in
     memory. `scanline_major = true` videos must be `StridedArray`s with unit
     stride in the first dimension. For normal arrays, this corresponds to a
-    matrix where image width is in the first dimension, and image height is in
+    matrix where frame width is in the first dimension, and frame height is in
     the second.
 - `container_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
     of settings for the container. Must correspond to option names and values
@@ -719,18 +750,24 @@ will be inferred from the `filename`.
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
 - `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
     settings for the swscale object used to perform colorspcae scaling. Options
-    must correspond with options for FFmpeg's [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
+    must correspond with options for FFmpeg's
+    [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
     be used to input data into the encoder. This can either by a
-    `VideoIO.AV_PIX_FMT_*` value corresponding to a FFmpeg [`AVPixelFormat`](https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
+    `VideoIO.AV_PIX_FMT_*` value corresponding to a FFmpeg
+    [`AVPixelFormat`]
+    (https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
     and must then be a format supported by the encoder, or instead `nothing`,
     in which case it will be chosen autmatically by FFmpeg.
 - `scale_interpolation = VideoIO.SWS_BILINEAR`: A interpolation format for,
     `sws_scale`. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
-    [interpolation value](https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
+    [interpolation value]
+    (https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
 - `pix_fmt_loss_flags = 0`: Loss flags to control how encoding pixel format is
     chosen. Only valid if `target_pix_fmt = nothing`. Flags must correspond to
-    FFmpeg [loss flags](http://ffmpeg.org/doxygen/2.5/pixdesc_8h.html#a445e6541dde2408332c216b8d0accb2d).
+    FFmpeg
+    [loss flags]
+    (http://ffmpeg.org/doxygen/2.5/pixdesc_8h.html#a445e6541dde2408332c216b8d0accb2d).
 - `input_colorspace_details = nothing`: Information about the color space
     of input Julia arrays. If `nothing`, then this will correspond to a
     best-effort interpretation of `Colors.jl` for the corresponding element type.
@@ -743,7 +780,10 @@ will be inferred from the `filename`.
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
 - `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
-    [sws_setColorspaceDetails](http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
+    [sws_setColorspaceDetails]
+    (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
+
+See also: [`append_encode_mux!`](@ref), [`close_video_out!`](@ref)
 """
 open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...;
                                                                     kwargs...)
@@ -796,20 +836,16 @@ end
 """
     encode_mux_video(filename::String, imgstack; ...)
 
-Create a video container `filename` and encode the set of images `imgstack` into
-it. `imgstack` must be an iterable of matrices, with either the rows of each
-image spanning the vertical dimension of each frame, and the columns spanning
-the horizontal, or the opposite if keyword argument `scanline_major = true`. In
-this second case, pixels that are adjacent to each other on the same horizontal
-scanline must also be adjacent in memory. Each image must have the same
-dimensions and element type. Additionally, image dimensions must both be even,
-and the element type must be one of the supported element types, which is any
-key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or additionally either `Gray{x}`,
-`Gray{Normed{x}}`, or `Normed{x}` where `x` is any of the unsigned types that
-are supported.
+Create a video container `filename` and encode the set of frames `imgstack` into
+it. `imgstack` must be an iterable of matrices and each frame must have the same
+dimensions and element type.
 
-Encoding settings and other details can be configured through the keyword
-arguments, see [`open_video_out`](@ref) for more details.
+Encoding settings, restrictions on frame size and element type, and other
+details are described in [`open_video_out`](@ref). All keyword arguments are
+passed to `open_video_out`.
+
+See also: [`open_video_out`](@ref), [`append_encode_mux!`](@ref),
+[`close_video_out!`](@ref)
 """
 function encode_mux_video(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
