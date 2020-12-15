@@ -533,7 +533,7 @@ end
 function get_codec_name(w::VideoWriter)
     if check_ptr_valid(w.codec_context, false) &&
         check_ptr_valid(w.codec_context.codec, false)
-        return unsafe_string(w.codec_context.codec.long_name)
+        return unsafe_string(w.codec_context.codec.name)
     else
         return "None"
     end
