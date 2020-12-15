@@ -426,6 +426,7 @@ end
     writer = VideoIO.open_video_out(tempvidpath, img_full_range;
                                     target_pix_fmt = VideoIO.AV_PIX_FMT_GRAY10LE,
                                     scanline_major = true)
+    @test get_codec_name(writer) != "None"
     try
         VideoIO.append_encode_mux!(writer, img_full_range, 0)
         bwidth = nw * 2
