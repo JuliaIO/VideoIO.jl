@@ -114,6 +114,7 @@ include("avptr.jl")
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
                 width, height = VideoIO.out_frame_size(v)
+                @test VideoIO.out_frame_eltype(v) == RGB{N0f8}
                 if size(comparison_frame, 1) > height
                     trimmed_comparison_frame =
                         comparison_frame[1+size(comparison_frame,1)-height:end,:]
