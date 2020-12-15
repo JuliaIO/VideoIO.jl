@@ -805,7 +805,8 @@ scanline must also be adjacent in memory. Each image must have the same
 dimensions and element type. Additionally, image dimensions must both be even,
 and the element type must be one of the supported element types, which is any
 key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or additionally either `Gray{x}`,
-`Gray{Normed{x}}`, or `Normed{x}` of any of the unsigned supported types.
+`Gray{Normed{x}}`, or `Normed{x}` where `x` is any of the unsigned types that
+are supported.
 
 Encoding settings and other details can be configured through the keyword
 arguments, see [`open_video_out`](@ref) for more details.
