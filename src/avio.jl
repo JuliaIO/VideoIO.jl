@@ -778,8 +778,8 @@ end
 """
     seek(reader::VideoReader, seconds)
 
-Seek through video stream in `reader` so that the next frame returned by
-`read(reader)` will have a timestamp equal to or greater than `seconds`.
+Seeks into the parent `AVInput` using this video stream's index. See [`seek`]
+for `AVInput`.
 """
 function seek(r::VideoReader, seconds::Number)
     !isopen(r) && throw(ErrorException("Video input stream is not open!"))
@@ -807,9 +807,11 @@ function seek_trim(r::VideoReader, seconds::Number)
 end
 
 """
-    seek(s::VideoReader, seconds::AbstractFloat, video_stream::Integer=1)
+    seek(avin::AVInput, seconds::AbstractFloat, video_stream::Integer=1)
 
-Seek through AVInput object.
+Seek through the container format `avin` so that the next frame returned by
+the stream indicated by `video_stream` will have a timestamp greater than or
+equal to `seconds`.
 """
 function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer=1) where T <: AbstractString
     stream_index0 = avin.video_indices[video_stream]
@@ -830,14 +832,15 @@ end
 """
     seekstart(reader::VideoReader)
 
-Seek to time zero of the video stream in `reader`.
+Seek to time zero of the parent `AVInput` using `reader`'s stream index. See
+`seekstart` for `AVInput` objects.
 """
 seekstart(s::VideoReader, args...) = seek(s, 0, args...)
 
 """
     seekstart(avin::AVInput{T}, video_stream_index=1) where T <: AbstractString
 
-Seek to start of AVInput object.
+Seek to time zero of AVInput object.
 """
 seekstart(avin::AVInput{<:AbstractString}, args...) = seek(avin, 0, args...)
 
