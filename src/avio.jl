@@ -229,7 +229,7 @@ get_stream(r::VideoReader) = get_stream(r.avin, r.stream_index0)
 function VideoReader(avin::AVInput{I}, video_stream = 1;
                      transcode::Bool = true,
                      transcode_interpolation = SWS_BILINEAR,
-                     target_format = nothing,
+                     target_format::Union{Nothing, Cint} = nothing,
                      pix_fmt_loss_flags = 0,
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
@@ -515,10 +515,73 @@ retrieve(r::VideoReader{NO_TRANSCODE}, align::Integer = 1) =
 open(filename::AbstractString) = AVInput(filename) # not exported
 
 """
-    r = openvideo(filename)
-    r = openvideo(stream)
+    openvideo(file[, video_stream = 1]; <keyword arguments>) -> reader
+    openvideo(f, ...)
 
-Open a video file or stream and return a `VideoReader` object `r`.
+Open `file` and create an object to read and decode video stream number
+`video_stream`. `file` can either be a `AVInput` created by `VideoIO.open`,
+the name of a file as an `AbstractString`, or instead an `IO` object. However,
+support for `IO` objects is incomplete, and does not currently work with common
+video containers such as `*.mp4` files.
+
+Frames can be read from the `reader` with `read` or `read!`, or alternatively by
+using the iterator interface provided for `reader`. To close the `reader`,
+simply use `close`. Seeking within the reader can be accomplished using `seek`,
+`seekstart`. Frames can be skipped with `skipframe`, or `skipframes`. The
+current time in the video stream can be accessed with `gettime`. Details about
+the frame dimension can be found with `out_frame_size`. The total number of
+frames can be found with `counttotalframes`.
+
+If called with a single argument function as the first argument, the `reader`
+will be passed to the function, and will be closed once the call returns whether
+or not an error occurred.
+
+The decoder settings and conversion to Julia arrays is controlled by the keyword
+arguments listed below.
+
+# Keyword arguments
+- `transcode::Bool = true`: Determines whether decoded frames are transferred
+    into a Julia matrix with easily interpretable element type, or instead
+    returned as raw byte buffers.
+- `transcode_interpolation = VideoIO.SWS_BILINEAR`: Interpolation method used by
+    `sws_scale`. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
+    [interpolation value]
+    (https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
+- `target_format::Union{Nothing, Cint} = nothing`: Determines the target pixel
+    format that decoded frames will be transformed into before being transferred
+    to an output array. This can either by a `VideoIO.AV_PIX_FMT_*` value
+    corresponding to a FFmpeg
+    [`AVPixelFormat`]
+    (https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
+    and must then also be a format supported by the VideoIO, or instead
+    `nothing`, in which case the format will be automatically chosen by FFmpeg.
+    This list of currently supported pixel formats, and the matrix element type
+    that each pixel format corresponds with, are elemnts of
+    `VideoIO.VIO_PIX_FMT_DEF_ELTYPE_LU`.
+- `pix_fmt_loss_flags = 0`: Loss flags to control how transfer pixel format is
+    chosen. Only valid if `target_format = nothing`. Flags must correspond to
+    FFmpeg
+    [loss flags]
+    (http://ffmpeg.org/doxygen/2.5/pixdesc_8h.html#a445e6541dde2408332c216b8d0accb2d).
+- `target_colorspace_details = nothing`: Information about the color space
+    of output Julia arrays. If `nothing`, then this will correspond to a
+    best-effort interpretation of `Colors.jl` for the corresponding element
+    type. To override these defaults, create a `VideoIO.VioColorspaceDetails`
+    object using the appropriate `AVCOL_` definitions from FFmpeg, or use
+    `VideoIO.VioColorspaceDetails()` to use the FFmpeg defaults. To avoid
+    rescaling limited color range data (mpeg) to full color range output (jpeg),
+    then set this to `VideoIO.VioColorspaceDetails()` to avoid additional
+    scaling by `sws_scale`.
+- `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
+    use a more accurate color space transformation implemented in `VideoIO` if
+    `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
+- `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+    settings for the swscale object used to perform colorspcae scaling. Options
+    must correspond with options for FFmpeg's
+    [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
+- `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
+    [sws_setColorspaceDetails]
+    (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 """
 openvideo(s::Union{IO, AbstractString, AVInput}, args...; kwargs...) =
     VideoReader(s, args...; kwargs...)

@@ -720,7 +720,7 @@ called with the writer object `writer` as its only argument. This `writer` objec
 will be closed once the call is complete, regardless of whether or not an error
 occurred.
 
-# Keyword Arguments
+# Keyword arguments
 - `codec_name::Union{AbstractString, Nothing} = nothing`: Name of the codec to
     use. Must be a name accepted by [FFmpeg](https://ffmpeg.org/), and
     compatible with the chosen container type, or `nothing`, in which case the
