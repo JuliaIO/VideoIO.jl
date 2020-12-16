@@ -511,11 +511,12 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
         )
         table = _vio_primaries_to_sws_table(dst_color_primaries)
 
-        sws_update_color_details(frame_graph.sws_context; inv_table = inv_table,
+        ret = sws_update_color_details(frame_graph.sws_context; inv_table = inv_table,
                                  src_range =
                                  transfer_colorspace_details.color_range,
                                  table = table, dst_range = dst_color_range,
                                  sws_color_details...)
+        ret || error("Could not set sws color details")
         set_class_options(frame_graph.sws_context; swscale_settings...)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)

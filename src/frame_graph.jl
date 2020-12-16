@@ -72,6 +72,7 @@ function exec!(s::SwsTransform)
                         0, s.dstframe.height, dst_data_ptr,
                         dst_linesize_ptr)
         sigatomic_end()
+        ret <= 0 && error("Could not scale frame")
     end
     nothing
 end
