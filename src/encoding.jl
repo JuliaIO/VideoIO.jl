@@ -754,7 +754,7 @@ occurred.
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
 - `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform colorspcae scaling. Options
+    settings for the swscale object used to perform color spcae scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
@@ -763,7 +763,7 @@ occurred.
     [`AVPixelFormat`]
     (https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
     and must then be a format supported by the encoder, or instead `nothing`,
-    in which case it will be chosen autmatically by FFmpeg.
+    in which case it will be chosen automatically by FFmpeg.
 - `scale_interpolation = VideoIO.SWS_BILINEAR`: A interpolation format for,
     `sws_scale`. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
     [interpolation value]
@@ -783,7 +783,7 @@ occurred.
     `VideoIO.VioColorspaceDetails()` to avoid additional scaling by `sws_scale`.
 - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
-    `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
+    `allow_vio_gray_transform = true`. Otherwise, use `sws_scale`.
 - `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).

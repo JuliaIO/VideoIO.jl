@@ -556,7 +556,7 @@ arguments listed below.
     and must then also be a format supported by the VideoIO, or instead
     `nothing`, in which case the format will be automatically chosen by FFmpeg.
     This list of currently supported pixel formats, and the matrix element type
-    that each pixel format corresponds with, are elemnts of
+    that each pixel format corresponds with, are elements of
     `VideoIO.VIO_PIX_FMT_DEF_ELTYPE_LU`.
 - `pix_fmt_loss_flags = 0`: Loss flags to control how transfer pixel format is
     chosen. Only valid if `target_format = nothing`. Flags must correspond to
@@ -576,7 +576,7 @@ arguments listed below.
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
 - `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform colorspcae scaling. Options
+    settings for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
