@@ -4,7 +4,7 @@ function _get_fc(file::String) # convenience function for `get_duration` and `ge
     v = open(file)
     return v.format_context, v
 end
-get_duration(fc::AVFormatContextPtr) = fc.duration / VideoIO.AV_TIME_BASE
+get_duration(fc::AVFormatContextPtr) = fc.duration / AV_TIME_BASE
 
 """
     get_duration(file::String) -> Float64
