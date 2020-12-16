@@ -754,7 +754,7 @@ occurred.
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
 - `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform color spcae scaling. Options
+    settings for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
