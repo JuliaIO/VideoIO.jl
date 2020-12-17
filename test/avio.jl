@@ -31,7 +31,8 @@ end
 function compare_colors(a::RGB, b::RGB, tol)
     ok = true
     for f in (red, green, blue)
-        ok &= abs(float(f(a)) - float(f(b))) <= tol
+        dev = abs(float(f(a)) - float(f(b)))
+        ok &= dev <= tol
     end
     ok
 end
@@ -63,7 +64,7 @@ function make_comparison_frame_png(vidpath::AbstractString, frameno::Integer,
                                    writedir = tempdir())
     vid_basename = first(splitext(basename(vidpath)))
     png_name = joinpath(writedir, "$(vid_basename)_$(frameno).png")
-    FFMPEG.exe(`-y -v error -i $(vidpath) -vf "select=eq(n\,$(frameno-1))" -vframes 1 $(png_name)`)
+    FFMPEG.exe(`-y -v error -i $(vidpath) -vf "sws_flags=accurate_rnd+full_chroma_inp+full_chroma_int; select=eq(n\,$(frameno-1))" -vframes 1 $(png_name)`)
     png_name
 end
 
@@ -102,6 +103,7 @@ end
 include("avptr.jl")
 
 @testset "Reading of various example file formats" begin
+    swscale_settings = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
         test_frameno = testvid.testframe
@@ -109,7 +111,7 @@ include("avptr.jl")
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             f = VideoIO.testvideo(testvid_path)
-            v = VideoIO.openvideo(f)
+            v = VideoIO.openvideo(f; swscale_settings = swscale_settings)
             try
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
@@ -244,6 +246,7 @@ end
 end
 
 @testset "IO reading of various example file formats" begin
+    swscale_settings = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
         test_frameno = testvid.testframe
@@ -253,7 +256,7 @@ end
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             filename = joinpath(videodir, name)
-            v = VideoIO.openvideo(filename)
+            v = VideoIO.openvideo(filename; swscale_settings = swscale_settings)
             try
                 width, height = VideoIO.out_frame_size(v)
                 if size(comparison_frame, 1) > height

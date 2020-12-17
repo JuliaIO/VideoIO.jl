@@ -234,7 +234,7 @@ function VideoEncoder(firstimg; framerate=30,
                       scanline_major::Bool = false,
                       target_pix_fmt::Union{Nothing, Cint} = nothing,
                       pix_fmt_loss_flags = 0,
-                      scale_interpolation = SWS_BILINEAR,
+                      sws_flags::Int = 0,
                       allow_vio_gray_transform = true,
                       input_colorspace_details = nothing,
                       swscale_settings::SettingsT = (;),
@@ -305,7 +305,7 @@ function VideoEncoder(firstimg; framerate=30,
 
     frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
                                               encoding_pix_fmt, width, height,
-                                              scale_interpolation,
+                                              sws_flags,
                                               transfer_colorspace_details,
                                               codec_context.color_primaries,
                                               codec_context.color_trc,
@@ -410,12 +410,6 @@ function mux(srcfilename, destfilename, framerate; silent=false, deletestream=tr
     end
 end
 
-function set_class_options(ptr; kwargs...)
-    for (key, val) in kwargs
-        set_class_option(ptr, key, val)
-    end
-end
-
 """
     close_video_out!(writer)
 
@@ -487,7 +481,7 @@ function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt,
 end
 
 function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
-                                     height, interp, transfer_colorspace_details,
+                                     height, sws_flags, transfer_colorspace_details,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
                                      use_vio_gray_transform, swscale_settings;
@@ -505,19 +499,11 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
         frame_graph = AVFramePtr()
     else
         frame_graph = SwsTransform(width, height, transfer_pix_fmt,
-                                   encoding_pix_fmt, interp)
-        inv_table = _vio_primaries_to_sws_table(
-            transfer_colorspace_details.color_primaries
-        )
-        table = _vio_primaries_to_sws_table(dst_color_primaries)
-
-        ret = sws_update_color_details(frame_graph.sws_context; inv_table = inv_table,
-                                 src_range =
-                                 transfer_colorspace_details.color_range,
-                                 table = table, dst_range = dst_color_range,
-                                 sws_color_details...)
-        ret || error("Could not set sws color details")
-        set_class_options(frame_graph.sws_context; swscale_settings...)
+                                   transfer_colorspace_details.color_primaries,
+                                   transfer_colorspace_details.color_range,
+                                   encoding_pix_fmt, dst_color_primaries,
+                                   dst_color_range, sws_color_details,
+                                   swscale_settings)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)
     end
@@ -572,7 +558,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      encoder_private_settings::SettingsT = (;),
                      swscale_settings::SettingsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
-                     scale_interpolation = SWS_BILINEAR,
+                     sws_flags::Int = 0,
                      pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
@@ -635,14 +621,14 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
     end
 
-    set_class_options(format_context; container_settings...)
+    set_class_options(format_context, container_settings)
     if check_ptr_valid(format_context.oformat.priv_class, false)
-        set_class_options(format_context.priv_data; container_private_settings...)
+        set_class_options(format_context.priv_data, container_private_settings)
     elseif !isempty(container_private_settings)
         @warn "This container format does not support private settings, and will be ignored"
     end
-    set_class_options(codec_context; encoder_settings...)
-    set_class_options(codec_context.priv_data; encoder_private_settings...)
+    set_class_options(codec_context, encoder_settings)
+    set_class_options(codec_context.priv_data, encoder_private_settings)
 
     sigatomic_begin()
     lock(VIO_LOCK)
@@ -679,7 +665,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     end
     frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
                                               encoding_pix_fmt, width, height,
-                                              scale_interpolation,
+                                              sws_flags,
                                               transfer_colorspace_details,
                                               codec_context.color_primaries,
                                               codec_context.color_trc,
@@ -765,10 +751,6 @@ occurred.
     (https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
     and must then be a format supported by the encoder, or instead `nothing`,
     in which case it will be chosen automatically by FFmpeg.
-- `scale_interpolation = VideoIO.SWS_BILINEAR`: A interpolation format for,
-    `sws_scale`. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
-    [interpolation value]
-    (https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
 - `pix_fmt_loss_flags = 0`: Loss flags to control how encoding pixel format is
     chosen. Only valid if `target_pix_fmt = nothing`. Flags must correspond to
     FFmpeg

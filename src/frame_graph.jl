@@ -15,17 +15,51 @@ mutable struct SwsTransform
     dstframe::AVFramePtr
 end
 
-function SwsTransform(src_w, src_h, src_pix_fmt, dst_w, dst_h, dst_pix_fmt,
-                      interp)
-    sws_context = SwsContextPtr(src_w, src_h, src_pix_fmt, dst_w, dst_h,
-                                dst_pix_fmt, interp)
+function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
+                      dst_w, dst_h, dst_pix_fmt, dst_primaries, dst_color_range,
+                      sws_color_details, sws_scale_settings)
+    sws_context = SwsContextPtr()
+    sws_options = Dict(:srcw       => string(src_w),
+                       :srch       => string(src_h),
+                       :src_format => string(src_pix_fmt),
+                       :dstw       => string(dst_w),
+                       :dsth       => string(dst_h),
+                       :dst_format => string(dst_pix_fmt))
+    for (key, val) in pairs(sws_scale_settings)
+        sws_options[key] = string(val)
+    end
+    if sws_options[:srcw] != string(src_w) ||
+        sws_options[:dstw] != string(dst_w) ||
+        sws_options[:srch] != string(src_h) ||
+        sws_options[:dsth] != string(dst_h)
+        throw(ArgumentError("Changing pixel dimensions with sws_scale_settings not yet supported"))
+    end
+    set_class_options(sws_context, sws_options)
+    ret = sws_init_context(sws_context, C_NULL, C_NULL)
+    ret < 0 && error("Could not initialize sws context")
+
+    inv_table = _vio_primaries_to_sws_table(src_primaries)
+    table = _vio_primaries_to_sws_table(dst_primaries)
+    ret = sws_update_color_details(sws_context;
+                                   inv_table = inv_table,
+                                   src_range = src_color_range,
+                                   table = table,
+                                   dst_range = dst_color_range,
+                                   sws_color_details...)
+    ret || error("Could not set sws color details")
+
     srcframe = AVFramePtr()
     dstframe = AVFramePtr()
     SwsTransform(sws_context, srcframe, dstframe)
 end
 
-SwsTransform(src_w, src_h, src_pix_fmt, dst_pix_fmt, interp) =
-    SwsTransform(src_w, src_h, src_pix_fmt, src_w, src_h, dst_pix_fmt, interp)
+function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
+             dst_pix_fmt, dst_primaries, dst_color_range, sws_color_details,
+                      sws_scale_settings)
+    SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
+                 src_w, src_h, dst_pix_fmt, dst_primaries, dst_color_range,
+                 sws_color_details, sws_scale_settings)
+end
 
 mutable struct GrayTransform
     srcframe::AVFramePtr
@@ -176,12 +210,12 @@ function sws_update_color_details(sws_context; inv_table = nothing,
     outs === nothing && return false
     def_inv_table, def_src_range, def_table, def_dst_range, def_brightness,
     def_contrast, def_saturation = outs
-    new_inv_table = inv_table === nothing ? def_inv_table : inv_table
-    new_src_range = src_range === nothing ? def_src_range : src_range
-    new_table = table === nothing ? def_table : table
-    new_dst_range = dst_range === nothing ? def_dst_range : dst_range
+    new_inv_table  = inv_table  === nothing ? def_inv_table  : inv_table
+    new_src_range  = src_range  === nothing ? def_src_range  : src_range
+    new_table      = table      === nothing ? def_table      : table
+    new_dst_range  = dst_range  === nothing ? def_dst_range  : dst_range
     new_brightness = brightness === nothing ? def_brightness : brightness
-    new_contrast = contrast === nothing ? def_contrast : contrast
+    new_contrast   = contrast   === nothing ? def_contrast   : contrast
     new_saturation = saturation === nothing ? def_saturation : saturation
     sws_set_color_details(sws_context, new_inv_table, new_src_range, new_table,
                           new_dst_range, new_brightness, new_contrast,

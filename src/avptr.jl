@@ -132,6 +132,7 @@ end
 
 @avptr AVFramePtr  AVFrame  av_frame_alloc  av_frame_free
 @avptr AVPacketPtr AVPacket av_packet_alloc av_packet_free
+@avptr SwsContextPtr SwsContext sws_alloc_context sws_freeContext
 @avptr AVIOContextPtr AVIOContext
 @avptr AVStreamPtr AVStream
 @avptr AVCodecPtr AVCodec
@@ -161,25 +162,6 @@ end
 
 AVCodecContextPtr(codec::AVCodecPtr) = AVCodecContextPtr(unsafe_convert(Ptr{AVCodec}, codec))
 
-@avptr SwsContextPtr SwsContext
-
-function SwsContextPtr(src_width, src_height, src_pix_fmt, dst_width,
-                       dst_height, dst_pix_fmt, transcode_interpolation)
-    p = sws_getContext(src_width, src_height, src_pix_fmt, dst_width,
-                       dst_height, dst_pix_fmt, transcode_interpolation, C_NULL,
-                       C_NULL, C_NULL)
-    check_ptr_valid(p) || error("Could not allocate SwsContext")
-    obj = SwsContextPtr(p)
-    finalizer(sws_freeContext, obj)
-    return obj
-end
-
-SwsContextPtr(src_width, src_height, src_pix_fmt, dst_pix_fmt,
-              transcode_interpolation) = SwsContextPtr(src_width, src_height,
-                                                       src_pix_fmt, src_width,
-                                                       src_height, dst_pix_fmt,
-                                                       transcode_interpolation)
-
 function vio_dealloc_AVIOContextPtr(obj)
     if check_ptr_valid(obj, false)
         buff_ptr = field_ptr(obj, :buffer)
@@ -204,7 +186,16 @@ function AVIOContextPtr(avio_ctx_buffer_size, opaque_p, read_p)
     return obj
 end
 
-@inline function set_class_option(ptr::NestedCStruct{T}, key, val) where T
-    ret = av_opt_set(ptr, string(key), string(val), AV_OPT_SEARCH_CHILDREN)
+@inline function set_class_option(ptr::NestedCStruct{T}, key, val,
+                                  search = AV_OPT_SEARCH_CHILDREN) where T
+    ret = av_opt_set(ptr, string(key), string(val), search)
     ret < 0 && error("Could not set class option $key to $val: got error $ret")
 end
+
+function set_class_options(ptr, settings::SettingsT, args...)
+    for (key, val) in pairs(settings)
+        set_class_option(ptr, key, val, args...)
+    end
+end
+
+set_class_options(ptr, args...; kwargs...) = set_class_options(ptr, kwargs, args...)

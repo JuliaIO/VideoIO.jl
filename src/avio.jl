@@ -228,7 +228,6 @@ get_stream(r::VideoReader) = get_stream(r.avin, r.stream_index0)
 
 function VideoReader(avin::AVInput{I}, video_stream = 1;
                      transcode::Bool = true,
-                     transcode_interpolation = SWS_BILINEAR,
                      target_format::Union{Nothing, Cint} = nothing,
                      pix_fmt_loss_flags = 0,
                      target_colorspace_details = nothing,
@@ -300,19 +299,11 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
         frame_graph = AVFramePtr()
     else
         frame_graph = SwsTransform(width, height, codec_context.pix_fmt,
-                                   dst_pix_fmt, transcode_interpolation)
-        src_color_range = codec_context.color_range
-        inv_table = _vio_primaries_to_sws_table(codec_context.color_primaries)
-        table = _vio_primaries_to_sws_table(colorspace_details.color_primaries)
-
-        ret = sws_update_color_details(frame_graph.sws_context;
-                                       inv_table = inv_table,
-                                       src_range = src_color_range,
-                                       table = table,
-                                       dst_range = colorspace_details.color_range,
-                                       sws_color_details...)
-        ret || error("Could not set sws color details")
-        set_class_options(frame_graph.sws_context; swscale_settings...)
+                                   codec_context.color_primaries,
+                                   codec_context.color_range, dst_pix_fmt,
+                                   colorspace_details.color_primaries,
+                                   colorspace_details.color_range,
+                                   sws_color_details, swscale_settings)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
     end
@@ -543,10 +534,6 @@ arguments listed below.
 - `transcode::Bool = true`: Determines whether decoded frames are transferred
     into a Julia matrix with easily interpretable element type, or instead
     returned as raw byte buffers.
-- `transcode_interpolation = VideoIO.SWS_BILINEAR`: Interpolation method used by
-    `sws_scale`. Must be a `VideoIO.SWS_*` value that corresponds to a FFmpeg
-    [interpolation value]
-    (https://ffmpeg.org/doxygen/4.1/group__libsws.html#ga6110064d9edfbec77ca5c3279cb75c31).
 - `target_format::Union{Nothing, Cint} = nothing`: Determines the target pixel
     format that decoded frames will be transformed into before being transferred
     to an output array. This can either by a `VideoIO.AV_PIX_FMT_*` value
