@@ -10,10 +10,13 @@ const ReaderBitTypes = Union{UInt8, UInt16}
 const ReaderNormedTypes = Normed{T} where T<: ReaderBitTypes
 const ReaderGrayTypes = Gray{T} where T<: ReaderNormedTypes
 const ReaderRgbTypes = RGB{T} where T<:ReaderNormedTypes
-const ReaderElTypes = Union{ReaderGrayTypes, ReaderRgbTypes}
-const PermutedArray{T,N,perm,iperm,AA <: Array} =
+const ReaderElTypes = Union{ReaderGrayTypes, ReaderRgbTypes, ReaderNormedTypes,
+                            ReaderBitTypes}
+const PermutedArray{T,N,perm,iperm,AA <: StridedArray} =
     Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm,AA}
-const VidArray{T,N} = Union{Array{T,N},PermutedArray{T,N}}
+const VidArray{T,N} = Union{StridedArray{T,N},PermutedArray{T,N}}
+
+const VidRawBuff = StridedArray{UInt8}
 
 const VIO_ALIGN = 32
 
@@ -456,21 +459,21 @@ end
 function retrieve!(r::VideoReader{TRANSCODE}, buf::VidArray{T}
                    ) where T <: ReaderElTypes
     if !out_img_check(r, buf)
-        throw(ArgumentError("Buffer is the wrong size or element type"))
+        throw(ArgumentError("Buffer is the wrong size, element type, or stride"))
     end
     _retrieve!(r, buf)
 end
 
-function _retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
+function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
     fill_graph_input!(r)
     stash_graph_input!(buf, r, align)
     remove_graph_input!(r)
     return buf
 end
 
-function retrieve_raw!(r, buf::Array{UInt8}, align = VIO_ALIGN)
-    if !out_bytes_size_check(buf, r, align)
-        throw(ArgumentError("Buffer is the wrong size"))
+function retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
+    if !raw_buff_check(buf, r, align)
+        throw(ArgumentError("Buffer is the wrong size or stride"))
     end
     _retrieve_raw!(r, buf, align)
 end
@@ -489,7 +492,7 @@ function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     _retrieve!(r, buf)
 end
 
-retrieve!(r::VideoReader{NO_TRANSCODE}, buf::Array{UInt8}, args...) =
+retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidRawBuff, args...) =
     retrieve_raw!(r, buf, args...)
 
 function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
@@ -691,7 +694,11 @@ out_img_eltype_check(::Type{T}, p) where T<:RGB{N6f10} = p == AV_PIX_FMT_GBRP10L
 out_img_eltype_check(fmt::Integer, ::AbstractArray{T}) where T = out_img_eltype_check(T, fmt)
 out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 
-out_img_check(r, buf) = out_img_size_check(r, buf) && out_img_eltype_check(r, buf)
+stride_check(buf) = stride(buf, 1) == 1
+stride_check(buf::PermutedDimsArray) = stride_check(parent(buf))
+
+out_img_check(r, buf) = out_img_size_check(r, buf) &
+    out_img_eltype_check(r, buf) & stride_check(buf)
 
 """
     out_bytes_size(reader[, align = VideoIO.VIO_ALIGN])
@@ -712,6 +719,9 @@ out_bytes_size(r, args...) =
     out_bytes_size(raw_pixel_format(r), out_frame_size(r)..., args...)
 
 out_bytes_size_check(buf, r, args...) = sizeof(buf) == out_bytes_size(r, args...)
+
+raw_buff_check(buf, r, args...) = out_bytes_size_check(buf, r, args...) &
+    stride_check(buf)
 
 graph_blocked(r) = r.graph_input_occupied # TODO: make sure the last frame was made available
 frame_is_queued(r::StreamContext) = !isempty(r.frame_queue) || graph_blocked(r)
