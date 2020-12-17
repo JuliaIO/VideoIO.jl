@@ -864,6 +864,8 @@ end
 
 Count the total number of frames in the video by seeking to start, skipping
 through each frame, and seeking back to the start.
+
+For a faster alternative, try `get_number_frames`.
 """
 function counttotalframes(s::VideoReader)
     seekstart(s)
