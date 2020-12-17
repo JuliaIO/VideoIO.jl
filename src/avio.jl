@@ -686,12 +686,15 @@ out_img_size_check(r, buf::PermutedDimsArray) = out_img_size_check(r, parent(buf
 
 out_img_eltype_check(::Type{T}, p) where T <: UInt8 = p == AV_PIX_FMT_GRAY8
 out_img_eltype_check(::Type{T}, p) where T <: UInt16 = p == AV_PIX_FMT_GRAY10LE
-out_img_eltype_check(::Type{X}, p) where {T, X <: Normed{T}} = out_img_eltype_check(T, p)
-out_img_eltype_check(::Type{X}, p) where {T, X <: Gray{T}} = out_img_eltype_check(T, p)
+out_img_eltype_check(::Type{X}, p) where {T, X <: Normed{T}} =
+    out_img_eltype_check(T, p)
+out_img_eltype_check(::Type{X}, p) where {T, X <: Gray{T}} =
+    out_img_eltype_check(T, p)
 out_img_eltype_check(::Type{T}, p) where T<:RGB{N0f8} = p == AV_PIX_FMT_RGB24
 out_img_eltype_check(::Type{T}, p) where T<:RGB{N6f10} = p == AV_PIX_FMT_GBRP10LE
 
-out_img_eltype_check(fmt::Integer, ::AbstractArray{T}) where T = out_img_eltype_check(T, fmt)
+out_img_eltype_check(fmt::Integer, ::AbstractArray{T}) where T =
+    out_img_eltype_check(T, fmt)
 out_img_eltype_check(r, buf) = out_img_eltype_check(out_frame_format(r), buf)
 
 stride_check(buf) = stride(buf, 1) == 1
