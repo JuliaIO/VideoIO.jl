@@ -448,6 +448,7 @@ end
     finally
         VideoIO.close_video_out!(writer)
     end
+    @test_throws ErrorException VideoIO.append_encode_mux!(writer, img_full_range, 0)
 end
 
 @testset "Encoding monochrome videos" begin

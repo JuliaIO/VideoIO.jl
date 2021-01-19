@@ -28,6 +28,8 @@ graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
 graph_output_frame(r::VideoEncoder) = graph_output_frame(r.frame_graph)
 graph_output_frame(r::VideoWriter) = graph_output_frame(r.frame_graph)
 
+isopen(w::VideoWriter) = check_ptr_valid(w.format_context, false)
+
 """
     encode(encoder::VideoEncoder, io::IO)
 
@@ -354,8 +356,13 @@ end
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
 execute_graph!(encoder::VideoEncoder) = exec!(encoder.frame_graph)
 
+function _append_encode_mux!(writer, img, index)
+    prepare_video_frame!(writer, img, index)
+    encode_mux!(writer)
+end
+
 """
-    append_encode_mux(writer, img, index)
+    append_encode_mux!(writer, img, index)
 
 Prepare frame `img` for encoding, encode it, mux it, and either cache it or
 write it to the file described by `writer`. Indices must start at zero, i.e. for
@@ -364,8 +371,8 @@ the first frame set `index = 0`, and subsequent calls increment `index` by one.
 was used to create `writer`.
 """
 function append_encode_mux!(writer, img, index)
-    prepare_video_frame!(writer, img, index)
-    encode_mux!(writer)
+    isopen(writer) || error("VideoWriter is closed for writing")
+    _append_encode_mux!(writer, img, index)
 end
 
 """
@@ -834,7 +841,7 @@ See also: [`open_video_out`](@ref), [`append_encode_mux!`](@ref),
 function encode_mux_video(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
         for (i, img) in enumerate(imgstack)
-            append_encode_mux!(writer, img, i - 1)
+            _append_encode_mux!(writer, img, i - 1)
         end
     end
     nothing
