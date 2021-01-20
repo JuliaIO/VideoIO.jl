@@ -1,5 +1,5 @@
 export encodevideo, encode!, prepareencoder, appendencode!, startencode!,
-    finishencode!, mux, open_video_out, encode_mux!, append_encode_mux!,
+    finishencode!, mux, open_video_out, append_encode_mux!,
     close_video_out!, encode_mux_video, get_codec_name
 
 
