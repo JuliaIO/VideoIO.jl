@@ -476,6 +476,7 @@ function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt,
             codec_pix_fmts = get_array_from_avarray(codec.pix_fmts,
                                                     AV_PIX_FMT_NONE;
                                                     make_copy = false)
+            codec_name = unsafe_string(codec.name)
             target_pix_fmt in codec_pix_fmts || throw(ArgumentError(
                 "Pixel format $target_pix_fmt not compatible with codec $codec_name"
             ))
