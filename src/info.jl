@@ -2,23 +2,23 @@
 
 function _get_fc(file::String) # convenience function for `get_duration` and `get_start_time`
     v = open(file)
-    return unsafe_load(v.apFormatContext[1]), v
+    return v.format_context, v
 end
-get_duration(fc::AVFormatContext) = fc.duration / 1e6
+get_duration(fc::AVFormatContextPtr) = fc.duration / AV_TIME_BASE
 
 """
     get_duration(file::String) -> Float64
 
 Return the duration of the video `file` in seconds (float).
 """
-function get_duration(file::String) 
+function get_duration(file::String)
     fc, v = _get_fc(file)
     duration = get_duration(fc)
     close(v)
     return duration
 end
 
-get_start_time(fc::AVFormatContext) = Dates.unix2datetime(fc.start_time_realtime)
+get_start_time(fc::AVFormatContextPtr) = Dates.unix2datetime(fc.start_time_realtime)
 
 """
     get_start_time(file::String) -> DateTime
@@ -32,7 +32,7 @@ function get_start_time(file::String)
     return starttime
 end
 
-get_time_duration(fc::AVFormatContext) = (get_start_time(fc), get_duration(fc))
+get_time_duration(fc::AVFormatContextPtr) = (get_start_time(fc), get_duration(fc))
 
 """
     get_time_duration(file::String) -> (DateTime, Microsecond)

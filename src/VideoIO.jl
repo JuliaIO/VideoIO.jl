@@ -3,10 +3,15 @@ module VideoIO
 using Libdl
 using Requires, Dates, ProgressMeter
 using ImageCore: channelview, rawview
-using ColorTypes: RGB, Gray, N0f8, YCbCr
-using ImageTransformations: restrict
+using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
 
-import Base: iterate, IteratorSize, IteratorEltype
+using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
+using Base.GC: @preserve
+import Base: iterate, IteratorSize, IteratorEltype, setproperty!, convert,
+    getproperty, unsafe_convert, propertynames, getindex, setindex!, parent,
+    position, unsafe_wrap, unsafe_copyto!
+
+const VIO_LOCK = ReentrantLock()
 
 include("init.jl")
 include("util.jl")
@@ -22,8 +27,12 @@ using .AVFormat
 using .SWScale
 import .AVDevice
 
+include("avptr.jl")
+
 include("info.jl")
 include("avdictionary.jl")
+include("avframe_transfer.jl")
+include("frame_graph.jl")
 include("avio.jl")
 include("encoding.jl")
 include("testvideos.jl")

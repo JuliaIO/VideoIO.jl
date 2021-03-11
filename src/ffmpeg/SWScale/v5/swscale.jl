@@ -86,8 +86,8 @@ function sws_scale(c, srcSlice, srcStride, srcSliceY::Integer, srcSliceH::Intege
     ccall((:sws_scale, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Cint, Cint, Ptr{Ptr{UInt8}}, Ptr{Cint}), c, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride)
 end
 
-function sws_setColorspaceDetails(c, inv_table::NTuple{4, Cint}, srcRange::Integer, table::NTuple{4, Cint}, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
-    ccall((:sws_setColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, NTuple{4, Cint}, Cint, NTuple{4, Cint}, Cint, Cint, Cint, Cint), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+function sws_setColorspaceDetails(c, inv_table, srcRange::Integer, table, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
+    ccall((:sws_setColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, Ptr{Cint}, Cint, Ptr{Cint}, Cint, Cint, Cint, Cint), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
 end
 
 function sws_getColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)

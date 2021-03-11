@@ -52,16 +52,33 @@ function av_image_copy_uc_from(dst_data::NTuple{4, Ptr{UInt8}}, dst_linesizes::N
     ccall((:av_image_copy_uc_from, libavutil), Cvoid, (NTuple{4, Ptr{UInt8}}, NTuple{4, Cptrdiff_t}, NTuple{4, Ptr{UInt8}}, NTuple{4, Cptrdiff_t}, AVPixelFormat, Cint, Cint), dst_data, dst_linesizes, src_data, src_linesizes, pix_fmt, width, height)
 end
 
-function av_image_fill_arrays(dst_data::NTuple{4, Ptr{UInt8}}, dst_linesize::NTuple{4, Cint}, src, pix_fmt::AVPixelFormat, width::Integer, height::Integer, align::Integer)
-    ccall((:av_image_fill_arrays, libavutil), Cint, (NTuple{4, Ptr{UInt8}}, NTuple{4, Cint}, Ptr{UInt8}, AVPixelFormat, Cint, Cint, Cint), dst_data, dst_linesize, src, pix_fmt, width, height, align)
+function av_image_fill_arrays(dst_data::Ref{<:Ref{UInt8}},
+                              dst_linesize::Ref{Cint}, src,
+                              pix_fmt::AVPixelFormat, width::Integer,
+                              height::Integer, align::Integer)
+    ccall((:av_image_fill_arrays, libavutil), Cint, (Ref{Ptr{UInt8}},
+                                                     Ref{Cint}, Ptr{UInt8},
+                                                     AVPixelFormat, Cint, Cint,
+                                                     Cint),
+          dst_data, dst_linesize, src, pix_fmt, width, height, align)
 end
 
 function av_image_get_buffer_size(pix_fmt::AVPixelFormat, width::Integer, height::Integer, align::Integer)
     ccall((:av_image_get_buffer_size, libavutil), Cint, (AVPixelFormat, Cint, Cint, Cint), pix_fmt, width, height, align)
 end
 
-function av_image_copy_to_buffer(dst, dst_size::Integer, src_data::NTuple{4, Ptr{UInt8}}, src_linesize::NTuple{4, Cint}, pix_fmt::AVPixelFormat, width::Integer, height::Integer, align::Integer)
-    ccall((:av_image_copy_to_buffer, libavutil), Cint, (Ptr{UInt8}, Cint, NTuple{4, Ptr{UInt8}}, NTuple{4, Cint}, AVPixelFormat, Cint, Cint, Cint), dst, dst_size, src_data, src_linesize, pix_fmt, width, height, align)
+function av_image_copy_to_buffer(dst, dst_size::Integer,
+                                 src_data::Union{Ref{Ptr{UInt8}}, Ref{NTuple{N, Ptr{UInt8}}}},
+                                 src_linesize::Union{Ref{Cint}, Ref{NTuple{M, Cint}}},
+                                 pix_fmt::AVPixelFormat,
+                                 width::Integer, height::Integer,
+                                 align::Integer) where {M, N}
+    ccall((:av_image_copy_to_buffer, libavutil), Cint, (Ref{UInt8}, Cint,
+                                                        Ref{Ptr{UInt8}}, Ref{Cint},
+                                                        AVPixelFormat, Cint,
+                                                        Cint, Cint),
+          dst, dst_size, src_data, src_linesize, pix_fmt, width, height,
+          align)
 end
 
 function av_image_check_size(w::Integer, h::Integer, log_offset::Integer, log_ctx)

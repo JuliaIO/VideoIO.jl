@@ -1,31 +1,6 @@
 # Helpful utility functions
 
-# Set the value of a field of a pointer
-# Equivalent to s->name = value
-@inline function av_setfield(s::Ptr{T}, name::Symbol, value) where T
-    field_pos = Base.fieldindex(T, name)
-    byteoffset = fieldoffset(T, field_pos)
-    S = fieldtype(T, name)
-
-    p = convert(Ptr{S}, s + byteoffset)
-    unsafe_store!(p, convert(S, value))
-end
-
-function av_pointer_to_field(s::Ptr{T}, name::Symbol) where T
-    field_pos = Base.fieldindex(T, name)
-    byteoffset = fieldoffset(T, field_pos)
-    return s + byteoffset
-end
-
-av_pointer_to_field(s::Array, name::Symbol) = av_pointer_to_field(pointer(s), name)
-
-function collectexecoutput(exec::Cmd)
-    out = Pipe(); err = Pipe()
-    p = Base.open(pipeline(ignorestatus(exec), stdout=out, stderr=err))
-    close(out.in); close(err.in)
-    err_s = readlines(err); out_s = readlines(out)
-    return (length(out_s) > length(err_s)) ? out_s : err_s
-end
+const VIO_AVERROR_EOF = -541478725 # AVERROR_EOF
 
 """
 loglevel!(loglevel::Integer)
@@ -83,11 +58,19 @@ function loglevel()
     end
 end
 
-# a convenience function for getting the aspect ratio
-function aspect_ratio(f)
-    if iszero(f.aspect_ratio) || isnan(f.aspect_ratio) || isinf(f.aspect_ratio) # if the stored aspect ratio is nonsense then we default to one. OBS, this might still be wrong for some videos and an unnecessary test for most
-        1//1
-    else
-        f.aspect_ratio
-    end
+@inline function field_ptr(::Type{S}, struct_pointer::Ptr{T}, field::Symbol,
+                           index::Integer = 1) where {S,T}
+    fieldpos = fieldindex(T, field)
+    field_pointer = convert(Ptr{S}, struct_pointer) +
+        fieldoffset(T, fieldpos) + (index - 1) * sizeof(S)
+    return field_pointer
+end
+
+@inline field_ptr(a::Ptr{T}, field::Symbol, args...) where T =
+    field_ptr(fieldtype(T, field), a, field, args...)
+
+function check_ptr_valid(p::Ptr, err::Bool = true)
+    valid = p != C_NULL
+    err && !valid && error("Invalid pointer")
+    valid
 end
