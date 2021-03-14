@@ -792,40 +792,6 @@ end
 img_params(img::AbstractMatrix{T}) where T = (T, size(img))
 
 """
-    encodevideo(filename::String,imgstack::Array;
-        AVCodecContextProperties = AVCodecContextPropertiesDefault,
-        codec_name = "libx264",
-        framerate = 24)
-
-Encode image stack to video file and return filepath. The rows of each image in
-`imgstack` must span the vertical axis of the image, and the columns must span
-the horizontal axis.
-"""
-function encodevideo(filename::String,imgstack::Array;
-                     AVCodecContextProperties = AVCodecContextPropertiesDefault,
-                     codec_name = "libx264", framerate = 24, silent=false,
-                     scanline_major = false, kwargs...)
-
-    Base.open("temp.stream","w") do io
-        startencode!(io)
-        encoder = prepareencoder(imgstack[1]; codec_name = codec_name,
-                                 framerate = framerate,
-                                 AVCodecContextProperties = AVCodecContextProperties,
-                                 scanline_major = scanline_major, kwargs...)
-        if !silent
-            p = Progress(length(imgstack), 1)   # minimum update interval: 1 second
-        end
-        for (i, img) in enumerate(imgstack)
-            appendencode!(encoder, io, img, i - 1)
-            !silent && next!(p)
-        end
-        finishencode!(encoder, io)
-    end
-    mux("temp.stream",filename,framerate,silent=silent)
-    return filename
-end
-
-"""
     encode_mux_video(filename::String, imgstack; ...)
 
 Create a video container `filename` and encode the set of frames `imgstack` into
