@@ -6,7 +6,7 @@
             encoder_settings = (priv_data = (crf="23", preset="medium"))
             VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = 30, encoder_settings = encoder_settings)
             @test stat(tempvidpath).size > 100
-            @test_broken VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
+            @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
         end
     end
 end
