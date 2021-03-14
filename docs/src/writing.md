@@ -4,7 +4,7 @@ Note: Writing of audio streams is not yet implemented
 
 ## Single-step Encoding
 
-Videos can be encoded directly from image stack using `encodevideo(filename::String,imgstack::Array)` where `imgstack` is an array of image arrays with identical type and size.
+Videos can be encoded directly from image stack using `encode_mux_video(filename::String,imgstack::Array)` where `imgstack` is an array of image arrays with identical type and size.
 
 For instance, say an image stack has been constructed from reading a series of image files `1.png`, `2.png`,`3.png` etc. :
 ```julia
@@ -21,16 +21,16 @@ end
 The entire image stack can be encoded in a single step:
 ```julia
 using VideoIO
-props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-encodevideo("video.mp4",imgstack,framerate=30,AVCodecContextProperties=props)
+props = (priv_data = (crf="22", preset="medium"))
+encode_mux_video("video.mp4",imgstack,framerate=30,encoder_settings=props)
 
 [ Info: Video file saved: /Users/username/Documents/video.mp4
-[ Info: frame=  100 fps=0.0 q=-1.0 Lsize=  129867kB time=00:00:03.23 bitrate=329035.1kbits/s speed=8.17x    
+[ Info: frame=  100 fps=0.0 q=-1.0 Lsize=  129867kB time=00:00:03.23 bitrate=329035.1kbits/s speed=8.17x
 [ Info: video:129865kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.001692%
 ```
 
 ```@docs
-VideoIO.encodevideo
+VideoIO.encode_mux_video
 ```
 
 ## Iterative Encoding
@@ -47,9 +47,9 @@ For instance:
 using VideoIO
 framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 
-props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+props = (priv_data = (crf="22", preset="medium"))
 framerate=24
-encoder = prepareencoder(framestack[1], framerate=framerate, AVCodecContextProperties=props)
+encoder = prepareencoder(framestack[1], framerate=framerate, encoder_settings=props)
 
 open("temp.stream", "w") do io
     for i in 1:length(framestack)
@@ -74,10 +74,10 @@ imgnames = imgnames[p]
 
 filename = "video.mp4"
 framerate = 24
-props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+props = (priv_data = (crf="22", preset="medium"))
 
 firstimg = load(joinpath(dir,imgnames[1]))
-encoder = prepareencoder(firstimg, framerate=framerate, AVCodecContextProperties=props)
+encoder = prepareencoder(firstimg, framerate=framerate, encoder_settings=props)
 
 io = Base.open("temp.stream","w")
 @showprogress "Encoding video frames.." for i in 1:length(imgnames)
@@ -122,9 +122,9 @@ A few helpful presets for h264:
 
 | Goal | `AVCodecContextProperties` value |
 |:----:|:------|
-| Perceptual compression, h264 default. Best for most cases | ```[:priv_data => ("crf"=>"23","preset"=>"medium")``` |
-| Lossless compression. Fastest, largest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultrafast")]``` |
-| Lossless compression. Slowest, smallest file size | ```[:priv_data => ("crf"=>"0","preset"=>"ultraslow")]``` |
+| Perceptual compression, h264 default. Best for most cases | ```(priv_data = (crf="23", preset="medium"))``` |
+| Lossless compression. Fastest, largest file size | ```(priv_data = (crf="0", preset="ultrafast"))``` |
+| Lossless compression. Slowest, smallest file size | ```(priv_data = (crf="0", preset="ultraslow"))``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```[:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]``` |
 
 ## Lossless Encoding
@@ -136,4 +136,4 @@ If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `"crf" => "0"` shou
 ```[:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]```
 
 ### Encoding Performance
-See [`examples/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/examples/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.  
+See [`examples/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/examples/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.

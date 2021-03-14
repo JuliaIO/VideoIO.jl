@@ -3,9 +3,8 @@
         @testset "Encoding $el imagestack" begin
             n = 100
             imgstack = map(x->rand(el,100,100),1:n)
-            props = [:priv_data => ("crf"=>"23", "preset"=>"medium")]
-            VideoIO.encodevideo(tempvidpath, imgstack, framerate = 30,
-                                AVCodecContextProperties = props, silent = true)
+            encoder_settings = (priv_data = (crf="23", preset="medium"))
+            VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = 30, encoder_settings = encoder_settings)
             @test stat(tempvidpath).size > 100
             @test_broken VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
         end
@@ -25,11 +24,9 @@ end
                 encoder_private_settings = (crf = crf, preset = "medium")
                 VideoIO.encode_mux_video(tempvidpath,
                                          img_stack;
-                                         encoder_private_settings =
-                                         encoder_private_settings,
+                                         encoder_private_settings = encoder_private_settings,
                                          encoder_settings = encoder_settings,
-                                         container_private_settings =
-                                         container_private_settings,
+                                         container_private_settings = container_private_settings,
                                          scanline_major = scanline_arg)
                 @test stat(tempvidpath).size > 100
                 f = VideoIO.openvideo(tempvidpath, target_format =
@@ -173,9 +170,8 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-        VideoIO.encodevideo(tempvidpath, imgstack, framerate = fr,
-                            AVCodecContextProperties = props, silent = true)
+        encoder_settings = (priv_data = (crf="22", preset="medium"))
+        VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
         @test parse(Float64, measured_dur_str[1]) == target_dur
@@ -188,9 +184,8 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        props = [:priv_data => ("crf"=>"22","preset"=>"medium")]
-        VideoIO.encodevideo(tempvidpath, imgstack, framerate = fr,
-                            AVCodecContextProperties = props, silent = true)
+        encoder_settings = (priv_data = (crf="22", preset="medium"))
+        VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
         @test parse(Float64, measured_dur_str[1]) == target_dur

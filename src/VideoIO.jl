@@ -176,7 +176,7 @@ VideoIO supports reading and writing video files.
 - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
 - `prepareencoder`, `encode`, `encode!`, `appendencode!`, and `finishencode!` allow writing frames to a file
 - `gettime` and `counttotalframes` provide information
-- `play`, `playvideo`, and `encodevideo` provide higher-level convenience functions for much of the above functionality
+- `play`, `playvideo`, and `encode_mux_video` provide higher-level convenience functions for much of the above functionality
 
 Here's a brief demo stepping through each frame of a video:
 

@@ -1,4 +1,4 @@
-export encodevideo, encode!, prepareencoder, appendencode!, startencode!,
+export encode!, prepareencoder, appendencode!, startencode!,
     finishencode!, mux, open_video_out, append_encode_mux!,
     close_video_out!, encode_mux_video, get_codec_name
 
@@ -112,7 +112,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
     return pret
 end
 
-const AVCodecContextPropertiesDefault = [:priv_data => ("crf"=>"22","preset"=>"medium")]
+const AVCodecContextPropertiesDefault = (priv_data = (crf="22", preset="medium"))
 
 @inline prop_present_and_equal(nt::NamedTuple, prop, val) =
     hasproperty(nt, prop) && getproperty(nt, prop) == val
@@ -134,13 +134,11 @@ islossless(props::NamedTuple) = prop_present_and_equal(props, :crf, 0)
 
 isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) != nothing)
 
-isfullcolorrange(props::NamedTuple) = prop_present_and_equal(props,
-                                                             :color_range, 2)
+isfullcolorrange(props::NamedTuple) = prop_present_and_equal(props, :color_range, 2)
 
 lossless_colorrange_ok(props) = ! islossless(props) || isfullcolorrange(props)
 
-function lossless_colorrange_check_warn(AVCodecContextProperties, codec_name,
-                                        elt, nbit)
+function lossless_colorrange_check_warn(AVCodecContextProperties, codec_name, elt, nbit)
     if !lossless_colorrange_ok(AVCodecContextProperties)
         @warn """
 Encoding output not lossless.
@@ -202,7 +200,7 @@ end
 
 function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
                             ) where {T<:RGB{N6f10}, S}
-    if  codec_name in ["libx264", "h264_nvenc"]
+    if codec_name in ["libx264", "h264_nvenc"]
         if islossless(props)
             @warn """Encoding output not lossless.
                 libx264 does not support lossless RGB planes. RGB will be downsampled
