@@ -1,3 +1,83 @@
+
+swapext(f, new_ext) = "$(splitext(f)[1])$new_ext"
+
+isarm() = Base.Sys.ARCH in (:arm,:arm32,:arm7l,:armv7l,:arm8l,:armv8l,:aarch64,:arm64)
+
+@noinline function isblank(img)
+    all(c->green(c) == 0, img) || all(c->blue(c) == 0, img) || all(c->red(c) == 0, img) || maximum(rawview(channelview(img))) < 0xcf
+end
+
+function compare_colors(a::RGB, b::RGB, tol)
+    ok = true
+    for f in (red, green, blue)
+        dev = abs(float(f(a)) - float(f(b)))
+        ok &= dev <= tol
+    end
+    ok
+end
+
+# Helper functions
+function test_compare_frames(test_frame, ref_frame, tol = 0.05)
+    if isarm()
+        @test_skip test_frame == ref_frame
+    else
+        frames_similar = true
+        for (a, b) in zip(test_frame, ref_frame)
+            frames_similar &= compare_colors(a, b, tol)
+        end
+        @test frames_similar
+    end
+end
+
+# uses read!
+function read_frameno!(img, v, frameno)
+    seekstart(v)
+    i = 0
+    while !eof(v) && i < frameno
+        read!(v, img)
+        i += 1
+    end
+end
+
+function make_comparison_frame_png(vidpath::AbstractString, frameno::Integer, writedir = tempdir())
+    vid_basename = first(splitext(basename(vidpath)))
+    png_name = joinpath(writedir, "$(vid_basename)_$(frameno).png")
+    FFMPEG.exe(`-y -v error -i $(vidpath) -vf "sws_flags=accurate_rnd+full_chroma_inp+full_chroma_int; select=eq(n\,$(frameno-1))" -vframes 1 $(png_name)`)
+    png_name
+end
+
+function make_comparison_frame_png(f, args...)
+    png_name = make_comparison_frame_png(args...)
+    try
+        f(png_name)
+    finally
+        rm(png_name, force = true)
+    end
+end
+
+function get_video_extrema(v)
+    img = read(v)
+    raw_img = parent(img)
+    # Test that the limited range of this video is converted to full range
+    minp, maxp = extrema(raw_img)
+    while !eof(v)
+        read!(v, raw_img)
+        this_minp, this_maxp = extrema(raw_img)
+        minp = min(minp, this_minp)
+        maxp = max(maxp, this_maxp)
+    end
+    return minp, maxp
+end
+
+function get_raw_luma_extrema(elt, vidpath, nw, nh)
+    buff, align = VideoIO.openvideo(vidpath) do v
+        VideoIO.read_raw(v, 1)
+    end
+    luma_buff = view(buff, 1 : nw * nh * sizeof(elt))
+    luma_vals = reinterpret(elt, luma_buff)
+    reinterpret.(extrema(luma_vals))
+end
+
 using ColorTypes: RGB, HSV
 using FixedPointNumbers: Normed, N6f10
 using Base: ReinterpretArray

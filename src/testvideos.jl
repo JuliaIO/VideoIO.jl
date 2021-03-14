@@ -3,7 +3,8 @@
 module TestVideos
 
 import VideoIO
-import Base: download, show
+import Base: show
+import Downloads: download
 export testvideo
 
 videodir = joinpath(dirname(@__FILE__), "..", "videos")
