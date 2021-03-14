@@ -196,7 +196,7 @@ _unsupported_append_encode_type() = error("Array element type not supported")
 
 # bytes_per_sample is the number of bytes per pixel sample, not the size of the
 # element type of img
-function transfer_img_bytes_to_frame_plane!(data_ptr, img::StridedArray,
+function transfer_img_bytes_to_frame_plane!(data_ptr, img::AbstractArray{UInt8},
                                             px_width, px_height, data_linesize,
                                             bytes_per_sample = 1)
     stride(img, 1) == 1 || error("stride(img, 1) must be equal to one")
