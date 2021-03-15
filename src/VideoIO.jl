@@ -174,11 +174,11 @@ VideoIO supports reading and writing video files.
 - `openvideo` and `opencamera` provide access to video files and livestreams
 - `read` and `read!` allow reading frames
 - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
-- `prepareencoder`, `encode`, `encode!`, `appendencode!`, and `finishencode!` allow writing frames to a file
+- `encode_mux_video` for encoding an entire framestack in one step
+- `open_video_out`, `append_encode_mux!` for writing frames sequentially to a file
 - `gettime` and `counttotalframes` provide information
-- `play`, `playvideo`, and `encodevideo` provide higher-level convenience functions for much of the above functionality
 
-Here's a brief demo stepping through each frame of a video:
+Here's a brief demo reading through each frame of a video:
 
 ```julia
 using VideoIO
@@ -188,6 +188,19 @@ while !eof(r)
     read!(r, img)
 end
 ```
+
+An example of encoding one frame at a time:
+
+```julia
+using VideoIO
+framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
+encoder_settings = (crf="22", preset="medium")
+open_video_out("video.mp4", framestack[1], framerate=24, encoder_settings=encoder_settings) do writer
+    for i in eachindex(framestack)
+        append_encode_mux!(writer, framestack[i], i)
+    end
+end
+````
 """
 VideoIO
 

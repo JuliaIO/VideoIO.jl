@@ -3,12 +3,9 @@
     imgstack_rgb = VideoIO.openvideo(collect, file)
     imgstack_gray = convert.(Array{Gray{N0f8}}, imgstack_rgb)
     @testset "Lossless Grayscale encoding" begin
-        prop = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-        codec_name="libx264"
-        VideoIO.encodevideo(tempvidpath, imgstack_gray, codec_name = codec_name,
-                            AVCodecContextProperties = prop, silent = true)
-        imgstack_gray_copy = VideoIO.openvideo(collect, tempvidpath,
-                                               target_format = VideoIO.AV_PIX_FMT_GRAY8)
+        encoder_settings = (color_range=2, crf="0", preset="medium")
+        VideoIO.encode_mux_video(tempvidpath, imgstack_gray, codec_name = "libx264", encoder_settings = encoder_settings)
+        imgstack_gray_copy = VideoIO.openvideo(collect, tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(eltype(imgstack_gray)) == eltype(eltype(imgstack_gray_copy))
         @test length(imgstack_gray) == length(imgstack_gray_copy)
         @test size(imgstack_gray[1]) == size(imgstack_gray_copy[1])
@@ -16,10 +13,9 @@
     end
 
     @testset "Lossless RGB encoding" begin
-        prop = [:priv_data => ("crf"=>"0","preset"=>"medium")]
+        encoder_settings = (color_range=2, crf="0", preset="medium")
         codec_name="libx264rgb"
-        VideoIO.encodevideo(tempvidpath, imgstack_rgb, codec_name = codec_name,
-                            AVCodecContextProperties = prop, silent = true)
+        VideoIO.encode_mux_video(tempvidpath, imgstack_rgb, codec_name = codec_name, encoder_settings = encoder_settings)
         imgstack_rgb_copy = VideoIO.openvideo(collect, tempvidpath)
         @test eltype(imgstack_rgb) == eltype(imgstack_rgb_copy)
         @test length(imgstack_rgb) == length(imgstack_rgb_copy)
@@ -45,11 +41,10 @@
         for i=1:24
             push!(imgstack,img)
         end
-        props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-        VideoIO.encodevideo(tempvidpath, imgstack,
-                            AVCodecContextProperties = props, silent = true)
-        f = VideoIO.openvideo(tempvidpath,
-                              target_format = VideoIO.AV_PIX_FMT_GRAY8)
+
+        encoder_settings = (color_range=2, crf="0", preset="medium")
+        VideoIO.encode_mux_video(tempvidpath, imgstack, encoder_settings = encoder_settings)
+        f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         try
             frame_test = collect(rawview(channelview(read(f))))
             h_test = fit(Histogram, frame_test[:], 0:256)
@@ -79,11 +74,10 @@
             for i in 0:255
                 push!(imgstack,fill(UInt8(i),(16,16)))
             end
-            props = [:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]
-            VideoIO.encodevideo(tempvidpath, imgstack,
-                                AVCodecContextProperties = props, silent = true)
-            f = VideoIO.openvideo(tempvidpath,
-                                  target_format = VideoIO.AV_PIX_FMT_GRAY8)
+
+            encoder_settings = (color_range=2, crf="0", preset="medium")
+            VideoIO.encode_mux_video(tempvidpath, imgstack, encoder_settings = encoder_settings)
+            f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
             try
                 frame_ids_test = []
                 while !eof(f)
