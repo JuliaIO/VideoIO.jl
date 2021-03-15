@@ -81,20 +81,20 @@ Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodec
 
 A few helpful presets for h264:
 
-| Goal | `AVCodecContextProperties` value |
+| Goal | `encoder_settings` value |
 |:----:|:------|
-| Perceptual compression, h264 default. Best for most cases | ```(priv_data = (crf=23, preset="medium"))``` |
-| Lossless compression. Fastest, largest file size | ```(priv_data = (crf=0, preset="ultrafast"))``` |
-| Lossless compression. Slowest, smallest file size | ```(priv_data = (crf=0, preset="ultraslow"))``` |
+| Perceptual compression, h264 default. Best for most cases | ```(crf=23, preset="medium")``` |
+| Lossless compression. Fastest, largest file size | ```(crf=0, preset="ultrafast")``` |
+| Lossless compression. Slowest, smallest file size | ```(crf=0, preset="ultraslow")``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```[:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]``` |
 
 ## Lossless Encoding
 ### Lossless RGB
-If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires using `codec_name = "libx264rgb"`, to avoid the lossy RGB->YUV420 conversion, and `"crf" => "0"`.
+If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires using `codec_name = "libx264rgb"`, to avoid the lossy RGB->YUV420 conversion, and `crf=0`.
 
 ### Lossless Grayscale
-If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `"crf" => "0"` should be set, as well as `:color_range=>2` to ensure full 8-bit pixel color representation. i.e.
-```[:color_range=>2, :priv_data => ("crf"=>"0","preset"=>"medium")]```
+If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `crf=0` should be set, as well as `color_range=2` to ensure full 8-bit pixel color representation. i.e.
+```(color_range=2, crf=0, preset="medium")```
 
 ### Encoding Performance
 See [`examples/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/examples/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.
