@@ -475,7 +475,13 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      allow_vio_gray_transform = true,
                      sws_color_details::SettingsT = (;)) where T
     framerate > 0 || error("Framerate must be strictly positive")
-    if ! is_eltype_transfer_supported(T)
+
+    if haskey(encoder_settings, :priv_data)
+        throw(ArgumentError("""The field `priv_data` is no longer supported. Either reorganize as a flat NamedTuple or Dict,
+        i.e. encoder_settings=(color_range=2, crf=\"0\", preset=\"medium\") to rely on auto routing of public and private
+        settings, or pass the private settings to `encoder_private_settings` explicitly"""))
+    end
+    if !is_eltype_transfer_supported(T)
         throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
     end
     if scanline_major
