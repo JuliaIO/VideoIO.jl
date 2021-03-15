@@ -232,7 +232,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      codec_name::Union{AbstractString, Nothing} = nothing,
                      framerate::Real = 24,
                      scanline_major::Bool = false,
-                     container_settings::SettingsT = (;),
+                     container_options::SettingsT = (;),
                      container_private_options::SettingsT = (;),
                      encoder_options::SettingsT = (;),
                      encoder_private_options::SettingsT = (;),
@@ -306,7 +306,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
     end
 
-    set_class_options(format_context, container_settings)
+    set_class_options(format_context, container_options)
     if check_ptr_valid(format_context.oformat.priv_class, false)
         set_class_options(format_context.priv_data, container_private_options)
     elseif !isempty(container_private_options)
@@ -410,7 +410,7 @@ occurred.
     stride in the first dimension. For normal arrays, this corresponds to a
     matrix where frame width is in the first dimension, and frame height is in
     the second.
-- `container_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
+- `container_options::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
     of settings for the container. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
 - `container_private_options::SettingsT = (;)`: A `NamedTuple` or
