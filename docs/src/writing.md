@@ -9,8 +9,8 @@ Videos can be encoded directly from image stack using `VideoIO.save(filename::St
 The entire image stack can be encoded in a single step:
 ```julia
 import VideoIO
-encoder_settings = (crf=23, preset="medium")
-VideoIO.save("video.mp4", imgstack, framerate=30, encoder_settings=encoder_settings)
+encoder_options = (crf=23, preset="medium")
+VideoIO.save("video.mp4", imgstack, framerate=30, encoder_options=encoder_options)
 ```
 
 ```@docs
@@ -25,9 +25,9 @@ Alternatively, videos can be encoded iteratively within custom loops.
 using VideoIO
 framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 
-encoder_settings = (crf=23, preset="medium")
+encoder_options = (crf=23, preset="medium")
 framerate=24
-open_video_out("video.mp4", framestack[1], framerate=framerate, encoder_settings=encoder_settings) do writer
+open_video_out("video.mp4", framestack[1], framerate=framerate, encoder_options=encoder_options) do writer
     for i in eachindex(framestack)
         append_encode_mux!(writer, framestack[i], i)
     end
@@ -45,10 +45,10 @@ intstrings =  map(x->split(x,".")[1], imgnames) # Extract index from filenames
 p = sortperm(parse.(Int, intstrings)) #sort files numerically
 imgnames = imgnames[p]
 
-encoder_settings = (crf=23, preset="medium")
+encoder_options = (crf=23, preset="medium")
 
 firstimg = load(joinpath(dir, imgnames[1]))
-open_video_out("video.mp4", firstimg, framerate=24, encoder_settings=encoder_settings) do writer
+open_video_out("video.mp4", firstimg, framerate=24, encoder_options=encoder_options) do writer
     @showprogress "Encoding video frames.." for i in eachindex(imgnames)
         img = load(joinpath(dir, imgnames[i]))
         append_encode_mux!(writer, img, i)
@@ -81,7 +81,7 @@ Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodec
 
 A few helpful presets for h264:
 
-| Goal | `encoder_settings` value |
+| Goal | `encoder_options` value |
 |:----:|:------|
 | Perceptual compression, h264 default. Best for most cases | ```(crf=23, preset="medium")``` |
 | Lossless compression. Fastest, largest file size | ```(crf=0, preset="ultrafast")``` |
