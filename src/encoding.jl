@@ -1,17 +1,5 @@
-export startencode!,
-    finishencode!, open_video_out, append_encode_mux!,
+export open_video_out, append_encode_mux!,
     close_video_out!, encode_mux_video, get_codec_name
-
-
-# A struct collecting encoder objects for easy passing
-mutable struct VideoEncoder{T<:GraphType}
-    codec_name::String
-    codec_context::AVCodecContextPtr
-    stream_index0::Int
-    frame_graph::T
-    packet::AVPacketPtr
-    scanline_major::Bool
-end
 
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
@@ -22,10 +10,8 @@ mutable struct VideoWriter{T<:GraphType}
     scanline_major::Bool
 end
 
-graph_input_frame(r::VideoEncoder) = graph_input_frame(r.frame_graph)
 graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
 
-graph_output_frame(r::VideoEncoder) = graph_output_frame(r.frame_graph)
 graph_output_frame(r::VideoWriter) = graph_output_frame(r.frame_graph)
 
 isopen(w::VideoWriter) = check_ptr_valid(w.format_context, false)
@@ -73,212 +59,6 @@ function encode_mux!(writer::VideoWriter, flush = false)
     return pret
 end
 
-const AVCodecContextPropertiesDefault = (priv_data = (crf="22", preset="medium"))
-
-@inline prop_present_and_equal(nt::NamedTuple, prop, val) =
-    hasproperty(nt, prop) && getproperty(nt, prop) == val
-
-function islossless(prop)
-    for p in prop
-        if p[1] == :priv_data
-            for subp in p[2]
-                if (subp[1] == "crf") && (subp[2] == "0")
-                    return true
-                end
-            end
-        end
-    end
-    return false
-end
-
-islossless(props::NamedTuple) = prop_present_and_equal(props, :crf, 0)
-
-isfullcolorrange(props) = (findfirst(map(x->x == Pair(:color_range,2),props)) != nothing)
-
-isfullcolorrange(props::NamedTuple) = prop_present_and_equal(props, :color_range, 2)
-
-lossless_colorrange_ok(props) = ! islossless(props) || isfullcolorrange(props)
-
-function lossless_colorrange_check_warn(AVCodecContextProperties, codec_name, elt, nbit)
-    if !lossless_colorrange_ok(AVCodecContextProperties)
-        @warn """
-Encoding output not lossless.
-Lossless $(codec_name) encoding of $(elt) requires
-:color_range=>2 within AVCodecContextProperties, to represent
-full $(nbit)-bit pixel value range.
-"""
-    end
-end
-
-_pix_type_not_supported(::Type{T}, codec_name) where T = error(
-    """
-VideoIO: Encoding image element type $T with codec $codec_name not currently
-supported
-"""
-)
-
-function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
-                            props) where {T<:UInt8, S}
-    if codec_name in ["libx264", "h264_nvenc"]
-        lossless_colorrange_check_warn(props, codec_name,
-                                       T, 8)
-    elseif codec_name != "libx264rgb"
-        _pix_type_not_supported(S, codec_name)
-    end
-    get_transfer_pix_fmt(S)
-end
-
-function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name,
-                            props) where {T<:UInt16, S}
-    if codec_name == "libx264"
-        lossless_colorrange_check_warn(props, codec_name,
-                                       T, 10)
-    else
-        _pix_type_not_supported(S, codec_name)
-    end
-    get_transfer_pix_fmt(S)
-end
-
-function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
-                            ) where {T<:RGB{N0f8}, S}
-    if codec_name == "libx264rgb"
-        if !islossless(props)
-            @warn """Codec libx264rgb has limited playback support. Given that
-                selected encoding settings are not lossless (crf!=0), codec_name="libx264"
-                will give better playback results"""
-        end
-    elseif codec_name in ["libx264", "h264_nvenc"]
-        if islossless(props)
-            @warn """Encoding output not lossless.
-                libx264 does not support lossless RGB planes. RGB will be downsampled
-                to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
-        end
-    else
-        _pix_type_not_supported(S, codec_name)
-    end
-    get_transfer_pix_fmt(S)
-end
-
-function _determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, props
-                            ) where {T<:RGB{N6f10}, S}
-    if codec_name in ["libx264", "h264_nvenc"]
-        if islossless(props)
-            @warn """Encoding output not lossless.
-                libx264 does not support lossless RGB planes. RGB will be downsampled
-                to lossy YUV420P. To encode lossless RGB use codec_name="libx264rgb" """
-        end
-    else
-        _pix_type_not_supported(S, codec_name)
-    end
-    get_transfer_pix_fmt(S)
-end
-
-function _determine_pix_fmt(::Type{X}, ::Type{S}, codec_name, props
-                            ) where {T, X<:Normed{T}, S}
-    _determine_pix_fmt(T, S, codec_name, props)
-end
-
-function _determine_pix_fmt(::Type{X}, ::Type{S}, codec_name, props
-                            ) where {T, X<:Gray{T}, S}
-    _determine_pix_fmt(T, S, codec_name, props)
-end
-
-_determine_pix_fmt(::Type{T}, ::Type{S}, codec_name, ::Any) where {T, S} =
-    _pix_type_not_supported(T, codec_name)
-
-_determine_pix_fmt(::Type{T}, codec_name, props) where T =
-    _determine_pix_fmt(T, T, codec_name, props)
-
-function VideoEncoder(firstimg; framerate=30,
-                      AVCodecContextProperties = AVCodecContextPropertiesDefault,
-                      codec_name::String = "libx264",
-                      scanline_major::Bool = false,
-                      target_pix_fmt::Union{Nothing, Cint} = nothing,
-                      pix_fmt_loss_flags = 0,
-                      allow_vio_gray_transform = true,
-                      input_colorspace_details = nothing,
-                      swscale_settings::SettingsT = (;),
-                      sws_color_details::SettingsT = (;))
-    if scanline_major
-        width, height = size(firstimg)
-    else
-        height, width = size(firstimg)
-    end
-
-    if isodd(width) || isodd(height)
-        throw(ArgumentError("Encoding error: Image dims must be a multiple of two"))
-    end
-
-    elt = eltype(firstimg)
-    transfer_pix_fmt = _determine_pix_fmt(elt, codec_name, AVCodecContextProperties)
-    if input_colorspace_details === nothing
-        transfer_colorspace_details = get(VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS,
-                                          transfer_pix_fmt,
-                                          VIO_DEFAULT_COLORSPACE_DETAILS)
-    else
-        transfer_colorspace_details = input_colorspace_details
-    end
-    framerate_rat = Rational(framerate)
-
-    codec_p = avcodec_find_encoder_by_name(codec_name)
-    check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
-    codec = AVCodecPtr(codec_p)
-
-    encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
-                                                      transfer_pix_fmt, codec,
-                                                      pix_fmt_loss_flags)
-
-    codec_context = AVCodecContextPtr(codec)
-    codec_context.width = width
-    codec_context.height = height
-    codec_context.time_base = AVRational(1/framerate_rat)
-    codec_context.framerate = AVRational(framerate_rat)
-    codec_context.pix_fmt = encoding_pix_fmt
-
-    priv_data_ptr = codec_context.priv_data
-    for prop in AVCodecContextProperties
-        if prop[1] == :priv_data
-            for pd in prop[2]
-                av_opt_set(priv_data_ptr, string(pd[1]), string(pd[2]),
-                           AV_OPT_SEARCH_CHILDREN)
-            end
-        else
-            setproperty!(codec_context, prop[1], prop[2])
-        end
-    end
-
-    sigatomic_begin()
-    lock(VIO_LOCK)
-    ret = avcodec_open2(codec_context, codec, C_NULL)
-    unlock(VIO_LOCK)
-    sigatomic_end()
-    ret < 0 && error("Could not open codec: Return code $(ret)")
-
-    use_vio_gray_transform = transfer_pix_fmt == encoding_pix_fmt &&
-        allow_vio_gray_transform && transfer_pix_fmt in VIO_GRAY_SCALE_TYPES &&
-        transfer_colorspace_details.color_range != codec_context.color_range
-    if ! use_vio_gray_transform && transfer_pix_fmt == encoding_pix_fmt
-        maybe_configure_codec_context_colorspace_details!(
-            codec_context, transfer_colorspace_details
-        )
-    end
-
-    frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
-                                              encoding_pix_fmt, width, height,
-                                              transfer_colorspace_details,
-                                              codec_context.color_primaries,
-                                              codec_context.color_trc,
-                                              codec_context.colorspace,
-                                              codec_context.color_range,
-                                              use_vio_gray_transform,
-                                              swscale_settings;
-                                              sws_color_details = sws_color_details)
-
-    packet = AVPacketPtr()
-    return VideoEncoder(codec_name, codec_context, -1, frame_graph,
-                        packet, scanline_major)
-end
-
 function prepare_video_frame!(writer, img, index)
     dstframe = graph_output_frame(writer)
     ret = av_frame_make_writable(dstframe)
@@ -290,7 +70,6 @@ function prepare_video_frame!(writer, img, index)
 end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
-execute_graph!(encoder::VideoEncoder) = exec!(encoder.frame_graph)
 
 function _append_encode_mux!(writer, img, index)
     prepare_video_frame!(writer, img, index)
@@ -310,16 +89,6 @@ function append_encode_mux!(writer, img, index)
     isopen(writer) || error("VideoWriter is closed for writing")
     _append_encode_mux!(writer, img, index)
 end
-
-startencode!(io::IO) = write(io, 0x000001b3)
-
-ffmpeg_framerate_string(fr::Real) = string(fr)
-ffmpeg_framerate_string(fr::String) = fr
-ffmpeg_framerate_string(fr::Rational) = "$(numerator(fr))/$(denominator(fr))"
-ffmpeg_framerate_string(fr) = error("""
-Framerate type not valid. Mux framerate should be a subtype of Real
-(Integer, Float64, Rational etc.), or String
-""")
 
 """
     close_video_out!(writer)
