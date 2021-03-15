@@ -246,8 +246,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
 
     if haskey(encoder_options, :priv_data)
         throw(ArgumentError("""The field `priv_data` is no longer supported. Either reorganize as a flat NamedTuple or Dict,
-        i.e. encoder_options=(color_range=2, crf=\"0\", preset=\"medium\") to rely on auto routing of public and private
-        settings, or pass the private settings to `encoder_private_options` explicitly"""))
+        e.g. `encoder_options=(color_range=2, crf=0, preset=\"medium\")` to rely on auto routing of generic and private
+        options, or pass the private options to `encoder_private_options` explicitly"""))
     end
     if !is_eltype_transfer_supported(T)
         throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
@@ -310,7 +310,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     if check_ptr_valid(format_context.oformat.priv_class, false)
         set_class_options(format_context.priv_data, container_private_options)
     elseif !isempty(container_private_options)
-        @warn "This container format does not support private settings, and will be ignored"
+        @warn "This container format does not support private options, and will be ignored"
     end
     set_class_options(codec_context, encoder_options)
     set_class_options(codec_context.priv_data, encoder_private_options)
@@ -411,21 +411,21 @@ occurred.
     matrix where frame width is in the first dimension, and frame height is in
     the second.
 - `container_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
-    of settings for the container. Must correspond to option names and values
+    of options for the container. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
 - `container_private_options::OptionsT = (;)`: A `NamedTuple` or
-    `Dict{Symbol, Any}` of private settings for the container. Must correspond
+    `Dict{Symbol, Any}` of private options for the container. Must correspond
     to private options names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen container type.
 - `encoder_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
-    settings for the encoder context. Must correspond to option names and values
+    options for the encoder context. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
 - `encoder_private_options::OptionsT = (;)`: A `NamedTuple` or
-    `Dict{Symbol, Any}` of private settings for the encoder context. Must
+    `Dict{Symbol, Any}` of private options for the encoder context. Must
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
 - `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform color space scaling. Options
+    options for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
@@ -478,7 +478,7 @@ Create a video container `filename` and encode the set of frames `imgstack` into
 it. `imgstack` must be an iterable of matrices and each frame must have the same
 dimensions and element type.
 
-Encoding settings, restrictions on frame size and element type, and other
+Encoding options, restrictions on frame size and element type, and other
 details are described in [`open_video_out`](@ref). All keyword arguments are
 passed to `open_video_out`.
 
