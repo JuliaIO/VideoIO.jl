@@ -165,7 +165,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
                                      use_vio_gray_transform, swscale_settings;
-                                     sws_color_details::SettingsT = (;))
+                                     sws_color_details::OptionsT = (;))
     if use_vio_gray_transform
         frame_graph = GrayTransform()
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
@@ -232,16 +232,16 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      codec_name::Union{AbstractString, Nothing} = nothing,
                      framerate::Real = 24,
                      scanline_major::Bool = false,
-                     container_options::SettingsT = (;),
-                     container_private_options::SettingsT = (;),
-                     encoder_options::SettingsT = (;),
-                     encoder_private_options::SettingsT = (;),
-                     swscale_settings::SettingsT = (;),
+                     container_options::OptionsT = (;),
+                     container_private_options::OptionsT = (;),
+                     encoder_options::OptionsT = (;),
+                     encoder_private_options::OptionsT = (;),
+                     swscale_settings::OptionsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
                      pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     sws_color_details::SettingsT = (;)) where T
+                     sws_color_details::OptionsT = (;)) where T
     framerate > 0 || error("Framerate must be strictly positive")
 
     if haskey(encoder_options, :priv_data)
@@ -410,21 +410,21 @@ occurred.
     stride in the first dimension. For normal arrays, this corresponds to a
     matrix where frame width is in the first dimension, and frame height is in
     the second.
-- `container_options::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
+- `container_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
     of settings for the container. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `container_private_options::SettingsT = (;)`: A `NamedTuple` or
+- `container_private_options::OptionsT = (;)`: A `NamedTuple` or
     `Dict{Symbol, Any}` of private settings for the container. Must correspond
     to private options names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen container type.
-- `encoder_options::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
+- `encoder_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
     settings for the encoder context. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `encoder_private_options::SettingsT = (;)`: A `NamedTuple` or
+- `encoder_private_options::OptionsT = (;)`: A `NamedTuple` or
     `Dict{Symbol, Any}` of private settings for the encoder context. Must
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
-- `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+- `swscale_settings::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
     settings for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
@@ -451,7 +451,7 @@ occurred.
 - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_transform = true`. Otherwise, use `sws_scale`.
-- `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
+- `sws_color_details::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 
