@@ -20,11 +20,11 @@ end
         for scanline_arg in [true, false]
             @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
                 img_stack = map(x -> rand(el, 100, 100), 1 : n)
-                encoder_private_settings = (crf = 0, preset = "medium")
+                encoder_private_options = (crf = 0, preset = "medium")
                 VideoIO.save(tempvidpath,
                                          img_stack;
                                          codec_name = codec_name,
-                                         encoder_private_settings = encoder_private_settings,
+                                         encoder_private_options = encoder_private_options,
                                          encoder_options = encoder_options,
                                          container_private_settings = container_private_settings,
                                          scanline_major = scanline_arg)
@@ -105,7 +105,7 @@ end
 end
 
 @testset "Encoding monochrome videos" begin
-    encoder_private_settings = (crf = 0, preset = "fast")
+    encoder_private_options = (crf = 0, preset = "fast")
     nw = nh = 100
     nf = 5
     for elt in (N0f8, N6f10)
@@ -126,8 +126,8 @@ end
         # Test that full-range input is automatically converted to limited range
         VideoIO.save(tempvidpath, img_stack_full_range,
                                  target_pix_fmt = target_fmt,
-                                 encoder_private_settings =
-                                 encoder_private_settings)
+                                 encoder_private_options =
+                                 encoder_private_options)
 
         minp, maxp = get_raw_luma_extrema(elt, tempvidpath, nw, nh)
         @test minp > full_min
@@ -136,8 +136,8 @@ end
         # Test that this conversion is NOT done if output video is full range
         VideoIO.save(tempvidpath, img_stack_full_range,
                                  target_pix_fmt = target_fmt,
-                                 encoder_private_settings =
-                                 encoder_private_settings,
+                                 encoder_private_options =
+                                 encoder_private_options,
                                  encoder_options = (color_range = 2,))
         minp, maxp = get_raw_luma_extrema(elt, tempvidpath, nw, nh)
         @test minp == full_min
@@ -149,8 +149,8 @@ end
                                                    limited_max)
         VideoIO.save(tempvidpath, img_stack_limited_range,
                                  target_pix_fmt = target_fmt,
-                                 encoder_private_settings =
-                                 encoder_private_settings,
+                                 encoder_private_options =
+                                 encoder_private_options,
                                  input_colorspace_details =
                                  VideoIO.VioColorspaceDetails())
         minp, maxp = get_raw_luma_extrema(elt, tempvidpath, nw, nh)

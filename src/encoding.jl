@@ -235,7 +235,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      container_settings::SettingsT = (;),
                      container_private_settings::SettingsT = (;),
                      encoder_options::SettingsT = (;),
-                     encoder_private_settings::SettingsT = (;),
+                     encoder_private_options::SettingsT = (;),
                      swscale_settings::SettingsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
                      pix_fmt_loss_flags = 0,
@@ -247,7 +247,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     if haskey(encoder_options, :priv_data)
         throw(ArgumentError("""The field `priv_data` is no longer supported. Either reorganize as a flat NamedTuple or Dict,
         i.e. encoder_options=(color_range=2, crf=\"0\", preset=\"medium\") to rely on auto routing of public and private
-        settings, or pass the private settings to `encoder_private_settings` explicitly"""))
+        settings, or pass the private settings to `encoder_private_options` explicitly"""))
     end
     if !is_eltype_transfer_supported(T)
         throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
@@ -313,7 +313,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         @warn "This container format does not support private settings, and will be ignored"
     end
     set_class_options(codec_context, encoder_options)
-    set_class_options(codec_context.priv_data, encoder_private_settings)
+    set_class_options(codec_context.priv_data, encoder_private_options)
 
     sigatomic_begin()
     lock(VIO_LOCK)
@@ -420,7 +420,7 @@ occurred.
 - `encoder_options::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
     settings for the encoder context. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `encoder_private_settings::SettingsT = (;)`: A `NamedTuple` or
+- `encoder_private_options::SettingsT = (;)`: A `NamedTuple` or
     `Dict{Symbol, Any}` of private settings for the encoder context. Must
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
