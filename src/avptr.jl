@@ -192,8 +192,8 @@ end
     ret < 0 && error("Could not set class option $key to $val: got error $ret")
 end
 
-function set_class_options(ptr, settings::OptionsT, args...)
-    for (key, val) in pairs(settings)
+function set_class_options(ptr, options::OptionsT, args...)
+    for (key, val) in pairs(options)
         set_class_option(ptr, key, val, args...)
     end
 end

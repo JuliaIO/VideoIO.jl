@@ -74,19 +74,22 @@ Encoding of the following image element color types currently supported:
 - `Gray{N0f8}`
 - `RGB{N0f8}`
 
-## Encoder Settings
+## Encoder Options
 
-The `AVCodecContextProperties` object allows control of the majority of settings required.
-Optional fields can be found [here](https://ffmpeg.org/doxygen/4.1/structAVCodecContext.html).
+The `encoder_options` keyword argument allows control over FFmpeg encoding
+options. Optional fields can be found
+[here](https://ffmpeg.org/ffmpeg-codecs.html#Codec-Options).
 
-A few helpful presets for h264:
+More details about options specific to h264 can be found [here](https://trac.ffmpeg.org/wiki/Encode/H.264).
+
+Some example values for the `encoder_options` keyword argument are:
 
 | Goal | `encoder_options` value |
 |:----:|:------|
 | Perceptual compression, h264 default. Best for most cases | ```(crf=23, preset="medium")``` |
 | Lossless compression. Fastest, largest file size | ```(crf=0, preset="ultrafast")``` |
 | Lossless compression. Slowest, smallest file size | ```(crf=0, preset="ultraslow")``` |
-| Direct control of bitrate and frequency of intra frames (every 10) | ```[:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]``` |
+| Direct control of bitrate and frequency of intra frames (every 10) | ```(bit_rate = 400000, gop_size = 10, max_b_frames = 1)``` |
 
 ## Lossless Encoding
 ### Lossless RGB

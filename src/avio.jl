@@ -530,7 +530,7 @@ If called with a single argument function as the first argument, the `reader`
 will be passed to the function, and will be closed once the call returns whether
 or not an error occurred.
 
-The decoder settings and conversion to Julia arrays is controlled by the keyword
+The decoder options and conversion to Julia arrays is controlled by the keyword
 arguments listed below.
 
 # Keyword arguments
@@ -566,7 +566,7 @@ arguments listed below.
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
 - `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform color space scaling. Options
+    options for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
