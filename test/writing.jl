@@ -16,7 +16,7 @@ end
     encoder_settings = (color_range = 2,)
     container_private_settings = (movflags = "+write_colr",)
     for el in [Gray{N0f8}, Gray{N6f10}, RGB{N0f8}, RGB{N6f10}]
-        codec_name = el <: Gray ? "libx264" : "libx264rgb"
+        codec_name = el <: RGB ? "libx264rgb" : "libx264" # the former is necessary for lossless RGB
         for scanline_arg in [true, false]
             @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
                 img_stack = map(x -> rand(el, 100, 100), 1 : n)
