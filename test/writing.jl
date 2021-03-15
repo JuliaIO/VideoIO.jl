@@ -3,7 +3,7 @@
         @testset "Encoding $el imagestack" begin
             n = 100
             imgstack = map(x->rand(el,100,100),1:n)
-            encoder_settings = (color_range=2, crf="0", preset="medium")
+            encoder_settings = (color_range=2, crf=0, preset="medium")
             VideoIO.save(tempvidpath, imgstack, framerate = 30, encoder_settings = encoder_settings)
             @test stat(tempvidpath).size > 100
             @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
@@ -165,7 +165,7 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        encoder_settings = (color_range=2, crf="0", preset="medium")
+        encoder_settings = (color_range=2, crf=0, preset="medium")
         VideoIO.save(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
@@ -179,7 +179,7 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        encoder_settings = (color_range=2, crf="0", preset="medium")
+        encoder_settings = (color_range=2, crf=0, preset="medium")
         VideoIO.save(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)

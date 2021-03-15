@@ -9,7 +9,7 @@ Videos can be encoded directly from image stack using `VideoIO.save(filename::St
 The entire image stack can be encoded in a single step:
 ```julia
 import VideoIO
-encoder_settings = (crf="22", preset="medium")
+encoder_settings = (crf=23, preset="medium")
 VideoIO.save("video.mp4", imgstack, framerate=30, encoder_settings=encoder_settings)
 ```
 
@@ -25,7 +25,7 @@ Alternatively, videos can be encoded iteratively within custom loops.
 using VideoIO
 framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 
-encoder_settings = (crf="22", preset="medium")
+encoder_settings = (crf=23, preset="medium")
 framerate=24
 open_video_out("video.mp4", framestack[1], framerate=framerate, encoder_settings=encoder_settings) do writer
     for i in eachindex(framestack)
@@ -45,7 +45,7 @@ intstrings =  map(x->split(x,".")[1], imgnames) # Extract index from filenames
 p = sortperm(parse.(Int, intstrings)) #sort files numerically
 imgnames = imgnames[p]
 
-encoder_settings = (crf="22", preset="medium")
+encoder_settings = (crf=23, preset="medium")
 
 firstimg = load(joinpath(dir, imgnames[1]))
 open_video_out("video.mp4", firstimg, framerate=24, encoder_settings=encoder_settings) do writer
@@ -83,9 +83,9 @@ A few helpful presets for h264:
 
 | Goal | `AVCodecContextProperties` value |
 |:----:|:------|
-| Perceptual compression, h264 default. Best for most cases | ```(priv_data = (crf="23", preset="medium"))``` |
-| Lossless compression. Fastest, largest file size | ```(priv_data = (crf="0", preset="ultrafast"))``` |
-| Lossless compression. Slowest, smallest file size | ```(priv_data = (crf="0", preset="ultraslow"))``` |
+| Perceptual compression, h264 default. Best for most cases | ```(priv_data = (crf=23, preset="medium"))``` |
+| Lossless compression. Fastest, largest file size | ```(priv_data = (crf=0, preset="ultrafast"))``` |
+| Lossless compression. Slowest, smallest file size | ```(priv_data = (crf=0, preset="ultraslow"))``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```[:bit_rate => 400000,:gop_size = 10,:max_b_frames=1]``` |
 
 ## Lossless Encoding

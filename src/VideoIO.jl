@@ -194,7 +194,7 @@ An example of encoding one frame at a time:
 ```julia
 using VideoIO
 framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
-encoder_settings = (crf="22", preset="medium")
+encoder_settings = (crf=23, preset="medium")
 open_video_out("video.mp4", framestack[1], framerate=24, encoder_settings=encoder_settings) do writer
     for i in eachindex(framestack)
         append_encode_mux!(writer, framestack[i], i)

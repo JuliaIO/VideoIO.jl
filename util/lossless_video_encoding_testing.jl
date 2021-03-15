@@ -23,7 +23,7 @@ end
 
 function testvideocomp!(df,preset,imgstack_gray)
     t = @elapsed VideoIO.save("video.mp4",imgstack_gray,framerate=30,codec_name = "libx264",
-                                    encoder_settings=(color_range=2, crf="0", "preset"=preset))
+                                    encoder_settings=(color_range=2, crf=0, "preset"=preset))
     fs = filesize("video.mp4")
     f = openvideo("video.mp4",target_format=VideoIO.AV_PIX_FMT_GRAY8)
     imgstack_gray_copy = []

@@ -3,7 +3,7 @@
     imgstack_rgb = VideoIO.openvideo(collect, file)
     imgstack_gray = convert.(Array{Gray{N0f8}}, imgstack_rgb)
     @testset "Lossless Grayscale encoding" begin
-        encoder_settings = (color_range=2, crf="0", preset="medium")
+        encoder_settings = (color_range=2, crf=0, preset="medium")
         VideoIO.save(tempvidpath, imgstack_gray, codec_name = "libx264", encoder_settings = encoder_settings)
         imgstack_gray_copy = VideoIO.openvideo(collect, tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(eltype(imgstack_gray)) == eltype(eltype(imgstack_gray_copy))
@@ -13,7 +13,7 @@
     end
 
     @testset "Lossless RGB encoding" begin
-        encoder_settings = (color_range=2, crf="0", preset="medium")
+        encoder_settings = (color_range=2, crf=0, preset="medium")
         codec_name="libx264rgb"
         VideoIO.save(tempvidpath, imgstack_rgb, codec_name = codec_name, encoder_settings = encoder_settings)
         imgstack_rgb_copy = VideoIO.openvideo(collect, tempvidpath)
@@ -42,7 +42,7 @@
             push!(imgstack,img)
         end
 
-        encoder_settings = (color_range=2, crf="0", preset="medium")
+        encoder_settings = (color_range=2, crf=0, preset="medium")
         VideoIO.save(tempvidpath, imgstack, encoder_settings = encoder_settings)
         f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         try
@@ -75,7 +75,7 @@
                 push!(imgstack,fill(UInt8(i),(16,16)))
             end
 
-            encoder_settings = (color_range=2, crf="0", preset="medium")
+            encoder_settings = (color_range=2, crf=0, preset="medium")
             VideoIO.save(tempvidpath, imgstack, encoder_settings = encoder_settings)
             f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
             try
