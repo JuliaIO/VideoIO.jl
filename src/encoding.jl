@@ -1,5 +1,4 @@
-export open_video_out, append_encode_mux!,
-    close_video_out!, encode_mux_video, get_codec_name
+export open_video_out, append_encode_mux!, close_video_out!, get_codec_name
 
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
@@ -165,8 +164,8 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                      height, transfer_colorspace_details,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
-                                     use_vio_gray_transform, swscale_settings;
-                                     sws_color_details::SettingsT = (;))
+                                     use_vio_gray_transform, swscale_options;
+                                     sws_color_options::OptionsT = (;))
     if use_vio_gray_transform
         frame_graph = GrayTransform()
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
@@ -183,8 +182,8 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                    transfer_colorspace_details.color_primaries,
                                    transfer_colorspace_details.color_range,
                                    encoding_pix_fmt, dst_color_primaries,
-                                   dst_color_range, sws_color_details,
-                                   swscale_settings)
+                                   dst_color_range, sws_color_options,
+                                   swscale_options)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)
     end
@@ -233,22 +232,22 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      codec_name::Union{AbstractString, Nothing} = nothing,
                      framerate::Real = 24,
                      scanline_major::Bool = false,
-                     container_settings::SettingsT = (;),
-                     container_private_settings::SettingsT = (;),
-                     encoder_settings::SettingsT = (;),
-                     encoder_private_settings::SettingsT = (;),
-                     swscale_settings::SettingsT = (;),
+                     container_options::OptionsT = (;),
+                     container_private_options::OptionsT = (;),
+                     encoder_options::OptionsT = (;),
+                     encoder_private_options::OptionsT = (;),
+                     swscale_options::OptionsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
                      pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     sws_color_details::SettingsT = (;)) where T
+                     sws_color_options::OptionsT = (;)) where T
     framerate > 0 || error("Framerate must be strictly positive")
 
-    if haskey(encoder_settings, :priv_data)
+    if haskey(encoder_options, :priv_data)
         throw(ArgumentError("""The field `priv_data` is no longer supported. Either reorganize as a flat NamedTuple or Dict,
-        i.e. encoder_settings=(color_range=2, crf=\"0\", preset=\"medium\") to rely on auto routing of public and private
-        settings, or pass the private settings to `encoder_private_settings` explicitly"""))
+        e.g. `encoder_options=(color_range=2, crf=0, preset=\"medium\")` to rely on auto routing of generic and private
+        options, or pass the private options to `encoder_private_options` explicitly"""))
     end
     if !is_eltype_transfer_supported(T)
         throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
@@ -307,14 +306,14 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
     end
 
-    set_class_options(format_context, container_settings)
+    set_class_options(format_context, container_options)
     if check_ptr_valid(format_context.oformat.priv_class, false)
-        set_class_options(format_context.priv_data, container_private_settings)
-    elseif !isempty(container_private_settings)
-        @warn "This container format does not support private settings, and will be ignored"
+        set_class_options(format_context.priv_data, container_private_options)
+    elseif !isempty(container_private_options)
+        @warn "This container format does not support private options, and will be ignored"
     end
-    set_class_options(codec_context, encoder_settings)
-    set_class_options(codec_context.priv_data, encoder_private_settings)
+    set_class_options(codec_context, encoder_options)
+    set_class_options(codec_context.priv_data, encoder_private_options)
 
     sigatomic_begin()
     lock(VIO_LOCK)
@@ -357,9 +356,9 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                                               codec_context.colorspace,
                                               codec_context.color_range,
                                               use_vio_gray_transform,
-                                              swscale_settings;
-                                              sws_color_details =
-                                              sws_color_details)
+                                              swscale_options;
+                                              sws_color_options =
+                                              sws_color_options)
     packet = AVPacketPtr()
 
     VideoWriter(format_context, codec_context, frame_graph, packet,
@@ -411,22 +410,22 @@ occurred.
     stride in the first dimension. For normal arrays, this corresponds to a
     matrix where frame width is in the first dimension, and frame height is in
     the second.
-- `container_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
-    of settings for the container. Must correspond to option names and values
+- `container_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
+    of options for the container. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `container_private_settings::SettingsT = (;)`: A `NamedTuple` or
-    `Dict{Symbol, Any}` of private settings for the container. Must correspond
+- `container_private_options::OptionsT = (;)`: A `NamedTuple` or
+    `Dict{Symbol, Any}` of private options for the container. Must correspond
     to private options names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen container type.
-- `encoder_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
-    settings for the encoder context. Must correspond to option names and values
+- `encoder_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
+    options for the encoder context. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `encoder_private_settings::SettingsT = (;)`: A `NamedTuple` or
-    `Dict{Symbol, Any}` of private settings for the encoder context. Must
+- `encoder_private_options::OptionsT = (;)`: A `NamedTuple` or
+    `Dict{Symbol, Any}` of private options for the encoder context. Must
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
-- `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform color space scaling. Options
+- `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+    options for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
 - `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
@@ -452,7 +451,7 @@ occurred.
 - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_transform = true`. Otherwise, use `sws_scale`.
-- `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
+- `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 
@@ -473,20 +472,20 @@ end
 img_params(img::AbstractMatrix{T}) where T = (T, size(img))
 
 """
-    encode_mux_video(filename::String, imgstack; ...)
+    save(filename::String, imgstack; ...)
 
 Create a video container `filename` and encode the set of frames `imgstack` into
 it. `imgstack` must be an iterable of matrices and each frame must have the same
 dimensions and element type.
 
-Encoding settings, restrictions on frame size and element type, and other
+Encoding options, restrictions on frame size and element type, and other
 details are described in [`open_video_out`](@ref). All keyword arguments are
 passed to `open_video_out`.
 
 See also: [`open_video_out`](@ref), [`append_encode_mux!`](@ref),
 [`close_video_out!`](@ref)
 """
-function encode_mux_video(filename::String, imgstack; kwargs...)
+function save(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
         for (i, img) in enumerate(imgstack)
             _append_encode_mux!(writer, img, i - 1)

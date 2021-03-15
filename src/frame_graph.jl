@@ -17,7 +17,7 @@ end
 
 function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                       dst_w, dst_h, dst_pix_fmt, dst_primaries, dst_color_range,
-                      sws_color_details, sws_scale_settings)
+                      sws_color_options, sws_scale_options)
     sws_context = SwsContextPtr()
     sws_options = Dict(:srcw       => string(src_w),
                        :srch       => string(src_h),
@@ -25,14 +25,14 @@ function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                        :dstw       => string(dst_w),
                        :dsth       => string(dst_h),
                        :dst_format => string(dst_pix_fmt))
-    for (key, val) in pairs(sws_scale_settings)
+    for (key, val) in pairs(sws_scale_options)
         sws_options[key] = string(val)
     end
     if sws_options[:srcw] != string(src_w) ||
         sws_options[:dstw] != string(dst_w) ||
         sws_options[:srch] != string(src_h) ||
         sws_options[:dsth] != string(dst_h)
-        throw(ArgumentError("Changing pixel dimensions with sws_scale_settings not yet supported"))
+        throw(ArgumentError("Changing pixel dimensions with sws_scale_options not yet supported"))
     end
     set_class_options(sws_context, sws_options)
     ret = sws_init_context(sws_context, C_NULL, C_NULL)
@@ -45,7 +45,7 @@ function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                                    src_range = src_color_range,
                                    table = table,
                                    dst_range = dst_color_range,
-                                   sws_color_details...)
+                                   sws_color_options...)
     ret || error("Could not set sws color details")
 
     srcframe = AVFramePtr()
@@ -54,11 +54,11 @@ function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
 end
 
 function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
-             dst_pix_fmt, dst_primaries, dst_color_range, sws_color_details,
-                      sws_scale_settings)
+             dst_pix_fmt, dst_primaries, dst_color_range, sws_color_options,
+                      sws_scale_options)
     SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                  src_w, src_h, dst_pix_fmt, dst_primaries, dst_color_range,
-                 sws_color_details, sws_scale_settings)
+                 sws_color_options, sws_scale_options)
 end
 
 mutable struct GrayTransform

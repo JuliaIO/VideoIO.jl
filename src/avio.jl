@@ -235,8 +235,8 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      pix_fmt_loss_flags = 0,
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     swscale_settings::SettingsT = (;),
-                     sws_color_details::SettingsT = (;)) where I
+                     swscale_options::OptionsT = (;),
+                     sws_color_options::OptionsT = (;)) where I
     bad_px_type = transcode && target_format !== nothing &&
         !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -306,7 +306,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                                    codec_context.color_range, dst_pix_fmt,
                                    colorspace_details.color_primaries,
                                    colorspace_details.color_range,
-                                   sws_color_details, swscale_settings)
+                                   sws_color_options, swscale_options)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
     end
@@ -530,7 +530,7 @@ If called with a single argument function as the first argument, the `reader`
 will be passed to the function, and will be closed once the call returns whether
 or not an error occurred.
 
-The decoder settings and conversion to Julia arrays is controlled by the keyword
+The decoder options and conversion to Julia arrays is controlled by the keyword
 arguments listed below.
 
 # Keyword arguments
@@ -565,11 +565,11 @@ arguments listed below.
 - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
-- `swscale_settings::SettingsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
-    settings for the swscale object used to perform color space scaling. Options
+- `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+    options for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
-- `sws_color_details::SettingsT = (;)`: Additional keyword arguments passed to
+- `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 """

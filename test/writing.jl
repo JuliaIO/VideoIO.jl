@@ -3,8 +3,8 @@
         @testset "Encoding $el imagestack" begin
             n = 100
             imgstack = map(x->rand(el,100,100),1:n)
-            encoder_settings = (color_range=2, crf="0", preset="medium")
-            VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = 30, encoder_settings = encoder_settings)
+            encoder_options = (color_range=2, crf=0, preset="medium")
+            VideoIO.save(tempvidpath, imgstack, framerate = 30, encoder_options = encoder_options)
             @test stat(tempvidpath).size > 100
             @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
         end
@@ -13,20 +13,20 @@ end
 
 @testset "Simultaneous encoding and muxing" begin
     n = 100
-    encoder_settings = (color_range = 2,)
-    container_private_settings = (movflags = "+write_colr",)
+    encoder_options = (color_range = 2,)
+    container_private_options = (movflags = "+write_colr",)
     for el in [Gray{N0f8}, Gray{N6f10}, RGB{N0f8}, RGB{N6f10}]
         codec_name = el <: RGB ? "libx264rgb" : "libx264" # the former is necessary for lossless RGB
         for scanline_arg in [true, false]
             @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
                 img_stack = map(x -> rand(el, 100, 100), 1 : n)
-                encoder_private_settings = (crf = 0, preset = "medium")
-                VideoIO.encode_mux_video(tempvidpath,
+                encoder_private_options = (crf = 0, preset = "medium")
+                VideoIO.save(tempvidpath,
                                          img_stack;
                                          codec_name = codec_name,
-                                         encoder_private_settings = encoder_private_settings,
-                                         encoder_settings = encoder_settings,
-                                         container_private_settings = container_private_settings,
+                                         encoder_private_options = encoder_private_options,
+                                         encoder_options = encoder_options,
+                                         container_private_options = container_private_options,
                                          scanline_major = scanline_arg)
                 @test stat(tempvidpath).size > 100
                 f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.get_transfer_pix_fmt(el))
@@ -105,7 +105,7 @@ end
 end
 
 @testset "Encoding monochrome videos" begin
-    encoder_private_settings = (crf = 0, preset = "fast")
+    encoder_private_options = (crf = 0, preset = "fast")
     nw = nh = 100
     nf = 5
     for elt in (N0f8, N6f10)
@@ -124,21 +124,21 @@ end
         end
         img_stack_full_range = make_test_tones(elt, nw, nh, nf)
         # Test that full-range input is automatically converted to limited range
-        VideoIO.encode_mux_video(tempvidpath, img_stack_full_range,
+        VideoIO.save(tempvidpath, img_stack_full_range,
                                  target_pix_fmt = target_fmt,
-                                 encoder_private_settings =
-                                 encoder_private_settings)
+                                 encoder_private_options =
+                                 encoder_private_options)
 
         minp, maxp = get_raw_luma_extrema(elt, tempvidpath, nw, nh)
         @test minp > full_min
         @test maxp < full_max
 
         # Test that this conversion is NOT done if output video is full range
-        VideoIO.encode_mux_video(tempvidpath, img_stack_full_range,
+        VideoIO.save(tempvidpath, img_stack_full_range,
                                  target_pix_fmt = target_fmt,
-                                 encoder_private_settings =
-                                 encoder_private_settings,
-                                 encoder_settings = (color_range = 2,))
+                                 encoder_private_options =
+                                 encoder_private_options,
+                                 encoder_options = (color_range = 2,))
         minp, maxp = get_raw_luma_extrema(elt, tempvidpath, nw, nh)
         @test minp == full_min
         @test maxp == full_max
@@ -147,10 +147,10 @@ end
         img_stack_limited_range = make_test_tones(elt, nw, nh, nf,
                                                    limited_min,
                                                    limited_max)
-        VideoIO.encode_mux_video(tempvidpath, img_stack_limited_range,
+        VideoIO.save(tempvidpath, img_stack_limited_range,
                                  target_pix_fmt = target_fmt,
-                                 encoder_private_settings =
-                                 encoder_private_settings,
+                                 encoder_private_options =
+                                 encoder_private_options,
                                  input_colorspace_details =
                                  VideoIO.VioColorspaceDetails())
         minp, maxp = get_raw_luma_extrema(elt, tempvidpath, nw, nh)
@@ -165,8 +165,8 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        encoder_settings = (color_range=2, crf="0", preset="medium")
-        VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
+        encoder_options = (color_range=2, crf=0, preset="medium")
+        VideoIO.save(tempvidpath, imgstack, framerate = fr, encoder_options = encoder_options)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
         @test parse(Float64, measured_dur_str[1]) == target_dur
@@ -179,8 +179,8 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        encoder_settings = (color_range=2, crf="0", preset="medium")
-        VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
+        encoder_options = (color_range=2, crf=0, preset="medium")
+        VideoIO.save(tempvidpath, imgstack, framerate = fr, encoder_options = encoder_options)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
         @test parse(Float64, measured_dur_str[1]) == target_dur
