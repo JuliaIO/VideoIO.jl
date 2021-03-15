@@ -174,7 +174,7 @@ VideoIO supports reading and writing video files.
 - `openvideo` and `opencamera` provide access to video files and livestreams
 - `read` and `read!` allow reading frames
 - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
-- `encode_mux_video` for encoding an entire framestack in one step
+- `VideoIO.save` for encoding an entire framestack in one step
 - `open_video_out`, `append_encode_mux!` for writing frames sequentially to a file
 - `gettime` and `counttotalframes` provide information
 

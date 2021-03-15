@@ -4,17 +4,17 @@ Note: Writing of audio streams is not yet implemented
 
 ## Single-step Encoding
 
-Videos can be encoded directly from image stack using `encode_mux_video(filename::String, imgstack::Array)` where `imgstack` is an array of image arrays with identical type and size.
+Videos can be encoded directly from image stack using `VideoIO.save(filename::String, imgstack::Array)` where `imgstack` is an array of image arrays with identical type and size.
 
 The entire image stack can be encoded in a single step:
 ```julia
-using VideoIO
+import VideoIO
 encoder_settings = (crf="22", preset="medium")
-encode_mux_video("video.mp4", imgstack, framerate=30, encoder_settings=encoder_settings)
+VideoIO.save("video.mp4", imgstack, framerate=30, encoder_settings=encoder_settings)
 ```
 
 ```@docs
-VideoIO.encode_mux_video
+VideoIO.save
 ```
 
 ## Iterative Encoding
@@ -54,10 +54,6 @@ open_video_out("video.mp4", firstimg, framerate=24, encoder_settings=encoder_set
         append_encode_mux!(writer, img, i)
     end
 end
-```
-
-```@doc
-VideoIO.encode_mux_video
 ```
 
 ```@docs

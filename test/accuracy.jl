@@ -4,7 +4,7 @@
     imgstack_gray = convert.(Array{Gray{N0f8}}, imgstack_rgb)
     @testset "Lossless Grayscale encoding" begin
         encoder_settings = (color_range=2, crf="0", preset="medium")
-        VideoIO.encode_mux_video(tempvidpath, imgstack_gray, codec_name = "libx264", encoder_settings = encoder_settings)
+        VideoIO.save(tempvidpath, imgstack_gray, codec_name = "libx264", encoder_settings = encoder_settings)
         imgstack_gray_copy = VideoIO.openvideo(collect, tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(eltype(imgstack_gray)) == eltype(eltype(imgstack_gray_copy))
         @test length(imgstack_gray) == length(imgstack_gray_copy)
@@ -15,7 +15,7 @@
     @testset "Lossless RGB encoding" begin
         encoder_settings = (color_range=2, crf="0", preset="medium")
         codec_name="libx264rgb"
-        VideoIO.encode_mux_video(tempvidpath, imgstack_rgb, codec_name = codec_name, encoder_settings = encoder_settings)
+        VideoIO.save(tempvidpath, imgstack_rgb, codec_name = codec_name, encoder_settings = encoder_settings)
         imgstack_rgb_copy = VideoIO.openvideo(collect, tempvidpath)
         @test eltype(imgstack_rgb) == eltype(imgstack_rgb_copy)
         @test length(imgstack_rgb) == length(imgstack_rgb_copy)
@@ -43,7 +43,7 @@
         end
 
         encoder_settings = (color_range=2, crf="0", preset="medium")
-        VideoIO.encode_mux_video(tempvidpath, imgstack, encoder_settings = encoder_settings)
+        VideoIO.save(tempvidpath, imgstack, encoder_settings = encoder_settings)
         f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         try
             frame_test = collect(rawview(channelview(read(f))))
@@ -76,7 +76,7 @@
             end
 
             encoder_settings = (color_range=2, crf="0", preset="medium")
-            VideoIO.encode_mux_video(tempvidpath, imgstack, encoder_settings = encoder_settings)
+            VideoIO.save(tempvidpath, imgstack, encoder_settings = encoder_settings)
             f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.AV_PIX_FMT_GRAY8)
             try
                 frame_ids_test = []

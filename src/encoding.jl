@@ -1,5 +1,4 @@
-export open_video_out, append_encode_mux!,
-    close_video_out!, encode_mux_video, get_codec_name
+export open_video_out, append_encode_mux!, close_video_out!, get_codec_name
 
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
@@ -473,7 +472,7 @@ end
 img_params(img::AbstractMatrix{T}) where T = (T, size(img))
 
 """
-    encode_mux_video(filename::String, imgstack; ...)
+    save(filename::String, imgstack; ...)
 
 Create a video container `filename` and encode the set of frames `imgstack` into
 it. `imgstack` must be an iterable of matrices and each frame must have the same
@@ -486,7 +485,7 @@ passed to `open_video_out`.
 See also: [`open_video_out`](@ref), [`append_encode_mux!`](@ref),
 [`close_video_out!`](@ref)
 """
-function encode_mux_video(filename::String, imgstack; kwargs...)
+function save(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
         for (i, img) in enumerate(imgstack)
             _append_encode_mux!(writer, img, i - 1)

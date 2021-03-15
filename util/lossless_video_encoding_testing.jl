@@ -22,7 +22,7 @@ function createtestvideo(;filename::String="$(tempname()).mp4",duration::Real=5,
 end
 
 function testvideocomp!(df,preset,imgstack_gray)
-    t = @elapsed encode_mux_video("video.mp4",imgstack_gray,framerate=30,codec_name = "libx264",
+    t = @elapsed VideoIO.save("video.mp4",imgstack_gray,framerate=30,codec_name = "libx264",
                                     encoder_settings=(color_range=2, crf="0", "preset"=preset))
     fs = filesize("video.mp4")
     f = openvideo("video.mp4",target_format=VideoIO.AV_PIX_FMT_GRAY8)
@@ -85,7 +85,7 @@ df_ladybird_summary = by(df_ladybird, :preset, identical = :identical => minimum
 @show df_ladybird_summary
 
 ### Results (generated 2019-05-29 on a 2019 Macbook Pro)
-### OUTDATED. Generated before change to encode_mux_video
+### OUTDATED. Generated before change to VideoIO.save
 #=
 df_noise_summary = 9×6 DataFrame
 │ Row │ preset    │ identical │ fps_mean │ fps_std │ filesize_perc_mean │ filesize_perc_std │
