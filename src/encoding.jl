@@ -233,7 +233,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      framerate::Real = 24,
                      scanline_major::Bool = false,
                      container_settings::SettingsT = (;),
-                     container_private_settings::SettingsT = (;),
+                     container_private_options::SettingsT = (;),
                      encoder_options::SettingsT = (;),
                      encoder_private_options::SettingsT = (;),
                      swscale_settings::SettingsT = (;),
@@ -308,8 +308,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
 
     set_class_options(format_context, container_settings)
     if check_ptr_valid(format_context.oformat.priv_class, false)
-        set_class_options(format_context.priv_data, container_private_settings)
-    elseif !isempty(container_private_settings)
+        set_class_options(format_context.priv_data, container_private_options)
+    elseif !isempty(container_private_options)
         @warn "This container format does not support private settings, and will be ignored"
     end
     set_class_options(codec_context, encoder_options)
@@ -413,7 +413,7 @@ occurred.
 - `container_settings::SettingsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
     of settings for the container. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `container_private_settings::SettingsT = (;)`: A `NamedTuple` or
+- `container_private_options::SettingsT = (;)`: A `NamedTuple` or
     `Dict{Symbol, Any}` of private settings for the container. Must correspond
     to private options names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen container type.

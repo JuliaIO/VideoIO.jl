@@ -14,7 +14,7 @@ end
 @testset "Simultaneous encoding and muxing" begin
     n = 100
     encoder_options = (color_range = 2,)
-    container_private_settings = (movflags = "+write_colr",)
+    container_private_options = (movflags = "+write_colr",)
     for el in [Gray{N0f8}, Gray{N6f10}, RGB{N0f8}, RGB{N6f10}]
         codec_name = el <: RGB ? "libx264rgb" : "libx264" # the former is necessary for lossless RGB
         for scanline_arg in [true, false]
@@ -26,7 +26,7 @@ end
                                          codec_name = codec_name,
                                          encoder_private_options = encoder_private_options,
                                          encoder_options = encoder_options,
-                                         container_private_settings = container_private_settings,
+                                         container_private_options = container_private_options,
                                          scanline_major = scanline_arg)
                 @test stat(tempvidpath).size > 100
                 f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.get_transfer_pix_fmt(el))
