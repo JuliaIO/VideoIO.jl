@@ -3,7 +3,7 @@
         @testset "Encoding $el imagestack" begin
             n = 100
             imgstack = map(x->rand(el,100,100),1:n)
-            encoder_settings = (priv_data = (crf="23", preset="medium"))
+            encoder_settings = (color_range=2, crf="0", preset="medium")
             VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = 30, encoder_settings = encoder_settings)
             @test stat(tempvidpath).size > 100
             @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
@@ -20,9 +20,7 @@ end
         for scanline_arg in [true, false]
             @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
                 img_stack = map(x -> rand(el, 100, 100), 1 : n)
-                lossless = el <: Gray
-                crf = lossless ? 0 : 23
-                encoder_private_settings = (crf = crf, preset = "medium")
+                encoder_private_settings = (crf = 0, preset = "medium")
                 VideoIO.encode_mux_video(tempvidpath,
                                          img_stack;
                                          codec_name = codec_name,
@@ -31,34 +29,29 @@ end
                                          container_private_settings = container_private_settings,
                                          scanline_major = scanline_arg)
                 @test stat(tempvidpath).size > 100
-                f = VideoIO.openvideo(tempvidpath, target_format =
-                                      VideoIO.get_transfer_pix_fmt(el))
+                f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.get_transfer_pix_fmt(el))
                 try
-                    if lossless
-                        notempty = !eof(f)
-                        @test notempty
-                        if notempty
-                            img = read(f)
-                            test_img = scanline_arg ? parent(img) : img
-                            i = 1
-                            if el == Gray{N0f8}
+                    notempty = !eof(f)
+                    @test notempty
+                    if notempty
+                        img = read(f)
+                        test_img = scanline_arg ? parent(img) : img
+                        i = 1
+                        if el in [Gray{N0f8}, RGB{N0f8}]
+                            @test test_img == img_stack[i]
+                        else
+                            @test_broken test_img == img_stack[i]
+                        end
+                        while !eof(f) && i < n
+                            read!(f, img)
+                            i += 1
+                            if el in [Gray{N0f8}, RGB{N0f8}]
                                 @test test_img == img_stack[i]
                             else
                                 @test_broken test_img == img_stack[i]
                             end
-                            while !eof(f) && i < n
-                                read!(f, img)
-                                i += 1
-                                if el == Gray{N0f8}
-                                    @test test_img == img_stack[i]
-                                else
-                                    @test_broken test_img == img_stack[i]
-                                end
-                            end
-                            @test i == n
                         end
-                    else
-                        @test VideoIO.counttotalframes(f) == n
+                        @test i == n
                     end
                 finally
                     close(f)
@@ -172,7 +165,7 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        encoder_settings = (priv_data = (crf="22", preset="medium"))
+        encoder_settings = (color_range=2, crf="0", preset="medium")
         VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)
@@ -186,7 +179,7 @@ end
     target_dur = 3.39
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x->rand(UInt8,100,100),1:n)
-        encoder_settings = (priv_data = (crf="22", preset="medium"))
+        encoder_settings = (color_range=2, crf="0", preset="medium")
         VideoIO.encode_mux_video(tempvidpath, imgstack, framerate = fr, encoder_settings = encoder_settings)
         @test stat(tempvidpath).size > 100
         measured_dur_str = VideoIO.FFMPEG.exe(`-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`, command = VideoIO.FFMPEG.ffprobe, collect = true)

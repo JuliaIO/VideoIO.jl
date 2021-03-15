@@ -4,29 +4,13 @@ Note: Writing of audio streams is not yet implemented
 
 ## Single-step Encoding
 
-Videos can be encoded directly from image stack using `encode_mux_video(filename::String,imgstack::Array)` where `imgstack` is an array of image arrays with identical type and size.
-
-For instance, say an image stack has been constructed from reading a series of image files `1.png`, `2.png`,`3.png` etc. :
-```julia
-using FileIO
-imgnames = filter(x->occursin(".png",x),readdir()) # Populate list of all .pngs
-intstrings =  map(x->split(x,".")[1],imgnames) # Extract index from filenames
-p = sortperm(parse.(Int,intstrings)) #sort files numerically
-imgstack = []
-for imgname in imgnames[p]
-    push!(imgstack,load(imgname))
-end
-```
+Videos can be encoded directly from image stack using `encode_mux_video(filename::String, imgstack::Array)` where `imgstack` is an array of image arrays with identical type and size.
 
 The entire image stack can be encoded in a single step:
 ```julia
 using VideoIO
-props = (priv_data = (crf="22", preset="medium"))
-encode_mux_video("video.mp4",imgstack,framerate=30,encoder_settings=props)
-
-[ Info: Video file saved: /Users/username/Documents/video.mp4
-[ Info: frame=  100 fps=0.0 q=-1.0 Lsize=  129867kB time=00:00:03.23 bitrate=329035.1kbits/s speed=8.17x
-[ Info: video:129865kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.001692%
+encoder_settings = ("crf"=>"22","preset"=>"medium")]
+encode_mux_video("video.mp4", imgstack, framerate=30, encoder_settings=encoder_settings)
 ```
 
 ```@docs
@@ -36,75 +20,56 @@ VideoIO.encode_mux_video
 ## Iterative Encoding
 
 Alternatively, videos can be encoded iteratively within custom loops.
-The encoding steps follow:
-1. Initialize encoder with `prepareencoder`
-2. Iteratively add frames with `appendencode`
-3. End the encoding with `finishencode`
-4. Multiplex the stream into a video container with `mux`
 
-For instance:
 ```julia
 using VideoIO
 framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 
-props = (priv_data = (crf="22", preset="medium"))
+encoder_settings = (crf="22", preset="medium")
 framerate=24
-encoder = prepareencoder(framestack[1], framerate=framerate, encoder_settings=props)
-
-open("temp.stream", "w") do io
-    for i in 1:length(framestack)
-        appendencode!(encoder, io, framestack[i], i)
+open_video_out("video.mp4", framestack[1], framerate=framerate, encoder_settings=encoder_settings) do writer
+    for i in eachindex(framestack)
+        append_encode_mux!(writer, framestack[i], i)
     end
-    finishencode!(encoder, io)
 end
-
-mux("temp.stream", "video.mp4", framerate) #Multiplexes the stream into a video container
 ```
 
-A working example to save a series of png files as a video:
+An example saving a series of png files as a video:
 
 ```julia
 using VideoIO, ProgressMeter
 
 dir = "" #path to directory holding images
-imgnames = filter(x->occursin(".png",x),readdir(dir)) # Populate list of all .pngs
-intstrings =  map(x->split(x,".")[1],imgnames) # Extract index from filenames
-p = sortperm(parse.(Int,intstrings)) #sort files numerically
+imgnames = filter(x->occursin(".png",x), readdir(dir)) # Populate list of all .pngs
+intstrings =  map(x->split(x,".")[1], imgnames) # Extract index from filenames
+p = sortperm(parse.(Int, intstrings)) #sort files numerically
 imgnames = imgnames[p]
 
-filename = "video.mp4"
-framerate = 24
-props = (priv_data = (crf="22", preset="medium"))
+encoder_settings = (crf="22", preset="medium")
 
-firstimg = load(joinpath(dir,imgnames[1]))
-encoder = prepareencoder(firstimg, framerate=framerate, encoder_settings=props)
-
-io = Base.open("temp.stream","w")
-@showprogress "Encoding video frames.." for i in 1:length(imgnames)
-    img = load(joinpath(dir,imgnames[i]))
-    appendencode!(encoder, io, img, i)
+firstimg = load(joinpath(dir, imgnames[1]))
+open_video_out("video.mp4", firstimg, framerate=24, encoder_settings=encoder_settings) do writer
+    @showprogress "Encoding video frames.." for i in eachindex(imgnames)
+        img = load(joinpath(dir, imgnames[i]))
+        append_encode_mux!(writer, img, i)
+    end
 end
+```
 
-finishencode!(encoder, io)
-close(io)
-
-mux("temp.stream",filename,framerate) #Multiplexes the stream into a video container
+```@doc
+VideoIO.encode_mux_video
 ```
 
 ```@docs
-VideoIO.prepareencoder
+VideoIO.open_video_out
 ```
 
 ```@docs
-VideoIO.appendencode!
+VideoIO.append_encode_mux!
 ```
 
 ```@docs
-VideoIO.finishencode!
-```
-
-```@docs
-VideoIO.mux
+VideoIO.close_video_out!
 ```
 
 ## Supported Colortypes

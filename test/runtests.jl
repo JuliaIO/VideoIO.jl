@@ -13,7 +13,7 @@ const tempvidname = "testvideo.mp4"
 const tempvidpath = joinpath(tempdir(), tempvidname)
 const required_accuracy = 0.07
 
-VideoIO.TestVideos.available()
+# VideoIO.TestVideos.available()
 VideoIO.TestVideos.download_all()
 
 include("utils.jl") # Testing utility functions

@@ -1,5 +1,5 @@
-export encode!, prepareencoder, appendencode!, startencode!,
-    finishencode!, mux, open_video_out, append_encode_mux!,
+export startencode!,
+    finishencode!, open_video_out, append_encode_mux!,
     close_video_out!, encode_mux_video, get_codec_name
 
 
@@ -29,45 +29,6 @@ graph_output_frame(r::VideoEncoder) = graph_output_frame(r.frame_graph)
 graph_output_frame(r::VideoWriter) = graph_output_frame(r.frame_graph)
 
 isopen(w::VideoWriter) = check_ptr_valid(w.format_context, false)
-
-"""
-    encode(encoder::VideoEncoder, io::IO)
-
-Encode frame in memory
-"""
-function encode!(encoder::VideoEncoder, io::IO; flush=false)
-    av_init_packet(encoder.packet)
-    frame = graph_output_frame(encoder)
-    if flush
-        fret = avcodec_send_frame(encoder.codec_context, C_NULL)
-    else
-        fret = avcodec_send_frame(encoder.codec_context, frame)
-    end
-    if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
-        error("Error $fret sending a frame for encoding")
-    end
-
-    pret = Cint(0)
-    while pret >= 0
-        pret = avcodec_receive_packet(encoder.codec_context, encoder.packet)
-        if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
-             break
-        elseif pret < 0
-            error("Error $pret during encoding")
-        end
-        @debug println("Write packet $(encoder.packet.pts) (size=$(encoder.packet.size))")
-        data = unsafe_wrap(Array, encoder.packet.data, encoder.packet.size)
-        write(io, data)
-        av_packet_unref(encoder.packet)
-    end
-    if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
-        fret = avcodec_send_frame(encoder.codec_context, frame)
-        if fret < 0 && fret != VIO_AVERROR_EOF
-            error("Error $fret sending a frame for encoding")
-        end
-    end
-    return pret
-end
 
 function encode_mux!(writer::VideoWriter, flush = false)
     pkt = writer.packet
@@ -318,18 +279,6 @@ function VideoEncoder(firstimg; framerate=30,
                         packet, scanline_major)
 end
 
-"""
-    prepareencoder(firstimg; framerate=30,
-                 AVCodecContextProperties = AVCodecContextPropertiesDefault,
-                 codec_name::String="libx264")
-
-Prepare encoder and return a `VideoEncoder` object. The dimensions and pixel
-format of the video will be determined from `firstimg`. The number of rows of
-`firstimg` determines the height of the frame, while the number of columns
-determines the width.
-"""
-prepareencoder(firstimg; kwargs...) = VideoEncoder(firstimg; kwargs...)
-
 function prepare_video_frame!(writer, img, index)
     dstframe = graph_output_frame(writer)
     ret = av_frame_make_writable(dstframe)
@@ -338,17 +287,6 @@ function prepare_video_frame!(writer, img, index)
     transfer_img_buf_to_frame!(graph_input_frame(writer), img,
                                writer.scanline_major)
     execute_graph!(writer)
-end
-
-"""
-    appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
-
-Send image object to ffmpeg encoder and encode. The rows of `img` must span the
-vertical axis of the image, and the columns must span the horizontal axis.
-"""
-function appendencode!(encoder::VideoEncoder, io::IO, img, index::Integer)
-    prepare_video_frame!(encoder, img, index)
-    encode!(encoder, io)
 end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
@@ -373,16 +311,6 @@ function append_encode_mux!(writer, img, index)
     _append_encode_mux!(writer, img, index)
 end
 
-"""
-    finishencode!(encoder::VideoEncoder, io::IO)
-
-End encoding by sending endencode package to ffmpeg, and close objects.
-"""
-function finishencode!(encoder::VideoEncoder, io::IO)
-    encode!(encoder, io, flush=true) # flush the encoder
-    write(io, UInt8[0, 0, 1, 0xb7]) # add sequence end code to have a real MPEG file
-end
-
 startencode!(io::IO) = write(io, 0x000001b3)
 
 ffmpeg_framerate_string(fr::Real) = string(fr)
@@ -392,26 +320,6 @@ ffmpeg_framerate_string(fr) = error("""
 Framerate type not valid. Mux framerate should be a subtype of Real
 (Integer, Float64, Rational etc.), or String
 """)
-
-"""
-    mux(srcfilename,destfilename,framerate;silent=false,deletestream=true)
-
-Multiplex stream file into video container. Deletes stream file by default.
-"""
-function mux(srcfilename, destfilename, framerate; silent=false, deletestream=true)
-    fr_str = ffmpeg_framerate_string(framerate)
-    muxout = FFMPEG.exe(`-y -framerate $fr_str -i $srcfilename -c copy $destfilename`, collect=true)
-    filter!(x->!occursin.("Timestamps are unset in a packet for stream 0.",x),muxout) #known non-bug issue with h264
-    if occursin("ffmpeg version ",muxout[1]) && occursin("video:",muxout[end])
-        deletestream && rm("$srcfilename")
-        !silent && (@info "Video file saved: $destfilename")
-        !silent && (@info muxout[end-1])
-        !silent && (@info muxout[end])
-    else
-        @warn "Stream Muxing may have failed: $srcfilename into $destfilename"
-        println.(muxout)
-    end
-end
 
 """
     close_video_out!(writer)
