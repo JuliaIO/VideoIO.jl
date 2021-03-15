@@ -235,7 +235,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      pix_fmt_loss_flags = 0,
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     swscale_settings::OptionsT = (;),
+                     swscale_options::OptionsT = (;),
                      sws_color_details::OptionsT = (;)) where I
     bad_px_type = transcode && target_format !== nothing &&
         !is_pixel_type_supported(target_format)
@@ -306,7 +306,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                                    codec_context.color_range, dst_pix_fmt,
                                    colorspace_details.color_primaries,
                                    colorspace_details.color_range,
-                                   sws_color_details, swscale_settings)
+                                   sws_color_details, swscale_options)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
     end
@@ -565,7 +565,7 @@ arguments listed below.
 - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
-- `swscale_settings::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+- `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
     settings for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.

@@ -1,5 +1,5 @@
 @testset "Reading of various example file formats" begin
-    swscale_settings = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
+    swscale_options = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
         test_frameno = testvid.testframe
@@ -7,7 +7,7 @@
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             f = VideoIO.testvideo(testvid_path)
-            v = VideoIO.openvideo(f; swscale_settings = swscale_settings)
+            v = VideoIO.openvideo(f; swscale_options = swscale_options)
             try
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
@@ -142,7 +142,7 @@ end
 end
 
 @testset "IO reading of various example file formats" begin
-    swscale_settings = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
+    swscale_options = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
         test_frameno = testvid.testframe
@@ -152,7 +152,7 @@ end
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             filename = joinpath(videodir, name)
-            v = VideoIO.openvideo(filename; swscale_settings = swscale_settings)
+            v = VideoIO.openvideo(filename; swscale_options = swscale_options)
             try
                 width, height = VideoIO.out_frame_size(v)
                 if size(comparison_frame, 1) > height

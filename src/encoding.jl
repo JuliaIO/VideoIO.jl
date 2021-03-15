@@ -164,7 +164,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                      height, transfer_colorspace_details,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
-                                     use_vio_gray_transform, swscale_settings;
+                                     use_vio_gray_transform, swscale_options;
                                      sws_color_details::OptionsT = (;))
     if use_vio_gray_transform
         frame_graph = GrayTransform()
@@ -183,7 +183,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                    transfer_colorspace_details.color_range,
                                    encoding_pix_fmt, dst_color_primaries,
                                    dst_color_range, sws_color_details,
-                                   swscale_settings)
+                                   swscale_options)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)
     end
@@ -236,7 +236,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      container_private_options::OptionsT = (;),
                      encoder_options::OptionsT = (;),
                      encoder_private_options::OptionsT = (;),
-                     swscale_settings::OptionsT = (;),
+                     swscale_options::OptionsT = (;),
                      target_pix_fmt::Union{Nothing, Cint} = nothing,
                      pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
@@ -356,7 +356,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                                               codec_context.colorspace,
                                               codec_context.color_range,
                                               use_vio_gray_transform,
-                                              swscale_settings;
+                                              swscale_options;
                                               sws_color_details =
                                               sws_color_details)
     packet = AVPacketPtr()
@@ -424,7 +424,7 @@ occurred.
     `Dict{Symbol, Any}` of private settings for the encoder context. Must
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
-- `swscale_settings::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+- `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
     settings for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
