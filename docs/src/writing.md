@@ -9,7 +9,7 @@ Videos can be encoded directly from image stack using `encode_mux_video(filename
 The entire image stack can be encoded in a single step:
 ```julia
 using VideoIO
-encoder_settings = ("crf"=>"22","preset"=>"medium")]
+encoder_settings = (crf="22", preset="medium")
 encode_mux_video("video.mp4", imgstack, framerate=30, encoder_settings=encoder_settings)
 ```
 
