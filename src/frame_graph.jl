@@ -17,7 +17,7 @@ end
 
 function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                       dst_w, dst_h, dst_pix_fmt, dst_primaries, dst_color_range,
-                      sws_color_details, sws_scale_options)
+                      sws_color_options, sws_scale_options)
     sws_context = SwsContextPtr()
     sws_options = Dict(:srcw       => string(src_w),
                        :srch       => string(src_h),
@@ -45,7 +45,7 @@ function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                                    src_range = src_color_range,
                                    table = table,
                                    dst_range = dst_color_range,
-                                   sws_color_details...)
+                                   sws_color_options...)
     ret || error("Could not set sws color details")
 
     srcframe = AVFramePtr()
@@ -54,11 +54,11 @@ function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
 end
 
 function SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
-             dst_pix_fmt, dst_primaries, dst_color_range, sws_color_details,
+             dst_pix_fmt, dst_primaries, dst_color_range, sws_color_options,
                       sws_scale_options)
     SwsTransform(src_w, src_h, src_pix_fmt, src_primaries, src_color_range,
                  src_w, src_h, dst_pix_fmt, dst_primaries, dst_color_range,
-                 sws_color_details, sws_scale_options)
+                 sws_color_options, sws_scale_options)
 end
 
 mutable struct GrayTransform

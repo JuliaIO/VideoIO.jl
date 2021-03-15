@@ -165,7 +165,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                      dst_color_primaries, dst_color_trc,
                                      dst_colorspace, dst_color_range,
                                      use_vio_gray_transform, swscale_options;
-                                     sws_color_details::OptionsT = (;))
+                                     sws_color_options::OptionsT = (;))
     if use_vio_gray_transform
         frame_graph = GrayTransform()
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
@@ -182,7 +182,7 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
                                    transfer_colorspace_details.color_primaries,
                                    transfer_colorspace_details.color_range,
                                    encoding_pix_fmt, dst_color_primaries,
-                                   dst_color_range, sws_color_details,
+                                   dst_color_range, sws_color_options,
                                    swscale_options)
         set_basic_frame_properties!(frame_graph.srcframe, width, height,
                                     transfer_pix_fmt)
@@ -241,7 +241,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     sws_color_details::OptionsT = (;)) where T
+                     sws_color_options::OptionsT = (;)) where T
     framerate > 0 || error("Framerate must be strictly positive")
 
     if haskey(encoder_options, :priv_data)
@@ -357,8 +357,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                                               codec_context.color_range,
                                               use_vio_gray_transform,
                                               swscale_options;
-                                              sws_color_details =
-                                              sws_color_details)
+                                              sws_color_options =
+                                              sws_color_options)
     packet = AVPacketPtr()
 
     VideoWriter(format_context, codec_context, frame_graph, packet,
@@ -451,7 +451,7 @@ occurred.
 - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_transform = true`. Otherwise, use `sws_scale`.
-- `sws_color_details::OptionsT = (;)`: Additional keyword arguments passed to
+- `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 

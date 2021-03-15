@@ -236,7 +236,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
                      swscale_options::OptionsT = (;),
-                     sws_color_details::OptionsT = (;)) where I
+                     sws_color_options::OptionsT = (;)) where I
     bad_px_type = transcode && target_format !== nothing &&
         !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -306,7 +306,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                                    codec_context.color_range, dst_pix_fmt,
                                    colorspace_details.color_primaries,
                                    colorspace_details.color_range,
-                                   sws_color_details, swscale_options)
+                                   sws_color_options, swscale_options)
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
     end
@@ -569,7 +569,7 @@ arguments listed below.
     settings for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
-- `sws_color_details::OptionsT = (;)`: Additional keyword arguments passed to
+- `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 """
