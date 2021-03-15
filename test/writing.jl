@@ -16,6 +16,7 @@ end
     encoder_settings = (color_range = 2,)
     container_private_settings = (movflags = "+write_colr",)
     for el in [Gray{N0f8}, Gray{N6f10}, RGB{N0f8}, RGB{N6f10}]
+        codec_name = el <: Gray ? "libx264" : "libx264rgb"
         for scanline_arg in [true, false]
             @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
                 img_stack = map(x -> rand(el, 100, 100), 1 : n)
@@ -24,6 +25,7 @@ end
                 encoder_private_settings = (crf = crf, preset = "medium")
                 VideoIO.encode_mux_video(tempvidpath,
                                          img_stack;
+                                         codec_name = codec_name,
                                          encoder_private_settings = encoder_private_settings,
                                          encoder_settings = encoder_settings,
                                          container_private_settings = container_private_settings,
