@@ -21,7 +21,7 @@ encodevideo("video.mp4", imgstack, framerate=30, AVCodecContextProperties=props)
 
 v0.9:
 ```julia
-import VideoIO
+using VideoIO
 encoder_options = (crf=23, preset="medium")
 VideoIO.save("video.mp4", imgstack, framerate=30, encoder_options=encoder_options)
 ```
@@ -37,7 +37,7 @@ VideoIO.save("video.mp4", imgstack, framerate=30,
             )
 ```
 
-however the most reliable would be to specify the public and private options specifically
+however the most fail-safe way would be to specify the public and private options specifically
 ```
 VideoIO.save("video.mp4", imgstack, framerate=30,
             encoder_options=(color_range=2),
