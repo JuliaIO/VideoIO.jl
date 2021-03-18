@@ -31,14 +31,14 @@ Also note that the encoder options are now provided as a named tuple.
 
 VideoIO will automatically attempt to route these options between the public and private ffmpeg options, so for instance
 it is possible to specify lossless settings as:
-```
+```julia
 VideoIO.save("video.mp4", imgstack, framerate=30,
             encoder_options=(color_range=2, crf=0, preset="medium")
             )
 ```
 
 however the most fail-safe way would be to specify the public and private options specifically
-```
+```julia
 VideoIO.save("video.mp4", imgstack, framerate=30,
             encoder_options=(color_range=2),
             encoder_private_options=(crf=0, preset="medium")
