@@ -7,7 +7,7 @@ mutable struct VideoWriter{T<:GraphType}
     packet::AVPacketPtr
     stream_index0::Int
     scanline_major::Bool
-    c::Int
+    num_frames_written::Int
 end
 
 graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
