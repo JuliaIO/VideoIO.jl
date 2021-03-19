@@ -171,6 +171,7 @@ end
 """
 VideoIO supports reading and writing video files.
 
+- `VideoIO.load` to load an entire video into memory as a vector of images (a framestack)
 - `openvideo` and `opencamera` provide access to video files and livestreams
 - `read` and `read!` allow reading frames
 - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames

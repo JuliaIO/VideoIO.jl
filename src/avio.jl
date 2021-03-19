@@ -73,6 +73,18 @@ mutable struct VideoReader{transcode, T<:GraphType, I} <: StreamContext
     finished::Bool
 end
 
+
+"""
+    load(filename::String; kwargs...)
+
+Load video file `filename` into memory as vector of image arrays, setting `kwargs` on the `openvideo` process.
+"""
+function load(filename::String; kwargs...)
+    openvideo(filename, kwargs...) do io
+        collect(io)
+    end
+end
+
 show(io::IO, vr::VideoReader) = print(io, "VideoReader(...)")
 
 function iterate(r::VideoReader, state = 0)

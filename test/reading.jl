@@ -119,6 +119,9 @@
             finally
                 close(f)
             end
+
+            v = VideoIO.load(f)
+            @test length(v) == VideoIO.TestVideos.videofiles[name].numframes
         end
     end
 end

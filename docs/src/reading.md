@@ -6,6 +6,18 @@ Note: Reading of audio streams is not yet implemented
 VideoIO contains a simple high-level interface which allows reading of
 video frames from a supported video file (or from a camera device, shown later).
 
+The simplest form will load the entire video into memory as a vector of image arrays.
+
+```julia
+using VideoIO
+VideoIO.load("video.mp4")
+```
+```@docs
+VideoIO.load
+```
+
+Further examples:
+
 ```julia
 using VideoIO
 
