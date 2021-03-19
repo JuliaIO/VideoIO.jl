@@ -34,9 +34,9 @@ show(io::IO, v::VideoFile) = print(io, """
                                    """)
 
 VideoFile(name, description, license, credit, source, download_url, numframes,
-          testframe) = VideoFile{:raw}(name, description, license, credit,
+          testframe, summarysize) = VideoFile{:raw}(name, description, license, credit,
                                        source, download_url, numframes,
-                                       testframe)
+                                       testframe, summarysize)
 
 # Standard test videos
 const videofiles  =  Dict(
