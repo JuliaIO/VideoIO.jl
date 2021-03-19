@@ -71,10 +71,10 @@ framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 using VideoIO
 encoder_options = (crf=23, preset="medium")
 open_video_out("video.mp4", first(framestack), framerate=30, encoder_options=encoder_options) do writer
-    for frame in framstack
-        push!(writer, frame)
+    for frame in framestack
+        write(writer, frame)
     end
 end
 ```
-Note that the multiplexing (mux) is done in parallel with the encoding loop, so no need for an intermediate
-".stream" file.
+Note that the multiplexing (mux) is now done in parallel with the encoding loop, so no need for an intermediate
+".stream" file. Lower level functions should be used for more elaborate encoding/multiplexing tasks.
