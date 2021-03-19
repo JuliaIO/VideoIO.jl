@@ -120,7 +120,7 @@
                 close(f)
             end
 
-            v = VideoIO.load(f)
+            v = VideoIO.load(testvid_path)
             @test length(v) == VideoIO.TestVideos.videofiles[name].numframes
         end
     end
