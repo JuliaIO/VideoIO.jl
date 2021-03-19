@@ -29,7 +29,7 @@ encoder_options = (crf=23, preset="medium")
 framerate=24
 open_video_out("video.mp4", framestack[1], framerate=framerate, encoder_options=encoder_options) do writer
     for frame in framestack
-        push!(writer, frame)
+        write(writer, frame)
     end
 end
 ```
@@ -51,7 +51,7 @@ firstimg = load(joinpath(dir, imgnames[1]))
 open_video_out("video.mp4", firstimg, framerate=24, encoder_options=encoder_options) do writer
     @showprogress "Encoding video frames.." for i in eachindex(imgnames)
         img = load(joinpath(dir, imgnames[i]))
-        push!(writer, img)
+        write(writer, img)
     end
 end
 ```

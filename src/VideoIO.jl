@@ -9,7 +9,7 @@ using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
 using Base.GC: @preserve
 import Base: iterate, IteratorSize, IteratorEltype, setproperty!, convert,
     getproperty, unsafe_convert, propertynames, getindex, setindex!, parent,
-    position, unsafe_wrap, unsafe_copyto!, push!
+    position, unsafe_wrap, unsafe_copyto!, write
 
 const VIO_LOCK = ReentrantLock()
 
@@ -176,7 +176,7 @@ VideoIO supports reading and writing video files.
 - `read` and `read!` allow reading frames
 - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
 - `VideoIO.save` for encoding an entire framestack in one step
-- `open_video_out`, `push!` for writing frames sequentially to a file
+- `open_video_out`, `write` for writing frames sequentially to a file
 - `gettime` and `counttotalframes` provide information
 
 Here's a brief demo reading through each frame of a video:
@@ -198,7 +198,7 @@ framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 encoder_options = (crf=23, preset="medium")
 open_video_out("video.mp4", framestack[1], framerate=24, encoder_options=encoder_options) do writer
     for frame in framestack
-        push!(writer, frame)
+        write(writer, frame)
     end
 end
 ````

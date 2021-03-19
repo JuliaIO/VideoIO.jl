@@ -7,7 +7,7 @@ mutable struct VideoWriter{T<:GraphType}
     packet::AVPacketPtr
     stream_index0::Int
     scanline_major::Bool
-    num_frames_written::Int
+    current_index::Int
 end
 
 graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
@@ -59,11 +59,11 @@ function encode_mux!(writer::VideoWriter, flush = false)
     return pret
 end
 
-function prepare_video_frame!(writer, img)
+function prepare_video_frame!(writer::VideoWriter, img, index)
     dstframe = graph_output_frame(writer)
     ret = av_frame_make_writable(dstframe)
     ret < 0 && error("av_frame_make_writable() error")
-    dstframe.pts = writer.num_frames_written
+    dstframe.pts = index
     transfer_img_buf_to_frame!(graph_input_frame(writer), img,
                                writer.scanline_major)
     execute_graph!(writer)
@@ -71,26 +71,22 @@ end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
 
-function _push!(writer, img)
-    prepare_video_frame!(writer, img)
-    encode_mux!(writer)
-    writer.num_frames_written += 1
-end
-
 """
-    push!(writer, img)
+    write(writer::VideoWriter, img)
 
 Prepare frame `img` for encoding, encode it, mux it, and either cache it or
 write it to the file described by `writer`. `img` must be the same size and
 element type as the size and element type that was used to create `writer`.
 """
-function push!(writer::VideoWriter, img)
+function write(writer::VideoWriter, img)
     isopen(writer) || error("VideoWriter is closed for writing")
-    _push!(writer, img)
+    prepare_video_frame!(writer, img, writer.current_index)
+    encode_mux!(writer)
+    writer.current_index += 1
 end
 
 """
-    close_video_out!(writer)
+    close_video_out!(writer::VideoWriter)
 
 Write all frames cached in `writer` to the video container that it describes,
 and then close the file. Once all frames in a video have been added to `writer`,
@@ -386,7 +382,7 @@ key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead the `Normed` or
 `Unsigned` type for a corresponding `Gray` element type. The container type will
 be inferred from `filename`.
 
-Frames are encoded with[ `push!`](@ref), which must use frames with
+Frames are encoded with[ `write`](@ref), which must use frames with
 the same size, element type, and obey the same value of `scanline_major`. The
 video must be closed once all frames are encoded with
 [`close_video_out!`](@ref).
@@ -455,7 +451,7 @@ occurred.
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 
-See also: [`push!`](@ref), [`close_video_out!`](@ref)
+See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
 open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...;
                                                                     kwargs...)
@@ -482,13 +478,13 @@ Encoding options, restrictions on frame size and element type, and other
 details are described in [`open_video_out`](@ref). All keyword arguments are
 passed to `open_video_out`.
 
-See also: [`open_video_out`](@ref), [`push!`](@ref),
+See also: [`open_video_out`](@ref), [`write`](@ref),
 [`close_video_out!`](@ref)
 """
 function save(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
         for img in imgstack
-            _push!(writer, img)
+            write(writer, img)
         end
     end
     nothing
