@@ -120,8 +120,10 @@
                 close(f)
             end
 
+            @show testvid_path
             framestack = VideoIO.load(testvid_path)
             @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
+            @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
             framestack = nothing
             GC.gc()
         end
