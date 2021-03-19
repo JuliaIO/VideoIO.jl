@@ -7,7 +7,7 @@ mutable struct VideoWriter{T<:GraphType}
     packet::AVPacketPtr
     stream_index0::Int
     scanline_major::Bool
-    current_index::Int
+    next_index::Int
 end
 
 graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
@@ -73,17 +73,20 @@ execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
 
 """
     write(writer::VideoWriter, img)
+    write(writer::VideoWriter, img, index)
 
 Prepare frame `img` for encoding, encode it, mux it, and either cache it or
 write it to the file described by `writer`. `img` must be the same size and
 element type as the size and element type that was used to create `writer`.
+If `index` is provided, it must start at zero and increment monotonically.
 """
-function write(writer::VideoWriter, img)
+function write(writer::VideoWriter, img, index::Int)
     isopen(writer) || error("VideoWriter is closed for writing")
-    prepare_video_frame!(writer, img, writer.current_index)
+    prepare_video_frame!(writer, img, index)
     encode_mux!(writer)
-    writer.current_index += 1
+    writer.next_index = index + 1
 end
+write(writer::VideoWriter, img) = write(writer::VideoWriter, img, writer.next_index)
 
 """
     close_video_out!(writer::VideoWriter)
