@@ -18,6 +18,7 @@ mutable struct VideoFile{compression}
     download_url::AbstractString
     numframes::Int
     testframe::Int
+    summarysize::Int
 end
 
 show(io::IO, v::VideoFile) = print(io, """
@@ -29,6 +30,7 @@ show(io::IO, v::VideoFile) = print(io, """
                                      source:       $(v.source)
                                      download_url: $(v.download_url)
                                      numframes:    $(v.numframes)
+                                     summarysize:  $(v.summarysize)
                                    """)
 
 VideoFile(name, description, license, credit, source, download_url, numframes,
@@ -46,6 +48,7 @@ const videofiles  =  Dict(
                                                 "https://archive.org/download/LadybirdOpeningWingsCCBYNatureClip/Ladybird%20opening%20wings%20CC-BY%20NatureClip.mp4",
                                                 397,
                                                 13,
+                                                3216,
                                                 ),
 
                     "annie_oakley.ogg" => VideoFile("annie_oakley.ogg",
@@ -56,6 +59,7 @@ const videofiles  =  Dict(
                                                     "https://upload.wikimedia.org/wikipedia/commons/8/87/Annie_Oakley_shooting_glass_balls%2C_1894.ogv",
                                                     726,
                                                     2,
+                                                    5848,
                                                     ),
 
                     "crescent-moon.ogv" => VideoFile("crescent-moon.ogv",
@@ -66,6 +70,7 @@ const videofiles  =  Dict(
                                                      "https://upload.wikimedia.org/wikipedia/commons/e/ef/2010-10-10-Lune.ogv",
                                                      1213,
                                                      1,
+                                                     9744,
                                                      ),
 
                     "black_hole.webm" => VideoFile("black_hole.webm",
@@ -76,6 +81,7 @@ const videofiles  =  Dict(
                                                    "https://upload.wikimedia.org/wikipedia/commons/1/13/Artist%E2%80%99s_impression_of_the_black_hole_inside_NGC_300_X-1_%28ESO_1004c%29.webm",
                                                    597,
                                                    1,
+                                                   4816,
                                                    ),
                      )
 
