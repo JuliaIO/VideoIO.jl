@@ -61,7 +61,7 @@ VideoIO.open_video_out
 ```
 
 ```@docs
-VideoIO.push!
+VideoIO.write
 ```
 
 ```@docs
