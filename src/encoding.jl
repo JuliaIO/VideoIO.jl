@@ -1,4 +1,4 @@
-export open_video_out, append_encode_mux!, close_video_out!, get_codec_name
+export open_video_out, close_video_out!, get_codec_name
 
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
@@ -7,6 +7,7 @@ mutable struct VideoWriter{T<:GraphType}
     packet::AVPacketPtr
     stream_index0::Int
     scanline_major::Bool
+    next_index::Int
 end
 
 graph_input_frame(r::VideoWriter) = graph_input_frame(r.frame_graph)
@@ -58,7 +59,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
     return pret
 end
 
-function prepare_video_frame!(writer, img, index)
+function prepare_video_frame!(writer::VideoWriter, img, index)
     dstframe = graph_output_frame(writer)
     ret = av_frame_make_writable(dstframe)
     ret < 0 && error("av_frame_make_writable() error")
@@ -70,27 +71,25 @@ end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
 
-function _append_encode_mux!(writer, img, index)
-    prepare_video_frame!(writer, img, index)
-    encode_mux!(writer)
-end
-
 """
-    append_encode_mux!(writer, img, index)
+    write(writer::VideoWriter, img)
+    write(writer::VideoWriter, img, index)
 
 Prepare frame `img` for encoding, encode it, mux it, and either cache it or
-write it to the file described by `writer`. Indices must start at zero, i.e. for
-the first frame set `index = 0`, and subsequent calls increment `index` by one.
-`img` must be the same size and element type as the size and element type that
-was used to create `writer`.
+write it to the file described by `writer`. `img` must be the same size and
+element type as the size and element type that was used to create `writer`.
+If `index` is provided, it must start at zero and increment monotonically.
 """
-function append_encode_mux!(writer, img, index)
+function write(writer::VideoWriter, img, index::Int)
     isopen(writer) || error("VideoWriter is closed for writing")
-    _append_encode_mux!(writer, img, index)
+    prepare_video_frame!(writer, img, index)
+    encode_mux!(writer)
+    writer.next_index = index + 1
 end
+write(writer::VideoWriter, img) = write(writer::VideoWriter, img, writer.next_index)
 
 """
-    close_video_out!(writer)
+    close_video_out!(writer::VideoWriter)
 
 Write all frames cached in `writer` to the video container that it describes,
 and then close the file. Once all frames in a video have been added to `writer`,
@@ -362,7 +361,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     packet = AVPacketPtr()
 
     VideoWriter(format_context, codec_context, frame_graph, packet,
-                Int(stream_index0), scanline_major)
+                Int(stream_index0), scanline_major, 0)
 end
 
 VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where T =
@@ -386,7 +385,7 @@ key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead the `Normed` or
 `Unsigned` type for a corresponding `Gray` element type. The container type will
 be inferred from `filename`.
 
-Frames are encoded with[ `append_encode_mux!`](@ref), which must use frames with
+Frames are encoded with[ `write`](@ref), which must use frames with
 the same size, element type, and obey the same value of `scanline_major`. The
 video must be closed once all frames are encoded with
 [`close_video_out!`](@ref).
@@ -455,7 +454,7 @@ occurred.
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
 
-See also: [`append_encode_mux!`](@ref), [`close_video_out!`](@ref)
+See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
 open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...;
                                                                     kwargs...)
@@ -482,13 +481,13 @@ Encoding options, restrictions on frame size and element type, and other
 details are described in [`open_video_out`](@ref). All keyword arguments are
 passed to `open_video_out`.
 
-See also: [`open_video_out`](@ref), [`append_encode_mux!`](@ref),
+See also: [`open_video_out`](@ref), [`write`](@ref),
 [`close_video_out!`](@ref)
 """
 function save(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
-        for (i, img) in enumerate(imgstack)
-            _append_encode_mux!(writer, img, i - 1)
+        for img in imgstack
+            write(writer, img)
         end
     end
     nothing

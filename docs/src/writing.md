@@ -28,8 +28,8 @@ framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
 encoder_options = (crf=23, preset="medium")
 framerate=24
 open_video_out("video.mp4", framestack[1], framerate=framerate, encoder_options=encoder_options) do writer
-    for i in eachindex(framestack)
-        append_encode_mux!(writer, framestack[i], i)
+    for frame in framestack
+        write(writer, frame)
     end
 end
 ```
@@ -51,7 +51,7 @@ firstimg = load(joinpath(dir, imgnames[1]))
 open_video_out("video.mp4", firstimg, framerate=24, encoder_options=encoder_options) do writer
     @showprogress "Encoding video frames.." for i in eachindex(imgnames)
         img = load(joinpath(dir, imgnames[i]))
-        append_encode_mux!(writer, img, i)
+        write(writer, img)
     end
 end
 ```
@@ -61,7 +61,7 @@ VideoIO.open_video_out
 ```
 
 ```@docs
-VideoIO.append_encode_mux!
+VideoIO.write
 ```
 
 ```@docs

@@ -85,7 +85,7 @@ end
                                     scanline_major = true)
     @test VideoIO.get_codec_name(writer) != "None"
     try
-        VideoIO.append_encode_mux!(writer, img_full_range, 0)
+        VideoIO.write(writer, img_full_range)
         bwidth = nw * 2
         buff = Vector{UInt8}(undef, bwidth * nh)
         # Input frame should be full range
@@ -101,7 +101,7 @@ end
     finally
         VideoIO.close_video_out!(writer)
     end
-    @test_throws ErrorException VideoIO.append_encode_mux!(writer, img_full_range, 0)
+    @test_throws ErrorException VideoIO.write(writer, img_full_range)
 end
 
 @testset "Encoding monochrome videos" begin
