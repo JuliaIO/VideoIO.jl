@@ -168,6 +168,9 @@ function __init__()
     end
 end
 
+include("precompile.jl")
+_precompile()
+
 """
 VideoIO supports reading and writing video files.
 
