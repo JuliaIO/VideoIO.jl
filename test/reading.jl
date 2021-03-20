@@ -119,6 +119,14 @@
             finally
                 close(f)
             end
+
+            if occursin("annie_oakley", name)
+                framestack = VideoIO.load(testvid_path)
+                @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
+                @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                framestack = nothing
+                GC.gc()
+            end
         end
     end
 end
