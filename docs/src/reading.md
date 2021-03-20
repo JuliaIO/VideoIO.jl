@@ -16,7 +16,7 @@ VideoIO.load("video.mp4")
 VideoIO.load
 ```
 
-Further examples:
+Frames can be read sequentially until the end of the file:
 
 ```julia
 using VideoIO
@@ -37,6 +37,10 @@ end
 close(f)
 ```
 
+```@docs
+VideoIO.openvideo
+```
+
 Alternatively, you can open the video stream in a file directly with
 `VideoIO.openvideo(filename)`, without making an intermediate `AVInput`
 object, if you only need the video.
@@ -52,21 +56,17 @@ with `seek`.
 ```julia
 using VideoIO
 
-
-io = VideoIO.testvideo("annie_oakley")
-f = VideoIO.openvideo(io)
-
+f = VideoIO.openvideo("video.mp4")
 for img in f
     # Do something with img
 end
+# Alternatively use collect(f) to get all of the frames
 
-# You can also use collect(f) to get all of the frames
-
-# Further iteration will show that f is now empty!
+# Further iteration will show that f is now empty
+@assert isempty(f)
 
 close(f)
 ```
-
 
 Seeking through the video can be achieved via `seek(f, seconds::Float64)` and `seekstart(f)` to return to the start.
 ```@docs
