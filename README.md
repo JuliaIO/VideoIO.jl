@@ -4,7 +4,7 @@
 
 *Reading and writing of video files in Julia.*
 
-Functionality based on a dedicated build of ffmpeg via [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl) (based on the cross-platform [FFMPEGBuilder](https://github.com/JuliaIO/FFMPEGBuilder))
+Functionality based on a dedicated build of ffmpeg via [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl) and the [JuliaPackaging/Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/F/FFMPEG) cross-compiler.
 
 **Docs**
 [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] [![Join the julia slack](https://img.shields.io/badge/chat-slack%23video-yellow.svg)](https://julialang.org/slack/)
@@ -26,16 +26,12 @@ julia> import Pkg; Pkg.add("VideoIO")
 
 ## Documentation
 
-- [**STABLE**][docs-stable-url] &mdash; **documentation of the most recently tagged version.**
-- [**DEVEL**][docs-dev-url] &mdash; *documentation of the in-development version.*
+- [![][docs-stable-img]][docs-stable-url]  &mdash; **documentation of the most recently tagged version.**
+- [![][docs-dev-img]][docs-dev-url] &mdash; *documentation of the in-development version.*
 
 ## Project Status
 
-The package is tested against, and being developed for, Julia `1.0` and above on Linux, macOS, and Windows, for x86, x86_64, armv7 and armv8 (aarch64).
-
-### Platform Nodes:
-
-- ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
+The package is tested against, and being developed for, Julia `v1` on Linux, macOS, and Windows, for x86, x86_64, armv7 and armv8 (aarch64).
 
 ## Questions and Contributions
 
