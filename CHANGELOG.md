@@ -156,5 +156,14 @@ alternatively specify the color space of the user-supplied data to already be
 limited range. Note that `color_range=2` may produce videos that are
 incompatible with some video players.
 
+If you are encoding data that is already limited range, then the simplest way to
+indicate this to VideoIO is to indicate that the user data is in the FFmpeg
+default colorspace by setting
+`input_colorspace_details = VideoIO.VioColorspaceDetails()` when encoding the
+video. While this technically marks the range as "unknown", it will also prevent
+automatic scaling by VideoIO. If you have further details about your input
+colorspace, then create a `VioColorspaceDetails` object with the settings that
+correspond to your input data's colorspace.
+
 In the future we hope to make this re-scaling more performant so it won't be as
 noticeable.
