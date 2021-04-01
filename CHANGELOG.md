@@ -160,7 +160,7 @@ If you are encoding data that is already limited range, then the simplest way to
 avoid automatic scaling is to indicate that the user data is in the FFmpeg
 default colorspace. This is accomplished by setting
 `input_colorspace_details = VideoIO.VioColorspaceDetails()` when encoding the
-video. While the FFmpeg default color range is "unknown", settings this will
+video. While the FFmpeg default color range is "unknown", setting this will
 also prevent automatic scaling by VideoIO. If you have further details about
 your input colorspace, and your colorspace differs from Julia's default, then
 create a `VioColorspaceDetails` object with the settings that correspond to your
