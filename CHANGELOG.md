@@ -140,3 +140,21 @@ v0.9.0
 julia> @btime VideoIO.save("video.mp4", imgstack, encoder_options = (color_range=2,crf=0,preset="ultrafast"))
   1.888 s (445 allocations: 7.22 KiB)
 ```
+
+## Known performance "regression"
+
+Monochrome encoding with default arguments has become a bit slower in
+v0.9. This is because by default user supplied data is assumed to be full-range
+(jpeg), while the default libav output range is limited range (mpeg), and
+VideoIO will now scale the user data to fit in the limited destination range.
+Prior to v0.9, no such automatic scaling would be done, causing the user data to
+be simply clipped. While this may seem like a regression, it is actually the
+consequence of fixing a bug in the previous versions of VideoIO.
+
+To avoid this slowdown, either specify `color_range=2` in `encoder_options`, or
+alternatively specify the color space of the user-supplied data to already be
+limited range. Note that `color_range=2` may produce videos that are
+incompatible with some video players.
+
+In the future we hope to make this re-scaling more performant so it won't be as
+noticeable.
