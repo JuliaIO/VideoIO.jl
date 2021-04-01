@@ -2,15 +2,49 @@ VideoIO v0.9 Release Notes
 ======================
 ## New features
 
+- Add support for 10 bit gray, RGB, and YUV encoding and decoding
+- Support do-block syntax for `openvideo` and `open_video_out`
+- Support 444 chroma downsampling, among other pixel formats
+- Simultaneous muxing and encoding by default
+- Support "scanline-major" encoding
 - New `VideoIO.load(filename::String; ...)` function to read entire video into memory
+- Allow ffmpeg to choose default codec based on container format
 
 ## Bugfixes
 - Encoding videos now encodes the correct number of frames
-
+- Fixed seeking inaccuracies (#275, #242)
+- Fix bug which caused the last two frames to be dropped while reading some videos (#270)
+- Fix bug which caused the first two frames to be dropped when writing videos (#271)
+- Prevent final frame in video stream from being hidden due to it having zero duration
+- Fix inconsistency with color ranges and clipping of user input (#283)
+- Make color encoding more similar to ffmpeg binary (#284)
+- Make the first video frame occurs at `pts` 0, not 1
+- Make image buffer for decoding compatible with multi-planar image formats
+- Eliminate use of deprecated libav functions
+- Properly initialize libav structs
+- Make `NO_TRANSCODE` encoding work
+- Reduce multi-threaded access to libav functions that are not thread safe
+- Make code generally more safe from accessing data after the GC frees it
+- Eliminate segfault when `VideoReader` was used with `IOStream`
+- Reduce type instability
 
 ## Breaking Changes
 
 The encoding API has been renamed and simplified:
+
+| Original function | Equivalent function in v0.9 |
+| :---------------- | :-------------------------- |
+| `encode_video`    | `save`                      |
+| `prepareencoder`  | `open_video_out!`           |
+| `appendencode!`   | `write`                     |
+| `finish_encode`   | `close_video_out!`          |
+| `close(io)`       | N/A (no longer needed)      |
+| `mux`             | N/A (no longer needed)      |
+
+The keyword arguments of the replacement functions may no longer be the same as
+the original, so please see their documentation. In particular, note that
+`AVCodecContextProperties` has been replaced with `encoder_options` and
+`encoder_private_options`.
 
 ### Single-shot encoding
 Before:
