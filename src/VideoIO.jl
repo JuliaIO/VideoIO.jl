@@ -4,6 +4,7 @@ using Libdl
 using Requires, Dates, ProgressMeter
 using ImageCore: channelview, rawview
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
+using FileIO: File
 
 using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
 using Base.GC: @preserve
@@ -106,6 +107,10 @@ end
 function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
     error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
 end
+
+## FileIO interface
+fileio_load(f::File; kwargs...) = load(f.filename; kwargs...)
+fileio_save(f::File, video; kwargs...) = save(f.filename, video; kwargs...)
 
 function __init__()
     # Always check your dependencies from `deps.jl`
