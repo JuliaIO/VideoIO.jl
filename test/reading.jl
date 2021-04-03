@@ -124,6 +124,15 @@
                 framestack = VideoIO.load(testvid_path)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
                 @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                f = File{DataFormat{:OGG}}(testvid_path)
+                framestack = VideoIO.fileio_load(f)
+                @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
+                @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                path, io = mktemp()
+                f = File{DataFormat{:MP4}}(path * ".mp4")
+                VideoIO.fileio_save(f, framestack)
+                @test isfile(path * ".mp4")
+                @test stat(path * ".mp4").size > 0
                 framestack = nothing
                 GC.gc()
             end
