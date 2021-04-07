@@ -158,9 +158,21 @@ end
 end
 
 @testset "Reading RGB video as monochrome" begin
-    testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
-    vid = VideoIO.load(testvid_path, target_format = VideoIO.AV_PIX_FMT_GRAY8)
-    @test eltype(first(vid)) == Gray{N0f8}
+    @testset "Iterative" begin
+        io = VideoIO.testvideo("ladybird")
+        f = VideoIO.openvideo(io, target_format = VideoIO.AV_PIX_FMT_GRAY8)
+        img = read(f)
+        for i in 1:10
+            read!(f, img)
+        end
+        @test eltype(img) == Gray{N0f8}
+        close(f)
+    end
+    @testset "Full load" begin
+        testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
+        vid = VideoIO.load(testvid_path, target_format = VideoIO.AV_PIX_FMT_GRAY8)
+        @test eltype(first(vid)) == Gray{N0f8}
+    end
 end
 
 @testset "IO reading of various example file formats" begin
