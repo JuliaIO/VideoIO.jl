@@ -63,9 +63,9 @@ end
 
 mutable struct GrayTransform
     srcframe::AVFramePtr
-    src_depth::Int
+    src_depth::Int # Does not include padding
     dstframe::AVFramePtr
-    dst_depth::Int
+    dst_depth::Int # Does not include padding
 end
 
 function GrayTransform()

@@ -308,7 +308,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
         frame_graph = GrayTransform()
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
                                     dst_pix_fmt)
-        frame_graph.src_depth = frame_graph.dst_depth = padded_bits_per_pixel
+        frame_graph.src_depth = frame_graph.dst_depth = bit_depth
         frame_graph.dstframe.color_range = colorspace_details.color_range
     elseif ! transcode || codec_context.pix_fmt == dst_pix_fmt
         frame_graph = AVFramePtr()
