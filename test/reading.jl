@@ -141,8 +141,7 @@
 end
 
 @testset "Reading monochrome videos" begin
-    testvid = first(values(VideoIO.TestVideos.videofiles))
-    testvid_path = joinpath(@__DIR__, "../videos", testvid.name)
+    testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
     # Test that limited range YCbCr values are translated to "full range"
     minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path,
                                    target_format = VideoIO.AV_PIX_FMT_GRAY8)
@@ -156,6 +155,13 @@ end
                                    VideoIO.VioColorspaceDetails())
     @test minp.val.i >= 16
     @test maxp.val.i <= 235
+end
+
+@testset "Reading RGB video as monochrome" begin
+    testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
+    minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path,
+                                   target_format = VideoIO.AV_PIX_FMT_GRAY8)
+    @test typeof(minp) == Gray{N0f8}
 end
 
 @testset "IO reading of various example file formats" begin
