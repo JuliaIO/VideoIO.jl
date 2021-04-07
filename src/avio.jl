@@ -75,12 +75,12 @@ end
 
 
 """
-    load(filename::String; kwargs...)
+    load(filename::String, args...; kwargs...)
 
-Load video file `filename` into memory as vector of image arrays, setting `kwargs` on the `openvideo` process.
+Load video file `filename` into memory as vector of image arrays, setting `args` and `kwargs` on the `openvideo` process.
 """
-function load(filename::String; kwargs...)
-    openvideo(filename, kwargs...) do io
+function load(filename::String, args...; kwargs...)
+    openvideo(filename, args...; kwargs...) do io
         collect(io)
     end
 end
