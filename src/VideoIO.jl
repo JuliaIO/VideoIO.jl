@@ -120,9 +120,6 @@ function __init__()
 
     #check_deps()
 
-    loglevel!(AVUtil.AV_LOG_FATAL)
-    # @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `? VideoIO.loglevel!` for options"
-
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()
@@ -130,6 +127,8 @@ function __init__()
     AVDevice.avdevice_register_all()
     init_camera_devices()
     init_camera_settings()
+
+    loglevel!(AVUtil.AV_LOG_FATAL)
 
     @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
         # Define read and retrieve for Images
