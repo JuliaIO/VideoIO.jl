@@ -355,9 +355,9 @@ function aspect_ratio(f::VideoReader)
     fixed_aspect
 end
 
-framerate(f::VideoReader) =
-    f.codec_context.time_base.den // f.codec_context.time_base.num
-
+framerate(f::VideoReader) = f.codec_context.time_base.den // f.codec_context.time_base.num
+height(f::VideoReader) = f.codec_context.height
+width(f::VideoReader) = f.codec_context.width
 
 # Does not check input size, meant for internal use only
 function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)

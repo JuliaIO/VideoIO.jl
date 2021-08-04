@@ -137,8 +137,8 @@ function __init__()
             if pixelaspectratio ≡ nothing # if user did not specify the aspect ratio we'll try to use the one stored in the video file
                 pixelaspectratio = aspect_ratio(f)
             end
-            h = f.height
-            w = round(typeof(h), f.width*pixelaspectratio) # has to be an integer
+            h = height(f)
+            w = round(typeof(h), width(f) * pixelaspectratio) # has to be an integer
             scene = Makie.Scene(resolution = (w, h))
             buf = read(f)
             makieimg = Makie.image!(scene, 1:h, 1:w, buf, show_axis = false, scale_plot = false)[end]
