@@ -136,7 +136,7 @@ display(scene)
 while !eof(f)
     read!(f, img)
     makieimg[1] = img
-    sleep(1/f.framerate)
+    sleep(1/VideoIO.framerate(f))
 end
 ```
 This code is essentially the code in `playvideo`, and will read and
@@ -150,7 +150,7 @@ using VideoIO
 cam = VideoIO.opencamera()
 for i in 1:100
     img = read(cam)
-    sleep(1/cam.framerate)
+    sleep(1/VideoIO.framerate(cam))
 end
 ```
 ### Webcam playback
@@ -176,7 +176,7 @@ display(scene)
 while isopen(scene)
     read!(cam, img)
     makieimg[1] = img
-    sleep(1/cam.framerate)
+    sleep(1/VideoIO.framerate(cam))
 end
 
 close(cam)

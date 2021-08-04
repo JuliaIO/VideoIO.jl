@@ -153,7 +153,7 @@ function __init__()
             while !eof(f) && isopen(scene)
                 read!(f, buf)
                 makieimg[3] = buf
-                sleep(1 / f.framerate)
+                sleep(1 / framerate(f))
             end
 
         end
