@@ -12,6 +12,8 @@
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
                 width, height = VideoIO.out_frame_size(v)
+                @test VideoIO.width(v) == width
+                @test VideoIO.height(v) == height
                 @test VideoIO.out_frame_eltype(v) == RGB{N0f8}
                 if size(comparison_frame, 1) > height
                     trimmed_comparison_frame =
@@ -19,6 +21,8 @@
                 else
                     trimmed_comparison_frame = comparison_frame
                 end
+
+                @test VideoIO.framerate(v) != 0
 
                 # Find the first non-trivial image
                 first_img = read(v)
