@@ -106,11 +106,11 @@ close(f)
 
 ## Video Playback
 
-A trivial video player interface exists (no audio) through `Makie.jl`.
-Note: `Makie` must be imported first to enable playback functionality.
+A trivial video player interface exists (no audio) through `GLMakie.jl`.
+Note: `GLMakie` must be imported first to enable playback functionality.
 
 ```julia
-using Makie
+using GLMakie
 using VideoIO
 
 f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
@@ -120,7 +120,7 @@ VideoIO.playvideo(f)  # no sound
 Customization of playback can be achieved by looking at the basic expanded version of this function:
 
 ```julia
-import Makie
+import GLMakie
 import VideoIO
 
 #io = VideoIO.open(video_file)
@@ -128,14 +128,14 @@ io = VideoIO.testvideo("annie_oakley") # for testing purposes
 f = VideoIO.openvideo(io)
 
 img = read(f)
-scene = Makie.Scene(resolution = reverse(size(img)))
-makieimg = Makie.image!(scene, img, show_axis = false, scale_plot = true)[end]
-Makie.rotate!(scene, -0.5pi)
+scene = GLMakie.Scene(resolution = reverse(size(img)))
+makieimg = GLMakie.image!(scene, img, show_axis = false, scale_plot = true)
+GLMakie.rotate!(scene, -0.5pi)
 display(scene)
 
 while !eof(f)
     read!(f, img)
-    makieimg[1] = img
+    makieimg.image = img
     sleep(1/VideoIO.framerate(f))
 end
 ```
@@ -156,26 +156,26 @@ end
 ### Webcam playback
 The default system webcam can be viewed directly
 ```julia
-using Makie
+using GLMakie
 using VideoIO
 VideoIO.viewcam()
 ```
 
 An expanded version of this approach:
 ```julia
-import Makie, VideoIO
+import GLMakie, VideoIO
 
 cam = VideoIO.opencamera()
 
 img = read(cam)
-scene = Makie.Scene(resolution = size(img'))
-makieimg = Makie.image!(scene, img, show_axis = false, scale_plot = false)[end]
-Makie.rotate!(scene, -0.5pi)
+scene = GLMakie.Scene(resolution = size(img'))
+makieimg = GLMakie.image!(scene, img, show_axis = false, scale_plot = false)
+GLMakie.rotate!(scene, -0.5pi)
 display(scene)
 
 while isopen(scene)
     read!(cam, img)
-    makieimg[1] = img
+    makieimg.image = img
     sleep(1/VideoIO.framerate(cam))
 end
 
