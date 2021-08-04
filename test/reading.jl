@@ -127,11 +127,19 @@
             if occursin("annie_oakley", name)
                 framestack = VideoIO.load(testvid_path)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                if VERSION < v"1.7"
+                    @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                else
+                    @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                end
                 f = File{DataFormat{:OGG}}(testvid_path)
                 framestack = VideoIO.fileio_load(f)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                if VERSION < v"1.7"
+                    @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                else
+                    @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
+                end
                 path, io = mktemp()
                 f = File{DataFormat{:MP4}}(path * ".mp4")
                 VideoIO.fileio_save(f, framestack)
