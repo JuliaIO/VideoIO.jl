@@ -97,15 +97,15 @@ elseif Sys.isbsd()
     end
 end
 
-#Helper functions to explain about Makie load order requirement
+#Helper functions to explain about GLMakie load order requirement
 function play(f; flipx=false, flipy=false)
-    error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
+    error("GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`")
 end
 function playvideo(video;flipx=false,flipy=false)
-    error("Makie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using Makie, VideoIO`")
+    error("GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`")
 end
 function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-    error("Makie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using Makie, VideoIO`")
+    error("GLMakie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using GLMakie, VideoIO`")
 end
 
 ## FileIO interface
@@ -131,31 +131,31 @@ function __init__()
     init_camera_devices()
     init_camera_settings()
 
-    @require Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" begin
+    @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" begin
         # Define read and retrieve for Images
         function play(f; flipx=false, flipy=false, pixelaspectratio=nothing)
+            eof(f) && error("VideoReader at end of file. Use `seekstart(f)` to rewind")
             if pixelaspectratio ≡ nothing # if user did not specify the aspect ratio we'll try to use the one stored in the video file
                 pixelaspectratio = aspect_ratio(f)
             end
-            h = f.height
-            w = round(typeof(h), f.width*pixelaspectratio) # has to be an integer
-            scene = Makie.Scene(resolution = (w, h))
+            h = height(f)
+            w = round(typeof(h), width(f) * pixelaspectratio) # has to be an integer
+            scene = GLMakie.Scene(resolution = (w, h))
             buf = read(f)
-            makieimg = Makie.image!(scene, 1:h, 1:w, buf, show_axis = false, scale_plot = false)[end]
-            Makie.rotate!(scene, -0.5pi)
+            makieimg = GLMakie.image!(scene, 1:h, 1:w, buf, show_axis = false, scale_plot = false)
+            GLMakie.rotate!(scene, -0.5pi)
             if flipx && flipy
-                Makie.scale!(scene, -1, -1, 1)
+                GLMakie.scale!(scene, -1, -1, 1)
             else
-                flipx && Makie.scale!(scene, -1, 1, 1)
-                flipy && Makie.scale!(scene, 1, -1, 1)
+                flipx && GLMakie.scale!(scene, -1, 1, 1)
+                flipy && GLMakie.scale!(scene, 1, -1, 1)
             end
             display(scene)
-            while !eof(f) && isopen(scene)
+            while isopen(scene) && !eof(f)
                 read!(f, buf)
-                makieimg[3] = buf
-                sleep(1 / f.framerate)
+                makieimg.image = buf
+                sleep(1 / framerate(f))
             end
-
         end
 
         function playvideo(video;flipx=false,flipy=false,pixelaspectratio=nothing)
@@ -166,7 +166,7 @@ function __init__()
         function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
             init_camera_settings()
             camera = opencamera(device[], format[])
-            play(camera, flipx=true, pixelaspectratio=pixelaspectratio)
+            play(camera; flipx=true, pixelaspectratio)
             close(camera)
         end
 
