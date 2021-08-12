@@ -248,7 +248,8 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
                      target_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
                      swscale_options::OptionsT = (;),
-                     sws_color_options::OptionsT = (;)) where I
+                     sws_color_options::OptionsT = (;),
+                     thread_count::Union{Nothing, Int} = Sys.CPU_THREADS) where I
     bad_px_type = transcode && target_format !== nothing &&
         !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -268,6 +269,7 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
 
     # Create decoder context
     codec_context = AVCodecContextPtr(codec) # Allocates
+    codec_context.thread_count = thread_count === nothing ? codec_context.thread_count : thread_count
     # Transfer parameters to decoder context
     ret = avcodec_parameters_to_context(codec_context, stream.codecpar)
     ret < 0 && error("Could not copy the codec parameters to the decoder")
@@ -584,6 +586,8 @@ arguments listed below.
 - `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
+- `thread_count::Union{Nothing, Int} = Sys.CPU_THREADS`: The number of threads the codec is
+    allowed to use or `nothing` for default codec behavior. Defaults to `Sys.CPU_THREADS`.
 """
 openvideo(s::Union{IO, AbstractString, AVInput}, args...; kwargs...) =
     VideoReader(s, args...; kwargs...)
