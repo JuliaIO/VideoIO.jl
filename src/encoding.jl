@@ -240,7 +240,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                      pix_fmt_loss_flags = 0,
                      input_colorspace_details = nothing,
                      allow_vio_gray_transform = true,
-                     sws_color_options::OptionsT = (;)) where T
+                     sws_color_options::OptionsT = (;),
+                     thread_count::Int = Threads.nthreads()) where T
     framerate > 0 || error("Framerate must be strictly positive")
 
     if haskey(encoder_options, :priv_data)
@@ -300,6 +301,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     codec_context.time_base = target_timebase
     codec_context.framerate = framerate_rat
     codec_context.pix_fmt = encoding_pix_fmt
+    codec_context.thread_count = thread_count
 
     if format_context.oformat.flags & AVFMT_GLOBALHEADER != 0
         codec_context.flags |= AV_CODEC_FLAG_GLOBAL_HEADER
@@ -453,6 +455,8 @@ occurred.
 - `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
+- `thread_count::Int = Threads.nthreads()`: The number of threads the codec is
+    allowed to use. Defaults to the same as Julia.
 
 See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
