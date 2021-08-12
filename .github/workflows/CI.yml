@@ -26,8 +26,6 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
       - uses: julia-actions/julia-runtest@master
-        env:
-          JULIA_NUM_THREADS: 2
       - uses: julia-actions/julia-processcoverage@master
       - uses: codecov/codecov-action@master
         with:
