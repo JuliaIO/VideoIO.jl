@@ -83,8 +83,11 @@ end
     @preserve a field_ptr(S, p, field, args...)
 end
 
-@inline field_ptr(a::NestedCStruct{T}, field::Symbol, args...) where T =
-    field_ptr(fieldtype(T, field), a, field, args...)
+@inline function field_ptr(a::NestedCStruct{T}, field::Symbol,
+                           args...) where {S, T}
+    p = unsafe_convert(Ptr{T}, a)
+    @preserve a field_ptr(p, field, args...)
+end
 
 propertynames(ap::T) where {S, T<:NestedCStruct{S}} = (fieldnames(S)...,
                                                        fieldnames(T)...)

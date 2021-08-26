@@ -14,19 +14,9 @@ import Base: iterate, IteratorSize, IteratorEltype, setproperty!, convert,
 
 const VIO_LOCK = ReentrantLock()
 
-include("init.jl")
 include("util.jl")
-include(joinpath(av_load_path, "AVUtil", "src", "AVUtil.jl"))
-include(joinpath(av_load_path, "AVCodecs", "src", "AVCodecs.jl"))
-include(joinpath(av_load_path, "AVFormat", "src", "AVFormat.jl"))
-include(joinpath(av_load_path, "AVDevice", "src", "AVDevice.jl"))
-include(joinpath(av_load_path, "SWScale", "src", "SWScale.jl"))
-
-using .AVUtil
-using .AVCodecs
-using .AVFormat
-using .SWScale
-import .AVDevice
+include("../lib/libffmpeg.jl")
+using .libffmpeg
 
 include("avptr.jl")
 
@@ -43,7 +33,7 @@ if Sys.islinux()
     import Glob
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
-        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("video4linux2")
+        DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("video4linux2")
     end
     function init_camera_settings()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
@@ -54,7 +44,7 @@ end
 if Sys.iswindows()
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
-        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("dshow")
+        DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("dshow")
     end
     function init_camera_settings()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
@@ -69,11 +59,11 @@ if Sys.isapple()
     function init_camera_devices()
         try
             append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
-            DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
+            DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("avfoundation")
         catch
             try
                 append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "qtkit", "\"\""))
-                DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("qtkit")
+                DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("qtkit")
             catch
             end
         end
@@ -88,7 +78,7 @@ elseif Sys.isbsd()
     # copied loosely from apple above - needs figuring out
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
-        DEFAULT_CAMERA_FORMAT[] = AVFormat.av_find_input_format("avfoundation")
+        DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("avfoundation")
     end
     function init_camera_settings()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
@@ -120,14 +110,14 @@ function __init__()
 
     #check_deps()
 
-    loglevel!(AVUtil.AV_LOG_FATAL)
+    loglevel!(libffmpeg.AV_LOG_FATAL)
     # @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `? VideoIO.loglevel!` for options"
 
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
     av_register_all()
 
-    AVDevice.avdevice_register_all()
+    libffmpeg.avdevice_register_all()
     init_camera_devices()
     init_camera_settings()
 
