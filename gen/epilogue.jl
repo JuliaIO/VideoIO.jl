@@ -11,7 +11,7 @@ end
 
 function Base.getproperty(x::Ptr{<:Union{struct_types...}}, f::Symbol)
     T = eltype(x)
-    fieldpos = Base,fieldindex(T, f)
+    fieldpos = Base.fieldindex(T, f)
     field_pointer = convert(Ptr{fieldtype(T, fieldpos)}, x + fieldoffset(T, fieldpos))
     return field_pointer
 end

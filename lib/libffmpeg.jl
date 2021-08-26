@@ -10,7 +10,7 @@ macro cenum(decl::Expr, body::Expr)
     enumname, basetype = decl.args
     esc(body)
     res = quote
-        const $enumname = $basetype
+        Base.@__doc__(const $enumname = $basetype)
     end
     for ex in body.args
         ex isa Expr || continue
@@ -21940,7 +21940,7 @@ end
 
 function Base.getproperty(x::Ptr{<:Union{struct_types...}}, f::Symbol)
     T = eltype(x)
-    fieldpos = Base,fieldindex(T, f)
+    fieldpos = Base.fieldindex(T, f)
     field_pointer = convert(Ptr{fieldtype(T, fieldpos)}, x + fieldoffset(T, fieldpos))
     return field_pointer
 end

@@ -5,7 +5,7 @@ macro cenum(decl::Expr, body::Expr)
     enumname, basetype = decl.args
     esc(body)
     res = quote
-        const $enumname = $basetype
+        Base.@__doc__(const $enumname = $basetype)
     end
     for ex in body.args
         ex isa Expr || continue
