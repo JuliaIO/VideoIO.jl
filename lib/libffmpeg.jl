@@ -21,6 +21,7 @@ macro cenum(decl::Expr, body::Expr)
 end
 
 const intptr_t = UInt
+const time_t = Int
 
 const AV_NOPTS_VALUE = 0x8000000000000000 % Int64
 AV_VERSION_INT(a, b, c) = (a << 16 | b << 8) | c
@@ -32,10 +33,6 @@ macro AV_PIX_FMT_NE(be, le)
     Symbol("AV_PIX_FMT_"*string(le))
 end
 
-
-const __time_t = Clong
-
-const time_t = __time_t
 
 const VdpChromaType = UInt32
 
@@ -1166,508 +1163,106 @@ struct VkPhysicalDeviceFeatures2
 end
 
 """
-    swscale_version()
+    av_ac3_parse_header(buf, size::Csize_t, bitstream_id, frame_size)
 
-` libsws libswscale`
-
-Color conversion and scaling library.
-
-@{
-
-Return the [`LIBSWSCALE_VERSION_INT`](@ref) constant.
+Extract the bitstream ID and the frame size from AC-3 data.
 """
-function swscale_version()
-    ccall((:swscale_version, libswscale), Cuint, ())
+function av_ac3_parse_header(buf, size::Csize_t, bitstream_id, frame_size)
+    ccall((:av_ac3_parse_header, libavcodec), Cint, (Ptr{UInt8}, Csize_t, Ptr{UInt8}, Ptr{UInt16}), buf, size, bitstream_id, frame_size)
 end
 
 """
-    swscale_configuration()
+    av_adts_header_parse(buf, samples, frames)
 
-Return the libswscale build-time configuration.
-"""
-function swscale_configuration()
-    ccall((:swscale_configuration, libswscale), Cstring, ())
-end
-
-"""
-    swscale_license()
-
-Return the libswscale license.
-"""
-function swscale_license()
-    ccall((:swscale_license, libswscale), Cstring, ())
-end
-
-"""
-    sws_getCoefficients(colorspace::Integer)
-
-Return a pointer to yuv<->rgb coefficients for the given colorspace suitable for [`sws_setColorspaceDetails`](@ref)().
+Extract the number of samples and frames from AAC data. 
 
 ### Parameters
-* `colorspace`: One of the SWS\\_CS\\_* macros. If invalid, [`SWS_CS_DEFAULT`](@ref) is used.
-"""
-function sws_getCoefficients(colorspace::Integer)
-    ccall((:sws_getCoefficients, libswscale), Ptr{Cint}, (Cint,), colorspace)
-end
+* `buf`:\\[in\\] pointer to AAC data buffer 
 
-struct SwsVector
-    coeff::Ptr{Cdouble}
-    length::Cint
-end
+* `samples`:\\[out\\] Pointer to where number of samples is written 
 
-struct SwsFilter
-    lumH::Ptr{SwsVector}
-    lumV::Ptr{SwsVector}
-    chrH::Ptr{SwsVector}
-    chrV::Ptr{SwsVector}
-end
-
-mutable struct SwsContext end
-
-"""
-    AVPixelFormat
-
-Pixel format.
-
-!!! note
-
-    [`AV_PIX_FMT_RGB32`](@ref) is handled in an endian-specific manner. An RGBA color is put together as: (A << 24) | (R << 16) | (G << 8) | B This is stored as BGRA on little-endian CPU architectures and ARGB on big-endian CPUs.
-
-!!! note
-
-    If the resolution is not a multiple of the chroma subsampling factor then the chroma plane resolution must be rounded up.
-
-\\par When the pixel format is palettized RGB32 (AV\\_PIX\\_FMT\\_PAL8), the palettized image data is stored in [`AVFrame`](@ref).data[0]. The palette is transported in [`AVFrame`](@ref).data[1], is 1024 bytes long (256 4-byte entries) and is formatted the same as in [`AV_PIX_FMT_RGB32`](@ref) described above (i.e., it is also endian-specific). Note also that the individual RGB32 palette components stored in [`AVFrame`](@ref).data[1] should be in the range 0..255. This is important as many custom PAL8 video codecs that were designed to run on the IBM VGA graphics adapter use 6-bit palette components.
-
-\\par For all the 8 bits per pixel formats, an RGB32 palette is in data[1] like for pal8. This palette is filled in automatically by the function allocating the picture.
-"""
-@cenum AVPixelFormat::Int32 begin
-    AV_PIX_FMT_NONE = -1
-    AV_PIX_FMT_YUV420P = 0
-    AV_PIX_FMT_YUYV422 = 1
-    AV_PIX_FMT_RGB24 = 2
-    AV_PIX_FMT_BGR24 = 3
-    AV_PIX_FMT_YUV422P = 4
-    AV_PIX_FMT_YUV444P = 5
-    AV_PIX_FMT_YUV410P = 6
-    AV_PIX_FMT_YUV411P = 7
-    AV_PIX_FMT_GRAY8 = 8
-    AV_PIX_FMT_MONOWHITE = 9
-    AV_PIX_FMT_MONOBLACK = 10
-    AV_PIX_FMT_PAL8 = 11
-    AV_PIX_FMT_YUVJ420P = 12
-    AV_PIX_FMT_YUVJ422P = 13
-    AV_PIX_FMT_YUVJ444P = 14
-    AV_PIX_FMT_UYVY422 = 15
-    AV_PIX_FMT_UYYVYY411 = 16
-    AV_PIX_FMT_BGR8 = 17
-    AV_PIX_FMT_BGR4 = 18
-    AV_PIX_FMT_BGR4_BYTE = 19
-    AV_PIX_FMT_RGB8 = 20
-    AV_PIX_FMT_RGB4 = 21
-    AV_PIX_FMT_RGB4_BYTE = 22
-    AV_PIX_FMT_NV12 = 23
-    AV_PIX_FMT_NV21 = 24
-    AV_PIX_FMT_ARGB = 25
-    AV_PIX_FMT_RGBA = 26
-    AV_PIX_FMT_ABGR = 27
-    AV_PIX_FMT_BGRA = 28
-    AV_PIX_FMT_GRAY16BE = 29
-    AV_PIX_FMT_GRAY16LE = 30
-    AV_PIX_FMT_YUV440P = 31
-    AV_PIX_FMT_YUVJ440P = 32
-    AV_PIX_FMT_YUVA420P = 33
-    AV_PIX_FMT_RGB48BE = 34
-    AV_PIX_FMT_RGB48LE = 35
-    AV_PIX_FMT_RGB565BE = 36
-    AV_PIX_FMT_RGB565LE = 37
-    AV_PIX_FMT_RGB555BE = 38
-    AV_PIX_FMT_RGB555LE = 39
-    AV_PIX_FMT_BGR565BE = 40
-    AV_PIX_FMT_BGR565LE = 41
-    AV_PIX_FMT_BGR555BE = 42
-    AV_PIX_FMT_BGR555LE = 43
-    AV_PIX_FMT_VAAPI_MOCO = 44
-    AV_PIX_FMT_VAAPI_IDCT = 45
-    AV_PIX_FMT_VAAPI_VLD = 46
-    AV_PIX_FMT_VAAPI = 46
-    AV_PIX_FMT_YUV420P16LE = 47
-    AV_PIX_FMT_YUV420P16BE = 48
-    AV_PIX_FMT_YUV422P16LE = 49
-    AV_PIX_FMT_YUV422P16BE = 50
-    AV_PIX_FMT_YUV444P16LE = 51
-    AV_PIX_FMT_YUV444P16BE = 52
-    AV_PIX_FMT_DXVA2_VLD = 53
-    AV_PIX_FMT_RGB444LE = 54
-    AV_PIX_FMT_RGB444BE = 55
-    AV_PIX_FMT_BGR444LE = 56
-    AV_PIX_FMT_BGR444BE = 57
-    AV_PIX_FMT_YA8 = 58
-    AV_PIX_FMT_Y400A = 58
-    AV_PIX_FMT_GRAY8A = 58
-    AV_PIX_FMT_BGR48BE = 59
-    AV_PIX_FMT_BGR48LE = 60
-    AV_PIX_FMT_YUV420P9BE = 61
-    AV_PIX_FMT_YUV420P9LE = 62
-    AV_PIX_FMT_YUV420P10BE = 63
-    AV_PIX_FMT_YUV420P10LE = 64
-    AV_PIX_FMT_YUV422P10BE = 65
-    AV_PIX_FMT_YUV422P10LE = 66
-    AV_PIX_FMT_YUV444P9BE = 67
-    AV_PIX_FMT_YUV444P9LE = 68
-    AV_PIX_FMT_YUV444P10BE = 69
-    AV_PIX_FMT_YUV444P10LE = 70
-    AV_PIX_FMT_YUV422P9BE = 71
-    AV_PIX_FMT_YUV422P9LE = 72
-    AV_PIX_FMT_GBRP = 73
-    AV_PIX_FMT_GBR24P = 73
-    AV_PIX_FMT_GBRP9BE = 74
-    AV_PIX_FMT_GBRP9LE = 75
-    AV_PIX_FMT_GBRP10BE = 76
-    AV_PIX_FMT_GBRP10LE = 77
-    AV_PIX_FMT_GBRP16BE = 78
-    AV_PIX_FMT_GBRP16LE = 79
-    AV_PIX_FMT_YUVA422P = 80
-    AV_PIX_FMT_YUVA444P = 81
-    AV_PIX_FMT_YUVA420P9BE = 82
-    AV_PIX_FMT_YUVA420P9LE = 83
-    AV_PIX_FMT_YUVA422P9BE = 84
-    AV_PIX_FMT_YUVA422P9LE = 85
-    AV_PIX_FMT_YUVA444P9BE = 86
-    AV_PIX_FMT_YUVA444P9LE = 87
-    AV_PIX_FMT_YUVA420P10BE = 88
-    AV_PIX_FMT_YUVA420P10LE = 89
-    AV_PIX_FMT_YUVA422P10BE = 90
-    AV_PIX_FMT_YUVA422P10LE = 91
-    AV_PIX_FMT_YUVA444P10BE = 92
-    AV_PIX_FMT_YUVA444P10LE = 93
-    AV_PIX_FMT_YUVA420P16BE = 94
-    AV_PIX_FMT_YUVA420P16LE = 95
-    AV_PIX_FMT_YUVA422P16BE = 96
-    AV_PIX_FMT_YUVA422P16LE = 97
-    AV_PIX_FMT_YUVA444P16BE = 98
-    AV_PIX_FMT_YUVA444P16LE = 99
-    AV_PIX_FMT_VDPAU = 100
-    AV_PIX_FMT_XYZ12LE = 101
-    AV_PIX_FMT_XYZ12BE = 102
-    AV_PIX_FMT_NV16 = 103
-    AV_PIX_FMT_NV20LE = 104
-    AV_PIX_FMT_NV20BE = 105
-    AV_PIX_FMT_RGBA64BE = 106
-    AV_PIX_FMT_RGBA64LE = 107
-    AV_PIX_FMT_BGRA64BE = 108
-    AV_PIX_FMT_BGRA64LE = 109
-    AV_PIX_FMT_YVYU422 = 110
-    AV_PIX_FMT_YA16BE = 111
-    AV_PIX_FMT_YA16LE = 112
-    AV_PIX_FMT_GBRAP = 113
-    AV_PIX_FMT_GBRAP16BE = 114
-    AV_PIX_FMT_GBRAP16LE = 115
-    AV_PIX_FMT_QSV = 116
-    AV_PIX_FMT_MMAL = 117
-    AV_PIX_FMT_D3D11VA_VLD = 118
-    AV_PIX_FMT_CUDA = 119
-    AV_PIX_FMT_0RGB = 120
-    AV_PIX_FMT_RGB0 = 121
-    AV_PIX_FMT_0BGR = 122
-    AV_PIX_FMT_BGR0 = 123
-    AV_PIX_FMT_YUV420P12BE = 124
-    AV_PIX_FMT_YUV420P12LE = 125
-    AV_PIX_FMT_YUV420P14BE = 126
-    AV_PIX_FMT_YUV420P14LE = 127
-    AV_PIX_FMT_YUV422P12BE = 128
-    AV_PIX_FMT_YUV422P12LE = 129
-    AV_PIX_FMT_YUV422P14BE = 130
-    AV_PIX_FMT_YUV422P14LE = 131
-    AV_PIX_FMT_YUV444P12BE = 132
-    AV_PIX_FMT_YUV444P12LE = 133
-    AV_PIX_FMT_YUV444P14BE = 134
-    AV_PIX_FMT_YUV444P14LE = 135
-    AV_PIX_FMT_GBRP12BE = 136
-    AV_PIX_FMT_GBRP12LE = 137
-    AV_PIX_FMT_GBRP14BE = 138
-    AV_PIX_FMT_GBRP14LE = 139
-    AV_PIX_FMT_YUVJ411P = 140
-    AV_PIX_FMT_BAYER_BGGR8 = 141
-    AV_PIX_FMT_BAYER_RGGB8 = 142
-    AV_PIX_FMT_BAYER_GBRG8 = 143
-    AV_PIX_FMT_BAYER_GRBG8 = 144
-    AV_PIX_FMT_BAYER_BGGR16LE = 145
-    AV_PIX_FMT_BAYER_BGGR16BE = 146
-    AV_PIX_FMT_BAYER_RGGB16LE = 147
-    AV_PIX_FMT_BAYER_RGGB16BE = 148
-    AV_PIX_FMT_BAYER_GBRG16LE = 149
-    AV_PIX_FMT_BAYER_GBRG16BE = 150
-    AV_PIX_FMT_BAYER_GRBG16LE = 151
-    AV_PIX_FMT_BAYER_GRBG16BE = 152
-    AV_PIX_FMT_XVMC = 153
-    AV_PIX_FMT_YUV440P10LE = 154
-    AV_PIX_FMT_YUV440P10BE = 155
-    AV_PIX_FMT_YUV440P12LE = 156
-    AV_PIX_FMT_YUV440P12BE = 157
-    AV_PIX_FMT_AYUV64LE = 158
-    AV_PIX_FMT_AYUV64BE = 159
-    AV_PIX_FMT_VIDEOTOOLBOX = 160
-    AV_PIX_FMT_P010LE = 161
-    AV_PIX_FMT_P010BE = 162
-    AV_PIX_FMT_GBRAP12BE = 163
-    AV_PIX_FMT_GBRAP12LE = 164
-    AV_PIX_FMT_GBRAP10BE = 165
-    AV_PIX_FMT_GBRAP10LE = 166
-    AV_PIX_FMT_MEDIACODEC = 167
-    AV_PIX_FMT_GRAY12BE = 168
-    AV_PIX_FMT_GRAY12LE = 169
-    AV_PIX_FMT_GRAY10BE = 170
-    AV_PIX_FMT_GRAY10LE = 171
-    AV_PIX_FMT_P016LE = 172
-    AV_PIX_FMT_P016BE = 173
-    AV_PIX_FMT_D3D11 = 174
-    AV_PIX_FMT_GRAY9BE = 175
-    AV_PIX_FMT_GRAY9LE = 176
-    AV_PIX_FMT_GBRPF32BE = 177
-    AV_PIX_FMT_GBRPF32LE = 178
-    AV_PIX_FMT_GBRAPF32BE = 179
-    AV_PIX_FMT_GBRAPF32LE = 180
-    AV_PIX_FMT_DRM_PRIME = 181
-    AV_PIX_FMT_OPENCL = 182
-    AV_PIX_FMT_GRAY14BE = 183
-    AV_PIX_FMT_GRAY14LE = 184
-    AV_PIX_FMT_GRAYF32BE = 185
-    AV_PIX_FMT_GRAYF32LE = 186
-    AV_PIX_FMT_YUVA422P12BE = 187
-    AV_PIX_FMT_YUVA422P12LE = 188
-    AV_PIX_FMT_YUVA444P12BE = 189
-    AV_PIX_FMT_YUVA444P12LE = 190
-    AV_PIX_FMT_NV24 = 191
-    AV_PIX_FMT_NV42 = 192
-    AV_PIX_FMT_VULKAN = 193
-    AV_PIX_FMT_Y210BE = 194
-    AV_PIX_FMT_Y210LE = 195
-    AV_PIX_FMT_X2RGB10LE = 196
-    AV_PIX_FMT_X2RGB10BE = 197
-    AV_PIX_FMT_NB = 198
-end
-
-"""
-    sws_isSupportedInput(pix_fmt::AVPixelFormat)
-
-Return a positive value if pix\\_fmt is a supported input format, 0 otherwise.
-"""
-function sws_isSupportedInput(pix_fmt::AVPixelFormat)
-    ccall((:sws_isSupportedInput, libswscale), Cint, (AVPixelFormat,), pix_fmt)
-end
-
-"""
-    sws_isSupportedOutput(pix_fmt::AVPixelFormat)
-
-Return a positive value if pix\\_fmt is a supported output format, 0 otherwise.
-"""
-function sws_isSupportedOutput(pix_fmt::AVPixelFormat)
-    ccall((:sws_isSupportedOutput, libswscale), Cint, (AVPixelFormat,), pix_fmt)
-end
-
-"""
-    sws_isSupportedEndiannessConversion(pix_fmt::AVPixelFormat)
-
-### Parameters
-* `pix_fmt`:\\[in\\] the pixel format 
+* `frames`:\\[out\\] Pointer to where number of frames is written 
 
 ### Returns
-a positive value if an endianness conversion for pix\\_fmt is supported, 0 otherwise.
+Returns 0 on success, error code on failure.
 """
-function sws_isSupportedEndiannessConversion(pix_fmt::AVPixelFormat)
-    ccall((:sws_isSupportedEndiannessConversion, libswscale), Cint, (AVPixelFormat,), pix_fmt)
+function av_adts_header_parse(buf, samples, frames)
+    ccall((:av_adts_header_parse, libavcodec), Cint, (Ptr{UInt8}, Ptr{UInt32}, Ptr{UInt8}), buf, samples, frames)
 end
 
 """
-    sws_alloc_context()
+    AVDiscard
 
-Allocate an empty [`SwsContext`](@ref). This must be filled and passed to [`sws_init_context`](@ref)(). For filling see AVOptions, options.c and [`sws_setColorspaceDetails`](@ref)().
+` lavc_decoding`
 """
-function sws_alloc_context()
-    ccall((:sws_alloc_context, libswscale), Ptr{SwsContext}, ())
+@cenum AVDiscard::Int32 begin
+    AVDISCARD_NONE = -16
+    AVDISCARD_DEFAULT = 0
+    AVDISCARD_NONREF = 8
+    AVDISCARD_BIDIR = 16
+    AVDISCARD_NONINTRA = 24
+    AVDISCARD_NONKEY = 32
+    AVDISCARD_ALL = 48
+end
+
+@cenum AVAudioServiceType::UInt32 begin
+    AV_AUDIO_SERVICE_TYPE_MAIN = 0
+    AV_AUDIO_SERVICE_TYPE_EFFECTS = 1
+    AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED = 2
+    AV_AUDIO_SERVICE_TYPE_HEARING_IMPAIRED = 3
+    AV_AUDIO_SERVICE_TYPE_DIALOGUE = 4
+    AV_AUDIO_SERVICE_TYPE_COMMENTARY = 5
+    AV_AUDIO_SERVICE_TYPE_EMERGENCY = 6
+    AV_AUDIO_SERVICE_TYPE_VOICE_OVER = 7
+    AV_AUDIO_SERVICE_TYPE_KARAOKE = 8
+    AV_AUDIO_SERVICE_TYPE_NB = 9
 end
 
 """
-    sws_init_context(sws_context, srcFilter, dstFilter)
+    RcOverride
 
-Initialize the swscaler context sws\\_context.
-
-### Returns
-zero or positive value on success, a negative value on error
+` lavc_encoding`
 """
-function sws_init_context(sws_context, srcFilter, dstFilter)
-    ccall((:sws_init_context, libswscale), Cint, (Ptr{SwsContext}, Ptr{SwsFilter}, Ptr{SwsFilter}), sws_context, srcFilter, dstFilter)
+struct RcOverride
+    start_frame::Cint
+    end_frame::Cint
+    qscale::Cint
+    quality_factor::Cfloat
 end
 
 """
-    sws_freeContext(swsContext)
+    AVPanScan
 
-Free the swscaler context swsContext. If swsContext is NULL, then does nothing.
+Pan Scan area. This specifies the area which should be displayed. Note there may be multiple such areas for one frame.
 """
-function sws_freeContext(swsContext)
-    ccall((:sws_freeContext, libswscale), Cvoid, (Ptr{SwsContext},), swsContext)
+struct AVPanScan
+    id::Cint
+    width::Cint
+    height::Cint
+    position::NTuple{3, NTuple{2, Int16}}
 end
 
 """
-    sws_getContext(srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+    AVCPBProperties
 
-Allocate and return an [`SwsContext`](@ref). You need it to perform scaling/conversion operations using [`sws_scale`](@ref)().
-
-!!! note
-
-    this function is to be removed after a saner alternative is written
-
-### Parameters
-* `srcW`: the width of the source image 
-
-* `srcH`: the height of the source image 
-
-* `srcFormat`: the source image format 
-
-* `dstW`: the width of the destination image 
-
-* `dstH`: the height of the destination image 
-
-* `dstFormat`: the destination image format 
-
-* `flags`: specify which algorithm and options to use for rescaling 
-
-* `param`: extra parameters to tune the used scaler For [`SWS_BICUBIC`](@ref) param[0] and [1] tune the shape of the basis function, param[0] tunes f(1) and param[1] f´(1) For [`SWS_GAUSS`](@ref) param[0] tunes the exponent and thus cutoff frequency For [`SWS_LANCZOS`](@ref) param[0] tunes the width of the window function 
-
-### Returns
-a pointer to an allocated context, or NULL in case of error 
+This structure describes the bitrate properties of an encoded bitstream. It roughly corresponds to a subset the VBV parameters for MPEG-2 or HRD parameters for H.264/HEVC.
 """
-function sws_getContext(srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
-    ccall((:sws_getContext, libswscale), Ptr{SwsContext}, (Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+struct AVCPBProperties
+    max_bitrate::Cint
+    min_bitrate::Cint
+    avg_bitrate::Cint
+    buffer_size::Cint
+    vbv_delay::UInt64
 end
 
 """
-    sws_scale(c, srcSlice, srcStride, srcSliceY::Integer, srcSliceH::Integer, dst, dstStride)
+    AVProducerReferenceTime
 
-Scale the image slice in srcSlice and put the resulting scaled slice in the image in dst. A slice is a sequence of consecutive rows in an image.
-
-Slices have to be provided in sequential order, either in top-bottom or bottom-top order. If slices are provided in non-sequential order the behavior of the function is undefined.
-
-### Parameters
-* `c`: the scaling context previously created with [`sws_getContext`](@ref)() 
-
-* `srcSlice`: the array containing the pointers to the planes of the source slice 
-
-* `srcStride`: the array containing the strides for each plane of the source image 
-
-* `srcSliceY`: the position in the source image of the slice to process, that is the number (counted starting from zero) in the image of the first row of the slice 
-
-* `srcSliceH`: the height of the source slice, that is the number of rows in the slice 
-
-* `dst`: the array containing the pointers to the planes of the destination image 
-
-* `dstStride`: the array containing the strides for each plane of the destination image 
-
-### Returns
-the height of the output slice
+This structure supplies correlation between a packet timestamp and a wall clock production time. The definition follows the Producer Reference Time ('prft') as defined in ISO/IEC 14496-12
 """
-function sws_scale(c, srcSlice, srcStride, srcSliceY::Integer, srcSliceH::Integer, dst, dstStride)
-    ccall((:sws_scale, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Cint, Cint, Ptr{Ptr{UInt8}}, Ptr{Cint}), c, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride)
-end
-
-"""
-    sws_setColorspaceDetails(c, inv_table, srcRange::Integer, table, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
-
-### Parameters
-* `dstRange`: flag indicating the while-black range of the output (1=jpeg / 0=mpeg) 
-
-* `srcRange`: flag indicating the while-black range of the input (1=jpeg / 0=mpeg) 
-
-* `table`: the yuv2rgb coefficients describing the output yuv space, normally ff\\_yuv2rgb\\_coeffs[x] 
-
-* `inv_table`: the yuv2rgb coefficients describing the input yuv space, normally ff\\_yuv2rgb\\_coeffs[x] 
-
-* `brightness`: 16.16 fixed point brightness correction 
-
-* `contrast`: 16.16 fixed point contrast correction 
-
-* `saturation`: 16.16 fixed point saturation correction 
-
-### Returns
--1 if not supported
-"""
-function sws_setColorspaceDetails(c, inv_table, srcRange::Integer, table, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
-    ccall((:sws_setColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, Ptr{Cint}, Cint, Ptr{Cint}, Cint, Cint, Cint, Cint), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
-end
-
-"""
-    sws_getColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
-
-### Returns
--1 if not supported
-"""
-function sws_getColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
-    ccall((:sws_getColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
-end
-
-"""
-    sws_allocVec(length::Integer)
-
-Allocate and return an uninitialized vector with length coefficients.
-"""
-function sws_allocVec(length::Integer)
-    ccall((:sws_allocVec, libswscale), Ptr{SwsVector}, (Cint,), length)
-end
-
-"""
-    sws_getGaussianVec(variance::Cdouble, quality::Cdouble)
-
-Return a normalized Gaussian curve used to filter stuff quality = 3 is high quality, lower is lower quality.
-"""
-function sws_getGaussianVec(variance::Cdouble, quality::Cdouble)
-    ccall((:sws_getGaussianVec, libswscale), Ptr{SwsVector}, (Cdouble, Cdouble), variance, quality)
-end
-
-"""
-    sws_scaleVec(a, scalar::Cdouble)
-
-Scale all the coefficients of a by the scalar value.
-"""
-function sws_scaleVec(a, scalar::Cdouble)
-    ccall((:sws_scaleVec, libswscale), Cvoid, (Ptr{SwsVector}, Cdouble), a, scalar)
-end
-
-"""
-    sws_normalizeVec(a, height::Cdouble)
-
-Scale all the coefficients of a so that their sum equals height.
-"""
-function sws_normalizeVec(a, height::Cdouble)
-    ccall((:sws_normalizeVec, libswscale), Cvoid, (Ptr{SwsVector}, Cdouble), a, height)
-end
-
-function sws_getConstVec(c::Cdouble, length::Integer)
-    ccall((:sws_getConstVec, libswscale), Ptr{SwsVector}, (Cdouble, Cint), c, length)
-end
-
-function sws_getIdentityVec()
-    ccall((:sws_getIdentityVec, libswscale), Ptr{SwsVector}, ())
-end
-
-function sws_convVec(a, b)
-    ccall((:sws_convVec, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{SwsVector}), a, b)
-end
-
-function sws_addVec(a, b)
-    ccall((:sws_addVec, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{SwsVector}), a, b)
-end
-
-function sws_subVec(a, b)
-    ccall((:sws_subVec, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{SwsVector}), a, b)
-end
-
-function sws_shiftVec(a, shift::Integer)
-    ccall((:sws_shiftVec, libswscale), Cvoid, (Ptr{SwsVector}, Cint), a, shift)
-end
-
-function sws_cloneVec(a)
-    ccall((:sws_cloneVec, libswscale), Ptr{SwsVector}, (Ptr{SwsVector},), a)
+struct AVProducerReferenceTime
+    wallclock::Int64
+    flags::Cint
 end
 
 """
@@ -1914,180 +1509,21 @@ function Base.setproperty!(x::Ptr{AVClass}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-function sws_printVec2(a, log_ctx, log_level::Integer)
-    ccall((:sws_printVec2, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{AVClass}, Cint), a, log_ctx, log_level)
-end
-
-function sws_freeVec(a)
-    ccall((:sws_freeVec, libswscale), Cvoid, (Ptr{SwsVector},), a)
-end
-
-function sws_getDefaultFilter(lumaGBlur::Cfloat, chromaGBlur::Cfloat, lumaSharpen::Cfloat, chromaSharpen::Cfloat, chromaHShift::Cfloat, chromaVShift::Cfloat, verbose::Integer)
-    ccall((:sws_getDefaultFilter, libswscale), Ptr{SwsFilter}, (Cfloat, Cfloat, Cfloat, Cfloat, Cfloat, Cfloat, Cint), lumaGBlur, chromaGBlur, lumaSharpen, chromaSharpen, chromaHShift, chromaVShift, verbose)
-end
-
-function sws_freeFilter(filter)
-    ccall((:sws_freeFilter, libswscale), Cvoid, (Ptr{SwsFilter},), filter)
-end
-
 """
-    sws_getCachedContext(context, srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+    AVMediaType
 
-Check if context can be reused, otherwise reallocate a new one.
+` lavu_media Media Type`
 
-If context is NULL, just calls [`sws_getContext`](@ref)() to get a new context. Otherwise, checks if the parameters are the ones already saved in context. If that is the case, returns the current context. Otherwise, frees context and gets a new context with the new parameters.
-
-Be warned that srcFilter and dstFilter are not checked, they are assumed to remain the same.
+Media Type
 """
-function sws_getCachedContext(context, srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
-    ccall((:sws_getCachedContext, libswscale), Ptr{SwsContext}, (Ptr{SwsContext}, Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), context, srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
-end
-
-"""
-    sws_convertPalette8ToPacked32(src, dst, num_pixels::Integer, palette)
-
-Convert an 8-bit paletted frame into a frame with a color depth of 32 bits.
-
-The output frame will have the same packed format as the palette.
-
-### Parameters
-* `src`: source frame buffer 
-
-* `dst`: destination frame buffer 
-
-* `num_pixels`: number of pixels to convert 
-
-* `palette`: array with [256] entries, which must match color arrangement (RGB or BGR) of src
-"""
-function sws_convertPalette8ToPacked32(src, dst, num_pixels::Integer, palette)
-    ccall((:sws_convertPalette8ToPacked32, libswscale), Cvoid, (Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}), src, dst, num_pixels, palette)
-end
-
-"""
-    sws_convertPalette8ToPacked24(src, dst, num_pixels::Integer, palette)
-
-Convert an 8-bit paletted frame into a frame with a color depth of 24 bits.
-
-With the palette format "ABCD", the destination frame ends up with the format "ABC".
-
-### Parameters
-* `src`: source frame buffer 
-
-* `dst`: destination frame buffer 
-
-* `num_pixels`: number of pixels to convert 
-
-* `palette`: array with [256] entries, which must match color arrangement (RGB or BGR) of src
-"""
-function sws_convertPalette8ToPacked24(src, dst, num_pixels::Integer, palette)
-    ccall((:sws_convertPalette8ToPacked24, libswscale), Cvoid, (Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}), src, dst, num_pixels, palette)
-end
-
-"""
-    sws_get_class()
-
-Get the [`AVClass`](@ref) for swsContext. It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
-
-### See also
-[`av_opt_find`](@ref)().
-"""
-function sws_get_class()
-    ccall((:sws_get_class, libswscale), Ptr{AVClass}, ())
-end
-
-"""
-    avdevice_version()
-
-Return the [`LIBAVDEVICE_VERSION_INT`](@ref) constant.
-"""
-function avdevice_version()
-    ccall((:avdevice_version, libavdevice), Cuint, ())
-end
-
-"""
-    avdevice_configuration()
-
-Return the libavdevice build-time configuration.
-"""
-function avdevice_configuration()
-    ccall((:avdevice_configuration, libavdevice), Cstring, ())
-end
-
-"""
-    avdevice_license()
-
-Return the libavdevice license.
-"""
-function avdevice_license()
-    ccall((:avdevice_license, libavdevice), Cstring, ())
-end
-
-"""
-    avdevice_register_all()
-
-Initialize libavdevice and register all the input and output devices.
-"""
-function avdevice_register_all()
-    ccall((:avdevice_register_all, libavdevice), Cvoid, ())
-end
-
-"""
-**********************************************
-"""
-mutable struct AVCodecTag end
-
-"""
-    AVInputFormat
-
-` lavf_decoding`
-
-@{
-"""
-struct AVInputFormat
-    name::Cstring
-    long_name::Cstring
-    flags::Cint
-    extensions::Cstring
-    codec_tag::Ptr{Ptr{AVCodecTag}}
-    priv_class::Ptr{AVClass}
-    mime_type::Cstring
-    next::Ptr{AVInputFormat}
-    raw_codec_id::Cint
-    priv_data_size::Cint
-    read_probe::Ptr{Cvoid}
-    read_header::Ptr{Cvoid}
-    read_packet::Ptr{Cvoid}
-    read_close::Ptr{Cvoid}
-    read_seek::Ptr{Cvoid}
-    read_timestamp::Ptr{Cvoid}
-    read_play::Ptr{Cvoid}
-    read_pause::Ptr{Cvoid}
-    read_seek2::Ptr{Cvoid}
-    get_device_list::Ptr{Cvoid}
-    create_device_capabilities::Ptr{Cvoid}
-    free_device_capabilities::Ptr{Cvoid}
-end
-
-"""
-    av_input_audio_device_next(d)
-
-Audio input devices iterator.
-
-If d is NULL, returns the first registered input audio/video device, if d is non-NULL, returns the next registered input audio/video device after d or NULL if d is the last one.
-"""
-function av_input_audio_device_next(d)
-    ccall((:av_input_audio_device_next, libavdevice), Ptr{AVInputFormat}, (Ptr{AVInputFormat},), d)
-end
-
-"""
-    av_input_video_device_next(d)
-
-Video input devices iterator.
-
-If d is NULL, returns the first registered input audio/video device, if d is non-NULL, returns the next registered input audio/video device after d or NULL if d is the last one.
-"""
-function av_input_video_device_next(d)
-    ccall((:av_input_video_device_next, libavdevice), Ptr{AVInputFormat}, (Ptr{AVInputFormat},), d)
+@cenum AVMediaType::Int32 begin
+    AVMEDIA_TYPE_UNKNOWN = -1
+    AVMEDIA_TYPE_VIDEO = 0
+    AVMEDIA_TYPE_AUDIO = 1
+    AVMEDIA_TYPE_DATA = 2
+    AVMEDIA_TYPE_SUBTITLE = 3
+    AVMEDIA_TYPE_ATTACHMENT = 4
+    AVMEDIA_TYPE_NB = 5
 end
 
 """
@@ -2597,6 +2033,4233 @@ After adding new codec IDs, do not forget to add an entry to the codec descripto
     AV_CODEC_ID_WRAPPED_AVFRAME = 135169
 end
 
+mutable struct AVCodecInternal end
+
+"""
+    AVRational
+
+Rational number (pair of numerator and denominator).
+"""
+struct AVRational
+    num::Cint
+    den::Cint
+end
+
+"""
+    AVPixelFormat
+
+Pixel format.
+
+!!! note
+
+    [`AV_PIX_FMT_RGB32`](@ref) is handled in an endian-specific manner. An RGBA color is put together as: (A << 24) | (R << 16) | (G << 8) | B This is stored as BGRA on little-endian CPU architectures and ARGB on big-endian CPUs.
+
+!!! note
+
+    If the resolution is not a multiple of the chroma subsampling factor then the chroma plane resolution must be rounded up.
+
+\\par When the pixel format is palettized RGB32 (AV\\_PIX\\_FMT\\_PAL8), the palettized image data is stored in [`AVFrame`](@ref).data[0]. The palette is transported in [`AVFrame`](@ref).data[1], is 1024 bytes long (256 4-byte entries) and is formatted the same as in [`AV_PIX_FMT_RGB32`](@ref) described above (i.e., it is also endian-specific). Note also that the individual RGB32 palette components stored in [`AVFrame`](@ref).data[1] should be in the range 0..255. This is important as many custom PAL8 video codecs that were designed to run on the IBM VGA graphics adapter use 6-bit palette components.
+
+\\par For all the 8 bits per pixel formats, an RGB32 palette is in data[1] like for pal8. This palette is filled in automatically by the function allocating the picture.
+"""
+@cenum AVPixelFormat::Int32 begin
+    AV_PIX_FMT_NONE = -1
+    AV_PIX_FMT_YUV420P = 0
+    AV_PIX_FMT_YUYV422 = 1
+    AV_PIX_FMT_RGB24 = 2
+    AV_PIX_FMT_BGR24 = 3
+    AV_PIX_FMT_YUV422P = 4
+    AV_PIX_FMT_YUV444P = 5
+    AV_PIX_FMT_YUV410P = 6
+    AV_PIX_FMT_YUV411P = 7
+    AV_PIX_FMT_GRAY8 = 8
+    AV_PIX_FMT_MONOWHITE = 9
+    AV_PIX_FMT_MONOBLACK = 10
+    AV_PIX_FMT_PAL8 = 11
+    AV_PIX_FMT_YUVJ420P = 12
+    AV_PIX_FMT_YUVJ422P = 13
+    AV_PIX_FMT_YUVJ444P = 14
+    AV_PIX_FMT_UYVY422 = 15
+    AV_PIX_FMT_UYYVYY411 = 16
+    AV_PIX_FMT_BGR8 = 17
+    AV_PIX_FMT_BGR4 = 18
+    AV_PIX_FMT_BGR4_BYTE = 19
+    AV_PIX_FMT_RGB8 = 20
+    AV_PIX_FMT_RGB4 = 21
+    AV_PIX_FMT_RGB4_BYTE = 22
+    AV_PIX_FMT_NV12 = 23
+    AV_PIX_FMT_NV21 = 24
+    AV_PIX_FMT_ARGB = 25
+    AV_PIX_FMT_RGBA = 26
+    AV_PIX_FMT_ABGR = 27
+    AV_PIX_FMT_BGRA = 28
+    AV_PIX_FMT_GRAY16BE = 29
+    AV_PIX_FMT_GRAY16LE = 30
+    AV_PIX_FMT_YUV440P = 31
+    AV_PIX_FMT_YUVJ440P = 32
+    AV_PIX_FMT_YUVA420P = 33
+    AV_PIX_FMT_RGB48BE = 34
+    AV_PIX_FMT_RGB48LE = 35
+    AV_PIX_FMT_RGB565BE = 36
+    AV_PIX_FMT_RGB565LE = 37
+    AV_PIX_FMT_RGB555BE = 38
+    AV_PIX_FMT_RGB555LE = 39
+    AV_PIX_FMT_BGR565BE = 40
+    AV_PIX_FMT_BGR565LE = 41
+    AV_PIX_FMT_BGR555BE = 42
+    AV_PIX_FMT_BGR555LE = 43
+    AV_PIX_FMT_VAAPI_MOCO = 44
+    AV_PIX_FMT_VAAPI_IDCT = 45
+    AV_PIX_FMT_VAAPI_VLD = 46
+    AV_PIX_FMT_VAAPI = 46
+    AV_PIX_FMT_YUV420P16LE = 47
+    AV_PIX_FMT_YUV420P16BE = 48
+    AV_PIX_FMT_YUV422P16LE = 49
+    AV_PIX_FMT_YUV422P16BE = 50
+    AV_PIX_FMT_YUV444P16LE = 51
+    AV_PIX_FMT_YUV444P16BE = 52
+    AV_PIX_FMT_DXVA2_VLD = 53
+    AV_PIX_FMT_RGB444LE = 54
+    AV_PIX_FMT_RGB444BE = 55
+    AV_PIX_FMT_BGR444LE = 56
+    AV_PIX_FMT_BGR444BE = 57
+    AV_PIX_FMT_YA8 = 58
+    AV_PIX_FMT_Y400A = 58
+    AV_PIX_FMT_GRAY8A = 58
+    AV_PIX_FMT_BGR48BE = 59
+    AV_PIX_FMT_BGR48LE = 60
+    AV_PIX_FMT_YUV420P9BE = 61
+    AV_PIX_FMT_YUV420P9LE = 62
+    AV_PIX_FMT_YUV420P10BE = 63
+    AV_PIX_FMT_YUV420P10LE = 64
+    AV_PIX_FMT_YUV422P10BE = 65
+    AV_PIX_FMT_YUV422P10LE = 66
+    AV_PIX_FMT_YUV444P9BE = 67
+    AV_PIX_FMT_YUV444P9LE = 68
+    AV_PIX_FMT_YUV444P10BE = 69
+    AV_PIX_FMT_YUV444P10LE = 70
+    AV_PIX_FMT_YUV422P9BE = 71
+    AV_PIX_FMT_YUV422P9LE = 72
+    AV_PIX_FMT_GBRP = 73
+    AV_PIX_FMT_GBR24P = 73
+    AV_PIX_FMT_GBRP9BE = 74
+    AV_PIX_FMT_GBRP9LE = 75
+    AV_PIX_FMT_GBRP10BE = 76
+    AV_PIX_FMT_GBRP10LE = 77
+    AV_PIX_FMT_GBRP16BE = 78
+    AV_PIX_FMT_GBRP16LE = 79
+    AV_PIX_FMT_YUVA422P = 80
+    AV_PIX_FMT_YUVA444P = 81
+    AV_PIX_FMT_YUVA420P9BE = 82
+    AV_PIX_FMT_YUVA420P9LE = 83
+    AV_PIX_FMT_YUVA422P9BE = 84
+    AV_PIX_FMT_YUVA422P9LE = 85
+    AV_PIX_FMT_YUVA444P9BE = 86
+    AV_PIX_FMT_YUVA444P9LE = 87
+    AV_PIX_FMT_YUVA420P10BE = 88
+    AV_PIX_FMT_YUVA420P10LE = 89
+    AV_PIX_FMT_YUVA422P10BE = 90
+    AV_PIX_FMT_YUVA422P10LE = 91
+    AV_PIX_FMT_YUVA444P10BE = 92
+    AV_PIX_FMT_YUVA444P10LE = 93
+    AV_PIX_FMT_YUVA420P16BE = 94
+    AV_PIX_FMT_YUVA420P16LE = 95
+    AV_PIX_FMT_YUVA422P16BE = 96
+    AV_PIX_FMT_YUVA422P16LE = 97
+    AV_PIX_FMT_YUVA444P16BE = 98
+    AV_PIX_FMT_YUVA444P16LE = 99
+    AV_PIX_FMT_VDPAU = 100
+    AV_PIX_FMT_XYZ12LE = 101
+    AV_PIX_FMT_XYZ12BE = 102
+    AV_PIX_FMT_NV16 = 103
+    AV_PIX_FMT_NV20LE = 104
+    AV_PIX_FMT_NV20BE = 105
+    AV_PIX_FMT_RGBA64BE = 106
+    AV_PIX_FMT_RGBA64LE = 107
+    AV_PIX_FMT_BGRA64BE = 108
+    AV_PIX_FMT_BGRA64LE = 109
+    AV_PIX_FMT_YVYU422 = 110
+    AV_PIX_FMT_YA16BE = 111
+    AV_PIX_FMT_YA16LE = 112
+    AV_PIX_FMT_GBRAP = 113
+    AV_PIX_FMT_GBRAP16BE = 114
+    AV_PIX_FMT_GBRAP16LE = 115
+    AV_PIX_FMT_QSV = 116
+    AV_PIX_FMT_MMAL = 117
+    AV_PIX_FMT_D3D11VA_VLD = 118
+    AV_PIX_FMT_CUDA = 119
+    AV_PIX_FMT_0RGB = 120
+    AV_PIX_FMT_RGB0 = 121
+    AV_PIX_FMT_0BGR = 122
+    AV_PIX_FMT_BGR0 = 123
+    AV_PIX_FMT_YUV420P12BE = 124
+    AV_PIX_FMT_YUV420P12LE = 125
+    AV_PIX_FMT_YUV420P14BE = 126
+    AV_PIX_FMT_YUV420P14LE = 127
+    AV_PIX_FMT_YUV422P12BE = 128
+    AV_PIX_FMT_YUV422P12LE = 129
+    AV_PIX_FMT_YUV422P14BE = 130
+    AV_PIX_FMT_YUV422P14LE = 131
+    AV_PIX_FMT_YUV444P12BE = 132
+    AV_PIX_FMT_YUV444P12LE = 133
+    AV_PIX_FMT_YUV444P14BE = 134
+    AV_PIX_FMT_YUV444P14LE = 135
+    AV_PIX_FMT_GBRP12BE = 136
+    AV_PIX_FMT_GBRP12LE = 137
+    AV_PIX_FMT_GBRP14BE = 138
+    AV_PIX_FMT_GBRP14LE = 139
+    AV_PIX_FMT_YUVJ411P = 140
+    AV_PIX_FMT_BAYER_BGGR8 = 141
+    AV_PIX_FMT_BAYER_RGGB8 = 142
+    AV_PIX_FMT_BAYER_GBRG8 = 143
+    AV_PIX_FMT_BAYER_GRBG8 = 144
+    AV_PIX_FMT_BAYER_BGGR16LE = 145
+    AV_PIX_FMT_BAYER_BGGR16BE = 146
+    AV_PIX_FMT_BAYER_RGGB16LE = 147
+    AV_PIX_FMT_BAYER_RGGB16BE = 148
+    AV_PIX_FMT_BAYER_GBRG16LE = 149
+    AV_PIX_FMT_BAYER_GBRG16BE = 150
+    AV_PIX_FMT_BAYER_GRBG16LE = 151
+    AV_PIX_FMT_BAYER_GRBG16BE = 152
+    AV_PIX_FMT_XVMC = 153
+    AV_PIX_FMT_YUV440P10LE = 154
+    AV_PIX_FMT_YUV440P10BE = 155
+    AV_PIX_FMT_YUV440P12LE = 156
+    AV_PIX_FMT_YUV440P12BE = 157
+    AV_PIX_FMT_AYUV64LE = 158
+    AV_PIX_FMT_AYUV64BE = 159
+    AV_PIX_FMT_VIDEOTOOLBOX = 160
+    AV_PIX_FMT_P010LE = 161
+    AV_PIX_FMT_P010BE = 162
+    AV_PIX_FMT_GBRAP12BE = 163
+    AV_PIX_FMT_GBRAP12LE = 164
+    AV_PIX_FMT_GBRAP10BE = 165
+    AV_PIX_FMT_GBRAP10LE = 166
+    AV_PIX_FMT_MEDIACODEC = 167
+    AV_PIX_FMT_GRAY12BE = 168
+    AV_PIX_FMT_GRAY12LE = 169
+    AV_PIX_FMT_GRAY10BE = 170
+    AV_PIX_FMT_GRAY10LE = 171
+    AV_PIX_FMT_P016LE = 172
+    AV_PIX_FMT_P016BE = 173
+    AV_PIX_FMT_D3D11 = 174
+    AV_PIX_FMT_GRAY9BE = 175
+    AV_PIX_FMT_GRAY9LE = 176
+    AV_PIX_FMT_GBRPF32BE = 177
+    AV_PIX_FMT_GBRPF32LE = 178
+    AV_PIX_FMT_GBRAPF32BE = 179
+    AV_PIX_FMT_GBRAPF32LE = 180
+    AV_PIX_FMT_DRM_PRIME = 181
+    AV_PIX_FMT_OPENCL = 182
+    AV_PIX_FMT_GRAY14BE = 183
+    AV_PIX_FMT_GRAY14LE = 184
+    AV_PIX_FMT_GRAYF32BE = 185
+    AV_PIX_FMT_GRAYF32LE = 186
+    AV_PIX_FMT_YUVA422P12BE = 187
+    AV_PIX_FMT_YUVA422P12LE = 188
+    AV_PIX_FMT_YUVA444P12BE = 189
+    AV_PIX_FMT_YUVA444P12LE = 190
+    AV_PIX_FMT_NV24 = 191
+    AV_PIX_FMT_NV42 = 192
+    AV_PIX_FMT_VULKAN = 193
+    AV_PIX_FMT_Y210BE = 194
+    AV_PIX_FMT_Y210LE = 195
+    AV_PIX_FMT_X2RGB10LE = 196
+    AV_PIX_FMT_X2RGB10BE = 197
+    AV_PIX_FMT_NB = 198
+end
+
+"""
+    AVColorPrimaries
+
+Chromaticity coordinates of the source primaries. These values match the ones defined by ISO/IEC 23001-8\\_2013 § 7.1.
+"""
+@cenum AVColorPrimaries::UInt32 begin
+    AVCOL_PRI_RESERVED0 = 0
+    AVCOL_PRI_BT709 = 1
+    AVCOL_PRI_UNSPECIFIED = 2
+    AVCOL_PRI_RESERVED = 3
+    AVCOL_PRI_BT470M = 4
+    AVCOL_PRI_BT470BG = 5
+    AVCOL_PRI_SMPTE170M = 6
+    AVCOL_PRI_SMPTE240M = 7
+    AVCOL_PRI_FILM = 8
+    AVCOL_PRI_BT2020 = 9
+    AVCOL_PRI_SMPTE428 = 10
+    AVCOL_PRI_SMPTEST428_1 = 10
+    AVCOL_PRI_SMPTE431 = 11
+    AVCOL_PRI_SMPTE432 = 12
+    AVCOL_PRI_EBU3213 = 22
+    AVCOL_PRI_JEDEC_P22 = 22
+    AVCOL_PRI_NB = 23
+end
+
+"""
+    AVColorTransferCharacteristic
+
+Color Transfer Characteristic. These values match the ones defined by ISO/IEC 23001-8\\_2013 § 7.2.
+"""
+@cenum AVColorTransferCharacteristic::UInt32 begin
+    AVCOL_TRC_RESERVED0 = 0
+    AVCOL_TRC_BT709 = 1
+    AVCOL_TRC_UNSPECIFIED = 2
+    AVCOL_TRC_RESERVED = 3
+    AVCOL_TRC_GAMMA22 = 4
+    AVCOL_TRC_GAMMA28 = 5
+    AVCOL_TRC_SMPTE170M = 6
+    AVCOL_TRC_SMPTE240M = 7
+    AVCOL_TRC_LINEAR = 8
+    AVCOL_TRC_LOG = 9
+    AVCOL_TRC_LOG_SQRT = 10
+    AVCOL_TRC_IEC61966_2_4 = 11
+    AVCOL_TRC_BT1361_ECG = 12
+    AVCOL_TRC_IEC61966_2_1 = 13
+    AVCOL_TRC_BT2020_10 = 14
+    AVCOL_TRC_BT2020_12 = 15
+    AVCOL_TRC_SMPTE2084 = 16
+    AVCOL_TRC_SMPTEST2084 = 16
+    AVCOL_TRC_SMPTE428 = 17
+    AVCOL_TRC_SMPTEST428_1 = 17
+    AVCOL_TRC_ARIB_STD_B67 = 18
+    AVCOL_TRC_NB = 19
+end
+
+"""
+    AVColorSpace
+
+YUV colorspace type. These values match the ones defined by ISO/IEC 23001-8\\_2013 § 7.3.
+"""
+@cenum AVColorSpace::UInt32 begin
+    AVCOL_SPC_RGB = 0
+    AVCOL_SPC_BT709 = 1
+    AVCOL_SPC_UNSPECIFIED = 2
+    AVCOL_SPC_RESERVED = 3
+    AVCOL_SPC_FCC = 4
+    AVCOL_SPC_BT470BG = 5
+    AVCOL_SPC_SMPTE170M = 6
+    AVCOL_SPC_SMPTE240M = 7
+    AVCOL_SPC_YCGCO = 8
+    AVCOL_SPC_YCOCG = 8
+    AVCOL_SPC_BT2020_NCL = 9
+    AVCOL_SPC_BT2020_CL = 10
+    AVCOL_SPC_SMPTE2085 = 11
+    AVCOL_SPC_CHROMA_DERIVED_NCL = 12
+    AVCOL_SPC_CHROMA_DERIVED_CL = 13
+    AVCOL_SPC_ICTCP = 14
+    AVCOL_SPC_NB = 15
+end
+
+"""
+    AVColorRange
+
+Visual content value range.
+
+These values are based on definitions that can be found in multiple specifications, such as ITU-T BT.709 (3.4 - Quantization of RGB, luminance and colour-difference signals), ITU-T BT.2020 (Table 5 - Digital Representation) as well as ITU-T BT.2100 (Table 9 - Digital 10- and 12-bit integer representation). At the time of writing, the BT.2100 one is recommended, as it also defines the full range representation.
+
+Common definitions: - For RGB and luminance planes such as Y in YCbCr and I in ICtCp, 'E' is the original value in range of 0.0 to 1.0. - For chrominance planes such as Cb,Cr and Ct,Cp, 'E' is the original value in range of -0.5 to 0.5. - 'n' is the output bit depth. - For additional definitions such as rounding and clipping to valid n bit unsigned integer range, please refer to BT.2100 (Table 9).
+"""
+@cenum AVColorRange::UInt32 begin
+    AVCOL_RANGE_UNSPECIFIED = 0
+    AVCOL_RANGE_MPEG = 1
+    AVCOL_RANGE_JPEG = 2
+    AVCOL_RANGE_NB = 3
+end
+
+"""
+    AVChromaLocation
+
+Location of chroma samples.
+
+Illustration showing the location of the first (top left) chroma sample of the image, the left shows only luma, the right shows the location of the chroma sample, the 2 could be imagined to overlay each other but are drawn separately due to limitations of ASCII
+
+1st 2nd 1st 2nd horizontal luma sample positions v v v v \\_\\_\\_\\_\\_\\_ \\_\\_\\_\\_\\_\\_1st luma line > |X X ... |3 4 X ... X are luma samples, | |1 2 1-6 are possible chroma positions2nd luma line > |X X ... |5 6 X ... 0 is undefined/unknown position
+"""
+@cenum AVChromaLocation::UInt32 begin
+    AVCHROMA_LOC_UNSPECIFIED = 0
+    AVCHROMA_LOC_LEFT = 1
+    AVCHROMA_LOC_CENTER = 2
+    AVCHROMA_LOC_TOPLEFT = 3
+    AVCHROMA_LOC_TOP = 4
+    AVCHROMA_LOC_BOTTOMLEFT = 5
+    AVCHROMA_LOC_BOTTOM = 6
+    AVCHROMA_LOC_NB = 7
+end
+
+"""
+    AVFieldOrder
+
+` lavc_core`
+"""
+@cenum AVFieldOrder::UInt32 begin
+    AV_FIELD_UNKNOWN = 0
+    AV_FIELD_PROGRESSIVE = 1
+    AV_FIELD_TT = 2
+    AV_FIELD_BB = 3
+    AV_FIELD_TB = 4
+    AV_FIELD_BT = 5
+end
+
+"""
+    AVSampleFormat
+
+Audio sample formats
+
+- The data described by the sample format is always in native-endian order. Sample values can be expressed by native C types, hence the lack of a signed 24-bit sample format even though it is a common raw audio data format.
+
+- The floating-point formats are based on full volume being in the range [-1.0, 1.0]. Any values outside this range are beyond full volume level.
+
+- The data layout as used in [`av_samples_fill_arrays`](@ref)() and elsewhere in FFmpeg (such as [`AVFrame`](@ref) in libavcodec) is as follows:
+
+\\par For planar sample formats, each audio channel is in a separate data plane, and linesize is the buffer size, in bytes, for a single plane. All data planes must be the same size. For packed sample formats, only the first data plane is used, and samples for each channel are interleaved. In this case, linesize is the buffer size, in bytes, for the 1 plane.
+"""
+@cenum AVSampleFormat::Int32 begin
+    AV_SAMPLE_FMT_NONE = -1
+    AV_SAMPLE_FMT_U8 = 0
+    AV_SAMPLE_FMT_S16 = 1
+    AV_SAMPLE_FMT_S32 = 2
+    AV_SAMPLE_FMT_FLT = 3
+    AV_SAMPLE_FMT_DBL = 4
+    AV_SAMPLE_FMT_U8P = 5
+    AV_SAMPLE_FMT_S16P = 6
+    AV_SAMPLE_FMT_S32P = 7
+    AV_SAMPLE_FMT_FLTP = 8
+    AV_SAMPLE_FMT_DBLP = 9
+    AV_SAMPLE_FMT_S64 = 10
+    AV_SAMPLE_FMT_S64P = 11
+    AV_SAMPLE_FMT_NB = 12
+end
+
+"""
+    AVHWAccel
+
+` lavc_hwaccel AVHWAccel`
+
+!!! note
+
+    Nothing in this structure should be accessed by the user. At some point in future it will not be externally visible at all.
+
+@{
+"""
+struct AVHWAccel
+    name::Cstring
+    type::AVMediaType
+    id::AVCodecID
+    pix_fmt::AVPixelFormat
+    capabilities::Cint
+    alloc_frame::Ptr{Cvoid}
+    start_frame::Ptr{Cvoid}
+    decode_params::Ptr{Cvoid}
+    decode_slice::Ptr{Cvoid}
+    end_frame::Ptr{Cvoid}
+    frame_priv_data_size::Cint
+    decode_mb::Ptr{Cvoid}
+    init::Ptr{Cvoid}
+    uninit::Ptr{Cvoid}
+    priv_data_size::Cint
+    caps_internal::Cint
+    frame_params::Ptr{Cvoid}
+end
+
+"""
+    AVPictureType
+
+@} @} 
+
+` lavu_picture Image related`
+
+[`AVPicture`](@ref) types, pixel formats and basic image planes manipulation.
+
+@{
+"""
+@cenum AVPictureType::UInt32 begin
+    AV_PICTURE_TYPE_NONE = 0
+    AV_PICTURE_TYPE_I = 1
+    AV_PICTURE_TYPE_P = 2
+    AV_PICTURE_TYPE_B = 3
+    AV_PICTURE_TYPE_S = 4
+    AV_PICTURE_TYPE_SI = 5
+    AV_PICTURE_TYPE_SP = 6
+    AV_PICTURE_TYPE_BI = 7
+end
+
+mutable struct AVBuffer end
+
+"""
+    AVBufferRef
+
+A reference to a data buffer.
+
+The size of this struct is not a part of the public ABI and it is not meant to be allocated directly.
+"""
+struct AVBufferRef
+    buffer::Ptr{AVBuffer}
+    data::Ptr{UInt8}
+    size::Cint
+end
+
+"""
+    AVFrameSideDataType
+
+` lavu_frame AVFrame`
+
+` lavu_data`
+
+@{ [`AVFrame`](@ref) is an abstraction for reference-counted raw multimedia data.
+"""
+@cenum AVFrameSideDataType::UInt32 begin
+    AV_FRAME_DATA_PANSCAN = 0
+    AV_FRAME_DATA_A53_CC = 1
+    AV_FRAME_DATA_STEREO3D = 2
+    AV_FRAME_DATA_MATRIXENCODING = 3
+    AV_FRAME_DATA_DOWNMIX_INFO = 4
+    AV_FRAME_DATA_REPLAYGAIN = 5
+    AV_FRAME_DATA_DISPLAYMATRIX = 6
+    AV_FRAME_DATA_AFD = 7
+    AV_FRAME_DATA_MOTION_VECTORS = 8
+    AV_FRAME_DATA_SKIP_SAMPLES = 9
+    AV_FRAME_DATA_AUDIO_SERVICE_TYPE = 10
+    AV_FRAME_DATA_MASTERING_DISPLAY_METADATA = 11
+    AV_FRAME_DATA_GOP_TIMECODE = 12
+    AV_FRAME_DATA_SPHERICAL = 13
+    AV_FRAME_DATA_CONTENT_LIGHT_LEVEL = 14
+    AV_FRAME_DATA_ICC_PROFILE = 15
+    AV_FRAME_DATA_QP_TABLE_PROPERTIES = 16
+    AV_FRAME_DATA_QP_TABLE_DATA = 17
+    AV_FRAME_DATA_S12M_TIMECODE = 18
+    AV_FRAME_DATA_DYNAMIC_HDR_PLUS = 19
+    AV_FRAME_DATA_REGIONS_OF_INTEREST = 20
+    AV_FRAME_DATA_VIDEO_ENC_PARAMS = 21
+    AV_FRAME_DATA_SEI_UNREGISTERED = 22
+    AV_FRAME_DATA_FILM_GRAIN_PARAMS = 23
+end
+
+mutable struct AVDictionary end
+
+"""
+    AVFrameSideData
+
+Structure to hold side data for an [`AVFrame`](@ref).
+
+sizeof([`AVFrameSideData`](@ref)) is not a part of the public ABI, so new fields may be added to the end with a minor bump.
+"""
+struct AVFrameSideData
+    type::AVFrameSideDataType
+    data::Ptr{UInt8}
+    size::Cint
+    metadata::Ptr{AVDictionary}
+    buf::Ptr{AVBufferRef}
+end
+
+"""
+    AVFrame
+
+This structure describes decoded (raw) audio or video data.
+
+[`AVFrame`](@ref) must be allocated using [`av_frame_alloc`](@ref)(). Note that this only allocates the [`AVFrame`](@ref) itself, the buffers for the data must be managed through other means (see below). [`AVFrame`](@ref) must be freed with [`av_frame_free`](@ref)().
+
+[`AVFrame`](@ref) is typically allocated once and then reused multiple times to hold different data (e.g. a single [`AVFrame`](@ref) to hold frames received from a decoder). In such a case, [`av_frame_unref`](@ref)() will free any references held by the frame and reset it to its original clean state before it is reused again.
+
+The data described by an [`AVFrame`](@ref) is usually reference counted through the [`AVBuffer`](@ref) API. The underlying buffer references are stored in [`AVFrame`](@ref).buf / [`AVFrame`](@ref).extended\\_buf. An [`AVFrame`](@ref) is considered to be reference counted if at least one reference is set, i.e. if [`AVFrame`](@ref).buf[0] != NULL. In such a case, every single data plane must be contained in one of the buffers in [`AVFrame`](@ref).buf or [`AVFrame`](@ref).extended\\_buf. There may be a single buffer for all the data, or one separate buffer for each plane, or anything in between.
+
+sizeof([`AVFrame`](@ref)) is not a part of the public ABI, so new fields may be added to the end with a minor bump.
+
+Fields can be accessed through AVOptions, the name string used, matches the C structure field name for fields accessible through AVOptions. The [`AVClass`](@ref) for [`AVFrame`](@ref) can be obtained from [`avcodec_get_frame_class`](@ref)()
+"""
+struct AVFrame
+    data::NTuple{536, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVFrame}, f::Symbol)
+    f === :data && return Ptr{NTuple{8, Ptr{UInt8}}}(x + 0)
+    f === :linesize && return Ptr{NTuple{8, Cint}}(x + 64)
+    f === :extended_data && return Ptr{Ptr{Ptr{UInt8}}}(x + 96)
+    f === :width && return Ptr{Cint}(x + 104)
+    f === :height && return Ptr{Cint}(x + 108)
+    f === :nb_samples && return Ptr{Cint}(x + 112)
+    f === :format && return Ptr{Cint}(x + 116)
+    f === :key_frame && return Ptr{Cint}(x + 120)
+    f === :pict_type && return Ptr{AVPictureType}(x + 124)
+    f === :sample_aspect_ratio && return Ptr{AVRational}(x + 128)
+    f === :pts && return Ptr{Int64}(x + 136)
+    f === :pkt_pts && return Ptr{Int64}(x + 144)
+    f === :pkt_dts && return Ptr{Int64}(x + 152)
+    f === :coded_picture_number && return Ptr{Cint}(x + 160)
+    f === :display_picture_number && return Ptr{Cint}(x + 164)
+    f === :quality && return Ptr{Cint}(x + 168)
+    f === :opaque && return Ptr{Ptr{Cvoid}}(x + 176)
+    f === :error && return Ptr{NTuple{8, UInt64}}(x + 184)
+    f === :repeat_pict && return Ptr{Cint}(x + 248)
+    f === :interlaced_frame && return Ptr{Cint}(x + 252)
+    f === :top_field_first && return Ptr{Cint}(x + 256)
+    f === :palette_has_changed && return Ptr{Cint}(x + 260)
+    f === :reordered_opaque && return Ptr{Int64}(x + 264)
+    f === :sample_rate && return Ptr{Cint}(x + 272)
+    f === :channel_layout && return Ptr{UInt64}(x + 280)
+    f === :buf && return Ptr{NTuple{8, Ptr{AVBufferRef}}}(x + 288)
+    f === :extended_buf && return Ptr{Ptr{Ptr{AVBufferRef}}}(x + 352)
+    f === :nb_extended_buf && return Ptr{Cint}(x + 360)
+    f === :side_data && return Ptr{Ptr{Ptr{AVFrameSideData}}}(x + 368)
+    f === :nb_side_data && return Ptr{Cint}(x + 376)
+    f === :flags && return Ptr{Cint}(x + 380)
+    f === :color_range && return Ptr{AVColorRange}(x + 384)
+    f === :color_primaries && return Ptr{AVColorPrimaries}(x + 388)
+    f === :color_trc && return Ptr{AVColorTransferCharacteristic}(x + 392)
+    f === :colorspace && return Ptr{AVColorSpace}(x + 396)
+    f === :chroma_location && return Ptr{AVChromaLocation}(x + 400)
+    f === :best_effort_timestamp && return Ptr{Int64}(x + 408)
+    f === :pkt_pos && return Ptr{Int64}(x + 416)
+    f === :pkt_duration && return Ptr{Int64}(x + 424)
+    f === :metadata && return Ptr{Ptr{AVDictionary}}(x + 432)
+    f === :decode_error_flags && return Ptr{Cint}(x + 440)
+    f === :channels && return Ptr{Cint}(x + 444)
+    f === :pkt_size && return Ptr{Cint}(x + 448)
+    f === :qscale_table && return Ptr{Ptr{Int8}}(x + 456)
+    f === :qstride && return Ptr{Cint}(x + 464)
+    f === :qscale_type && return Ptr{Cint}(x + 468)
+    f === :qp_table_buf && return Ptr{Ptr{AVBufferRef}}(x + 472)
+    f === :hw_frames_ctx && return Ptr{Ptr{AVBufferRef}}(x + 480)
+    f === :opaque_ref && return Ptr{Ptr{AVBufferRef}}(x + 488)
+    f === :crop_top && return Ptr{Csize_t}(x + 496)
+    f === :crop_bottom && return Ptr{Csize_t}(x + 504)
+    f === :crop_left && return Ptr{Csize_t}(x + 512)
+    f === :crop_right && return Ptr{Csize_t}(x + 520)
+    f === :private_ref && return Ptr{Ptr{AVBufferRef}}(x + 528)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVFrame, f::Symbol)
+    r = Ref{AVFrame}(x)
+    ptr = Base.unsafe_convert(Ptr{AVFrame}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVFrame}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+"""
+    AVProfile
+
+[`AVProfile`](@ref).
+"""
+struct AVProfile
+    profile::Cint
+    name::Cstring
+end
+
+"""
+    AVCodecDescriptor
+
+This struct describes the properties of a single codec described by an [`AVCodecID`](@ref). 
+
+### See also
+[`avcodec_descriptor_get`](@ref)()
+"""
+struct AVCodecDescriptor
+    id::AVCodecID
+    type::AVMediaType
+    name::Cstring
+    long_name::Cstring
+    props::Cint
+    mime_types::Ptr{Cstring}
+    profiles::Ptr{AVProfile}
+end
+
+"""
+    AVPacketSideDataType
+
+` lavc_packet AVPacket`
+
+Types and functions for working with [`AVPacket`](@ref). @{
+"""
+@cenum AVPacketSideDataType::UInt32 begin
+    AV_PKT_DATA_PALETTE = 0
+    AV_PKT_DATA_NEW_EXTRADATA = 1
+    AV_PKT_DATA_PARAM_CHANGE = 2
+    AV_PKT_DATA_H263_MB_INFO = 3
+    AV_PKT_DATA_REPLAYGAIN = 4
+    AV_PKT_DATA_DISPLAYMATRIX = 5
+    AV_PKT_DATA_STEREO3D = 6
+    AV_PKT_DATA_AUDIO_SERVICE_TYPE = 7
+    AV_PKT_DATA_QUALITY_STATS = 8
+    AV_PKT_DATA_FALLBACK_TRACK = 9
+    AV_PKT_DATA_CPB_PROPERTIES = 10
+    AV_PKT_DATA_SKIP_SAMPLES = 11
+    AV_PKT_DATA_JP_DUALMONO = 12
+    AV_PKT_DATA_STRINGS_METADATA = 13
+    AV_PKT_DATA_SUBTITLE_POSITION = 14
+    AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL = 15
+    AV_PKT_DATA_WEBVTT_IDENTIFIER = 16
+    AV_PKT_DATA_WEBVTT_SETTINGS = 17
+    AV_PKT_DATA_METADATA_UPDATE = 18
+    AV_PKT_DATA_MPEGTS_STREAM_ID = 19
+    AV_PKT_DATA_MASTERING_DISPLAY_METADATA = 20
+    AV_PKT_DATA_SPHERICAL = 21
+    AV_PKT_DATA_CONTENT_LIGHT_LEVEL = 22
+    AV_PKT_DATA_A53_CC = 23
+    AV_PKT_DATA_ENCRYPTION_INIT_INFO = 24
+    AV_PKT_DATA_ENCRYPTION_INFO = 25
+    AV_PKT_DATA_AFD = 26
+    AV_PKT_DATA_PRFT = 27
+    AV_PKT_DATA_ICC_PROFILE = 28
+    AV_PKT_DATA_DOVI_CONF = 29
+    AV_PKT_DATA_S12M_TIMECODE = 30
+    AV_PKT_DATA_NB = 31
+end
+
+struct AVPacketSideData
+    data::Ptr{UInt8}
+    size::Cint
+    type::AVPacketSideDataType
+end
+
+"""
+    AVCodecContext
+
+main external API structure. New fields can be added to the end with minor version bumps. Removal, reordering and changes to existing fields require a major version bump. You can use AVOptions (av\\_opt* / av\\_set/get*()) to access these fields from user applications. The name string for AVOptions options matches the associated command line parameter name and can be found in libavcodec/options\\_table.h The [`AVOption`](@ref)/command line parameter names differ in some cases from the C structure field names for historic reasons or brevity. sizeof([`AVCodecContext`](@ref)) must not be used outside libav*.
+"""
+struct AVCodecContext
+    data::NTuple{1080, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVCodecContext}, f::Symbol)
+    f === :av_class && return Ptr{Ptr{AVClass}}(x + 0)
+    f === :log_level_offset && return Ptr{Cint}(x + 8)
+    f === :codec_type && return Ptr{AVMediaType}(x + 12)
+    f === :codec && return Ptr{Ptr{AVCodec}}(x + 16)
+    f === :codec_id && return Ptr{AVCodecID}(x + 24)
+    f === :codec_tag && return Ptr{Cuint}(x + 28)
+    f === :priv_data && return Ptr{Ptr{Cvoid}}(x + 32)
+    f === :internal && return Ptr{Ptr{AVCodecInternal}}(x + 40)
+    f === :opaque && return Ptr{Ptr{Cvoid}}(x + 48)
+    f === :bit_rate && return Ptr{Int64}(x + 56)
+    f === :bit_rate_tolerance && return Ptr{Cint}(x + 64)
+    f === :global_quality && return Ptr{Cint}(x + 68)
+    f === :compression_level && return Ptr{Cint}(x + 72)
+    f === :flags && return Ptr{Cint}(x + 76)
+    f === :flags2 && return Ptr{Cint}(x + 80)
+    f === :extradata && return Ptr{Ptr{UInt8}}(x + 88)
+    f === :extradata_size && return Ptr{Cint}(x + 96)
+    f === :time_base && return Ptr{AVRational}(x + 100)
+    f === :ticks_per_frame && return Ptr{Cint}(x + 108)
+    f === :delay && return Ptr{Cint}(x + 112)
+    f === :width && return Ptr{Cint}(x + 116)
+    f === :height && return Ptr{Cint}(x + 120)
+    f === :coded_width && return Ptr{Cint}(x + 124)
+    f === :coded_height && return Ptr{Cint}(x + 128)
+    f === :gop_size && return Ptr{Cint}(x + 132)
+    f === :pix_fmt && return Ptr{AVPixelFormat}(x + 136)
+    f === :draw_horiz_band && return Ptr{Ptr{Cvoid}}(x + 144)
+    f === :get_format && return Ptr{Ptr{Cvoid}}(x + 152)
+    f === :max_b_frames && return Ptr{Cint}(x + 160)
+    f === :b_quant_factor && return Ptr{Cfloat}(x + 164)
+    f === :b_frame_strategy && return Ptr{Cint}(x + 168)
+    f === :b_quant_offset && return Ptr{Cfloat}(x + 172)
+    f === :has_b_frames && return Ptr{Cint}(x + 176)
+    f === :mpeg_quant && return Ptr{Cint}(x + 180)
+    f === :i_quant_factor && return Ptr{Cfloat}(x + 184)
+    f === :i_quant_offset && return Ptr{Cfloat}(x + 188)
+    f === :lumi_masking && return Ptr{Cfloat}(x + 192)
+    f === :temporal_cplx_masking && return Ptr{Cfloat}(x + 196)
+    f === :spatial_cplx_masking && return Ptr{Cfloat}(x + 200)
+    f === :p_masking && return Ptr{Cfloat}(x + 204)
+    f === :dark_masking && return Ptr{Cfloat}(x + 208)
+    f === :slice_count && return Ptr{Cint}(x + 212)
+    f === :prediction_method && return Ptr{Cint}(x + 216)
+    f === :slice_offset && return Ptr{Ptr{Cint}}(x + 224)
+    f === :sample_aspect_ratio && return Ptr{AVRational}(x + 232)
+    f === :me_cmp && return Ptr{Cint}(x + 240)
+    f === :me_sub_cmp && return Ptr{Cint}(x + 244)
+    f === :mb_cmp && return Ptr{Cint}(x + 248)
+    f === :ildct_cmp && return Ptr{Cint}(x + 252)
+    f === :dia_size && return Ptr{Cint}(x + 256)
+    f === :last_predictor_count && return Ptr{Cint}(x + 260)
+    f === :pre_me && return Ptr{Cint}(x + 264)
+    f === :me_pre_cmp && return Ptr{Cint}(x + 268)
+    f === :pre_dia_size && return Ptr{Cint}(x + 272)
+    f === :me_subpel_quality && return Ptr{Cint}(x + 276)
+    f === :me_range && return Ptr{Cint}(x + 280)
+    f === :slice_flags && return Ptr{Cint}(x + 284)
+    f === :mb_decision && return Ptr{Cint}(x + 288)
+    f === :intra_matrix && return Ptr{Ptr{UInt16}}(x + 296)
+    f === :inter_matrix && return Ptr{Ptr{UInt16}}(x + 304)
+    f === :scenechange_threshold && return Ptr{Cint}(x + 312)
+    f === :noise_reduction && return Ptr{Cint}(x + 316)
+    f === :intra_dc_precision && return Ptr{Cint}(x + 320)
+    f === :skip_top && return Ptr{Cint}(x + 324)
+    f === :skip_bottom && return Ptr{Cint}(x + 328)
+    f === :mb_lmin && return Ptr{Cint}(x + 332)
+    f === :mb_lmax && return Ptr{Cint}(x + 336)
+    f === :me_penalty_compensation && return Ptr{Cint}(x + 340)
+    f === :bidir_refine && return Ptr{Cint}(x + 344)
+    f === :brd_scale && return Ptr{Cint}(x + 348)
+    f === :keyint_min && return Ptr{Cint}(x + 352)
+    f === :refs && return Ptr{Cint}(x + 356)
+    f === :chromaoffset && return Ptr{Cint}(x + 360)
+    f === :mv0_threshold && return Ptr{Cint}(x + 364)
+    f === :b_sensitivity && return Ptr{Cint}(x + 368)
+    f === :color_primaries && return Ptr{AVColorPrimaries}(x + 372)
+    f === :color_trc && return Ptr{AVColorTransferCharacteristic}(x + 376)
+    f === :colorspace && return Ptr{AVColorSpace}(x + 380)
+    f === :color_range && return Ptr{AVColorRange}(x + 384)
+    f === :chroma_sample_location && return Ptr{AVChromaLocation}(x + 388)
+    f === :slices && return Ptr{Cint}(x + 392)
+    f === :field_order && return Ptr{AVFieldOrder}(x + 396)
+    f === :sample_rate && return Ptr{Cint}(x + 400)
+    f === :channels && return Ptr{Cint}(x + 404)
+    f === :sample_fmt && return Ptr{AVSampleFormat}(x + 408)
+    f === :frame_size && return Ptr{Cint}(x + 412)
+    f === :frame_number && return Ptr{Cint}(x + 416)
+    f === :block_align && return Ptr{Cint}(x + 420)
+    f === :cutoff && return Ptr{Cint}(x + 424)
+    f === :channel_layout && return Ptr{UInt64}(x + 432)
+    f === :request_channel_layout && return Ptr{UInt64}(x + 440)
+    f === :audio_service_type && return Ptr{AVAudioServiceType}(x + 448)
+    f === :request_sample_fmt && return Ptr{AVSampleFormat}(x + 452)
+    f === :get_buffer2 && return Ptr{Ptr{Cvoid}}(x + 456)
+    f === :refcounted_frames && return Ptr{Cint}(x + 464)
+    f === :qcompress && return Ptr{Cfloat}(x + 468)
+    f === :qblur && return Ptr{Cfloat}(x + 472)
+    f === :qmin && return Ptr{Cint}(x + 476)
+    f === :qmax && return Ptr{Cint}(x + 480)
+    f === :max_qdiff && return Ptr{Cint}(x + 484)
+    f === :rc_buffer_size && return Ptr{Cint}(x + 488)
+    f === :rc_override_count && return Ptr{Cint}(x + 492)
+    f === :rc_override && return Ptr{Ptr{RcOverride}}(x + 496)
+    f === :rc_max_rate && return Ptr{Int64}(x + 504)
+    f === :rc_min_rate && return Ptr{Int64}(x + 512)
+    f === :rc_max_available_vbv_use && return Ptr{Cfloat}(x + 520)
+    f === :rc_min_vbv_overflow_use && return Ptr{Cfloat}(x + 524)
+    f === :rc_initial_buffer_occupancy && return Ptr{Cint}(x + 528)
+    f === :coder_type && return Ptr{Cint}(x + 532)
+    f === :context_model && return Ptr{Cint}(x + 536)
+    f === :frame_skip_threshold && return Ptr{Cint}(x + 540)
+    f === :frame_skip_factor && return Ptr{Cint}(x + 544)
+    f === :frame_skip_exp && return Ptr{Cint}(x + 548)
+    f === :frame_skip_cmp && return Ptr{Cint}(x + 552)
+    f === :trellis && return Ptr{Cint}(x + 556)
+    f === :min_prediction_order && return Ptr{Cint}(x + 560)
+    f === :max_prediction_order && return Ptr{Cint}(x + 564)
+    f === :timecode_frame_start && return Ptr{Int64}(x + 568)
+    f === :rtp_callback && return Ptr{Ptr{Cvoid}}(x + 576)
+    f === :rtp_payload_size && return Ptr{Cint}(x + 584)
+    f === :mv_bits && return Ptr{Cint}(x + 588)
+    f === :header_bits && return Ptr{Cint}(x + 592)
+    f === :i_tex_bits && return Ptr{Cint}(x + 596)
+    f === :p_tex_bits && return Ptr{Cint}(x + 600)
+    f === :i_count && return Ptr{Cint}(x + 604)
+    f === :p_count && return Ptr{Cint}(x + 608)
+    f === :skip_count && return Ptr{Cint}(x + 612)
+    f === :misc_bits && return Ptr{Cint}(x + 616)
+    f === :frame_bits && return Ptr{Cint}(x + 620)
+    f === :stats_out && return Ptr{Cstring}(x + 624)
+    f === :stats_in && return Ptr{Cstring}(x + 632)
+    f === :workaround_bugs && return Ptr{Cint}(x + 640)
+    f === :strict_std_compliance && return Ptr{Cint}(x + 644)
+    f === :error_concealment && return Ptr{Cint}(x + 648)
+    f === :debug && return Ptr{Cint}(x + 652)
+    f === :err_recognition && return Ptr{Cint}(x + 656)
+    f === :reordered_opaque && return Ptr{Int64}(x + 664)
+    f === :hwaccel && return Ptr{Ptr{AVHWAccel}}(x + 672)
+    f === :hwaccel_context && return Ptr{Ptr{Cvoid}}(x + 680)
+    f === :error && return Ptr{NTuple{8, UInt64}}(x + 688)
+    f === :dct_algo && return Ptr{Cint}(x + 752)
+    f === :idct_algo && return Ptr{Cint}(x + 756)
+    f === :bits_per_coded_sample && return Ptr{Cint}(x + 760)
+    f === :bits_per_raw_sample && return Ptr{Cint}(x + 764)
+    f === :lowres && return Ptr{Cint}(x + 768)
+    f === :coded_frame && return Ptr{Ptr{AVFrame}}(x + 776)
+    f === :thread_count && return Ptr{Cint}(x + 784)
+    f === :thread_type && return Ptr{Cint}(x + 788)
+    f === :active_thread_type && return Ptr{Cint}(x + 792)
+    f === :thread_safe_callbacks && return Ptr{Cint}(x + 796)
+    f === :execute && return Ptr{Ptr{Cvoid}}(x + 800)
+    f === :execute2 && return Ptr{Ptr{Cvoid}}(x + 808)
+    f === :nsse_weight && return Ptr{Cint}(x + 816)
+    f === :profile && return Ptr{Cint}(x + 820)
+    f === :level && return Ptr{Cint}(x + 824)
+    f === :skip_loop_filter && return Ptr{AVDiscard}(x + 828)
+    f === :skip_idct && return Ptr{AVDiscard}(x + 832)
+    f === :skip_frame && return Ptr{AVDiscard}(x + 836)
+    f === :subtitle_header && return Ptr{Ptr{UInt8}}(x + 840)
+    f === :subtitle_header_size && return Ptr{Cint}(x + 848)
+    f === :vbv_delay && return Ptr{UInt64}(x + 856)
+    f === :side_data_only_packets && return Ptr{Cint}(x + 864)
+    f === :initial_padding && return Ptr{Cint}(x + 868)
+    f === :framerate && return Ptr{AVRational}(x + 872)
+    f === :sw_pix_fmt && return Ptr{AVPixelFormat}(x + 880)
+    f === :pkt_timebase && return Ptr{AVRational}(x + 884)
+    f === :codec_descriptor && return Ptr{Ptr{AVCodecDescriptor}}(x + 896)
+    f === :pts_correction_num_faulty_pts && return Ptr{Int64}(x + 904)
+    f === :pts_correction_num_faulty_dts && return Ptr{Int64}(x + 912)
+    f === :pts_correction_last_pts && return Ptr{Int64}(x + 920)
+    f === :pts_correction_last_dts && return Ptr{Int64}(x + 928)
+    f === :sub_charenc && return Ptr{Cstring}(x + 936)
+    f === :sub_charenc_mode && return Ptr{Cint}(x + 944)
+    f === :skip_alpha && return Ptr{Cint}(x + 948)
+    f === :seek_preroll && return Ptr{Cint}(x + 952)
+    f === :debug_mv && return Ptr{Cint}(x + 956)
+    f === :chroma_intra_matrix && return Ptr{Ptr{UInt16}}(x + 960)
+    f === :dump_separator && return Ptr{Ptr{UInt8}}(x + 968)
+    f === :codec_whitelist && return Ptr{Cstring}(x + 976)
+    f === :properties && return Ptr{Cuint}(x + 984)
+    f === :coded_side_data && return Ptr{Ptr{AVPacketSideData}}(x + 992)
+    f === :nb_coded_side_data && return Ptr{Cint}(x + 1000)
+    f === :hw_frames_ctx && return Ptr{Ptr{AVBufferRef}}(x + 1008)
+    f === :sub_text_format && return Ptr{Cint}(x + 1016)
+    f === :trailing_padding && return Ptr{Cint}(x + 1020)
+    f === :max_pixels && return Ptr{Int64}(x + 1024)
+    f === :hw_device_ctx && return Ptr{Ptr{AVBufferRef}}(x + 1032)
+    f === :hwaccel_flags && return Ptr{Cint}(x + 1040)
+    f === :apply_cropping && return Ptr{Cint}(x + 1044)
+    f === :extra_hw_frames && return Ptr{Cint}(x + 1048)
+    f === :discard_damaged_percentage && return Ptr{Cint}(x + 1052)
+    f === :max_samples && return Ptr{Int64}(x + 1056)
+    f === :export_side_data && return Ptr{Cint}(x + 1064)
+    f === :get_encode_buffer && return Ptr{Ptr{Cvoid}}(x + 1072)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVCodecContext, f::Symbol)
+    r = Ref{AVCodecContext}(x)
+    ptr = Base.unsafe_convert(Ptr{AVCodecContext}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVCodecContext}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+"""
+    av_codec_get_pkt_timebase(avctx)
+
+Accessors for some [`AVCodecContext`](@ref) fields. These used to be provided for ABI compatibility, and do not need to be used anymore.
+"""
+function av_codec_get_pkt_timebase(avctx)
+    ccall((:av_codec_get_pkt_timebase, libavcodec), AVRational, (Ptr{AVCodecContext},), avctx)
+end
+
+function av_codec_set_pkt_timebase(avctx, val::AVRational)
+    ccall((:av_codec_set_pkt_timebase, libavcodec), Cvoid, (Ptr{AVCodecContext}, AVRational), avctx, val)
+end
+
+function av_codec_get_codec_descriptor(avctx)
+    ccall((:av_codec_get_codec_descriptor, libavcodec), Ptr{AVCodecDescriptor}, (Ptr{AVCodecContext},), avctx)
+end
+
+function av_codec_set_codec_descriptor(avctx, desc)
+    ccall((:av_codec_set_codec_descriptor, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{AVCodecDescriptor}), avctx, desc)
+end
+
+function av_codec_get_codec_properties(avctx)
+    ccall((:av_codec_get_codec_properties, libavcodec), Cuint, (Ptr{AVCodecContext},), avctx)
+end
+
+function av_codec_get_lowres(avctx)
+    ccall((:av_codec_get_lowres, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
+end
+
+function av_codec_set_lowres(avctx, val::Integer)
+    ccall((:av_codec_set_lowres, libavcodec), Cvoid, (Ptr{AVCodecContext}, Cint), avctx, val)
+end
+
+function av_codec_get_seek_preroll(avctx)
+    ccall((:av_codec_get_seek_preroll, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
+end
+
+function av_codec_set_seek_preroll(avctx, val::Integer)
+    ccall((:av_codec_set_seek_preroll, libavcodec), Cvoid, (Ptr{AVCodecContext}, Cint), avctx, val)
+end
+
+function av_codec_get_chroma_intra_matrix(avctx)
+    ccall((:av_codec_get_chroma_intra_matrix, libavcodec), Ptr{UInt16}, (Ptr{AVCodecContext},), avctx)
+end
+
+function av_codec_set_chroma_intra_matrix(avctx, val)
+    ccall((:av_codec_set_chroma_intra_matrix, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{UInt16}), avctx, val)
+end
+
+mutable struct AVCodecDefault end
+
+mutable struct AVCodecHWConfigInternal end
+
+"""
+    AVCodec
+
+[`AVCodec`](@ref).
+"""
+struct AVCodec
+    name::Cstring
+    long_name::Cstring
+    type::AVMediaType
+    id::AVCodecID
+    capabilities::Cint
+    supported_framerates::Ptr{AVRational}
+    pix_fmts::Ptr{AVPixelFormat}
+    supported_samplerates::Ptr{Cint}
+    sample_fmts::Ptr{AVSampleFormat}
+    channel_layouts::Ptr{Cvoid} # channel_layouts::Ptr{UInt64}
+    max_lowres::UInt8
+    priv_class::Ptr{AVClass}
+    profiles::Ptr{AVProfile}
+    wrapper_name::Cstring
+    priv_data_size::Cint
+    next::Ptr{AVCodec}
+    update_thread_context::Ptr{Cvoid}
+    defaults::Ptr{AVCodecDefault}
+    init_static_data::Ptr{Cvoid}
+    init::Ptr{Cvoid}
+    encode_sub::Ptr{Cvoid}
+    encode2::Ptr{Cvoid}
+    decode::Ptr{Cvoid}
+    close::Ptr{Cvoid}
+    receive_packet::Ptr{Cvoid}
+    receive_frame::Ptr{Cvoid}
+    flush::Ptr{Cvoid}
+    caps_internal::Cint
+    bsfs::Cstring
+    hw_configs::Ptr{Ptr{AVCodecHWConfigInternal}}
+    codec_tags::Ptr{Cvoid} # codec_tags::Ptr{UInt32}
+end
+
+function Base.getproperty(x::AVCodec, f::Symbol)
+    f === :channel_layouts && return Ptr{UInt64}(getfield(x, f))
+    f === :codec_tags && return Ptr{UInt32}(getfield(x, f))
+    return getfield(x, f)
+end
+
+function av_codec_get_max_lowres(codec)
+    ccall((:av_codec_get_max_lowres, libavcodec), Cint, (Ptr{AVCodec},), codec)
+end
+
+mutable struct MpegEncContext end
+
+"""
+    AVPicture
+
+[`Picture`](@ref) data structure.
+
+Up to four components can be stored into it, the last component is alpha. 
+
+\\deprecated use [`AVFrame`](@ref) or imgutils functions instead
+"""
+struct AVPicture
+    data::NTuple{96, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVPicture}, f::Symbol)
+    f === :data && return Ptr{NTuple{8, Ptr{UInt8}}}(x + 0)
+    f === :linesize && return Ptr{NTuple{8, Cint}}(x + 64)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVPicture, f::Symbol)
+    r = Ref{AVPicture}(x)
+    ptr = Base.unsafe_convert(Ptr{AVPicture}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVPicture}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+@cenum AVSubtitleType::UInt32 begin
+    SUBTITLE_NONE = 0
+    SUBTITLE_BITMAP = 1
+    SUBTITLE_TEXT = 2
+    SUBTITLE_ASS = 3
+end
+
+struct AVSubtitleRect
+    data::NTuple{200, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVSubtitleRect}, f::Symbol)
+    f === :x && return Ptr{Cint}(x + 0)
+    f === :y && return Ptr{Cint}(x + 4)
+    f === :w && return Ptr{Cint}(x + 8)
+    f === :h && return Ptr{Cint}(x + 12)
+    f === :nb_colors && return Ptr{Cint}(x + 16)
+    f === :pict && return Ptr{AVPicture}(x + 24)
+    f === :data && return Ptr{NTuple{4, Ptr{UInt8}}}(x + 120)
+    f === :linesize && return Ptr{NTuple{4, Cint}}(x + 152)
+    f === :type && return Ptr{AVSubtitleType}(x + 168)
+    f === :text && return Ptr{Cstring}(x + 176)
+    f === :ass && return Ptr{Cstring}(x + 184)
+    f === :flags && return Ptr{Cint}(x + 192)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVSubtitleRect, f::Symbol)
+    r = Ref{AVSubtitleRect}(x)
+    ptr = Base.unsafe_convert(Ptr{AVSubtitleRect}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVSubtitleRect}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+struct AVSubtitle
+    format::UInt16
+    start_display_time::UInt32
+    end_display_time::UInt32
+    num_rects::Cuint
+    rects::Ptr{Ptr{AVSubtitleRect}}
+    pts::Int64
+end
+
+"""
+    av_codec_next(c)
+
+If c is NULL, returns the first registered codec, if c is non-NULL, returns the next registered codec after c, or NULL if c is the last one.
+"""
+function av_codec_next(c)
+    ccall((:av_codec_next, libavcodec), Ptr{AVCodec}, (Ptr{AVCodec},), c)
+end
+
+"""
+    avcodec_version()
+
+Return the [`LIBAVCODEC_VERSION_INT`](@ref) constant.
+"""
+function avcodec_version()
+    ccall((:avcodec_version, libavcodec), Cuint, ())
+end
+
+"""
+    avcodec_configuration()
+
+Return the libavcodec build-time configuration.
+"""
+function avcodec_configuration()
+    ccall((:avcodec_configuration, libavcodec), Cstring, ())
+end
+
+"""
+    avcodec_license()
+
+Return the libavcodec license.
+"""
+function avcodec_license()
+    ccall((:avcodec_license, libavcodec), Cstring, ())
+end
+
+"""
+    avcodec_register(codec)
+
+\\deprecated Calling this function is unnecessary.
+"""
+function avcodec_register(codec)
+    ccall((:avcodec_register, libavcodec), Cvoid, (Ptr{AVCodec},), codec)
+end
+
+"""
+    avcodec_register_all()
+
+\\deprecated Calling this function is unnecessary.
+"""
+function avcodec_register_all()
+    ccall((:avcodec_register_all, libavcodec), Cvoid, ())
+end
+
+"""
+    avcodec_alloc_context3(codec)
+
+Allocate an [`AVCodecContext`](@ref) and set its fields to default values. The resulting struct should be freed with [`avcodec_free_context`](@ref)().
+
+### Parameters
+* `codec`: if non-NULL, allocate private data and initialize defaults for the given codec. It is illegal to then call [`avcodec_open2`](@ref)() with a different codec. If NULL, then the codec-specific defaults won't be initialized, which may result in suboptimal default settings (this is important mainly for encoders, e.g. libx264).
+
+### Returns
+An [`AVCodecContext`](@ref) filled with default values or NULL on failure.
+"""
+function avcodec_alloc_context3(codec)
+    ccall((:avcodec_alloc_context3, libavcodec), Ptr{AVCodecContext}, (Ptr{AVCodec},), codec)
+end
+
+"""
+    avcodec_free_context(avctx)
+
+Free the codec context and everything associated with it and write NULL to the provided pointer.
+"""
+function avcodec_free_context(avctx)
+    ccall((:avcodec_free_context, libavcodec), Cvoid, (Ptr{Ptr{AVCodecContext}},), avctx)
+end
+
+"""
+    avcodec_get_context_defaults3(s, codec)
+
+\\deprecated This function should not be used, as closing and opening a codec context multiple time is not supported. A new codec context should be allocated for each new use.
+"""
+function avcodec_get_context_defaults3(s, codec)
+    ccall((:avcodec_get_context_defaults3, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodec}), s, codec)
+end
+
+"""
+    avcodec_get_class()
+
+Get the [`AVClass`](@ref) for [`AVCodecContext`](@ref). It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
+
+### See also
+[`av_opt_find`](@ref)().
+"""
+function avcodec_get_class()
+    ccall((:avcodec_get_class, libavcodec), Ptr{AVClass}, ())
+end
+
+"""
+    avcodec_get_frame_class()
+
+\\deprecated This function should not be used.
+"""
+function avcodec_get_frame_class()
+    ccall((:avcodec_get_frame_class, libavcodec), Ptr{AVClass}, ())
+end
+
+"""
+    avcodec_get_subtitle_rect_class()
+
+Get the [`AVClass`](@ref) for [`AVSubtitleRect`](@ref). It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
+
+### See also
+[`av_opt_find`](@ref)().
+"""
+function avcodec_get_subtitle_rect_class()
+    ccall((:avcodec_get_subtitle_rect_class, libavcodec), Ptr{AVClass}, ())
+end
+
+"""
+    avcodec_copy_context(dest, src)
+
+Copy the settings of the source [`AVCodecContext`](@ref) into the destination [`AVCodecContext`](@ref). The resulting destination codec context will be unopened, i.e. you are required to call [`avcodec_open2`](@ref)() before you can use this [`AVCodecContext`](@ref) to decode/encode video/audio data.
+
+\\deprecated The semantics of this function are ill-defined and it should not be used. If you need to transfer the stream parameters from one codec context to another, use an intermediate [`AVCodecParameters`](@ref) instance and the [`avcodec_parameters_from_context`](@ref)() / [`avcodec_parameters_to_context`](@ref)() functions.
+
+### Parameters
+* `dest`: target codec context, should be initialized with [`avcodec_alloc_context3`](@ref)(NULL), but otherwise uninitialized 
+
+* `src`: source codec context 
+
+### Returns
+[`AVERROR`](@ref)() on error (e.g. memory allocation error), 0 on success
+"""
+function avcodec_copy_context(dest, src)
+    ccall((:avcodec_copy_context, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodecContext}), dest, src)
+end
+
+"""
+    AVCodecParameters
+
+This struct describes the properties of an encoded stream.
+
+sizeof([`AVCodecParameters`](@ref)) is not a part of the public ABI, this struct must be allocated with [`avcodec_parameters_alloc`](@ref)() and freed with [`avcodec_parameters_free`](@ref)().
+"""
+struct AVCodecParameters
+    codec_type::AVMediaType
+    codec_id::AVCodecID
+    codec_tag::UInt32
+    extradata::Ptr{UInt8}
+    extradata_size::Cint
+    format::Cint
+    bit_rate::Int64
+    bits_per_coded_sample::Cint
+    bits_per_raw_sample::Cint
+    profile::Cint
+    level::Cint
+    width::Cint
+    height::Cint
+    sample_aspect_ratio::AVRational
+    field_order::AVFieldOrder
+    color_range::AVColorRange
+    color_primaries::AVColorPrimaries
+    color_trc::AVColorTransferCharacteristic
+    color_space::AVColorSpace
+    chroma_location::AVChromaLocation
+    video_delay::Cint
+    channel_layout::UInt64
+    channels::Cint
+    sample_rate::Cint
+    block_align::Cint
+    frame_size::Cint
+    initial_padding::Cint
+    trailing_padding::Cint
+    seek_preroll::Cint
+end
+
+"""
+    avcodec_parameters_from_context(par, codec)
+
+Fill the parameters struct based on the values from the supplied codec context. Any allocated fields in par are freed and replaced with duplicates of the corresponding fields in codec.
+
+### Returns
+>= 0 on success, a negative [`AVERROR`](@ref) code on failure
+"""
+function avcodec_parameters_from_context(par, codec)
+    ccall((:avcodec_parameters_from_context, libavcodec), Cint, (Ptr{AVCodecParameters}, Ptr{AVCodecContext}), par, codec)
+end
+
+"""
+    avcodec_parameters_to_context(codec, par)
+
+Fill the codec context based on the values from the supplied codec parameters. Any allocated fields in codec that have a corresponding field in par are freed and replaced with duplicates of the corresponding field in par. Fields in codec that do not have a counterpart in par are not touched.
+
+### Returns
+>= 0 on success, a negative [`AVERROR`](@ref) code on failure.
+"""
+function avcodec_parameters_to_context(codec, par)
+    ccall((:avcodec_parameters_to_context, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodecParameters}), codec, par)
+end
+
+"""
+    avcodec_open2(avctx, codec, options)
+
+Initialize the [`AVCodecContext`](@ref) to use the given [`AVCodec`](@ref). Prior to using this function the context has to be allocated with [`avcodec_alloc_context3`](@ref)().
+
+The functions [`avcodec_find_decoder_by_name`](@ref)(), [`avcodec_find_encoder_by_name`](@ref)(), [`avcodec_find_decoder`](@ref)() and [`avcodec_find_encoder`](@ref)() provide an easy way for retrieving a codec.
+
+!!! warning
+
+    This function is not thread safe!
+
+!!! note
+
+    Always call this function before using decoding routines (such as avcodec_receive_frame()).
+
+```c++
+ av_dict_set(&opts, "b", "2.5M", 0);
+ codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+ if (!codec)
+     exit(1);
+ context = avcodec_alloc_context3(codec);
+ if (avcodec_open2(context, codec, opts) < 0)
+     exit(1);
+```
+
+### Parameters
+* `avctx`: The context to initialize. 
+
+* `codec`: The codec to open this context for. If a non-NULL codec has been previously passed to [`avcodec_alloc_context3`](@ref)() or for this context, then this parameter MUST be either NULL or equal to the previously passed codec. 
+
+* `options`: A dictionary filled with [`AVCodecContext`](@ref) and codec-private options. On return this object will be filled with options that were not found.
+
+### Returns
+zero on success, a negative value on error 
+
+### See also
+[`avcodec_alloc_context3`](@ref)(), [`avcodec_find_decoder`](@ref)(), [`avcodec_find_encoder`](@ref)(), [`av_dict_set`](@ref)(), [`av_opt_find`](@ref)().
+"""
+function avcodec_open2(avctx, codec, options)
+    ccall((:avcodec_open2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodec}, Ptr{Ptr{AVDictionary}}), avctx, codec, options)
+end
+
+"""
+    avcodec_close(avctx)
+
+Close a given [`AVCodecContext`](@ref) and free all the data associated with it (but not the [`AVCodecContext`](@ref) itself).
+
+Calling this function on an [`AVCodecContext`](@ref) that hasn't been opened will free the codec-specific data allocated in [`avcodec_alloc_context3`](@ref)() with a non-NULL codec. Subsequent calls will do nothing.
+
+!!! note
+
+    Do not use this function. Use [`avcodec_free_context`](@ref)() to destroy a codec context (either open or closed). Opening and closing a codec context multiple times is not supported anymore -- use multiple codec contexts instead.
+"""
+function avcodec_close(avctx)
+    ccall((:avcodec_close, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
+end
+
+"""
+    avsubtitle_free(sub)
+
+Free all allocated data in the given subtitle struct.
+
+### Parameters
+* `sub`: [`AVSubtitle`](@ref) to free.
+"""
+function avsubtitle_free(sub)
+    ccall((:avsubtitle_free, libavcodec), Cvoid, (Ptr{AVSubtitle},), sub)
+end
+
+"""
+    avcodec_default_get_buffer2(s, frame, flags::Integer)
+
+The default callback for [`AVCodecContext`](@ref).get\\_buffer2(). It is made public so it can be called by custom get\\_buffer2() implementations for decoders without [`AV_CODEC_CAP_DR1`](@ref) set.
+"""
+function avcodec_default_get_buffer2(s, frame, flags::Integer)
+    ccall((:avcodec_default_get_buffer2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}, Cint), s, frame, flags)
+end
+
+"""
+    AVPacket
+
+This structure stores compressed data. It is typically exported by demuxers and then passed as input to decoders, or received as output from encoders and then passed to muxers.
+
+For video, it should typically contain one compressed frame. For audio it may contain several compressed frames. Encoders are allowed to output empty packets, with no compressed data, containing only side data (e.g. to update some stream parameters at the end of encoding).
+
+The semantics of data ownership depends on the buf field. If it is set, the packet data is dynamically allocated and is valid indefinitely until a call to [`av_packet_unref`](@ref)() reduces the reference count to 0.
+
+If the buf field is not set [`av_packet_ref`](@ref)() would make a copy instead of increasing the reference count.
+
+The side data is always allocated with [`av_malloc`](@ref)(), copied by [`av_packet_ref`](@ref)() and freed by [`av_packet_unref`](@ref)().
+
+sizeof([`AVPacket`](@ref)) being a part of the public ABI is deprecated. once [`av_init_packet`](@ref)() is removed, new packets will only be able to be allocated with [`av_packet_alloc`](@ref)(), and new fields may be added to the end of the struct with a minor bump.
+
+### See also
+[`av_packet_alloc`](@ref), [`av_packet_ref`](@ref), [`av_packet_unref`](@ref)
+"""
+struct AVPacket
+    data::NTuple{88, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVPacket}, f::Symbol)
+    f === :buf && return Ptr{Ptr{AVBufferRef}}(x + 0)
+    f === :pts && return Ptr{Int64}(x + 8)
+    f === :dts && return Ptr{Int64}(x + 16)
+    f === :data && return Ptr{Ptr{UInt8}}(x + 24)
+    f === :size && return Ptr{Cint}(x + 32)
+    f === :stream_index && return Ptr{Cint}(x + 36)
+    f === :flags && return Ptr{Cint}(x + 40)
+    f === :side_data && return Ptr{Ptr{AVPacketSideData}}(x + 48)
+    f === :side_data_elems && return Ptr{Cint}(x + 56)
+    f === :duration && return Ptr{Int64}(x + 64)
+    f === :pos && return Ptr{Int64}(x + 72)
+    f === :convergence_duration && return Ptr{Int64}(x + 80)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVPacket, f::Symbol)
+    r = Ref{AVPacket}(x)
+    ptr = Base.unsafe_convert(Ptr{AVPacket}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVPacket}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+"""
+    avcodec_default_get_encode_buffer(s, pkt, flags::Integer)
+
+The default callback for [`AVCodecContext`](@ref).get\\_encode\\_buffer(). It is made public so it can be called by custom get\\_encode\\_buffer() implementations for encoders without [`AV_CODEC_CAP_DR1`](@ref) set.
+"""
+function avcodec_default_get_encode_buffer(s, pkt, flags::Integer)
+    ccall((:avcodec_default_get_encode_buffer, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Cint), s, pkt, flags)
+end
+
+"""
+    avcodec_align_dimensions(s, width, height)
+
+Modify width and height values so that they will result in a memory buffer that is acceptable for the codec if you do not use any horizontal padding.
+
+May only be used if a codec with [`AV_CODEC_CAP_DR1`](@ref) has been opened.
+"""
+function avcodec_align_dimensions(s, width, height)
+    ccall((:avcodec_align_dimensions, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{Cint}, Ptr{Cint}), s, width, height)
+end
+
+"""
+    avcodec_align_dimensions2(s, width, height, linesize_align)
+
+Modify width and height values so that they will result in a memory buffer that is acceptable for the codec if you also ensure that all line sizes are a multiple of the respective linesize\\_align[i].
+
+May only be used if a codec with [`AV_CODEC_CAP_DR1`](@ref) has been opened.
+"""
+function avcodec_align_dimensions2(s, width, height, linesize_align)
+    ccall((:avcodec_align_dimensions2, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), s, width, height, linesize_align)
+end
+
+"""
+    avcodec_enum_to_chroma_pos(xpos, ypos, pos::AVChromaLocation)
+
+Converts [`AVChromaLocation`](@ref) to swscale x/y chroma position.
+
+The positions represent the chroma (0,0) position in a coordinates system with luma (0,0) representing the origin and luma(1,1) representing 256,256
+
+### Parameters
+* `xpos`: horizontal chroma sample position 
+
+* `ypos`: vertical chroma sample position
+"""
+function avcodec_enum_to_chroma_pos(xpos, ypos, pos::AVChromaLocation)
+    ccall((:avcodec_enum_to_chroma_pos, libavcodec), Cint, (Ptr{Cint}, Ptr{Cint}, AVChromaLocation), xpos, ypos, pos)
+end
+
+"""
+    avcodec_chroma_pos_to_enum(xpos::Integer, ypos::Integer)
+
+Converts swscale x/y chroma position to [`AVChromaLocation`](@ref).
+
+The positions represent the chroma (0,0) position in a coordinates system with luma (0,0) representing the origin and luma(1,1) representing 256,256
+
+### Parameters
+* `xpos`: horizontal chroma sample position 
+
+* `ypos`: vertical chroma sample position
+"""
+function avcodec_chroma_pos_to_enum(xpos::Integer, ypos::Integer)
+    ccall((:avcodec_chroma_pos_to_enum, libavcodec), AVChromaLocation, (Cint, Cint), xpos, ypos)
+end
+
+"""
+    avcodec_decode_audio4(avctx, frame, got_frame_ptr, avpkt)
+
+Decode the audio frame of size avpkt->size from avpkt->data into frame.
+
+Some decoders may support multiple frames in a single [`AVPacket`](@ref). Such decoders would then just decode the first frame and the return value would be less than the packet size. In this case, [`avcodec_decode_audio4`](@ref) has to be called again with an [`AVPacket`](@ref) containing the remaining data in order to decode the second frame, etc... Even if no frames are returned, the packet needs to be fed to the decoder with remaining data until it is completely consumed or an error occurs.
+
+Some decoders (those marked with [`AV_CODEC_CAP_DELAY`](@ref)) have a delay between input and output. This means that for some packets they will not immediately produce decoded output and need to be flushed at the end of decoding to get all the decoded data. Flushing is done by calling this function with packets with avpkt->data set to NULL and avpkt->size set to 0 until it stops returning samples. It is safe to flush even those decoders that are not marked with [`AV_CODEC_CAP_DELAY`](@ref), then no samples will be returned.
+
+!!! warning
+
+    The input buffer, avpkt->data must be [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) larger than the actual read bytes because some optimized bitstream readers read 32 or 64 bits at once and could read over the end.
+
+!!! note
+
+    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
+
+\\deprecated Use [`avcodec_send_packet`](@ref)() and [`avcodec_receive_frame`](@ref)().
+
+### Parameters
+* `avctx`: the codec context 
+
+* `frame`:\\[out\\] The [`AVFrame`](@ref) in which to store decoded audio samples. The decoder will allocate a buffer for the decoded frame by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it. 
+
+* `got_frame_ptr`:\\[out\\] Zero if no frame could be decoded, otherwise it is non-zero. Note that this field being set to zero does not mean that an error has occurred. For decoders with [`AV_CODEC_CAP_DELAY`](@ref) set, no given decode call is guaranteed to produce a frame. 
+
+* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. At least avpkt->data and avpkt->size should be set. Some decoders might also require additional fields to be set. 
+
+### Returns
+A negative error code is returned if an error occurred during decoding, otherwise the number of bytes consumed from the input [`AVPacket`](@ref) is returned.
+"""
+function avcodec_decode_audio4(avctx, frame, got_frame_ptr, avpkt)
+    ccall((:avcodec_decode_audio4, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}, Ptr{Cint}, Ptr{AVPacket}), avctx, frame, got_frame_ptr, avpkt)
+end
+
+"""
+    avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt)
+
+Decode the video frame of size avpkt->size from avpkt->data into picture. Some decoders may support multiple frames in a single [`AVPacket`](@ref), such decoders would then just decode the first frame.
+
+!!! warning
+
+    The input buffer must be [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) larger than the actual read bytes because some optimized bitstream readers read 32 or 64 bits at once and could read over the end.
+
+!!! warning
+
+    The end of the input buffer buf should be set to 0 to ensure that no overreading happens for damaged MPEG streams.
+
+!!! note
+
+    Codecs which have the [`AV_CODEC_CAP_DELAY`](@ref) capability set have a delay between input and output, these need to be fed with avpkt->data=NULL, avpkt->size=0 at the end to return the remaining frames.
+
+!!! note
+
+    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
+
+\\deprecated Use [`avcodec_send_packet`](@ref)() and [`avcodec_receive_frame`](@ref)().
+
+### Parameters
+* `avctx`: the codec context 
+
+* `picture`:\\[out\\] The [`AVFrame`](@ref) in which the decoded video frame will be stored. Use [`av_frame_alloc`](@ref)() to get an [`AVFrame`](@ref). The codec will allocate memory for the actual bitmap by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it.
+
+* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. You can create such packet with [`av_init_packet`](@ref)() and by then setting data and size, some decoders might in addition need other fields like flags&AV\\_PKT\\_FLAG\\_KEY. All decoders are designed to use the least fields possible. 
+
+* `got_picture_ptr`:\\[in,out\\] Zero if no frame could be decompressed, otherwise, it is nonzero. 
+
+### Returns
+On error a negative value is returned, otherwise the number of bytes used or zero if no frame could be decompressed.
+"""
+function avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt)
+    ccall((:avcodec_decode_video2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}, Ptr{Cint}, Ptr{AVPacket}), avctx, picture, got_picture_ptr, avpkt)
+end
+
+"""
+    avcodec_decode_subtitle2(avctx, sub, got_sub_ptr, avpkt)
+
+Decode a subtitle message. Return a negative value on error, otherwise return the number of bytes used. If no subtitle could be decompressed, got\\_sub\\_ptr is zero. Otherwise, the subtitle is stored in *sub. Note that [`AV_CODEC_CAP_DR1`](@ref) is not available for subtitle codecs. This is for simplicity, because the performance difference is expected to be negligible and reusing a get\\_buffer written for video codecs would probably perform badly due to a potentially very different allocation pattern.
+
+Some decoders (those marked with [`AV_CODEC_CAP_DELAY`](@ref)) have a delay between input and output. This means that for some packets they will not immediately produce decoded output and need to be flushed at the end of decoding to get all the decoded data. Flushing is done by calling this function with packets with avpkt->data set to NULL and avpkt->size set to 0 until it stops returning subtitles. It is safe to flush even those decoders that are not marked with [`AV_CODEC_CAP_DELAY`](@ref), then no subtitles will be returned.
+
+!!! note
+
+    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
+
+### Parameters
+* `avctx`: the codec context 
+
+* `sub`:\\[out\\] The preallocated [`AVSubtitle`](@ref) in which the decoded subtitle will be stored, must be freed with [`avsubtitle_free`](@ref) if *got\\_sub\\_ptr is set. 
+
+* `got_sub_ptr`:\\[in,out\\] Zero if no subtitle could be decompressed, otherwise, it is nonzero. 
+
+* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer.
+"""
+function avcodec_decode_subtitle2(avctx, sub, got_sub_ptr, avpkt)
+    ccall((:avcodec_decode_subtitle2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVSubtitle}, Ptr{Cint}, Ptr{AVPacket}), avctx, sub, got_sub_ptr, avpkt)
+end
+
+"""
+    avcodec_send_packet(avctx, avpkt)
+
+Supply raw packet data as input to a decoder.
+
+Internally, this call will copy relevant [`AVCodecContext`](@ref) fields, which can influence decoding per-packet, and apply them when the packet is actually decoded. (For example [`AVCodecContext`](@ref).skip\\_frame, which might direct the decoder to drop the frame contained by the packet sent with this function.)
+
+!!! warning
+
+    The input buffer, avpkt->data must be [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) larger than the actual read bytes because some optimized bitstream readers read 32 or 64 bits at once and could read over the end.
+
+!!! warning
+
+    Do not mix this API with the legacy API (like [`avcodec_decode_video2`](@ref)()) on the same [`AVCodecContext`](@ref). It will return unexpected results now or in future libavcodec versions.
+
+!!! note
+
+    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
+
+### Parameters
+* `avctx`: codec context 
+
+* `avpkt`:\\[in\\] The input [`AVPacket`](@ref). Usually, this will be a single video frame, or several complete audio frames. Ownership of the packet remains with the caller, and the decoder will not write to the packet. The decoder may create a reference to the packet data (or copy it if the packet is not reference-counted). Unlike with older APIs, the packet is always fully consumed, and if it contains multiple frames (e.g. some audio codecs), will require you to call [`avcodec_receive_frame`](@ref)() multiple times afterwards before you can send a new packet. It can be NULL (or an [`AVPacket`](@ref) with data set to NULL and size set to 0); in this case, it is considered a flush packet, which signals the end of the stream. Sending the first flush packet will return success. Subsequent ones are unnecessary and will return [`AVERROR_EOF`](@ref). If the decoder still has frames buffered, it will return them after sending a flush packet.
+
+### Returns
+0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): input is not accepted in the current state - user must read output with [`avcodec_receive_frame`](@ref)() (once all output is read, the packet should be resent, and the call will not fail with EAGAIN). [`AVERROR_EOF`](@ref): the decoder has been flushed, and no new packets can be sent to it (also returned if more than 1 flush packet is sent) [`AVERROR`](@ref)(EINVAL): codec not opened, it is an encoder, or requires flush [`AVERROR`](@ref)(ENOMEM): failed to add packet to internal queue, or similar other errors: legitimate decoding errors
+"""
+function avcodec_send_packet(avctx, avpkt)
+    ccall((:avcodec_send_packet, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}), avctx, avpkt)
+end
+
+"""
+    avcodec_receive_frame(avctx, frame)
+
+Return decoded output data from a decoder.
+
+### Parameters
+* `avctx`: codec context 
+
+* `frame`: This will be set to a reference-counted video or audio frame (depending on the decoder type) allocated by the decoder. Note that the function will always call [`av_frame_unref`](@ref)(frame) before doing anything else.
+
+### Returns
+0: success, a frame was returned [`AVERROR`](@ref)(EAGAIN): output is not available in this state - user must try to send new input [`AVERROR_EOF`](@ref): the decoder has been fully flushed, and there will be no more output frames [`AVERROR`](@ref)(EINVAL): codec not opened, or it is an encoder [`AVERROR_INPUT_CHANGED`](@ref): current decoded frame has changed parameters with respect to first decoded frame. Applicable when flag [`AV_CODEC_FLAG_DROPCHANGED`](@ref) is set. other negative values: legitimate decoding errors
+"""
+function avcodec_receive_frame(avctx, frame)
+    ccall((:avcodec_receive_frame, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}), avctx, frame)
+end
+
+"""
+    avcodec_send_frame(avctx, frame)
+
+Supply a raw video or audio frame to the encoder. Use [`avcodec_receive_packet`](@ref)() to retrieve buffered output packets.
+
+For audio: If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size. 
+
+### Parameters
+* `avctx`: codec context 
+
+* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio or video frame to be encoded. Ownership of the frame remains with the caller, and the encoder will not write to the frame. The encoder may create a reference to the frame data (or copy it if the frame is not reference-counted). It can be NULL, in which case it is considered a flush packet. This signals the end of the stream. If the encoder still has packets buffered, it will return them after this call. Once flushing mode has been entered, additional flush packets are ignored, and sending frames will return [`AVERROR_EOF`](@ref).
+
+### Returns
+0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): input is not accepted in the current state - user must read output with [`avcodec_receive_packet`](@ref)() (once all output is read, the packet should be resent, and the call will not fail with EAGAIN). [`AVERROR_EOF`](@ref): the encoder has been flushed, and no new frames can be sent to it [`AVERROR`](@ref)(EINVAL): codec not opened, refcounted\\_frames not set, it is a decoder, or requires flush [`AVERROR`](@ref)(ENOMEM): failed to add packet to internal queue, or similar other errors: legitimate encoding errors
+"""
+function avcodec_send_frame(avctx, frame)
+    ccall((:avcodec_send_frame, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}), avctx, frame)
+end
+
+"""
+    avcodec_receive_packet(avctx, avpkt)
+
+Read encoded data from the encoder.
+
+### Parameters
+* `avctx`: codec context 
+
+* `avpkt`: This will be set to a reference-counted packet allocated by the encoder. Note that the function will always call [`av_packet_unref`](@ref)(avpkt) before doing anything else. 
+
+### Returns
+0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): output is not available in the current state - user must try to send input [`AVERROR_EOF`](@ref): the encoder has been fully flushed, and there will be no more output packets [`AVERROR`](@ref)(EINVAL): codec not opened, or it is a decoder other errors: legitimate encoding errors
+"""
+function avcodec_receive_packet(avctx, avpkt)
+    ccall((:avcodec_receive_packet, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}), avctx, avpkt)
+end
+
+"""
+    avcodec_get_hw_frames_parameters(avctx, device_ref, hw_pix_fmt::AVPixelFormat, out_frames_ref)
+
+Create and return a [`AVHWFramesContext`](@ref) with values adequate for hardware decoding. This is meant to get called from the get\\_format callback, and is a helper for preparing a [`AVHWFramesContext`](@ref) for [`AVCodecContext`](@ref).hw\\_frames\\_ctx. This API is for decoding with certain hardware acceleration modes/APIs only.
+
+The returned [`AVHWFramesContext`](@ref) is not initialized. The caller must do this with [`av_hwframe_ctx_init`](@ref)().
+
+Calling this function is not a requirement, but makes it simpler to avoid codec or hardware API specific details when manually allocating frames.
+
+Alternatively to this, an API user can set [`AVCodecContext`](@ref).hw\\_device\\_ctx, which sets up [`AVCodecContext`](@ref).hw\\_frames\\_ctx fully automatically, and makes it unnecessary to call this function or having to care about [`AVHWFramesContext`](@ref) initialization at all.
+
+There are a number of requirements for calling this function:
+
+- It must be called from get\\_format with the same avctx parameter that was passed to get\\_format. Calling it outside of get\\_format is not allowed, and can trigger undefined behavior. - The function is not always supported (see description of return values). Even if this function returns successfully, hwaccel initialization could fail later. (The degree to which implementations check whether the stream is actually supported varies. Some do this check only after the user's get\\_format callback returns.) - The hw\\_pix\\_fmt must be one of the choices suggested by get\\_format. If the user decides to use a [`AVHWFramesContext`](@ref) prepared with this API function, the user must return the same hw\\_pix\\_fmt from get\\_format. - The device\\_ref passed to this function must support the given hw\\_pix\\_fmt. - After calling this API function, it is the user's responsibility to initialize the [`AVHWFramesContext`](@ref) (returned by the out\\_frames\\_ref parameter), and to set [`AVCodecContext`](@ref).hw\\_frames\\_ctx to it. If done, this must be done before returning from get\\_format (this is implied by the normal [`AVCodecContext`](@ref).hw\\_frames\\_ctx API rules). - The [`AVHWFramesContext`](@ref) parameters may change every time time get\\_format is called. Also, [`AVCodecContext`](@ref).hw\\_frames\\_ctx is reset before get\\_format. So you are inherently required to go through this process again on every get\\_format call. - It is perfectly possible to call this function without actually using the resulting [`AVHWFramesContext`](@ref). One use-case might be trying to reuse a previously initialized [`AVHWFramesContext`](@ref), and calling this API function only to test whether the required frame parameters have changed. - Fields that use dynamically allocated values of any kind must not be set by the user unless setting them is explicitly allowed by the documentation. If the user sets [`AVHWFramesContext`](@ref).free and [`AVHWFramesContext`](@ref).user\\_opaque, the new free callback must call the potentially set previous free callback. This API call may set any dynamically allocated fields, including the free callback.
+
+The function will set at least the following fields on [`AVHWFramesContext`](@ref) (potentially more, depending on hwaccel API):
+
+- All fields set by [`av_hwframe_ctx_alloc`](@ref)(). - Set the format field to hw\\_pix\\_fmt. - Set the sw\\_format field to the most suited and most versatile format. (An implication is that this will prefer generic formats over opaque formats with arbitrary restrictions, if possible.) - Set the width/height fields to the coded frame size, rounded up to the API-specific minimum alignment. - Only \\_if\\_ the hwaccel requires a pre-allocated pool: set the initial\\_pool\\_size field to the number of maximum reference surfaces possible with the codec, plus 1 surface for the user to work (meaning the user can safely reference at most 1 decoded surface at a time), plus additional buffering introduced by frame threading. If the hwaccel does not require pre-allocation, the field is left to 0, and the decoder will allocate new surfaces on demand during decoding. - Possibly [`AVHWFramesContext`](@ref).hwctx fields, depending on the underlying hardware API.
+
+Essentially, out\\_frames\\_ref returns the same as [`av_hwframe_ctx_alloc`](@ref)(), but with basic frame parameters set.
+
+The function is stateless, and does not change the [`AVCodecContext`](@ref) or the device\\_ref [`AVHWDeviceContext`](@ref).
+
+### Parameters
+* `avctx`: The context which is currently calling get\\_format, and which implicitly contains all state needed for filling the returned [`AVHWFramesContext`](@ref) properly. 
+
+* `device_ref`: A reference to the [`AVHWDeviceContext`](@ref) describing the device which will be used by the hardware decoder. 
+
+* `hw_pix_fmt`: The hwaccel format you are going to return from get\\_format. 
+
+* `out_frames_ref`: On success, set to a reference to an \\_uninitialized\\_ [`AVHWFramesContext`](@ref), created from the given device\\_ref. Fields will be set to values required for decoding. Not changed if an error is returned. 
+
+### Returns
+zero on success, a negative value on error. The following error codes have special semantics: [`AVERROR`](@ref)(ENOENT): the decoder does not support this functionality. Setup is always manual, or it is a decoder which does not support setting [`AVCodecContext`](@ref).hw\\_frames\\_ctx at all, or it is a software format. [`AVERROR`](@ref)(EINVAL): it is known that hardware decoding is not supported for this configuration, or the device\\_ref is not supported for the hwaccel referenced by hw\\_pix\\_fmt.
+"""
+function avcodec_get_hw_frames_parameters(avctx, device_ref, hw_pix_fmt::AVPixelFormat, out_frames_ref)
+    ccall((:avcodec_get_hw_frames_parameters, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVBufferRef}, AVPixelFormat, Ptr{Ptr{AVBufferRef}}), avctx, device_ref, hw_pix_fmt, out_frames_ref)
+end
+
+"""
+    AVPictureStructure
+
+` lavc_parsing Frame parsing`
+
+@{
+"""
+@cenum AVPictureStructure::UInt32 begin
+    AV_PICTURE_STRUCTURE_UNKNOWN = 0
+    AV_PICTURE_STRUCTURE_TOP_FIELD = 1
+    AV_PICTURE_STRUCTURE_BOTTOM_FIELD = 2
+    AV_PICTURE_STRUCTURE_FRAME = 3
+end
+
+struct AVCodecParserContext
+    data::NTuple{352, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVCodecParserContext}, f::Symbol)
+    f === :priv_data && return Ptr{Ptr{Cvoid}}(x + 0)
+    f === :parser && return Ptr{Ptr{AVCodecParser}}(x + 8)
+    f === :frame_offset && return Ptr{Int64}(x + 16)
+    f === :cur_offset && return Ptr{Int64}(x + 24)
+    f === :next_frame_offset && return Ptr{Int64}(x + 32)
+    f === :pict_type && return Ptr{Cint}(x + 40)
+    f === :repeat_pict && return Ptr{Cint}(x + 44)
+    f === :pts && return Ptr{Int64}(x + 48)
+    f === :dts && return Ptr{Int64}(x + 56)
+    f === :last_pts && return Ptr{Int64}(x + 64)
+    f === :last_dts && return Ptr{Int64}(x + 72)
+    f === :fetch_timestamp && return Ptr{Cint}(x + 80)
+    f === :cur_frame_start_index && return Ptr{Cint}(x + 84)
+    f === :cur_frame_offset && return Ptr{NTuple{4, Int64}}(x + 88)
+    f === :cur_frame_pts && return Ptr{NTuple{4, Int64}}(x + 120)
+    f === :cur_frame_dts && return Ptr{NTuple{4, Int64}}(x + 152)
+    f === :flags && return Ptr{Cint}(x + 184)
+    f === :offset && return Ptr{Int64}(x + 192)
+    f === :cur_frame_end && return Ptr{NTuple{4, Int64}}(x + 200)
+    f === :key_frame && return Ptr{Cint}(x + 232)
+    f === :convergence_duration && return Ptr{Int64}(x + 240)
+    f === :dts_sync_point && return Ptr{Cint}(x + 248)
+    f === :dts_ref_dts_delta && return Ptr{Cint}(x + 252)
+    f === :pts_dts_delta && return Ptr{Cint}(x + 256)
+    f === :cur_frame_pos && return Ptr{NTuple{4, Int64}}(x + 264)
+    f === :pos && return Ptr{Int64}(x + 296)
+    f === :last_pos && return Ptr{Int64}(x + 304)
+    f === :duration && return Ptr{Cint}(x + 312)
+    f === :field_order && return Ptr{AVFieldOrder}(x + 316)
+    f === :picture_structure && return Ptr{AVPictureStructure}(x + 320)
+    f === :output_picture_number && return Ptr{Cint}(x + 324)
+    f === :width && return Ptr{Cint}(x + 328)
+    f === :height && return Ptr{Cint}(x + 332)
+    f === :coded_width && return Ptr{Cint}(x + 336)
+    f === :coded_height && return Ptr{Cint}(x + 340)
+    f === :format && return Ptr{Cint}(x + 344)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVCodecParserContext, f::Symbol)
+    r = Ref{AVCodecParserContext}(x)
+    ptr = Base.unsafe_convert(Ptr{AVCodecParserContext}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVCodecParserContext}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+struct AVCodecParser
+    data::NTuple{64, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVCodecParser}, f::Symbol)
+    f === :codec_ids && return Ptr{NTuple{5, Cint}}(x + 0)
+    f === :priv_data_size && return Ptr{Cint}(x + 20)
+    f === :parser_init && return Ptr{Ptr{Cvoid}}(x + 24)
+    f === :parser_parse && return Ptr{Ptr{Cvoid}}(x + 32)
+    f === :parser_close && return Ptr{Ptr{Cvoid}}(x + 40)
+    f === :split && return Ptr{Ptr{Cvoid}}(x + 48)
+    f === :next && return Ptr{Ptr{AVCodecParser}}(x + 56)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVCodecParser, f::Symbol)
+    r = Ref{AVCodecParser}(x)
+    ptr = Base.unsafe_convert(Ptr{AVCodecParser}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVCodecParser}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+"""
+    av_parser_iterate(opaque)
+
+Iterate over all registered codec parsers.
+
+### Parameters
+* `opaque`: a pointer where libavcodec will store the iteration state. Must point to NULL to start the iteration.
+
+### Returns
+the next registered codec parser or NULL when the iteration is finished
+"""
+function av_parser_iterate(opaque)
+    ccall((:av_parser_iterate, libavcodec), Ptr{AVCodecParser}, (Ptr{Ptr{Cvoid}},), opaque)
+end
+
+function av_parser_next(c)
+    ccall((:av_parser_next, libavcodec), Ptr{AVCodecParser}, (Ptr{AVCodecParser},), c)
+end
+
+function av_register_codec_parser(parser)
+    ccall((:av_register_codec_parser, libavcodec), Cvoid, (Ptr{AVCodecParser},), parser)
+end
+
+function av_parser_init(codec_id::Integer)
+    ccall((:av_parser_init, libavcodec), Ptr{AVCodecParserContext}, (Cint,), codec_id)
+end
+
+"""
+    av_parser_parse2(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, pts::Int64, dts::Int64, pos::Int64)
+
+Parse a packet.
+
+Example: 
+
+```c++
+   while(in_len){
+       len = av_parser_parse2(myparser, AVCodecContext, &data, &size,
+                                        in_data, in_len,
+                                        pts, dts, pos);
+       in_data += len;
+       in_len  -= len;
+       if(size)
+          decode_frame(data, size);
+   }
+```
+
+### Parameters
+* `s`: parser context. 
+
+* `avctx`: codec context. 
+
+* `poutbuf`: set to pointer to parsed buffer or NULL if not yet finished. 
+
+* `poutbuf_size`: set to size of parsed buffer or zero if not yet finished. 
+
+* `buf`: input buffer. 
+
+* `buf_size`: buffer size in bytes without the padding. I.e. the full buffer size is assumed to be buf\\_size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref). To signal EOF, this should be 0 (so that the last frame can be output). 
+
+* `pts`: input presentation timestamp. 
+
+* `dts`: input decoding timestamp. 
+
+* `pos`: input byte position in stream. 
+
+### Returns
+the number of bytes of the input bitstream used.
+"""
+function av_parser_parse2(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, pts::Int64, dts::Int64, pos::Int64)
+    ccall((:av_parser_parse2, libavcodec), Cint, (Ptr{AVCodecParserContext}, Ptr{AVCodecContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Int64, Int64, Int64), s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos)
+end
+
+"""
+    av_parser_change(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
+
+\\deprecated Use dump\\_extradata, remove\\_extra or extract\\_extradata bitstream filters instead.
+
+### Returns
+0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed 
+"""
+function av_parser_change(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
+    ccall((:av_parser_change, libavcodec), Cint, (Ptr{AVCodecParserContext}, Ptr{AVCodecContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Cint), s, avctx, poutbuf, poutbuf_size, buf, buf_size, keyframe)
+end
+
+function av_parser_close(s)
+    ccall((:av_parser_close, libavcodec), Cvoid, (Ptr{AVCodecParserContext},), s)
+end
+
+"""
+    avcodec_encode_audio2(avctx, avpkt, frame, got_packet_ptr)
+
+Encode a frame of audio.
+
+Takes input samples from frame and writes the next output packet, if available, to avpkt. The output packet does not necessarily contain data for the most recent frame, as encoders can delay, split, and combine input frames internally as needed.
+
+If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)(). 
+
+\\deprecated use [`avcodec_send_frame`](@ref)()/[`avcodec_receive_packet`](@ref)() instead. If allowed and required, set [`AVCodecContext`](@ref).get\\_encode\\_buffer to a custom function to pass user supplied output buffers.
+
+### Parameters
+* `avctx`: codec context 
+
+* `avpkt`: output [`AVPacket`](@ref). The user can supply an output buffer by setting avpkt->data and avpkt->size prior to calling the function, but if the size of the user-provided data is not large enough, encoding will fail. If avpkt->data and avpkt->size are set, avpkt->destruct must also be set. All other [`AVPacket`](@ref) fields will be reset by the encoder using [`av_init_packet`](@ref)(). If avpkt->data is NULL, the encoder will allocate it. The encoder will set avpkt->size to the size of the output packet.
+
+* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size. 
+
+* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used. 
+
+### Returns
+0 on success, negative error code on failure
+"""
+function avcodec_encode_audio2(avctx, avpkt, frame, got_packet_ptr)
+    ccall((:avcodec_encode_audio2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Ptr{AVFrame}, Ptr{Cint}), avctx, avpkt, frame, got_packet_ptr)
+end
+
+"""
+    avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr)
+
+Encode a frame of video.
+
+Takes input raw video data from frame and writes the next output packet, if available, to avpkt. The output packet does not necessarily contain data for the most recent frame, as encoders can delay and reorder input frames internally as needed.
+
+If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)(). 
+
+\\deprecated use [`avcodec_send_frame`](@ref)()/[`avcodec_receive_packet`](@ref)() instead. If allowed and required, set [`AVCodecContext`](@ref).get\\_encode\\_buffer to a custom function to pass user supplied output buffers.
+
+### Parameters
+* `avctx`: codec context 
+
+* `avpkt`: output [`AVPacket`](@ref). The user can supply an output buffer by setting avpkt->data and avpkt->size prior to calling the function, but if the size of the user-provided data is not large enough, encoding will fail. All other [`AVPacket`](@ref) fields will be reset by the encoder using [`av_init_packet`](@ref)(). If avpkt->data is NULL, the encoder will allocate it. The encoder will set avpkt->size to the size of the output packet. The returned data (if any) belongs to the caller, he is responsible for freeing it.
+
+* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw video data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. 
+
+* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used. 
+
+### Returns
+0 on success, negative error code on failure
+"""
+function avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr)
+    ccall((:avcodec_encode_video2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Ptr{AVFrame}, Ptr{Cint}), avctx, avpkt, frame, got_packet_ptr)
+end
+
+function avcodec_encode_subtitle(avctx, buf, buf_size::Integer, sub)
+    ccall((:avcodec_encode_subtitle, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{UInt8}, Cint, Ptr{AVSubtitle}), avctx, buf, buf_size, sub)
+end
+
+"""
+    avpicture_alloc(picture, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+
+\\deprecated unused
+"""
+function avpicture_alloc(picture, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+    ccall((:avpicture_alloc, libavcodec), Cint, (Ptr{AVPicture}, AVPixelFormat, Cint, Cint), picture, pix_fmt, width, height)
+end
+
+"""
+    avpicture_free(picture)
+
+\\deprecated unused
+"""
+function avpicture_free(picture)
+    ccall((:avpicture_free, libavcodec), Cvoid, (Ptr{AVPicture},), picture)
+end
+
+"""
+    avpicture_fill(picture, ptr, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+
+\\deprecated use [`av_image_fill_arrays`](@ref)() instead.
+"""
+function avpicture_fill(picture, ptr, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+    ccall((:avpicture_fill, libavcodec), Cint, (Ptr{AVPicture}, Ptr{UInt8}, AVPixelFormat, Cint, Cint), picture, ptr, pix_fmt, width, height)
+end
+
+"""
+    avpicture_layout(src, pix_fmt::AVPixelFormat, width::Integer, height::Integer, dest, dest_size::Integer)
+
+\\deprecated use [`av_image_copy_to_buffer`](@ref)() instead.
+"""
+function avpicture_layout(src, pix_fmt::AVPixelFormat, width::Integer, height::Integer, dest, dest_size::Integer)
+    ccall((:avpicture_layout, libavcodec), Cint, (Ptr{AVPicture}, AVPixelFormat, Cint, Cint, Ptr{Cuchar}, Cint), src, pix_fmt, width, height, dest, dest_size)
+end
+
+"""
+    avpicture_get_size(pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+
+\\deprecated use [`av_image_get_buffer_size`](@ref)() instead.
+"""
+function avpicture_get_size(pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+    ccall((:avpicture_get_size, libavcodec), Cint, (AVPixelFormat, Cint, Cint), pix_fmt, width, height)
+end
+
+"""
+    av_picture_copy(dst, src, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+
+\\deprecated [`av_image_copy`](@ref)() instead.
+"""
+function av_picture_copy(dst, src, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
+    ccall((:av_picture_copy, libavcodec), Cvoid, (Ptr{AVPicture}, Ptr{AVPicture}, AVPixelFormat, Cint, Cint), dst, src, pix_fmt, width, height)
+end
+
+"""
+    av_picture_crop(dst, src, pix_fmt::AVPixelFormat, top_band::Integer, left_band::Integer)
+
+\\deprecated unused
+"""
+function av_picture_crop(dst, src, pix_fmt::AVPixelFormat, top_band::Integer, left_band::Integer)
+    ccall((:av_picture_crop, libavcodec), Cint, (Ptr{AVPicture}, Ptr{AVPicture}, AVPixelFormat, Cint, Cint), dst, src, pix_fmt, top_band, left_band)
+end
+
+"""
+    av_picture_pad(dst, src, height::Integer, width::Integer, pix_fmt::AVPixelFormat, padtop::Integer, padbottom::Integer, padleft::Integer, padright::Integer, color)
+
+\\deprecated unused
+"""
+function av_picture_pad(dst, src, height::Integer, width::Integer, pix_fmt::AVPixelFormat, padtop::Integer, padbottom::Integer, padleft::Integer, padright::Integer, color)
+    ccall((:av_picture_pad, libavcodec), Cint, (Ptr{AVPicture}, Ptr{AVPicture}, Cint, Cint, AVPixelFormat, Cint, Cint, Cint, Cint, Ptr{Cint}), dst, src, height, width, pix_fmt, padtop, padbottom, padleft, padright, color)
+end
+
+"""
+    avcodec_get_chroma_sub_sample(pix_fmt::AVPixelFormat, h_shift, v_shift)
+
+\\deprecated Use [`av_pix_fmt_get_chroma_sub_sample`](@ref)
+"""
+function avcodec_get_chroma_sub_sample(pix_fmt::AVPixelFormat, h_shift, v_shift)
+    ccall((:avcodec_get_chroma_sub_sample, libavcodec), Cvoid, (AVPixelFormat, Ptr{Cint}, Ptr{Cint}), pix_fmt, h_shift, v_shift)
+end
+
+"""
+    avcodec_pix_fmt_to_codec_tag(pix_fmt::AVPixelFormat)
+
+Return a value representing the fourCC code associated to the pixel format pix\\_fmt, or 0 if no associated fourCC code can be found.
+"""
+function avcodec_pix_fmt_to_codec_tag(pix_fmt::AVPixelFormat)
+    ccall((:avcodec_pix_fmt_to_codec_tag, libavcodec), Cuint, (AVPixelFormat,), pix_fmt)
+end
+
+"""
+    avcodec_find_best_pix_fmt_of_list(pix_fmt_list, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
+
+Find the best pixel format to convert to given a certain source pixel format. When converting from one pixel format to another, information loss may occur. For example, when converting from RGB24 to GRAY, the color information will be lost. Similarly, other losses occur when converting from some formats to other formats. [`avcodec_find_best_pix_fmt_of_2`](@ref)() searches which of the given pixel formats should be used to suffer the least amount of loss. The pixel formats from which it chooses one, are determined by the pix\\_fmt\\_list parameter.
+
+### Parameters
+* `pix_fmt_list`:\\[in\\] AV\\_PIX\\_FMT\\_NONE terminated array of pixel formats to choose from 
+
+* `src_pix_fmt`:\\[in\\] source pixel format 
+
+* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used. 
+
+* `loss_ptr`:\\[out\\] Combination of flags informing you what kind of losses will occur. 
+
+### Returns
+The best pixel format to convert to or -1 if none was found.
+"""
+function avcodec_find_best_pix_fmt_of_list(pix_fmt_list, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
+    ccall((:avcodec_find_best_pix_fmt_of_list, libavcodec), AVPixelFormat, (Ptr{AVPixelFormat}, AVPixelFormat, Cint, Ptr{Cint}), pix_fmt_list, src_pix_fmt, has_alpha, loss_ptr)
+end
+
+"""
+    avcodec_get_pix_fmt_loss(dst_pix_fmt::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer)
+
+\\deprecated see [`av_get_pix_fmt_loss`](@ref)()
+"""
+function avcodec_get_pix_fmt_loss(dst_pix_fmt::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer)
+    ccall((:avcodec_get_pix_fmt_loss, libavcodec), Cint, (AVPixelFormat, AVPixelFormat, Cint), dst_pix_fmt, src_pix_fmt, has_alpha)
+end
+
+"""
+    avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
+
+\\deprecated see [`av_find_best_pix_fmt_of_2`](@ref)()
+"""
+function avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
+    ccall((:avcodec_find_best_pix_fmt_of_2, libavcodec), AVPixelFormat, (AVPixelFormat, AVPixelFormat, AVPixelFormat, Cint, Ptr{Cint}), dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
+end
+
+function avcodec_find_best_pix_fmt2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
+    ccall((:avcodec_find_best_pix_fmt2, libavcodec), AVPixelFormat, (AVPixelFormat, AVPixelFormat, AVPixelFormat, Cint, Ptr{Cint}), dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
+end
+
+function avcodec_default_get_format(s, fmt)
+    ccall((:avcodec_default_get_format, libavcodec), AVPixelFormat, (Ptr{AVCodecContext}, Ptr{AVPixelFormat}), s, fmt)
+end
+
+"""
+    av_get_codec_tag_string(buf, buf_size::Csize_t, codec_tag::Integer)
+
+Put a string representing the codec tag codec\\_tag in buf.
+
+\\deprecated see [`av_fourcc_make_string`](@ref)() and [`av_fourcc2str`](@ref)().
+
+### Parameters
+* `buf`: buffer to place codec tag in 
+
+* `buf_size`: size in bytes of buf 
+
+* `codec_tag`: codec tag to assign 
+
+### Returns
+the length of the string that would have been generated if enough space had been available, excluding the trailing null
+"""
+function av_get_codec_tag_string(buf, buf_size::Csize_t, codec_tag::Integer)
+    ccall((:av_get_codec_tag_string, libavcodec), Csize_t, (Cstring, Csize_t, Cuint), buf, buf_size, codec_tag)
+end
+
+function avcodec_string(buf, buf_size::Integer, enc, encode::Integer)
+    ccall((:avcodec_string, libavcodec), Cvoid, (Cstring, Cint, Ptr{AVCodecContext}, Cint), buf, buf_size, enc, encode)
+end
+
+"""
+    av_get_profile_name(codec, profile::Integer)
+
+Return a name for the specified profile, if available.
+
+### Parameters
+* `codec`: the codec that is searched for the given profile 
+
+* `profile`: the profile value for which a name is requested 
+
+### Returns
+A name for the profile if found, NULL otherwise.
+"""
+function av_get_profile_name(codec, profile::Integer)
+    ccall((:av_get_profile_name, libavcodec), Cstring, (Ptr{AVCodec}, Cint), codec, profile)
+end
+
+"""
+    avcodec_profile_name(codec_id::AVCodecID, profile::Integer)
+
+Return a name for the specified profile, if available.
+
+!!! note
+
+    unlike [`av_get_profile_name`](@ref)(), which searches a list of profiles supported by a specific decoder or encoder implementation, this function searches the list of profiles from the [`AVCodecDescriptor`](@ref)
+
+### Parameters
+* `codec_id`: the ID of the codec to which the requested profile belongs 
+
+* `profile`: the profile value for which a name is requested 
+
+### Returns
+A name for the profile if found, NULL otherwise.
+"""
+function avcodec_profile_name(codec_id::AVCodecID, profile::Integer)
+    ccall((:avcodec_profile_name, libavcodec), Cstring, (AVCodecID, Cint), codec_id, profile)
+end
+
+function avcodec_default_execute(c, func, arg, ret, count::Integer, size::Integer)
+    ccall((:avcodec_default_execute, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cint}, Cint, Cint), c, func, arg, ret, count, size)
+end
+
+function avcodec_default_execute2(c, func, arg, ret, count::Integer)
+    ccall((:avcodec_default_execute2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cint}, Cint), c, func, arg, ret, count)
+end
+
+"""
+    avcodec_fill_audio_frame(frame, nb_channels::Integer, sample_fmt::AVSampleFormat, buf, buf_size::Integer, align::Integer)
+
+Fill [`AVFrame`](@ref) audio data and linesize pointers.
+
+The buffer buf must be a preallocated buffer with a size big enough to contain the specified samples amount. The filled [`AVFrame`](@ref) data pointers will point to this buffer.
+
+[`AVFrame`](@ref) extended\\_data channel pointers are allocated if necessary for planar audio.
+
+\\todo return the size in bytes required to store the samples in case of success, at the next libavutil bump
+
+### Parameters
+* `frame`: the [`AVFrame`](@ref) frame->nb\\_samples must be set prior to calling the function. This function fills in frame->data, frame->extended\\_data, frame->linesize[0]. 
+
+* `nb_channels`: channel count 
+
+* `sample_fmt`: sample format 
+
+* `buf`: buffer to use for frame data 
+
+* `buf_size`: size of buffer 
+
+* `align`: plane size sample alignment (0 = default) 
+
+### Returns
+>=0 on success, negative error code on failure 
+"""
+function avcodec_fill_audio_frame(frame, nb_channels::Integer, sample_fmt::AVSampleFormat, buf, buf_size::Integer, align::Integer)
+    ccall((:avcodec_fill_audio_frame, libavcodec), Cint, (Ptr{AVFrame}, Cint, AVSampleFormat, Ptr{UInt8}, Cint, Cint), frame, nb_channels, sample_fmt, buf, buf_size, align)
+end
+
+"""
+    avcodec_flush_buffers(avctx)
+
+Reset the internal codec state / flush internal buffers. Should be called e.g. when seeking or when switching to a different stream.
+
+!!! note
+
+    for decoders, when refcounted frames are not used (i.e. avctx->refcounted\\_frames is 0), this invalidates the frames previously returned from the decoder. When refcounted frames are used, the decoder just releases any references it might keep internally, but the caller's reference remains valid.
+
+!!! note
+
+    for encoders, this function will only do something if the encoder declares support for [`AV_CODEC_CAP_ENCODER_FLUSH`](@ref). When called, the encoder will drain any remaining packets, and can then be re-used for a different stream (as opposed to sending a null frame which will leave the encoder in a permanent EOF state after draining). This can be desirable if the cost of tearing down and replacing the encoder instance is high.
+"""
+function avcodec_flush_buffers(avctx)
+    ccall((:avcodec_flush_buffers, libavcodec), Cvoid, (Ptr{AVCodecContext},), avctx)
+end
+
+"""
+    av_get_bits_per_sample(codec_id::AVCodecID)
+
+Return codec bits per sample.
+
+### Parameters
+* `codec_id`:\\[in\\] the codec 
+
+### Returns
+Number of bits per sample or zero if unknown for the given codec.
+"""
+function av_get_bits_per_sample(codec_id::AVCodecID)
+    ccall((:av_get_bits_per_sample, libavcodec), Cint, (AVCodecID,), codec_id)
+end
+
+"""
+    av_get_pcm_codec(fmt::AVSampleFormat, be::Integer)
+
+Return the PCM codec associated with a sample format. 
+
+### Parameters
+* `be`: endianness, 0 for little, 1 for big, -1 (or anything else) for native 
+
+### Returns
+AV\\_CODEC\\_ID\\_PCM\\_* or AV\\_CODEC\\_ID\\_NONE
+"""
+function av_get_pcm_codec(fmt::AVSampleFormat, be::Integer)
+    ccall((:av_get_pcm_codec, libavcodec), AVCodecID, (AVSampleFormat, Cint), fmt, be)
+end
+
+"""
+    av_get_exact_bits_per_sample(codec_id::AVCodecID)
+
+Return codec bits per sample. Only return non-zero if the bits per sample is exactly correct, not an approximation.
+
+### Parameters
+* `codec_id`:\\[in\\] the codec 
+
+### Returns
+Number of bits per sample or zero if unknown for the given codec.
+"""
+function av_get_exact_bits_per_sample(codec_id::AVCodecID)
+    ccall((:av_get_exact_bits_per_sample, libavcodec), Cint, (AVCodecID,), codec_id)
+end
+
+"""
+    av_get_audio_frame_duration(avctx, frame_bytes::Integer)
+
+Return audio frame duration.
+
+### Parameters
+* `avctx`: codec context 
+
+* `frame_bytes`: size of the frame, or 0 if unknown 
+
+### Returns
+frame duration, in samples, if known. 0 if not able to determine.
+"""
+function av_get_audio_frame_duration(avctx, frame_bytes::Integer)
+    ccall((:av_get_audio_frame_duration, libavcodec), Cint, (Ptr{AVCodecContext}, Cint), avctx, frame_bytes)
+end
+
+"""
+    av_get_audio_frame_duration2(par, frame_bytes::Integer)
+
+This function is the same as [`av_get_audio_frame_duration`](@ref)(), except it works with [`AVCodecParameters`](@ref) instead of an [`AVCodecContext`](@ref).
+"""
+function av_get_audio_frame_duration2(par, frame_bytes::Integer)
+    ccall((:av_get_audio_frame_duration2, libavcodec), Cint, (Ptr{AVCodecParameters}, Cint), par, frame_bytes)
+end
+
+struct AVBitStreamFilter
+    name::Cstring
+    codec_ids::Ptr{AVCodecID}
+    priv_class::Ptr{AVClass}
+    priv_data_size::Cint
+    init::Ptr{Cvoid}
+    filter::Ptr{Cvoid}
+    close::Ptr{Cvoid}
+    flush::Ptr{Cvoid}
+end
+
+struct AVBitStreamFilterContext
+    priv_data::Ptr{Cvoid}
+    filter::Ptr{AVBitStreamFilter}
+    parser::Ptr{AVCodecParserContext}
+    next::Ptr{AVBitStreamFilterContext}
+    args::Cstring
+end
+
+"""
+    av_register_bitstream_filter(bsf)
+
+\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use the new bitstream filtering API (using [`AVBSFContext`](@ref)).
+"""
+function av_register_bitstream_filter(bsf)
+    ccall((:av_register_bitstream_filter, libavcodec), Cvoid, (Ptr{AVBitStreamFilter},), bsf)
+end
+
+"""
+    av_bitstream_filter_init(name)
+
+\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_get_by_name`](@ref)(), [`av_bsf_alloc`](@ref)(), and [`av_bsf_init`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
+"""
+function av_bitstream_filter_init(name)
+    ccall((:av_bitstream_filter_init, libavcodec), Ptr{AVBitStreamFilterContext}, (Cstring,), name)
+end
+
+"""
+    av_bitstream_filter_filter(bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
+
+\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_send_packet`](@ref)() and [`av_bsf_receive_packet`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
+"""
+function av_bitstream_filter_filter(bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
+    ccall((:av_bitstream_filter_filter, libavcodec), Cint, (Ptr{AVBitStreamFilterContext}, Ptr{AVCodecContext}, Cstring, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Cint), bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size, keyframe)
+end
+
+"""
+    av_bitstream_filter_close(bsf)
+
+\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_free`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
+"""
+function av_bitstream_filter_close(bsf)
+    ccall((:av_bitstream_filter_close, libavcodec), Cvoid, (Ptr{AVBitStreamFilterContext},), bsf)
+end
+
+"""
+    av_bitstream_filter_next(f)
+
+\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_iterate`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
+"""
+function av_bitstream_filter_next(f)
+    ccall((:av_bitstream_filter_next, libavcodec), Ptr{AVBitStreamFilter}, (Ptr{AVBitStreamFilter},), f)
+end
+
+function av_bsf_next(opaque)
+    ccall((:av_bsf_next, libavcodec), Ptr{AVBitStreamFilter}, (Ptr{Ptr{Cvoid}},), opaque)
+end
+
+"""
+    av_fast_padded_malloc(ptr, size, min_size::Csize_t)
+
+Same behaviour [`av_fast_malloc`](@ref) but the buffer has additional [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) at the end which will always be 0.
+
+In addition the whole buffer will initially and after resizes be 0-initialized so that no uninitialized data will ever appear.
+"""
+function av_fast_padded_malloc(ptr, size, min_size::Csize_t)
+    ccall((:av_fast_padded_malloc, libavcodec), Cvoid, (Ptr{Cvoid}, Ptr{Cuint}, Csize_t), ptr, size, min_size)
+end
+
+"""
+    av_fast_padded_mallocz(ptr, size, min_size::Csize_t)
+
+Same behaviour [`av_fast_padded_malloc`](@ref) except that buffer will always be 0-initialized after call.
+"""
+function av_fast_padded_mallocz(ptr, size, min_size::Csize_t)
+    ccall((:av_fast_padded_mallocz, libavcodec), Cvoid, (Ptr{Cvoid}, Ptr{Cuint}, Csize_t), ptr, size, min_size)
+end
+
+"""
+    av_xiphlacing(s, v::Integer)
+
+Encode extradata length to a buffer. Used by xiph codecs.
+
+### Parameters
+* `s`: buffer to write to; must be at least (v/255+1) bytes long 
+
+* `v`: size of extradata in bytes 
+
+### Returns
+number of bytes written to the buffer.
+"""
+function av_xiphlacing(s, v::Integer)
+    ccall((:av_xiphlacing, libavcodec), Cuint, (Ptr{Cuchar}, Cuint), s, v)
+end
+
+"""
+    av_register_hwaccel(hwaccel)
+
+Register the hardware accelerator hwaccel.
+
+\\deprecated This function doesn't do anything.
+"""
+function av_register_hwaccel(hwaccel)
+    ccall((:av_register_hwaccel, libavcodec), Cvoid, (Ptr{AVHWAccel},), hwaccel)
+end
+
+"""
+    av_hwaccel_next(hwaccel)
+
+If hwaccel is NULL, returns the first registered hardware accelerator, if hwaccel is non-NULL, returns the next registered hardware accelerator after hwaccel, or NULL if hwaccel is the last one.
+
+\\deprecated AVHWaccel structures contain no user-serviceable parts, so this function should not be used.
+"""
+function av_hwaccel_next(hwaccel)
+    ccall((:av_hwaccel_next, libavcodec), Ptr{AVHWAccel}, (Ptr{AVHWAccel},), hwaccel)
+end
+
+"""
+    AVLockOp
+
+Lock operation used by lockmgr
+
+\\deprecated Deprecated together with [`av_lockmgr_register`](@ref)().
+"""
+@cenum AVLockOp::UInt32 begin
+    AV_LOCK_CREATE = 0
+    AV_LOCK_OBTAIN = 1
+    AV_LOCK_RELEASE = 2
+    AV_LOCK_DESTROY = 3
+end
+
+"""
+    av_lockmgr_register(cb)
+
+Register a user provided lock manager supporting the operations specified by [`AVLockOp`](@ref). The "mutex" argument to the function points to a (void *) where the lockmgr should store/get a pointer to a user allocated mutex. It is NULL upon AV\\_LOCK\\_CREATE and equal to the value left by the last call for all other ops. If the lock manager is unable to perform the op then it should leave the mutex in the same state as when it was called and return a non-zero value. However, when called with AV\\_LOCK\\_DESTROY the mutex will always be assumed to have been successfully destroyed. If [`av_lockmgr_register`](@ref) succeeds it will return a non-negative value, if it fails it will return a negative value and destroy all mutex and unregister all callbacks. [`av_lockmgr_register`](@ref) is not thread-safe, it must be called from a single thread before any calls which make use of locking are used.
+
+\\deprecated This function does nothing, and always returns 0. Be sure to build with thread support to get basic thread safety.
+
+### Parameters
+* `cb`: User defined callback. [`av_lockmgr_register`](@ref) invokes calls to this callback and the previously registered callback. The callback will be used to create more than one mutex each of which must be backed by its own underlying locking mechanism (i.e. do not use a single static object to implement your lock manager). If cb is set to NULL the lockmgr will be unregistered.
+"""
+function av_lockmgr_register(cb)
+    ccall((:av_lockmgr_register, libavcodec), Cint, (Ptr{Cvoid},), cb)
+end
+
+"""
+    avcodec_is_open(s)
+
+### Returns
+a positive value if s is open (i.e. [`avcodec_open2`](@ref)() was called on it with no corresponding [`avcodec_close`](@ref)()), 0 otherwise.
+"""
+function avcodec_is_open(s)
+    ccall((:avcodec_is_open, libavcodec), Cint, (Ptr{AVCodecContext},), s)
+end
+
+"""
+    av_cpb_properties_alloc(size)
+
+Allocate a CPB properties structure and initialize its fields to default values.
+
+### Parameters
+* `size`: if non-NULL, the size of the allocated struct will be written here. This is useful for embedding it in side data.
+
+### Returns
+the newly allocated struct or NULL on failure
+"""
+function av_cpb_properties_alloc(size)
+    ccall((:av_cpb_properties_alloc, libavcodec), Ptr{AVCPBProperties}, (Ptr{Csize_t},), size)
+end
+
+"""
+    AVDCT
+
+[`AVDCT`](@ref) context. 
+
+!!! note
+
+    function pointers can be NULL if the specific features have been disabled at build time.
+"""
+struct AVDCT
+    av_class::Ptr{AVClass}
+    idct::Ptr{Cvoid}
+    idct_permutation::NTuple{64, UInt8}
+    fdct::Ptr{Cvoid}
+    dct_algo::Cint
+    idct_algo::Cint
+    get_pixels::Ptr{Cvoid}
+    bits_per_sample::Cint
+    get_pixels_unaligned::Ptr{Cvoid}
+end
+
+"""
+    avcodec_dct_alloc()
+
+Allocates a [`AVDCT`](@ref) context. This needs to be initialized with [`avcodec_dct_init`](@ref)() after optionally configuring it with AVOptions.
+
+To free it use [`av_free`](@ref)()
+"""
+function avcodec_dct_alloc()
+    ccall((:avcodec_dct_alloc, libavcodec), Ptr{AVDCT}, ())
+end
+
+function avcodec_dct_init(arg1)
+    ccall((:avcodec_dct_init, libavcodec), Cint, (Ptr{AVDCT},), arg1)
+end
+
+function avcodec_dct_get_class()
+    ccall((:avcodec_dct_get_class, libavcodec), Ptr{AVClass}, ())
+end
+
+"""
+` lavc_fft FFT functions`
+
+` lavc_misc`
+
+@{
+"""
+const FFTSample = Cfloat
+
+struct FFTComplex
+    re::FFTSample
+    im::FFTSample
+end
+
+mutable struct FFTContext end
+
+"""
+    av_fft_init(nbits::Integer, inverse::Integer)
+
+Set up a complex FFT. 
+
+### Parameters
+* `nbits`: log2 of the length of the input array 
+
+* `inverse`: if 0 perform the forward transform, if 1 perform the inverse
+"""
+function av_fft_init(nbits::Integer, inverse::Integer)
+    ccall((:av_fft_init, libavcodec), Ptr{FFTContext}, (Cint, Cint), nbits, inverse)
+end
+
+"""
+    av_fft_permute(s, z)
+
+Do the permutation needed BEFORE calling ff\\_fft\\_calc().
+"""
+function av_fft_permute(s, z)
+    ccall((:av_fft_permute, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTComplex}), s, z)
+end
+
+"""
+    av_fft_calc(s, z)
+
+Do a complex FFT with the parameters defined in [`av_fft_init`](@ref)(). The input data must be permuted before. No 1.0/sqrt(n) normalization is done.
+"""
+function av_fft_calc(s, z)
+    ccall((:av_fft_calc, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTComplex}), s, z)
+end
+
+function av_fft_end(s)
+    ccall((:av_fft_end, libavcodec), Cvoid, (Ptr{FFTContext},), s)
+end
+
+function av_mdct_init(nbits::Integer, inverse::Integer, scale::Cdouble)
+    ccall((:av_mdct_init, libavcodec), Ptr{FFTContext}, (Cint, Cint, Cdouble), nbits, inverse, scale)
+end
+
+function av_imdct_calc(s, output, input)
+    ccall((:av_imdct_calc, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTSample}, Ptr{FFTSample}), s, output, input)
+end
+
+function av_imdct_half(s, output, input)
+    ccall((:av_imdct_half, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTSample}, Ptr{FFTSample}), s, output, input)
+end
+
+function av_mdct_calc(s, output, input)
+    ccall((:av_mdct_calc, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTSample}, Ptr{FFTSample}), s, output, input)
+end
+
+function av_mdct_end(s)
+    ccall((:av_mdct_end, libavcodec), Cvoid, (Ptr{FFTContext},), s)
+end
+
+@cenum RDFTransformType::UInt32 begin
+    DFT_R2C = 0
+    IDFT_C2R = 1
+    IDFT_R2C = 2
+    DFT_C2R = 3
+end
+
+mutable struct RDFTContext end
+
+"""
+    av_rdft_init(nbits::Integer, trans::RDFTransformType)
+
+Set up a real FFT. 
+
+### Parameters
+* `nbits`: log2 of the length of the input array 
+
+* `trans`: the type of transform
+"""
+function av_rdft_init(nbits::Integer, trans::RDFTransformType)
+    ccall((:av_rdft_init, libavcodec), Ptr{RDFTContext}, (Cint, RDFTransformType), nbits, trans)
+end
+
+function av_rdft_calc(s, data)
+    ccall((:av_rdft_calc, libavcodec), Cvoid, (Ptr{RDFTContext}, Ptr{FFTSample}), s, data)
+end
+
+function av_rdft_end(s)
+    ccall((:av_rdft_end, libavcodec), Cvoid, (Ptr{RDFTContext},), s)
+end
+
+mutable struct DCTContext end
+
+@cenum DCTTransformType::UInt32 begin
+    DCT_II = 0
+    DCT_III = 1
+    DCT_I = 2
+    DST_I = 3
+end
+
+"""
+    av_dct_init(nbits::Integer, type::DCTTransformType)
+
+Set up DCT.
+
+!!! note
+
+    the first element of the input of DST-I is ignored
+
+### Parameters
+* `nbits`: size of the input array: (1 << nbits) for DCT-II, DCT-III and DST-I (1 << nbits) + 1 for DCT-I 
+
+* `type`: the type of transform
+"""
+function av_dct_init(nbits::Integer, type::DCTTransformType)
+    ccall((:av_dct_init, libavcodec), Ptr{DCTContext}, (Cint, DCTTransformType), nbits, type)
+end
+
+function av_dct_calc(s, data)
+    ccall((:av_dct_calc, libavcodec), Cvoid, (Ptr{DCTContext}, Ptr{FFTSample}), s, data)
+end
+
+function av_dct_end(s)
+    ccall((:av_dct_end, libavcodec), Cvoid, (Ptr{DCTContext},), s)
+end
+
+mutable struct AVBSFInternal end
+
+"""
+    AVBSFContext
+
+The bitstream filter state.
+
+This struct must be allocated with [`av_bsf_alloc`](@ref)() and freed with [`av_bsf_free`](@ref)().
+
+The fields in the struct will only be changed (by the caller or by the filter) as described in their documentation, and are to be considered immutable otherwise.
+"""
+struct AVBSFContext
+    av_class::Ptr{AVClass}
+    filter::Ptr{AVBitStreamFilter}
+    internal::Ptr{AVBSFInternal}
+    priv_data::Ptr{Cvoid}
+    par_in::Ptr{AVCodecParameters}
+    par_out::Ptr{AVCodecParameters}
+    time_base_in::AVRational
+    time_base_out::AVRational
+end
+
+"""
+    av_bsf_get_by_name(name)
+
+### Returns
+a bitstream filter with the specified name or NULL if no such bitstream filter exists.
+"""
+function av_bsf_get_by_name(name)
+    ccall((:av_bsf_get_by_name, libavcodec), Ptr{AVBitStreamFilter}, (Cstring,), name)
+end
+
+"""
+    av_bsf_iterate(opaque)
+
+Iterate over all registered bitstream filters.
+
+### Parameters
+* `opaque`: a pointer where libavcodec will store the iteration state. Must point to NULL to start the iteration.
+
+### Returns
+the next registered bitstream filter or NULL when the iteration is finished
+"""
+function av_bsf_iterate(opaque)
+    ccall((:av_bsf_iterate, libavcodec), Ptr{AVBitStreamFilter}, (Ptr{Ptr{Cvoid}},), opaque)
+end
+
+"""
+    av_bsf_alloc(filter, ctx)
+
+Allocate a context for a given bitstream filter. The caller must fill in the context parameters as described in the documentation and then call [`av_bsf_init`](@ref)() before sending any data to the filter.
+
+### Parameters
+* `filter`: the filter for which to allocate an instance. 
+
+* `ctx`: a pointer into which the pointer to the newly-allocated context will be written. It must be freed with [`av_bsf_free`](@ref)() after the filtering is done.
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) code on failure
+"""
+function av_bsf_alloc(filter, ctx)
+    ccall((:av_bsf_alloc, libavcodec), Cint, (Ptr{AVBitStreamFilter}, Ptr{Ptr{AVBSFContext}}), filter, ctx)
+end
+
+"""
+    av_bsf_init(ctx)
+
+Prepare the filter for use, after all the parameters and options have been set.
+"""
+function av_bsf_init(ctx)
+    ccall((:av_bsf_init, libavcodec), Cint, (Ptr{AVBSFContext},), ctx)
+end
+
+"""
+    av_bsf_send_packet(ctx, pkt)
+
+Submit a packet for filtering.
+
+After sending each packet, the filter must be completely drained by calling [`av_bsf_receive_packet`](@ref)() repeatedly until it returns [`AVERROR`](@ref)(EAGAIN) or [`AVERROR_EOF`](@ref).
+
+### Parameters
+* `pkt`: the packet to filter. The bitstream filter will take ownership of the packet and reset the contents of pkt. pkt is not touched if an error occurs. If pkt is empty (i.e. NULL, or pkt->data is NULL and pkt->side\\_data\\_elems zero), it signals the end of the stream (i.e. no more non-empty packets will be sent; sending more empty packets does nothing) and will cause the filter to output any packets it may have buffered internally.
+
+### Returns
+0 on success. [`AVERROR`](@ref)(EAGAIN) if packets need to be retrieved from the filter (using [`av_bsf_receive_packet`](@ref)()) before new input can be consumed. Another negative [`AVERROR`](@ref) value if an error occurs.
+"""
+function av_bsf_send_packet(ctx, pkt)
+    ccall((:av_bsf_send_packet, libavcodec), Cint, (Ptr{AVBSFContext}, Ptr{AVPacket}), ctx, pkt)
+end
+
+"""
+    av_bsf_receive_packet(ctx, pkt)
+
+Retrieve a filtered packet.
+
+!!! note
+
+    one input packet may result in several output packets, so after sending a packet with [`av_bsf_send_packet`](@ref)(), this function needs to be called repeatedly until it stops returning 0. It is also possible for a filter to output fewer packets than were sent to it, so this function may return [`AVERROR`](@ref)(EAGAIN) immediately after a successful [`av_bsf_send_packet`](@ref)() call.
+
+### Parameters
+* `pkt`:\\[out\\] this struct will be filled with the contents of the filtered packet. It is owned by the caller and must be freed using [`av_packet_unref`](@ref)() when it is no longer needed. This parameter should be "clean" (i.e. freshly allocated with [`av_packet_alloc`](@ref)() or unreffed with [`av_packet_unref`](@ref)()) when this function is called. If this function returns successfully, the contents of pkt will be completely overwritten by the returned data. On failure, pkt is not touched.
+
+### Returns
+0 on success. [`AVERROR`](@ref)(EAGAIN) if more packets need to be sent to the filter (using [`av_bsf_send_packet`](@ref)()) to get more output. [`AVERROR_EOF`](@ref) if there will be no further output from the filter. Another negative [`AVERROR`](@ref) value if an error occurs.
+"""
+function av_bsf_receive_packet(ctx, pkt)
+    ccall((:av_bsf_receive_packet, libavcodec), Cint, (Ptr{AVBSFContext}, Ptr{AVPacket}), ctx, pkt)
+end
+
+"""
+    av_bsf_flush(ctx)
+
+Reset the internal bitstream filter state. Should be called e.g. when seeking.
+"""
+function av_bsf_flush(ctx)
+    ccall((:av_bsf_flush, libavcodec), Cvoid, (Ptr{AVBSFContext},), ctx)
+end
+
+"""
+    av_bsf_free(ctx)
+
+Free a bitstream filter context and everything associated with it; write NULL into the supplied pointer.
+"""
+function av_bsf_free(ctx)
+    ccall((:av_bsf_free, libavcodec), Cvoid, (Ptr{Ptr{AVBSFContext}},), ctx)
+end
+
+"""
+    av_bsf_get_class()
+
+Get the [`AVClass`](@ref) for [`AVBSFContext`](@ref). It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
+
+### See also
+[`av_opt_find`](@ref)().
+"""
+function av_bsf_get_class()
+    ccall((:av_bsf_get_class, libavcodec), Ptr{AVClass}, ())
+end
+
+mutable struct AVBSFList end
+
+"""
+    av_bsf_list_alloc()
+
+Allocate empty list of bitstream filters. The list must be later freed by [`av_bsf_list_free`](@ref)() or finalized by [`av_bsf_list_finalize`](@ref)().
+
+### Returns
+Pointer to AVBSFList on success, NULL in case of failure
+"""
+function av_bsf_list_alloc()
+    ccall((:av_bsf_list_alloc, libavcodec), Ptr{AVBSFList}, ())
+end
+
+"""
+    av_bsf_list_free(lst)
+
+Free list of bitstream filters.
+
+### Parameters
+* `lst`: Pointer to pointer returned by [`av_bsf_list_alloc`](@ref)()
+"""
+function av_bsf_list_free(lst)
+    ccall((:av_bsf_list_free, libavcodec), Cvoid, (Ptr{Ptr{AVBSFList}},), lst)
+end
+
+"""
+    av_bsf_list_append(lst, bsf)
+
+Append bitstream filter to the list of bitstream filters.
+
+### Parameters
+* `lst`: List to append to 
+
+* `bsf`: Filter context to be appended
+
+### Returns
+>=0 on success, negative [`AVERROR`](@ref) in case of failure
+"""
+function av_bsf_list_append(lst, bsf)
+    ccall((:av_bsf_list_append, libavcodec), Cint, (Ptr{AVBSFList}, Ptr{AVBSFContext}), lst, bsf)
+end
+
+"""
+    av_bsf_list_append2(lst, bsf_name, options)
+
+Construct new bitstream filter context given it's name and options and append it to the list of bitstream filters.
+
+### Parameters
+* `lst`: List to append to 
+
+* `bsf_name`: Name of the bitstream filter 
+
+* `options`: Options for the bitstream filter, can be set to NULL
+
+### Returns
+>=0 on success, negative [`AVERROR`](@ref) in case of failure
+"""
+function av_bsf_list_append2(lst, bsf_name, options)
+    ccall((:av_bsf_list_append2, libavcodec), Cint, (Ptr{AVBSFList}, Cstring, Ptr{Ptr{AVDictionary}}), lst, bsf_name, options)
+end
+
+"""
+    av_bsf_list_finalize(lst, bsf)
+
+Finalize list of bitstream filters.
+
+This function will transform AVBSFList to single AVBSFContext, so the whole chain of bitstream filters can be treated as single filter freshly allocated by [`av_bsf_alloc`](@ref)(). If the call is successful, AVBSFList structure is freed and lst will be set to NULL. In case of failure, caller is responsible for freeing the structure by [`av_bsf_list_free`](@ref)()
+
+### Parameters
+* `lst`: Filter list structure to be transformed 
+
+* `bsf`:\\[out\\] Pointer to be set to newly created AVBSFContext structure representing the chain of bitstream filters
+
+### Returns
+>=0 on success, negative [`AVERROR`](@ref) in case of failure
+"""
+function av_bsf_list_finalize(lst, bsf)
+    ccall((:av_bsf_list_finalize, libavcodec), Cint, (Ptr{Ptr{AVBSFList}}, Ptr{Ptr{AVBSFContext}}), lst, bsf)
+end
+
+"""
+    av_bsf_list_parse_str(str, bsf)
+
+Parse string describing list of bitstream filters and create single AVBSFContext describing the whole chain of bitstream filters. Resulting AVBSFContext can be treated as any other AVBSFContext freshly allocated by [`av_bsf_alloc`](@ref)().
+
+### Parameters
+* `str`: String describing chain of bitstream filters in format `bsf1[=opt1=val1:opt2=val2][,bsf2]` 
+
+* `bsf`:\\[out\\] Pointer to be set to newly created AVBSFContext structure representing the chain of bitstream filters
+
+### Returns
+>=0 on success, negative [`AVERROR`](@ref) in case of failure
+"""
+function av_bsf_list_parse_str(str, bsf)
+    ccall((:av_bsf_list_parse_str, libavcodec), Cint, (Cstring, Ptr{Ptr{AVBSFContext}}), str, bsf)
+end
+
+"""
+    av_bsf_get_null_filter(bsf)
+
+Get null/pass-through bitstream filter.
+
+### Parameters
+* `bsf`:\\[out\\] Pointer to be set to new instance of pass-through bitstream filter
+
+### Returns
+
+"""
+function av_bsf_get_null_filter(bsf)
+    ccall((:av_bsf_get_null_filter, libavcodec), Cint, (Ptr{Ptr{AVBSFContext}},), bsf)
+end
+
+"""
+    av_codec_iterate(opaque)
+
+Iterate over all registered codecs.
+
+### Parameters
+* `opaque`: a pointer where libavcodec will store the iteration state. Must point to NULL to start the iteration.
+
+### Returns
+the next registered codec or NULL when the iteration is finished
+"""
+function av_codec_iterate(opaque)
+    ccall((:av_codec_iterate, libavcodec), Ptr{AVCodec}, (Ptr{Ptr{Cvoid}},), opaque)
+end
+
+"""
+    avcodec_find_decoder(id::AVCodecID)
+
+Find a registered decoder with a matching codec ID.
+
+### Parameters
+* `id`: [`AVCodecID`](@ref) of the requested decoder 
+
+### Returns
+A decoder if one was found, NULL otherwise.
+"""
+function avcodec_find_decoder(id::AVCodecID)
+    ccall((:avcodec_find_decoder, libavcodec), Ptr{AVCodec}, (AVCodecID,), id)
+end
+
+"""
+    avcodec_find_decoder_by_name(name)
+
+Find a registered decoder with the specified name.
+
+### Parameters
+* `name`: name of the requested decoder 
+
+### Returns
+A decoder if one was found, NULL otherwise.
+"""
+function avcodec_find_decoder_by_name(name)
+    ccall((:avcodec_find_decoder_by_name, libavcodec), Ptr{AVCodec}, (Cstring,), name)
+end
+
+"""
+    avcodec_find_encoder(id::AVCodecID)
+
+Find a registered encoder with a matching codec ID.
+
+### Parameters
+* `id`: [`AVCodecID`](@ref) of the requested encoder 
+
+### Returns
+An encoder if one was found, NULL otherwise.
+"""
+function avcodec_find_encoder(id::AVCodecID)
+    ccall((:avcodec_find_encoder, libavcodec), Ptr{AVCodec}, (AVCodecID,), id)
+end
+
+"""
+    avcodec_find_encoder_by_name(name)
+
+Find a registered encoder with the specified name.
+
+### Parameters
+* `name`: name of the requested encoder 
+
+### Returns
+An encoder if one was found, NULL otherwise.
+"""
+function avcodec_find_encoder_by_name(name)
+    ccall((:avcodec_find_encoder_by_name, libavcodec), Ptr{AVCodec}, (Cstring,), name)
+end
+
+"""
+    av_codec_is_encoder(codec)
+
+### Returns
+a non-zero number if codec is an encoder, zero otherwise
+"""
+function av_codec_is_encoder(codec)
+    ccall((:av_codec_is_encoder, libavcodec), Cint, (Ptr{AVCodec},), codec)
+end
+
+"""
+    av_codec_is_decoder(codec)
+
+### Returns
+a non-zero number if codec is a decoder, zero otherwise
+"""
+function av_codec_is_decoder(codec)
+    ccall((:av_codec_is_decoder, libavcodec), Cint, (Ptr{AVCodec},), codec)
+end
+
+@cenum __JL_Ctag_95::UInt32 begin
+    AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX = 1
+    AV_CODEC_HW_CONFIG_METHOD_HW_FRAMES_CTX = 2
+    AV_CODEC_HW_CONFIG_METHOD_INTERNAL = 4
+    AV_CODEC_HW_CONFIG_METHOD_AD_HOC = 8
+end
+
+@cenum AVHWDeviceType::UInt32 begin
+    AV_HWDEVICE_TYPE_NONE = 0
+    AV_HWDEVICE_TYPE_VDPAU = 1
+    AV_HWDEVICE_TYPE_CUDA = 2
+    AV_HWDEVICE_TYPE_VAAPI = 3
+    AV_HWDEVICE_TYPE_DXVA2 = 4
+    AV_HWDEVICE_TYPE_QSV = 5
+    AV_HWDEVICE_TYPE_VIDEOTOOLBOX = 6
+    AV_HWDEVICE_TYPE_D3D11VA = 7
+    AV_HWDEVICE_TYPE_DRM = 8
+    AV_HWDEVICE_TYPE_OPENCL = 9
+    AV_HWDEVICE_TYPE_MEDIACODEC = 10
+    AV_HWDEVICE_TYPE_VULKAN = 11
+end
+
+struct AVCodecHWConfig
+    pix_fmt::AVPixelFormat
+    methods::Cint
+    device_type::AVHWDeviceType
+end
+
+"""
+    avcodec_get_hw_config(codec, index::Integer)
+
+Retrieve supported hardware configurations for a codec.
+
+Values of index from zero to some maximum return the indexed configuration descriptor; all other values return NULL. If the codec does not support any hardware configurations then it will always return NULL.
+"""
+function avcodec_get_hw_config(codec, index::Integer)
+    ccall((:avcodec_get_hw_config, libavcodec), Ptr{AVCodecHWConfig}, (Ptr{AVCodec}, Cint), codec, index)
+end
+
+"""
+    avcodec_descriptor_get(id::AVCodecID)
+
+### Returns
+descriptor for given codec ID or NULL if no descriptor exists.
+"""
+function avcodec_descriptor_get(id::AVCodecID)
+    ccall((:avcodec_descriptor_get, libavcodec), Ptr{AVCodecDescriptor}, (AVCodecID,), id)
+end
+
+"""
+    avcodec_descriptor_next(prev)
+
+Iterate over all codec descriptors known to libavcodec.
+
+### Parameters
+* `prev`: previous descriptor. NULL to get the first descriptor.
+
+### Returns
+next descriptor or NULL after the last descriptor
+"""
+function avcodec_descriptor_next(prev)
+    ccall((:avcodec_descriptor_next, libavcodec), Ptr{AVCodecDescriptor}, (Ptr{AVCodecDescriptor},), prev)
+end
+
+"""
+    avcodec_descriptor_get_by_name(name)
+
+### Returns
+codec descriptor with the given name or NULL if no such descriptor exists.
+"""
+function avcodec_descriptor_get_by_name(name)
+    ccall((:avcodec_descriptor_get_by_name, libavcodec), Ptr{AVCodecDescriptor}, (Cstring,), name)
+end
+
+"""
+    avcodec_get_type(codec_id::AVCodecID)
+
+Get the type of the given codec.
+"""
+function avcodec_get_type(codec_id::AVCodecID)
+    ccall((:avcodec_get_type, libavcodec), AVMediaType, (AVCodecID,), codec_id)
+end
+
+"""
+    avcodec_get_name(id::AVCodecID)
+
+Get the name of a codec. 
+
+### Returns
+a static string identifying the codec; never NULL
+"""
+function avcodec_get_name(id::AVCodecID)
+    ccall((:avcodec_get_name, libavcodec), Cstring, (AVCodecID,), id)
+end
+
+"""
+    avcodec_parameters_alloc()
+
+Allocate a new [`AVCodecParameters`](@ref) and set its fields to default values (unknown/invalid/0). The returned struct must be freed with [`avcodec_parameters_free`](@ref)().
+"""
+function avcodec_parameters_alloc()
+    ccall((:avcodec_parameters_alloc, libavcodec), Ptr{AVCodecParameters}, ())
+end
+
+"""
+    avcodec_parameters_free(par)
+
+Free an [`AVCodecParameters`](@ref) instance and everything associated with it and write NULL to the supplied pointer.
+"""
+function avcodec_parameters_free(par)
+    ccall((:avcodec_parameters_free, libavcodec), Cvoid, (Ptr{Ptr{AVCodecParameters}},), par)
+end
+
+"""
+    avcodec_parameters_copy(dst, src)
+
+Copy the contents of src to dst. Any allocated fields in dst are freed and replaced with newly allocated duplicates of the corresponding fields in src.
+
+### Returns
+>= 0 on success, a negative [`AVERROR`](@ref) code on failure.
+"""
+function avcodec_parameters_copy(dst, src)
+    ccall((:avcodec_parameters_copy, libavcodec), Cint, (Ptr{AVCodecParameters}, Ptr{AVCodecParameters}), dst, src)
+end
+
+struct AVD3D11VAContext
+    decoder::Ptr{Cint}
+    video_context::Ptr{Cint}
+    cfg::Ptr{Cint}
+    surface_count::Cuint
+    surface::Ptr{Ptr{Cint}}
+    workaround::UInt64
+    report_id::Cuint
+    context_mutex::Cint
+end
+
+"""
+    av_d3d11va_alloc_context()
+
+Allocate an [`AVD3D11VAContext`](@ref).
+
+### Returns
+Newly-allocated [`AVD3D11VAContext`](@ref) or NULL on failure.
+"""
+function av_d3d11va_alloc_context()
+    ccall((:av_d3d11va_alloc_context, libavcodec), Ptr{AVD3D11VAContext}, ())
+end
+
+"""
+    DiracParseCodes
+
+Parse code values:
+
+Dirac Specification -> 9.6.1 Table 9.1
+
+VC-2 Specification -> 10.4.1 Table 10.1
+"""
+@cenum DiracParseCodes::UInt32 begin
+    DIRAC_PCODE_SEQ_HEADER = 0
+    DIRAC_PCODE_END_SEQ = 16
+    DIRAC_PCODE_AUX = 32
+    DIRAC_PCODE_PAD = 48
+    DIRAC_PCODE_PICTURE_CODED = 8
+    DIRAC_PCODE_PICTURE_RAW = 72
+    DIRAC_PCODE_PICTURE_LOW_DEL = 200
+    DIRAC_PCODE_PICTURE_HQ = 232
+    DIRAC_PCODE_INTER_NOREF_CO1 = 10
+    DIRAC_PCODE_INTER_NOREF_CO2 = 9
+    DIRAC_PCODE_INTER_REF_CO1 = 13
+    DIRAC_PCODE_INTER_REF_CO2 = 14
+    DIRAC_PCODE_INTRA_REF_CO = 12
+    DIRAC_PCODE_INTRA_REF_RAW = 76
+    DIRAC_PCODE_INTRA_REF_PICT = 204
+    DIRAC_PCODE_MAGIC = 1111638852
+end
+
+struct DiracVersionInfo
+    major::Cint
+    minor::Cint
+end
+
+struct AVDiracSeqHeader
+    width::Cuint
+    height::Cuint
+    chroma_format::UInt8
+    interlaced::UInt8
+    top_field_first::UInt8
+    frame_rate_index::UInt8
+    aspect_ratio_index::UInt8
+    clean_width::UInt16
+    clean_height::UInt16
+    clean_left_offset::UInt16
+    clean_right_offset::UInt16
+    pixel_range_index::UInt8
+    color_spec_index::UInt8
+    profile::Cint
+    level::Cint
+    framerate::AVRational
+    sample_aspect_ratio::AVRational
+    pix_fmt::AVPixelFormat
+    color_range::AVColorRange
+    color_primaries::AVColorPrimaries
+    color_trc::AVColorTransferCharacteristic
+    colorspace::AVColorSpace
+    version::DiracVersionInfo
+    bit_depth::Cint
+end
+
+"""
+    av_dirac_parse_sequence_header(dsh, buf, buf_size::Csize_t, log_ctx)
+
+Parse a Dirac sequence header.
+
+### Parameters
+* `dsh`: this function will allocate and fill an [`AVDiracSeqHeader`](@ref) struct and write it into this pointer. The caller must free it with [`av_free`](@ref)(). 
+
+* `buf`: the data buffer 
+
+* `buf_size`: the size of the data buffer in bytes 
+
+* `log_ctx`: if non-NULL, this function will log errors here 
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) code on failure
+"""
+function av_dirac_parse_sequence_header(dsh, buf, buf_size::Csize_t, log_ctx)
+    ccall((:av_dirac_parse_sequence_header, libavcodec), Cint, (Ptr{Ptr{AVDiracSeqHeader}}, Ptr{UInt8}, Csize_t, Ptr{Cvoid}), dsh, buf, buf_size, log_ctx)
+end
+
+struct AVDVProfile
+    dsf::Cint
+    video_stype::Cint
+    frame_size::Cint
+    difseg_size::Cint
+    n_difchan::Cint
+    time_base::AVRational
+    ltc_divisor::Cint
+    height::Cint
+    width::Cint
+    sar::NTuple{2, AVRational}
+    pix_fmt::AVPixelFormat
+    bpm::Cint
+    block_sizes::Ptr{UInt8}
+    audio_stride::Cint
+    audio_min_samples::NTuple{3, Cint}
+    audio_samples_dist::NTuple{5, Cint}
+    audio_shuffle::Ptr{NTuple{9, UInt8}}
+end
+
+"""
+    av_dv_frame_profile(sys, frame, buf_size::Integer)
+
+Get a DV profile for the provided compressed frame.
+
+### Parameters
+* `sys`: the profile used for the previous frame, may be NULL 
+
+* `frame`: the compressed data buffer 
+
+* `buf_size`: size of the buffer in bytes 
+
+### Returns
+the DV profile for the supplied data or NULL on failure
+"""
+function av_dv_frame_profile(sys, frame, buf_size::Integer)
+    ccall((:av_dv_frame_profile, libavcodec), Ptr{AVDVProfile}, (Ptr{AVDVProfile}, Ptr{UInt8}, Cuint), sys, frame, buf_size)
+end
+
+"""
+    av_dv_codec_profile(width::Integer, height::Integer, pix_fmt::AVPixelFormat)
+
+Get a DV profile for the provided stream parameters.
+"""
+function av_dv_codec_profile(width::Integer, height::Integer, pix_fmt::AVPixelFormat)
+    ccall((:av_dv_codec_profile, libavcodec), Ptr{AVDVProfile}, (Cint, Cint, AVPixelFormat), width, height, pix_fmt)
+end
+
+"""
+    av_dv_codec_profile2(width::Integer, height::Integer, pix_fmt::AVPixelFormat, frame_rate::AVRational)
+
+Get a DV profile for the provided stream parameters. The frame rate is used as a best-effort parameter.
+"""
+function av_dv_codec_profile2(width::Integer, height::Integer, pix_fmt::AVPixelFormat, frame_rate::AVRational)
+    ccall((:av_dv_codec_profile2, libavcodec), Ptr{AVDVProfile}, (Cint, Cint, AVPixelFormat, AVRational), width, height, pix_fmt, frame_rate)
+end
+
+struct dxva_context
+    decoder::Ptr{Cint}
+    cfg::Ptr{Cint}
+    surface_count::Cuint
+    surface::Ptr{Cint}
+    workaround::UInt64
+    report_id::Cuint
+end
+
+function av_jni_set_java_vm(vm, log_ctx)
+    ccall((:av_jni_set_java_vm, libavcodec), Cint, (Ptr{Cvoid}, Ptr{Cvoid}), vm, log_ctx)
+end
+
+function av_jni_get_java_vm(log_ctx)
+    ccall((:av_jni_get_java_vm, libavcodec), Ptr{Cvoid}, (Ptr{Cvoid},), log_ctx)
+end
+
+"""
+    AVMediaCodecContext
+
+This structure holds a reference to a android/view/Surface object that will be used as output by the decoder.
+"""
+struct AVMediaCodecContext
+    surface::Ptr{Cvoid}
+end
+
+"""
+    av_mediacodec_alloc_context()
+
+Allocate and initialize a MediaCodec context.
+
+When decoding with MediaCodec is finished, the caller must free the MediaCodec context with [`av_mediacodec_default_free`](@ref).
+
+### Returns
+a pointer to a newly allocated [`AVMediaCodecContext`](@ref) on success, NULL otherwise
+"""
+function av_mediacodec_alloc_context()
+    ccall((:av_mediacodec_alloc_context, libavcodec), Ptr{AVMediaCodecContext}, ())
+end
+
+"""
+    av_mediacodec_default_init(avctx, ctx, surface)
+
+Convenience function that sets up the MediaCodec context.
+
+### Parameters
+* `avctx`: codec context 
+
+* `ctx`: MediaCodec context to initialize 
+
+* `surface`: reference to an android/view/Surface 
+
+### Returns
+0 on success, < 0 otherwise
+"""
+function av_mediacodec_default_init(avctx, ctx, surface)
+    ccall((:av_mediacodec_default_init, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVMediaCodecContext}, Ptr{Cvoid}), avctx, ctx, surface)
+end
+
+"""
+    av_mediacodec_default_free(avctx)
+
+This function must be called to free the MediaCodec context initialized with [`av_mediacodec_default_init`](@ref)().
+
+### Parameters
+* `avctx`: codec context
+"""
+function av_mediacodec_default_free(avctx)
+    ccall((:av_mediacodec_default_free, libavcodec), Cvoid, (Ptr{AVCodecContext},), avctx)
+end
+
+mutable struct MediaCodecBuffer end
+
+"""
+Opaque structure representing a MediaCodec buffer to render.
+"""
+const AVMediaCodecBuffer = MediaCodecBuffer
+
+"""
+    av_mediacodec_release_buffer(buffer, render::Integer)
+
+Release a MediaCodec buffer and render it to the surface that is associated with the decoder. This function should only be called once on a given buffer, once released the underlying buffer returns to the codec, thus subsequent calls to this function will have no effect.
+
+### Parameters
+* `buffer`: the buffer to render 
+
+* `render`: 1 to release and render the buffer to the surface or 0 to discard the buffer 
+
+### Returns
+0 on success, < 0 otherwise
+"""
+function av_mediacodec_release_buffer(buffer, render::Integer)
+    ccall((:av_mediacodec_release_buffer, libavcodec), Cint, (Ptr{AVMediaCodecBuffer}, Cint), buffer, render)
+end
+
+"""
+    av_mediacodec_render_buffer_at_time(buffer, time::Int64)
+
+Release a MediaCodec buffer and render it at the given time to the surface that is associated with the decoder. The timestamp must be within one second of the current java/lang/System#nanoTime() (which is implemented using CLOCK\\_MONOTONIC on Android). See the Android MediaCodec documentation of android/media/MediaCodec#releaseOutputBuffer(int,long) for more details.
+
+### Parameters
+* `buffer`: the buffer to render 
+
+* `time`: timestamp in nanoseconds of when to render the buffer 
+
+### Returns
+0 on success, < 0 otherwise
+"""
+function av_mediacodec_render_buffer_at_time(buffer, time::Int64)
+    ccall((:av_mediacodec_render_buffer_at_time, libavcodec), Cint, (Ptr{AVMediaCodecBuffer}, Int64), buffer, time)
+end
+
+struct AVPacketList
+    pkt::AVPacket
+    next::Ptr{AVPacketList}
+end
+
+@cenum AVSideDataParamChangeFlags::UInt32 begin
+    AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT = 1
+    AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT = 2
+    AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE = 4
+    AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS = 8
+end
+
+"""
+    av_packet_alloc()
+
+Allocate an [`AVPacket`](@ref) and set its fields to default values. The resulting struct must be freed using [`av_packet_free`](@ref)().
+
+!!! note
+
+    this only allocates the [`AVPacket`](@ref) itself, not the data buffers. Those must be allocated through other means such as [`av_new_packet`](@ref).
+
+### Returns
+An [`AVPacket`](@ref) filled with default values or NULL on failure.
+
+### See also
+[`av_new_packet`](@ref)
+"""
+function av_packet_alloc()
+    ccall((:av_packet_alloc, libavcodec), Ptr{AVPacket}, ())
+end
+
+"""
+    av_packet_clone(src)
+
+Create a new packet that references the same data as src.
+
+This is a shortcut for [`av_packet_alloc`](@ref)()+[`av_packet_ref`](@ref)().
+
+### Returns
+newly created [`AVPacket`](@ref) on success, NULL on error.
+
+### See also
+[`av_packet_alloc`](@ref), [`av_packet_ref`](@ref)
+"""
+function av_packet_clone(src)
+    ccall((:av_packet_clone, libavcodec), Ptr{AVPacket}, (Ptr{AVPacket},), src)
+end
+
+"""
+    av_packet_free(pkt)
+
+Free the packet, if the packet is reference counted, it will be unreferenced first.
+
+!!! note
+
+    passing NULL is a no-op.
+
+### Parameters
+* `pkt`: packet to be freed. The pointer will be set to NULL. 
+"""
+function av_packet_free(pkt)
+    ccall((:av_packet_free, libavcodec), Cvoid, (Ptr{Ptr{AVPacket}},), pkt)
+end
+
+"""
+    av_init_packet(pkt)
+
+Initialize optional fields of a packet with default values.
+
+Note, this does not touch the data and size members, which have to be initialized separately.
+
+\\deprecated This function is deprecated. Once it's removed, sizeof([`AVPacket`](@ref)) will not be a part of the ABI anymore.
+
+### Parameters
+* `pkt`: packet
+
+### See also
+[`av_packet_alloc`](@ref), [`av_packet_unref`](@ref)
+"""
+function av_init_packet(pkt)
+    ccall((:av_init_packet, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_new_packet(pkt, size::Integer)
+
+Allocate the payload of a packet and initialize its fields with default values.
+
+### Parameters
+* `pkt`: packet 
+
+* `size`: wanted payload size 
+
+### Returns
+0 if OK, AVERROR\\_xxx otherwise
+"""
+function av_new_packet(pkt, size::Integer)
+    ccall((:av_new_packet, libavcodec), Cint, (Ptr{AVPacket}, Cint), pkt, size)
+end
+
+"""
+    av_shrink_packet(pkt, size::Integer)
+
+Reduce packet size, correctly zeroing padding
+
+### Parameters
+* `pkt`: packet 
+
+* `size`: new size
+"""
+function av_shrink_packet(pkt, size::Integer)
+    ccall((:av_shrink_packet, libavcodec), Cvoid, (Ptr{AVPacket}, Cint), pkt, size)
+end
+
+"""
+    av_grow_packet(pkt, grow_by::Integer)
+
+Increase packet size, correctly zeroing padding
+
+### Parameters
+* `pkt`: packet 
+
+* `grow_by`: number of bytes by which to increase the size of the packet
+"""
+function av_grow_packet(pkt, grow_by::Integer)
+    ccall((:av_grow_packet, libavcodec), Cint, (Ptr{AVPacket}, Cint), pkt, grow_by)
+end
+
+"""
+    av_packet_from_data(pkt, data, size::Integer)
+
+Initialize a reference-counted packet from [`av_malloc`](@ref)()ed data.
+
+### Parameters
+* `pkt`: packet to be initialized. This function will set the data, size, and buf fields, all others are left untouched. 
+
+* `data`: Data allocated by [`av_malloc`](@ref)() to be used as packet data. If this function returns successfully, the data is owned by the underlying [`AVBuffer`](@ref). The caller may not access the data through other means. 
+
+* `size`: size of data in bytes, without the padding. I.e. the full buffer size is assumed to be size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref).
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) on error
+"""
+function av_packet_from_data(pkt, data, size::Integer)
+    ccall((:av_packet_from_data, libavcodec), Cint, (Ptr{AVPacket}, Ptr{UInt8}, Cint), pkt, data, size)
+end
+
+"""
+    av_dup_packet(pkt)
+
+!!! warning
+
+    This is a hack - the packet memory allocation stuff is broken. The packet is allocated if it was not really allocated.
+
+\\deprecated Use [`av_packet_ref`](@ref) or [`av_packet_make_refcounted`](@ref)
+"""
+function av_dup_packet(pkt)
+    ccall((:av_dup_packet, libavcodec), Cint, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_copy_packet(dst, src)
+
+Copy packet, including contents
+
+\\deprecated Use [`av_packet_ref`](@ref)
+
+### Returns
+0 on success, negative [`AVERROR`](@ref) on fail
+"""
+function av_copy_packet(dst, src)
+    ccall((:av_copy_packet, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
+end
+
+"""
+    av_copy_packet_side_data(dst, src)
+
+Copy packet side data
+
+\\deprecated Use [`av_packet_copy_props`](@ref)
+
+### Returns
+0 on success, negative [`AVERROR`](@ref) on fail
+"""
+function av_copy_packet_side_data(dst, src)
+    ccall((:av_copy_packet_side_data, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
+end
+
+"""
+    av_free_packet(pkt)
+
+Free a packet.
+
+\\deprecated Use [`av_packet_unref`](@ref)
+
+### Parameters
+* `pkt`: packet to free
+"""
+function av_free_packet(pkt)
+    ccall((:av_free_packet, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_packet_new_side_data(pkt, type::AVPacketSideDataType, size::Integer)
+
+Allocate new information of a packet.
+
+### Parameters
+* `pkt`: packet 
+
+* `type`: side information type 
+
+* `size`: side information size 
+
+### Returns
+pointer to fresh allocated data or NULL otherwise
+"""
+function av_packet_new_side_data(pkt, type::AVPacketSideDataType, size::Integer)
+    ccall((:av_packet_new_side_data, libavcodec), Ptr{UInt8}, (Ptr{AVPacket}, AVPacketSideDataType, Cint), pkt, type, size)
+end
+
+"""
+    av_packet_add_side_data(pkt, type::AVPacketSideDataType, data, size::Csize_t)
+
+Wrap an existing array as a packet side data.
+
+### Parameters
+* `pkt`: packet 
+
+* `type`: side information type 
+
+* `data`: the side data array. It must be allocated with the [`av_malloc`](@ref)() family of functions. The ownership of the data is transferred to pkt. 
+
+* `size`: side information size 
+
+### Returns
+a non-negative number on success, a negative [`AVERROR`](@ref) code on failure. On failure, the packet is unchanged and the data remains owned by the caller.
+"""
+function av_packet_add_side_data(pkt, type::AVPacketSideDataType, data, size::Csize_t)
+    ccall((:av_packet_add_side_data, libavcodec), Cint, (Ptr{AVPacket}, AVPacketSideDataType, Ptr{UInt8}, Csize_t), pkt, type, data, size)
+end
+
+"""
+    av_packet_shrink_side_data(pkt, type::AVPacketSideDataType, size::Integer)
+
+Shrink the already allocated side data buffer
+
+### Parameters
+* `pkt`: packet 
+
+* `type`: side information type 
+
+* `size`: new side information size 
+
+### Returns
+0 on success, < 0 on failure
+"""
+function av_packet_shrink_side_data(pkt, type::AVPacketSideDataType, size::Integer)
+    ccall((:av_packet_shrink_side_data, libavcodec), Cint, (Ptr{AVPacket}, AVPacketSideDataType, Cint), pkt, type, size)
+end
+
+"""
+    av_packet_get_side_data(pkt, type::AVPacketSideDataType, size)
+
+Get side information from packet.
+
+### Parameters
+* `pkt`: packet 
+
+* `type`: desired side information type 
+
+* `size`: If supplied, *size will be set to the size of the side data or to zero if the desired side data is not present. 
+
+### Returns
+pointer to data if present or NULL otherwise
+"""
+function av_packet_get_side_data(pkt, type::AVPacketSideDataType, size)
+    ccall((:av_packet_get_side_data, libavcodec), Ptr{UInt8}, (Ptr{AVPacket}, AVPacketSideDataType, Ptr{Cint}), pkt, type, size)
+end
+
+function av_packet_merge_side_data(pkt)
+    ccall((:av_packet_merge_side_data, libavcodec), Cint, (Ptr{AVPacket},), pkt)
+end
+
+function av_packet_split_side_data(pkt)
+    ccall((:av_packet_split_side_data, libavcodec), Cint, (Ptr{AVPacket},), pkt)
+end
+
+function av_packet_side_data_name(type::AVPacketSideDataType)
+    ccall((:av_packet_side_data_name, libavcodec), Cstring, (AVPacketSideDataType,), type)
+end
+
+function av_packet_pack_dictionary(dict, size)
+    ccall((:av_packet_pack_dictionary, libavcodec), Ptr{UInt8}, (Ptr{AVDictionary}, Ptr{Cint}), dict, size)
+end
+
+function av_packet_unpack_dictionary(data, size::Integer, dict)
+    ccall((:av_packet_unpack_dictionary, libavcodec), Cint, (Ptr{UInt8}, Cint, Ptr{Ptr{AVDictionary}}), data, size, dict)
+end
+
+"""
+    av_packet_free_side_data(pkt)
+
+Convenience function to free all the side data stored. All the other fields stay untouched.
+
+### Parameters
+* `pkt`: packet
+"""
+function av_packet_free_side_data(pkt)
+    ccall((:av_packet_free_side_data, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_packet_ref(dst, src)
+
+Setup a new reference to the data described by a given packet
+
+If src is reference-counted, setup dst as a new reference to the buffer in src. Otherwise allocate a new buffer in dst and copy the data from src into it.
+
+All the other fields are copied from src.
+
+### Parameters
+* `dst`: Destination packet. Will be completely overwritten. 
+
+* `src`: Source packet
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) on error. On error, dst will be blank (as if returned by [`av_packet_alloc`](@ref)()).
+
+### See also
+[`av_packet_unref`](@ref)
+"""
+function av_packet_ref(dst, src)
+    ccall((:av_packet_ref, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
+end
+
+"""
+    av_packet_unref(pkt)
+
+Wipe the packet.
+
+Unreference the buffer referenced by the packet and reset the remaining packet fields to their default values.
+
+### Parameters
+* `pkt`: The packet to be unreferenced.
+"""
+function av_packet_unref(pkt)
+    ccall((:av_packet_unref, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_packet_move_ref(dst, src)
+
+Move every field in src to dst and reset src.
+
+### Parameters
+* `src`: Source packet, will be reset 
+
+* `dst`: Destination packet
+
+### See also
+[`av_packet_unref`](@ref)
+"""
+function av_packet_move_ref(dst, src)
+    ccall((:av_packet_move_ref, libavcodec), Cvoid, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
+end
+
+"""
+    av_packet_copy_props(dst, src)
+
+Copy only "properties" fields from src to dst.
+
+Properties for the purpose of this function are all the fields beside those related to the packet data (buf, data, size)
+
+### Parameters
+* `dst`: Destination packet 
+
+* `src`: Source packet
+
+### Returns
+0 on success [`AVERROR`](@ref) on failure.
+"""
+function av_packet_copy_props(dst, src)
+    ccall((:av_packet_copy_props, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
+end
+
+"""
+    av_packet_make_refcounted(pkt)
+
+Ensure the data described by a given packet is reference counted.
+
+!!! note
+
+    This function does not ensure that the reference will be writable. Use [`av_packet_make_writable`](@ref) instead for that purpose.
+
+### Parameters
+* `pkt`: packet whose data should be made reference counted.
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) on error. On failure, the packet is unchanged.
+
+### See also
+[`av_packet_ref`](@ref), [`av_packet_make_writable`](@ref)
+"""
+function av_packet_make_refcounted(pkt)
+    ccall((:av_packet_make_refcounted, libavcodec), Cint, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_packet_make_writable(pkt)
+
+Create a writable reference for the data described by a given packet, avoiding data copy if possible.
+
+### Parameters
+* `pkt`: Packet whose data should be made writable.
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) on failure. On failure, the packet is unchanged.
+"""
+function av_packet_make_writable(pkt)
+    ccall((:av_packet_make_writable, libavcodec), Cint, (Ptr{AVPacket},), pkt)
+end
+
+"""
+    av_packet_rescale_ts(pkt, tb_src::AVRational, tb_dst::AVRational)
+
+Convert valid timing fields (timestamps / durations) in a packet from one timebase to another. Timestamps with unknown values ([`AV_NOPTS_VALUE`](@ref)) will be ignored.
+
+### Parameters
+* `pkt`: packet on which the conversion will be performed 
+
+* `tb_src`: source timebase, in which the timing fields in pkt are expressed 
+
+* `tb_dst`: destination timebase, to which the timing fields will be converted
+"""
+function av_packet_rescale_ts(pkt, tb_src::AVRational, tb_dst::AVRational)
+    ccall((:av_packet_rescale_ts, libavcodec), Cvoid, (Ptr{AVPacket}, AVRational, AVRational), pkt, tb_src, tb_dst)
+end
+
+struct AVQSVContext
+    session::Cint
+    iopattern::Cint
+    ext_buffers::Ptr{Ptr{Cint}}
+    nb_ext_buffers::Cint
+    opaque_alloc::Cint
+    nb_opaque_surfaces::Cint
+    opaque_surfaces::Ptr{AVBufferRef}
+    opaque_alloc_type::Cint
+end
+
+"""
+    av_qsv_alloc_context()
+
+Allocate a new context.
+
+It must be freed by the caller with [`av_free`](@ref)().
+"""
+function av_qsv_alloc_context()
+    ccall((:av_qsv_alloc_context, libavcodec), Ptr{AVQSVContext}, ())
+end
+
+"""
+    vaapi_context
+
+This structure is used to share data between the FFmpeg library and the client video application. This shall be zero-allocated and available as [`AVCodecContext`](@ref).hwaccel\\_context. All user members can be set once during initialization or through each [`AVCodecContext`](@ref).get\\_buffer() function call. In any case, they must be valid prior to calling decoding functions.
+
+Deprecated: use [`AVCodecContext`](@ref).hw\\_frames\\_ctx instead.
+"""
+struct vaapi_context
+    data::NTuple{16, UInt8}
+end
+
+function Base.getproperty(x::Ptr{vaapi_context}, f::Symbol)
+    f === :display && return Ptr{Ptr{Cvoid}}(x + 0)
+    f === :config_id && return Ptr{UInt32}(x + 8)
+    f === :context_id && return Ptr{UInt32}(x + 12)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::vaapi_context, f::Symbol)
+    r = Ref{vaapi_context}(x)
+    ptr = Base.unsafe_convert(Ptr{vaapi_context}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{vaapi_context}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+# typedef int ( * AVVDPAU_Render2 ) ( struct AVCodecContext * , struct AVFrame * , const VdpPictureInfo * , uint32_t , const VdpBitstreamBuffer * )
+const AVVDPAU_Render2 = Ptr{Cvoid}
+
+"""
+    AVVDPAUContext
+
+This structure is used to share data between the libavcodec library and the client video application. The user shall allocate the structure via the av\\_alloc\\_vdpau\\_hwaccel function and make it available as [`AVCodecContext`](@ref).hwaccel\\_context. Members can be set by the user once during initialization or through each [`AVCodecContext`](@ref).get\\_buffer() function call. In any case, they must be valid prior to calling decoding functions.
+
+The size of this structure is not a part of the public ABI and must not be used outside of libavcodec. Use [`av_vdpau_alloc_context`](@ref)() to allocate an [`AVVDPAUContext`](@ref).
+"""
+struct AVVDPAUContext
+    decoder::VdpDecoder
+    render::Ptr{Cvoid}
+    render2::AVVDPAU_Render2
+end
+
+"""
+    av_alloc_vdpaucontext()
+
+allocation function for [`AVVDPAUContext`](@ref)
+
+Allows extending the struct without breaking API/ABI
+"""
+function av_alloc_vdpaucontext()
+    ccall((:av_alloc_vdpaucontext, libavcodec), Ptr{AVVDPAUContext}, ())
+end
+
+function av_vdpau_hwaccel_get_render2(arg1)
+    ccall((:av_vdpau_hwaccel_get_render2, libavcodec), AVVDPAU_Render2, (Ptr{AVVDPAUContext},), arg1)
+end
+
+function av_vdpau_hwaccel_set_render2(arg1, arg2::AVVDPAU_Render2)
+    ccall((:av_vdpau_hwaccel_set_render2, libavcodec), Cvoid, (Ptr{AVVDPAUContext}, AVVDPAU_Render2), arg1, arg2)
+end
+
+"""
+    av_vdpau_bind_context(avctx, device::VdpDevice, get_proc_address, flags::Integer)
+
+Associate a VDPAU device with a codec context for hardware acceleration. This function is meant to be called from the get\\_format() codec callback, or earlier. It can also be called after [`avcodec_flush_buffers`](@ref)() to change the underlying VDPAU device mid-stream (e.g. to recover from non-transparent display preemption).
+
+!!! note
+
+    get\\_format() must return AV\\_PIX\\_FMT\\_VDPAU if this function completes successfully.
+
+### Parameters
+* `avctx`: decoding context whose get\\_format() callback is invoked 
+
+* `device`: VDPAU device handle to use for hardware acceleration 
+
+* `get_proc_address`: VDPAU device driver 
+
+* `flags`: zero of more OR'd AV\\_HWACCEL\\_FLAG\\_* flags
+
+### Returns
+0 on success, an [`AVERROR`](@ref) code on failure.
+"""
+function av_vdpau_bind_context(avctx, device::VdpDevice, get_proc_address, flags::Integer)
+    ccall((:av_vdpau_bind_context, libavcodec), Cint, (Ptr{AVCodecContext}, VdpDevice, Ptr{Cvoid}, Cuint), avctx, device, get_proc_address, flags)
+end
+
+"""
+    av_vdpau_get_surface_parameters(avctx, type, width, height)
+
+Gets the parameters to create an adequate VDPAU video surface for the codec context using VDPAU hardware decoding acceleration.
+
+!!! note
+
+    Behavior is undefined if the context was not successfully bound to a VDPAU device using [`av_vdpau_bind_context`](@ref)().
+
+### Parameters
+* `avctx`: the codec context being used for decoding the stream 
+
+* `type`: storage space for the VDPAU video surface chroma type (or NULL to ignore) 
+
+* `width`: storage space for the VDPAU video surface pixel width (or NULL to ignore) 
+
+* `height`: storage space for the VDPAU video surface pixel height (or NULL to ignore)
+
+### Returns
+0 on success, a negative [`AVERROR`](@ref) code on failure.
+"""
+function av_vdpau_get_surface_parameters(avctx, type, width, height)
+    ccall((:av_vdpau_get_surface_parameters, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{VdpChromaType}, Ptr{UInt32}, Ptr{UInt32}), avctx, type, width, height)
+end
+
+"""
+    av_vdpau_alloc_context()
+
+Allocate an [`AVVDPAUContext`](@ref).
+
+### Returns
+Newly-allocated [`AVVDPAUContext`](@ref) or NULL on failure.
+"""
+function av_vdpau_alloc_context()
+    ccall((:av_vdpau_alloc_context, libavcodec), Ptr{AVVDPAUContext}, ())
+end
+
+"""
+    av_vdpau_get_profile(avctx, profile)
+
+Get a decoder profile that should be used for initializing a VDPAU decoder. Should be called from the [`AVCodecContext`](@ref).get\\_format() callback.
+
+\\deprecated Use [`av_vdpau_bind_context`](@ref)() instead.
+
+### Parameters
+* `avctx`: the codec context being used for decoding the stream 
+
+* `profile`: a pointer into which the result will be written on success. The contents of profile are undefined if this function returns an error.
+
+### Returns
+0 on success (non-negative), a negative [`AVERROR`](@ref) on failure.
+"""
+function av_vdpau_get_profile(avctx, profile)
+    ccall((:av_vdpau_get_profile, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{VdpDecoderProfile}), avctx, profile)
+end
+
+struct AVVideotoolboxContext
+    session::Cint
+    output_callback::Cint
+    cv_pix_fmt_type::Cint
+    cm_fmt_desc::Cint
+    cm_codec_type::Cint
+end
+
+"""
+    av_videotoolbox_alloc_context()
+
+Allocate and initialize a Videotoolbox context.
+
+This function should be called from the get\\_format() callback when the caller selects the AV\\_PIX\\_FMT\\_VIDETOOLBOX format. The caller must then create the decoder object (using the output callback provided by libavcodec) that will be used for Videotoolbox-accelerated decoding.
+
+When decoding with Videotoolbox is finished, the caller must destroy the decoder object and free the Videotoolbox context using [`av_free`](@ref)().
+
+### Returns
+the newly allocated context or NULL on failure
+"""
+function av_videotoolbox_alloc_context()
+    ccall((:av_videotoolbox_alloc_context, libavcodec), Ptr{AVVideotoolboxContext}, ())
+end
+
+"""
+    av_videotoolbox_default_init(avctx)
+
+This is a convenience function that creates and sets up the Videotoolbox context using an internal implementation.
+
+### Parameters
+* `avctx`: the corresponding codec context
+
+### Returns
+>= 0 on success, a negative [`AVERROR`](@ref) code on failure
+"""
+function av_videotoolbox_default_init(avctx)
+    ccall((:av_videotoolbox_default_init, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
+end
+
+"""
+    av_videotoolbox_default_init2(avctx, vtctx)
+
+This is a convenience function that creates and sets up the Videotoolbox context using an internal implementation.
+
+### Parameters
+* `avctx`: the corresponding codec context 
+
+* `vtctx`: the Videotoolbox context to use
+
+### Returns
+>= 0 on success, a negative [`AVERROR`](@ref) code on failure
+"""
+function av_videotoolbox_default_init2(avctx, vtctx)
+    ccall((:av_videotoolbox_default_init2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVVideotoolboxContext}), avctx, vtctx)
+end
+
+"""
+    av_videotoolbox_default_free(avctx)
+
+This function must be called to free the Videotoolbox context initialized with [`av_videotoolbox_default_init`](@ref)().
+
+### Parameters
+* `avctx`: the corresponding codec context
+"""
+function av_videotoolbox_default_free(avctx)
+    ccall((:av_videotoolbox_default_free, libavcodec), Cvoid, (Ptr{AVCodecContext},), avctx)
+end
+
+mutable struct AVVorbisParseContext end
+
+"""
+    av_vorbis_parse_init(extradata, extradata_size::Integer)
+
+Allocate and initialize the Vorbis parser using headers in the extradata.
+"""
+function av_vorbis_parse_init(extradata, extradata_size::Integer)
+    ccall((:av_vorbis_parse_init, libavcodec), Ptr{AVVorbisParseContext}, (Ptr{UInt8}, Cint), extradata, extradata_size)
+end
+
+"""
+    av_vorbis_parse_free(s)
+
+Free the parser and everything associated with it.
+"""
+function av_vorbis_parse_free(s)
+    ccall((:av_vorbis_parse_free, libavcodec), Cvoid, (Ptr{Ptr{AVVorbisParseContext}},), s)
+end
+
+"""
+    av_vorbis_parse_frame_flags(s, buf, buf_size::Integer, flags)
+
+Get the duration for a Vorbis packet.
+
+If `flags` is `NULL`, special frames are considered invalid.
+
+### Parameters
+* `s`: Vorbis parser context 
+
+* `buf`: buffer containing a Vorbis frame 
+
+* `buf_size`: size of the buffer 
+
+* `flags`: flags for special frames
+"""
+function av_vorbis_parse_frame_flags(s, buf, buf_size::Integer, flags)
+    ccall((:av_vorbis_parse_frame_flags, libavcodec), Cint, (Ptr{AVVorbisParseContext}, Ptr{UInt8}, Cint, Ptr{Cint}), s, buf, buf_size, flags)
+end
+
+"""
+    av_vorbis_parse_frame(s, buf, buf_size::Integer)
+
+Get the duration for a Vorbis packet.
+
+### Parameters
+* `s`: Vorbis parser context 
+
+* `buf`: buffer containing a Vorbis frame 
+
+* `buf_size`: size of the buffer
+"""
+function av_vorbis_parse_frame(s, buf, buf_size::Integer)
+    ccall((:av_vorbis_parse_frame, libavcodec), Cint, (Ptr{AVVorbisParseContext}, Ptr{UInt8}, Cint), s, buf, buf_size)
+end
+
+function av_vorbis_parse_reset(s)
+    ccall((:av_vorbis_parse_reset, libavcodec), Cvoid, (Ptr{AVVorbisParseContext},), s)
+end
+
+struct xvmc_pix_fmt
+    data::NTuple{1, UInt8}
+end
+
+function Base.getproperty(x::Ptr{xvmc_pix_fmt}, f::Symbol)
+    f === :xvmc_id && return Ptr{Cint}(x + 0)
+    f === :data_blocks && return Ptr{Ptr{Cshort}}(x + 0)
+    f === :mv_blocks && return Ptr{Ptr{Cint}}(x + 0)
+    f === :allocated_mv_blocks && return Ptr{Cint}(x + 0)
+    f === :allocated_data_blocks && return Ptr{Cint}(x + 0)
+    f === :idct && return Ptr{Cint}(x + 0)
+    f === :unsigned_intra && return Ptr{Cint}(x + 0)
+    f === :p_surface && return Ptr{Ptr{Cint}}(x + 0)
+    f === :p_past_surface && return Ptr{Ptr{Cint}}(x + 0)
+    f === :p_future_surface && return Ptr{Ptr{Cint}}(x + 0)
+    f === :picture_structure && return Ptr{Cuint}(x + 0)
+    f === :flags && return Ptr{Cuint}(x + 0)
+    f === :start_mv_blocks_num && return Ptr{Cint}(x + 0)
+    f === :filled_mv_blocks_num && return Ptr{Cint}(x + 0)
+    f === :next_free_data_block_num && return Ptr{Cint}(x + 0)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::xvmc_pix_fmt, f::Symbol)
+    r = Ref{xvmc_pix_fmt}(x)
+    ptr = Base.unsafe_convert(Ptr{xvmc_pix_fmt}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{xvmc_pix_fmt}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+"""
+    avdevice_version()
+
+Return the [`LIBAVDEVICE_VERSION_INT`](@ref) constant.
+"""
+function avdevice_version()
+    ccall((:avdevice_version, libavdevice), Cuint, ())
+end
+
+"""
+    avdevice_configuration()
+
+Return the libavdevice build-time configuration.
+"""
+function avdevice_configuration()
+    ccall((:avdevice_configuration, libavdevice), Cstring, ())
+end
+
+"""
+    avdevice_license()
+
+Return the libavdevice license.
+"""
+function avdevice_license()
+    ccall((:avdevice_license, libavdevice), Cstring, ())
+end
+
+"""
+    avdevice_register_all()
+
+Initialize libavdevice and register all the input and output devices.
+"""
+function avdevice_register_all()
+    ccall((:avdevice_register_all, libavdevice), Cvoid, ())
+end
+
+"""
+**********************************************
+"""
+mutable struct AVCodecTag end
+
+"""
+    AVInputFormat
+
+` lavf_decoding`
+
+@{
+"""
+struct AVInputFormat
+    name::Cstring
+    long_name::Cstring
+    flags::Cint
+    extensions::Cstring
+    codec_tag::Ptr{Ptr{AVCodecTag}}
+    priv_class::Ptr{AVClass}
+    mime_type::Cstring
+    next::Ptr{AVInputFormat}
+    raw_codec_id::Cint
+    priv_data_size::Cint
+    read_probe::Ptr{Cvoid}
+    read_header::Ptr{Cvoid}
+    read_packet::Ptr{Cvoid}
+    read_close::Ptr{Cvoid}
+    read_seek::Ptr{Cvoid}
+    read_timestamp::Ptr{Cvoid}
+    read_play::Ptr{Cvoid}
+    read_pause::Ptr{Cvoid}
+    read_seek2::Ptr{Cvoid}
+    get_device_list::Ptr{Cvoid}
+    create_device_capabilities::Ptr{Cvoid}
+    free_device_capabilities::Ptr{Cvoid}
+end
+
+"""
+    av_input_audio_device_next(d)
+
+Audio input devices iterator.
+
+If d is NULL, returns the first registered input audio/video device, if d is non-NULL, returns the next registered input audio/video device after d or NULL if d is the last one.
+"""
+function av_input_audio_device_next(d)
+    ccall((:av_input_audio_device_next, libavdevice), Ptr{AVInputFormat}, (Ptr{AVInputFormat},), d)
+end
+
+"""
+    av_input_video_device_next(d)
+
+Video input devices iterator.
+
+If d is NULL, returns the first registered input audio/video device, if d is non-NULL, returns the next registered input audio/video device after d or NULL if d is the last one.
+"""
+function av_input_video_device_next(d)
+    ccall((:av_input_video_device_next, libavdevice), Ptr{AVInputFormat}, (Ptr{AVInputFormat},), d)
+end
+
 """
     AVOutputFormat
 
@@ -2766,21 +6429,153 @@ struct AVIOContext
 end
 
 """
-    AVDiscard
+    AVStreamParseType
 
-` lavc_decoding`
+@}
 """
-@cenum AVDiscard::Int32 begin
-    AVDISCARD_NONE = -16
-    AVDISCARD_DEFAULT = 0
-    AVDISCARD_NONREF = 8
-    AVDISCARD_BIDIR = 16
-    AVDISCARD_NONINTRA = 24
-    AVDISCARD_NONKEY = 32
-    AVDISCARD_ALL = 48
+@cenum AVStreamParseType::UInt32 begin
+    AVSTREAM_PARSE_NONE = 0
+    AVSTREAM_PARSE_FULL = 1
+    AVSTREAM_PARSE_HEADERS = 2
+    AVSTREAM_PARSE_TIMESTAMPS = 3
+    AVSTREAM_PARSE_FULL_ONCE = 4
+    AVSTREAM_PARSE_FULL_RAW = 5
 end
 
-mutable struct AVDictionary end
+"""
+    AVProbeData
+
+This structure contains the data a format has to probe a file.
+"""
+struct AVProbeData
+    filename::Cstring
+    buf::Ptr{Cuchar}
+    buf_size::Cint
+    mime_type::Cstring
+end
+
+struct AVIndexEntry
+    data::NTuple{24, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVIndexEntry}, f::Symbol)
+    f === :pos && return Ptr{Int64}(x + 0)
+    f === :timestamp && return Ptr{Int64}(x + 8)
+    f === :flags && return (Ptr{Cint}(x + 16), 0, 2)
+    f === :size && return (Ptr{Cint}(x + 16), 2, 30)
+    f === :min_distance && return Ptr{Cint}(x + 20)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVIndexEntry, f::Symbol)
+    r = Ref{AVIndexEntry}(x)
+    ptr = Base.unsafe_convert(Ptr{AVIndexEntry}, r)
+    fptr = getproperty(ptr, f)
+    begin
+        if fptr isa Ptr
+            return GC.@preserve(r, unsafe_load(fptr))
+        else
+            (baseptr, offset, width) = fptr
+            ty = eltype(baseptr)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
+        end
+    end
+end
+
+function Base.setproperty!(x::Ptr{AVIndexEntry}, f::Symbol, v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
+end
+
+mutable struct AVStreamInternal end
+
+"""
+    AVStream
+
+Stream structure. New fields can be added to the end with minor version bumps. Removal, reordering and changes to existing fields require a major version bump. sizeof([`AVStream`](@ref)) must not be used outside libav*.
+"""
+struct AVStream
+    data::NTuple{496, UInt8}
+end
+
+function Base.getproperty(x::Ptr{AVStream}, f::Symbol)
+    f === :index && return Ptr{Cint}(x + 0)
+    f === :id && return Ptr{Cint}(x + 4)
+    f === :codec && return Ptr{Ptr{AVCodecContext}}(x + 8)
+    f === :priv_data && return Ptr{Ptr{Cvoid}}(x + 16)
+    f === :time_base && return Ptr{AVRational}(x + 24)
+    f === :start_time && return Ptr{Int64}(x + 32)
+    f === :duration && return Ptr{Int64}(x + 40)
+    f === :nb_frames && return Ptr{Int64}(x + 48)
+    f === :disposition && return Ptr{Cint}(x + 56)
+    f === :discard && return Ptr{AVDiscard}(x + 60)
+    f === :sample_aspect_ratio && return Ptr{AVRational}(x + 64)
+    f === :metadata && return Ptr{Ptr{AVDictionary}}(x + 72)
+    f === :avg_frame_rate && return Ptr{AVRational}(x + 80)
+    f === :attached_pic && return Ptr{AVPacket}(x + 88)
+    f === :side_data && return Ptr{Ptr{AVPacketSideData}}(x + 176)
+    f === :nb_side_data && return Ptr{Cint}(x + 184)
+    f === :event_flags && return Ptr{Cint}(x + 188)
+    f === :r_frame_rate && return Ptr{AVRational}(x + 192)
+    f === :recommended_encoder_configuration && return Ptr{Cstring}(x + 200)
+    f === :codecpar && return Ptr{Ptr{AVCodecParameters}}(x + 208)
+    f === :unused && return Ptr{Ptr{Cvoid}}(x + 216)
+    f === :pts_wrap_bits && return Ptr{Cint}(x + 224)
+    f === :first_dts && return Ptr{Int64}(x + 232)
+    f === :cur_dts && return Ptr{Int64}(x + 240)
+    f === :last_IP_pts && return Ptr{Int64}(x + 248)
+    f === :last_IP_duration && return Ptr{Cint}(x + 256)
+    f === :probe_packets && return Ptr{Cint}(x + 260)
+    f === :codec_info_nb_frames && return Ptr{Cint}(x + 264)
+    f === :need_parsing && return Ptr{AVStreamParseType}(x + 268)
+    f === :parser && return Ptr{Ptr{AVCodecParserContext}}(x + 272)
+    f === :unused7 && return Ptr{Ptr{Cvoid}}(x + 280)
+    f === :unused6 && return Ptr{AVProbeData}(x + 288)
+    f === :unused5 && return Ptr{NTuple{17, Int64}}(x + 320)
+    f === :index_entries && return Ptr{Ptr{AVIndexEntry}}(x + 456)
+    f === :nb_index_entries && return Ptr{Cint}(x + 464)
+    f === :index_entries_allocated_size && return Ptr{Cuint}(x + 468)
+    f === :stream_identifier && return Ptr{Cint}(x + 472)
+    f === :unused8 && return Ptr{Cint}(x + 476)
+    f === :unused9 && return Ptr{Cint}(x + 480)
+    f === :unused10 && return Ptr{Cint}(x + 484)
+    f === :internal && return Ptr{Ptr{AVStreamInternal}}(x + 488)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::AVStream, f::Symbol)
+    r = Ref{AVStream}(x)
+    ptr = Base.unsafe_convert(Ptr{AVStream}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{AVStream}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
 
 """
     AVProgram
@@ -2802,16 +6597,6 @@ struct AVProgram
     end_time::Int64
     pts_wrap_reference::Int64
     pts_wrap_behavior::Cint
-end
-
-"""
-    AVRational
-
-Rational number (pair of numerator and denominator).
-"""
-struct AVRational
-    num::Cint
-    den::Cint
 end
 
 struct AVChapter
@@ -2846,112 +6631,6 @@ The duration of a video can be estimated through various ways, and this enum can
 end
 
 mutable struct AVFormatInternal end
-
-"""
-    AVMediaType
-
-` lavu_media Media Type`
-
-Media Type
-"""
-@cenum AVMediaType::Int32 begin
-    AVMEDIA_TYPE_UNKNOWN = -1
-    AVMEDIA_TYPE_VIDEO = 0
-    AVMEDIA_TYPE_AUDIO = 1
-    AVMEDIA_TYPE_DATA = 2
-    AVMEDIA_TYPE_SUBTITLE = 3
-    AVMEDIA_TYPE_ATTACHMENT = 4
-    AVMEDIA_TYPE_NB = 5
-end
-
-"""
-    AVSampleFormat
-
-Audio sample formats
-
-- The data described by the sample format is always in native-endian order. Sample values can be expressed by native C types, hence the lack of a signed 24-bit sample format even though it is a common raw audio data format.
-
-- The floating-point formats are based on full volume being in the range [-1.0, 1.0]. Any values outside this range are beyond full volume level.
-
-- The data layout as used in [`av_samples_fill_arrays`](@ref)() and elsewhere in FFmpeg (such as [`AVFrame`](@ref) in libavcodec) is as follows:
-
-\\par For planar sample formats, each audio channel is in a separate data plane, and linesize is the buffer size, in bytes, for a single plane. All data planes must be the same size. For packed sample formats, only the first data plane is used, and samples for each channel are interleaved. In this case, linesize is the buffer size, in bytes, for the 1 plane.
-"""
-@cenum AVSampleFormat::Int32 begin
-    AV_SAMPLE_FMT_NONE = -1
-    AV_SAMPLE_FMT_U8 = 0
-    AV_SAMPLE_FMT_S16 = 1
-    AV_SAMPLE_FMT_S32 = 2
-    AV_SAMPLE_FMT_FLT = 3
-    AV_SAMPLE_FMT_DBL = 4
-    AV_SAMPLE_FMT_U8P = 5
-    AV_SAMPLE_FMT_S16P = 6
-    AV_SAMPLE_FMT_S32P = 7
-    AV_SAMPLE_FMT_FLTP = 8
-    AV_SAMPLE_FMT_DBLP = 9
-    AV_SAMPLE_FMT_S64 = 10
-    AV_SAMPLE_FMT_S64P = 11
-    AV_SAMPLE_FMT_NB = 12
-end
-
-"""
-    AVProfile
-
-[`AVProfile`](@ref).
-"""
-struct AVProfile
-    profile::Cint
-    name::Cstring
-end
-
-mutable struct AVCodecDefault end
-
-mutable struct AVCodecHWConfigInternal end
-
-"""
-    AVCodec
-
-[`AVCodec`](@ref).
-"""
-struct AVCodec
-    name::Cstring
-    long_name::Cstring
-    type::AVMediaType
-    id::AVCodecID
-    capabilities::Cint
-    supported_framerates::Ptr{AVRational}
-    pix_fmts::Ptr{AVPixelFormat}
-    supported_samplerates::Ptr{Cint}
-    sample_fmts::Ptr{AVSampleFormat}
-    channel_layouts::Ptr{Cvoid} # channel_layouts::Ptr{UInt64}
-    max_lowres::UInt8
-    priv_class::Ptr{AVClass}
-    profiles::Ptr{AVProfile}
-    wrapper_name::Cstring
-    priv_data_size::Cint
-    next::Ptr{AVCodec}
-    update_thread_context::Ptr{Cvoid}
-    defaults::Ptr{AVCodecDefault}
-    init_static_data::Ptr{Cvoid}
-    init::Ptr{Cvoid}
-    encode_sub::Ptr{Cvoid}
-    encode2::Ptr{Cvoid}
-    decode::Ptr{Cvoid}
-    close::Ptr{Cvoid}
-    receive_packet::Ptr{Cvoid}
-    receive_frame::Ptr{Cvoid}
-    flush::Ptr{Cvoid}
-    caps_internal::Cint
-    bsfs::Cstring
-    hw_configs::Ptr{Ptr{AVCodecHWConfigInternal}}
-    codec_tags::Ptr{Cvoid} # codec_tags::Ptr{UInt32}
-end
-
-function Base.getproperty(x::AVCodec, f::Symbol)
-    f === :channel_layouts && return Ptr{UInt64}(getfield(x, f))
-    f === :codec_tags && return Ptr{UInt32}(getfield(x, f))
-    return getfield(x, f)
-end
 
 # typedef int ( * av_format_control_message ) ( struct AVFormatContext * s , int type , void * data , size_t data_size )
 """
@@ -3280,21 +6959,6 @@ mutable struct AVFilterInternal end
 
 mutable struct AVFilterCommand end
 
-mutable struct AVBuffer end
-
-"""
-    AVBufferRef
-
-A reference to a data buffer.
-
-The size of this struct is not a part of the public ABI and it is not meant to be allocated directly.
-"""
-struct AVBufferRef
-    buffer::Ptr{AVBuffer}
-    data::Ptr{UInt8}
-    size::Cint
-end
-
 """
     AVFilterContext
 
@@ -3350,283 +7014,6 @@ struct AVFilterFormatsConfig
     formats::Ptr{AVFilterFormats}
     samplerates::Ptr{AVFilterFormats}
     channel_layouts::Ptr{AVFilterChannelLayouts}
-end
-
-"""
-    AVPictureType
-
-@} @} 
-
-` lavu_picture Image related`
-
-[`AVPicture`](@ref) types, pixel formats and basic image planes manipulation.
-
-@{
-"""
-@cenum AVPictureType::UInt32 begin
-    AV_PICTURE_TYPE_NONE = 0
-    AV_PICTURE_TYPE_I = 1
-    AV_PICTURE_TYPE_P = 2
-    AV_PICTURE_TYPE_B = 3
-    AV_PICTURE_TYPE_S = 4
-    AV_PICTURE_TYPE_SI = 5
-    AV_PICTURE_TYPE_SP = 6
-    AV_PICTURE_TYPE_BI = 7
-end
-
-"""
-    AVFrameSideDataType
-
-` lavu_frame AVFrame`
-
-` lavu_data`
-
-@{ [`AVFrame`](@ref) is an abstraction for reference-counted raw multimedia data.
-"""
-@cenum AVFrameSideDataType::UInt32 begin
-    AV_FRAME_DATA_PANSCAN = 0
-    AV_FRAME_DATA_A53_CC = 1
-    AV_FRAME_DATA_STEREO3D = 2
-    AV_FRAME_DATA_MATRIXENCODING = 3
-    AV_FRAME_DATA_DOWNMIX_INFO = 4
-    AV_FRAME_DATA_REPLAYGAIN = 5
-    AV_FRAME_DATA_DISPLAYMATRIX = 6
-    AV_FRAME_DATA_AFD = 7
-    AV_FRAME_DATA_MOTION_VECTORS = 8
-    AV_FRAME_DATA_SKIP_SAMPLES = 9
-    AV_FRAME_DATA_AUDIO_SERVICE_TYPE = 10
-    AV_FRAME_DATA_MASTERING_DISPLAY_METADATA = 11
-    AV_FRAME_DATA_GOP_TIMECODE = 12
-    AV_FRAME_DATA_SPHERICAL = 13
-    AV_FRAME_DATA_CONTENT_LIGHT_LEVEL = 14
-    AV_FRAME_DATA_ICC_PROFILE = 15
-    AV_FRAME_DATA_QP_TABLE_PROPERTIES = 16
-    AV_FRAME_DATA_QP_TABLE_DATA = 17
-    AV_FRAME_DATA_S12M_TIMECODE = 18
-    AV_FRAME_DATA_DYNAMIC_HDR_PLUS = 19
-    AV_FRAME_DATA_REGIONS_OF_INTEREST = 20
-    AV_FRAME_DATA_VIDEO_ENC_PARAMS = 21
-    AV_FRAME_DATA_SEI_UNREGISTERED = 22
-    AV_FRAME_DATA_FILM_GRAIN_PARAMS = 23
-end
-
-"""
-    AVFrameSideData
-
-Structure to hold side data for an [`AVFrame`](@ref).
-
-sizeof([`AVFrameSideData`](@ref)) is not a part of the public ABI, so new fields may be added to the end with a minor bump.
-"""
-struct AVFrameSideData
-    type::AVFrameSideDataType
-    data::Ptr{UInt8}
-    size::Cint
-    metadata::Ptr{AVDictionary}
-    buf::Ptr{AVBufferRef}
-end
-
-"""
-    AVColorRange
-
-Visual content value range.
-
-These values are based on definitions that can be found in multiple specifications, such as ITU-T BT.709 (3.4 - Quantization of RGB, luminance and colour-difference signals), ITU-T BT.2020 (Table 5 - Digital Representation) as well as ITU-T BT.2100 (Table 9 - Digital 10- and 12-bit integer representation). At the time of writing, the BT.2100 one is recommended, as it also defines the full range representation.
-
-Common definitions: - For RGB and luminance planes such as Y in YCbCr and I in ICtCp, 'E' is the original value in range of 0.0 to 1.0. - For chrominance planes such as Cb,Cr and Ct,Cp, 'E' is the original value in range of -0.5 to 0.5. - 'n' is the output bit depth. - For additional definitions such as rounding and clipping to valid n bit unsigned integer range, please refer to BT.2100 (Table 9).
-"""
-@cenum AVColorRange::UInt32 begin
-    AVCOL_RANGE_UNSPECIFIED = 0
-    AVCOL_RANGE_MPEG = 1
-    AVCOL_RANGE_JPEG = 2
-    AVCOL_RANGE_NB = 3
-end
-
-"""
-    AVColorPrimaries
-
-Chromaticity coordinates of the source primaries. These values match the ones defined by ISO/IEC 23001-8\\_2013 § 7.1.
-"""
-@cenum AVColorPrimaries::UInt32 begin
-    AVCOL_PRI_RESERVED0 = 0
-    AVCOL_PRI_BT709 = 1
-    AVCOL_PRI_UNSPECIFIED = 2
-    AVCOL_PRI_RESERVED = 3
-    AVCOL_PRI_BT470M = 4
-    AVCOL_PRI_BT470BG = 5
-    AVCOL_PRI_SMPTE170M = 6
-    AVCOL_PRI_SMPTE240M = 7
-    AVCOL_PRI_FILM = 8
-    AVCOL_PRI_BT2020 = 9
-    AVCOL_PRI_SMPTE428 = 10
-    AVCOL_PRI_SMPTEST428_1 = 10
-    AVCOL_PRI_SMPTE431 = 11
-    AVCOL_PRI_SMPTE432 = 12
-    AVCOL_PRI_EBU3213 = 22
-    AVCOL_PRI_JEDEC_P22 = 22
-    AVCOL_PRI_NB = 23
-end
-
-"""
-    AVColorTransferCharacteristic
-
-Color Transfer Characteristic. These values match the ones defined by ISO/IEC 23001-8\\_2013 § 7.2.
-"""
-@cenum AVColorTransferCharacteristic::UInt32 begin
-    AVCOL_TRC_RESERVED0 = 0
-    AVCOL_TRC_BT709 = 1
-    AVCOL_TRC_UNSPECIFIED = 2
-    AVCOL_TRC_RESERVED = 3
-    AVCOL_TRC_GAMMA22 = 4
-    AVCOL_TRC_GAMMA28 = 5
-    AVCOL_TRC_SMPTE170M = 6
-    AVCOL_TRC_SMPTE240M = 7
-    AVCOL_TRC_LINEAR = 8
-    AVCOL_TRC_LOG = 9
-    AVCOL_TRC_LOG_SQRT = 10
-    AVCOL_TRC_IEC61966_2_4 = 11
-    AVCOL_TRC_BT1361_ECG = 12
-    AVCOL_TRC_IEC61966_2_1 = 13
-    AVCOL_TRC_BT2020_10 = 14
-    AVCOL_TRC_BT2020_12 = 15
-    AVCOL_TRC_SMPTE2084 = 16
-    AVCOL_TRC_SMPTEST2084 = 16
-    AVCOL_TRC_SMPTE428 = 17
-    AVCOL_TRC_SMPTEST428_1 = 17
-    AVCOL_TRC_ARIB_STD_B67 = 18
-    AVCOL_TRC_NB = 19
-end
-
-"""
-    AVColorSpace
-
-YUV colorspace type. These values match the ones defined by ISO/IEC 23001-8\\_2013 § 7.3.
-"""
-@cenum AVColorSpace::UInt32 begin
-    AVCOL_SPC_RGB = 0
-    AVCOL_SPC_BT709 = 1
-    AVCOL_SPC_UNSPECIFIED = 2
-    AVCOL_SPC_RESERVED = 3
-    AVCOL_SPC_FCC = 4
-    AVCOL_SPC_BT470BG = 5
-    AVCOL_SPC_SMPTE170M = 6
-    AVCOL_SPC_SMPTE240M = 7
-    AVCOL_SPC_YCGCO = 8
-    AVCOL_SPC_YCOCG = 8
-    AVCOL_SPC_BT2020_NCL = 9
-    AVCOL_SPC_BT2020_CL = 10
-    AVCOL_SPC_SMPTE2085 = 11
-    AVCOL_SPC_CHROMA_DERIVED_NCL = 12
-    AVCOL_SPC_CHROMA_DERIVED_CL = 13
-    AVCOL_SPC_ICTCP = 14
-    AVCOL_SPC_NB = 15
-end
-
-"""
-    AVChromaLocation
-
-Location of chroma samples.
-
-Illustration showing the location of the first (top left) chroma sample of the image, the left shows only luma, the right shows the location of the chroma sample, the 2 could be imagined to overlay each other but are drawn separately due to limitations of ASCII
-
-1st 2nd 1st 2nd horizontal luma sample positions v v v v \\_\\_\\_\\_\\_\\_ \\_\\_\\_\\_\\_\\_1st luma line > |X X ... |3 4 X ... X are luma samples, | |1 2 1-6 are possible chroma positions2nd luma line > |X X ... |5 6 X ... 0 is undefined/unknown position
-"""
-@cenum AVChromaLocation::UInt32 begin
-    AVCHROMA_LOC_UNSPECIFIED = 0
-    AVCHROMA_LOC_LEFT = 1
-    AVCHROMA_LOC_CENTER = 2
-    AVCHROMA_LOC_TOPLEFT = 3
-    AVCHROMA_LOC_TOP = 4
-    AVCHROMA_LOC_BOTTOMLEFT = 5
-    AVCHROMA_LOC_BOTTOM = 6
-    AVCHROMA_LOC_NB = 7
-end
-
-"""
-    AVFrame
-
-This structure describes decoded (raw) audio or video data.
-
-[`AVFrame`](@ref) must be allocated using [`av_frame_alloc`](@ref)(). Note that this only allocates the [`AVFrame`](@ref) itself, the buffers for the data must be managed through other means (see below). [`AVFrame`](@ref) must be freed with [`av_frame_free`](@ref)().
-
-[`AVFrame`](@ref) is typically allocated once and then reused multiple times to hold different data (e.g. a single [`AVFrame`](@ref) to hold frames received from a decoder). In such a case, [`av_frame_unref`](@ref)() will free any references held by the frame and reset it to its original clean state before it is reused again.
-
-The data described by an [`AVFrame`](@ref) is usually reference counted through the [`AVBuffer`](@ref) API. The underlying buffer references are stored in [`AVFrame`](@ref).buf / [`AVFrame`](@ref).extended\\_buf. An [`AVFrame`](@ref) is considered to be reference counted if at least one reference is set, i.e. if [`AVFrame`](@ref).buf[0] != NULL. In such a case, every single data plane must be contained in one of the buffers in [`AVFrame`](@ref).buf or [`AVFrame`](@ref).extended\\_buf. There may be a single buffer for all the data, or one separate buffer for each plane, or anything in between.
-
-sizeof([`AVFrame`](@ref)) is not a part of the public ABI, so new fields may be added to the end with a minor bump.
-
-Fields can be accessed through AVOptions, the name string used, matches the C structure field name for fields accessible through AVOptions. The [`AVClass`](@ref) for [`AVFrame`](@ref) can be obtained from [`avcodec_get_frame_class`](@ref)()
-"""
-struct AVFrame
-    data::NTuple{536, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVFrame}, f::Symbol)
-    f === :data && return Ptr{NTuple{8, Ptr{UInt8}}}(x + 0)
-    f === :linesize && return Ptr{NTuple{8, Cint}}(x + 64)
-    f === :extended_data && return Ptr{Ptr{Ptr{UInt8}}}(x + 96)
-    f === :width && return Ptr{Cint}(x + 104)
-    f === :height && return Ptr{Cint}(x + 108)
-    f === :nb_samples && return Ptr{Cint}(x + 112)
-    f === :format && return Ptr{Cint}(x + 116)
-    f === :key_frame && return Ptr{Cint}(x + 120)
-    f === :pict_type && return Ptr{AVPictureType}(x + 124)
-    f === :sample_aspect_ratio && return Ptr{AVRational}(x + 128)
-    f === :pts && return Ptr{Int64}(x + 136)
-    f === :pkt_pts && return Ptr{Int64}(x + 144)
-    f === :pkt_dts && return Ptr{Int64}(x + 152)
-    f === :coded_picture_number && return Ptr{Cint}(x + 160)
-    f === :display_picture_number && return Ptr{Cint}(x + 164)
-    f === :quality && return Ptr{Cint}(x + 168)
-    f === :opaque && return Ptr{Ptr{Cvoid}}(x + 176)
-    f === :error && return Ptr{NTuple{8, UInt64}}(x + 184)
-    f === :repeat_pict && return Ptr{Cint}(x + 248)
-    f === :interlaced_frame && return Ptr{Cint}(x + 252)
-    f === :top_field_first && return Ptr{Cint}(x + 256)
-    f === :palette_has_changed && return Ptr{Cint}(x + 260)
-    f === :reordered_opaque && return Ptr{Int64}(x + 264)
-    f === :sample_rate && return Ptr{Cint}(x + 272)
-    f === :channel_layout && return Ptr{UInt64}(x + 280)
-    f === :buf && return Ptr{NTuple{8, Ptr{AVBufferRef}}}(x + 288)
-    f === :extended_buf && return Ptr{Ptr{Ptr{AVBufferRef}}}(x + 352)
-    f === :nb_extended_buf && return Ptr{Cint}(x + 360)
-    f === :side_data && return Ptr{Ptr{Ptr{AVFrameSideData}}}(x + 368)
-    f === :nb_side_data && return Ptr{Cint}(x + 376)
-    f === :flags && return Ptr{Cint}(x + 380)
-    f === :color_range && return Ptr{AVColorRange}(x + 384)
-    f === :color_primaries && return Ptr{AVColorPrimaries}(x + 388)
-    f === :color_trc && return Ptr{AVColorTransferCharacteristic}(x + 392)
-    f === :colorspace && return Ptr{AVColorSpace}(x + 396)
-    f === :chroma_location && return Ptr{AVChromaLocation}(x + 400)
-    f === :best_effort_timestamp && return Ptr{Int64}(x + 408)
-    f === :pkt_pos && return Ptr{Int64}(x + 416)
-    f === :pkt_duration && return Ptr{Int64}(x + 424)
-    f === :metadata && return Ptr{Ptr{AVDictionary}}(x + 432)
-    f === :decode_error_flags && return Ptr{Cint}(x + 440)
-    f === :channels && return Ptr{Cint}(x + 444)
-    f === :pkt_size && return Ptr{Cint}(x + 448)
-    f === :qscale_table && return Ptr{Ptr{Int8}}(x + 456)
-    f === :qstride && return Ptr{Cint}(x + 464)
-    f === :qscale_type && return Ptr{Cint}(x + 468)
-    f === :qp_table_buf && return Ptr{Ptr{AVBufferRef}}(x + 472)
-    f === :hw_frames_ctx && return Ptr{Ptr{AVBufferRef}}(x + 480)
-    f === :opaque_ref && return Ptr{Ptr{AVBufferRef}}(x + 488)
-    f === :crop_top && return Ptr{Csize_t}(x + 496)
-    f === :crop_bottom && return Ptr{Csize_t}(x + 504)
-    f === :crop_left && return Ptr{Csize_t}(x + 512)
-    f === :crop_right && return Ptr{Csize_t}(x + 520)
-    f === :private_ref && return Ptr{Ptr{AVBufferRef}}(x + 528)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVFrame, f::Symbol)
-    r = Ref{AVFrame}(x)
-    ptr = Base.unsafe_convert(Ptr{AVFrame}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVFrame}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
 end
 
 """
@@ -4134,7 +7521,7 @@ function avfilter_graph_set_auto_convert(graph, flags::Integer)
     ccall((:avfilter_graph_set_auto_convert, libavfilter), Cvoid, (Ptr{AVFilterGraph}, Cuint), graph, flags)
 end
 
-@cenum __JL_Ctag_70::Int32 begin
+@cenum __JL_Ctag_374::Int32 begin
     AVFILTER_AUTO_CONVERT_ALL = 0
     AVFILTER_AUTO_CONVERT_NONE = -1
 end
@@ -4527,7 +7914,7 @@ function av_buffersink_get_samples(ctx, frame, nb_samples::Integer)
 end
 
 """
-    __JL_Ctag_117
+    __JL_Ctag_421
 
 ` lavfi_buffersrc Buffer source API`
 
@@ -4535,7 +7922,7 @@ end
 
 @{
 """
-@cenum __JL_Ctag_117::UInt32 begin
+@cenum __JL_Ctag_421::UInt32 begin
     AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = 1
     AV_BUFFERSRC_FLAG_PUSH = 4
     AV_BUFFERSRC_FLAG_KEEP_REF = 8
@@ -4674,103 +8061,6 @@ function av_buffersrc_close(ctx, pts::Int64, flags::Integer)
 end
 
 """
-    AVPacketSideDataType
-
-` lavc_packet AVPacket`
-
-Types and functions for working with [`AVPacket`](@ref). @{
-"""
-@cenum AVPacketSideDataType::UInt32 begin
-    AV_PKT_DATA_PALETTE = 0
-    AV_PKT_DATA_NEW_EXTRADATA = 1
-    AV_PKT_DATA_PARAM_CHANGE = 2
-    AV_PKT_DATA_H263_MB_INFO = 3
-    AV_PKT_DATA_REPLAYGAIN = 4
-    AV_PKT_DATA_DISPLAYMATRIX = 5
-    AV_PKT_DATA_STEREO3D = 6
-    AV_PKT_DATA_AUDIO_SERVICE_TYPE = 7
-    AV_PKT_DATA_QUALITY_STATS = 8
-    AV_PKT_DATA_FALLBACK_TRACK = 9
-    AV_PKT_DATA_CPB_PROPERTIES = 10
-    AV_PKT_DATA_SKIP_SAMPLES = 11
-    AV_PKT_DATA_JP_DUALMONO = 12
-    AV_PKT_DATA_STRINGS_METADATA = 13
-    AV_PKT_DATA_SUBTITLE_POSITION = 14
-    AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL = 15
-    AV_PKT_DATA_WEBVTT_IDENTIFIER = 16
-    AV_PKT_DATA_WEBVTT_SETTINGS = 17
-    AV_PKT_DATA_METADATA_UPDATE = 18
-    AV_PKT_DATA_MPEGTS_STREAM_ID = 19
-    AV_PKT_DATA_MASTERING_DISPLAY_METADATA = 20
-    AV_PKT_DATA_SPHERICAL = 21
-    AV_PKT_DATA_CONTENT_LIGHT_LEVEL = 22
-    AV_PKT_DATA_A53_CC = 23
-    AV_PKT_DATA_ENCRYPTION_INIT_INFO = 24
-    AV_PKT_DATA_ENCRYPTION_INFO = 25
-    AV_PKT_DATA_AFD = 26
-    AV_PKT_DATA_PRFT = 27
-    AV_PKT_DATA_ICC_PROFILE = 28
-    AV_PKT_DATA_DOVI_CONF = 29
-    AV_PKT_DATA_S12M_TIMECODE = 30
-    AV_PKT_DATA_NB = 31
-end
-
-struct AVPacketSideData
-    data::Ptr{UInt8}
-    size::Cint
-    type::AVPacketSideDataType
-end
-
-"""
-    AVPacket
-
-This structure stores compressed data. It is typically exported by demuxers and then passed as input to decoders, or received as output from encoders and then passed to muxers.
-
-For video, it should typically contain one compressed frame. For audio it may contain several compressed frames. Encoders are allowed to output empty packets, with no compressed data, containing only side data (e.g. to update some stream parameters at the end of encoding).
-
-The semantics of data ownership depends on the buf field. If it is set, the packet data is dynamically allocated and is valid indefinitely until a call to [`av_packet_unref`](@ref)() reduces the reference count to 0.
-
-If the buf field is not set [`av_packet_ref`](@ref)() would make a copy instead of increasing the reference count.
-
-The side data is always allocated with [`av_malloc`](@ref)(), copied by [`av_packet_ref`](@ref)() and freed by [`av_packet_unref`](@ref)().
-
-sizeof([`AVPacket`](@ref)) being a part of the public ABI is deprecated. once [`av_init_packet`](@ref)() is removed, new packets will only be able to be allocated with [`av_packet_alloc`](@ref)(), and new fields may be added to the end of the struct with a minor bump.
-
-### See also
-[`av_packet_alloc`](@ref), [`av_packet_ref`](@ref), [`av_packet_unref`](@ref)
-"""
-struct AVPacket
-    data::NTuple{88, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVPacket}, f::Symbol)
-    f === :buf && return Ptr{Ptr{AVBufferRef}}(x + 0)
-    f === :pts && return Ptr{Int64}(x + 8)
-    f === :dts && return Ptr{Int64}(x + 16)
-    f === :data && return Ptr{Ptr{UInt8}}(x + 24)
-    f === :size && return Ptr{Cint}(x + 32)
-    f === :stream_index && return Ptr{Cint}(x + 36)
-    f === :flags && return Ptr{Cint}(x + 40)
-    f === :side_data && return Ptr{Ptr{AVPacketSideData}}(x + 48)
-    f === :side_data_elems && return Ptr{Cint}(x + 56)
-    f === :duration && return Ptr{Int64}(x + 64)
-    f === :pos && return Ptr{Int64}(x + 72)
-    f === :convergence_duration && return Ptr{Int64}(x + 80)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVPacket, f::Symbol)
-    r = Ref{AVPacket}(x)
-    ptr = Base.unsafe_convert(Ptr{AVPacket}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVPacket}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-"""
     av_get_packet(s, pkt, size::Integer)
 
 Allocate and read the payload of a packet and initialize its fields with default values.
@@ -4809,208 +8099,6 @@ function av_append_packet(s, pkt, size::Integer)
 end
 
 """
-    AVProbeData
-
-This structure contains the data a format has to probe a file.
-"""
-struct AVProbeData
-    filename::Cstring
-    buf::Ptr{Cuchar}
-    buf_size::Cint
-    mime_type::Cstring
-end
-
-"""
-    AVStreamParseType
-
-@}
-"""
-@cenum AVStreamParseType::UInt32 begin
-    AVSTREAM_PARSE_NONE = 0
-    AVSTREAM_PARSE_FULL = 1
-    AVSTREAM_PARSE_HEADERS = 2
-    AVSTREAM_PARSE_TIMESTAMPS = 3
-    AVSTREAM_PARSE_FULL_ONCE = 4
-    AVSTREAM_PARSE_FULL_RAW = 5
-end
-
-struct AVIndexEntry
-    data::NTuple{24, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVIndexEntry}, f::Symbol)
-    f === :pos && return Ptr{Int64}(x + 0)
-    f === :timestamp && return Ptr{Int64}(x + 8)
-    f === :flags && return (Ptr{Cint}(x + 16), 0, 2)
-    f === :size && return (Ptr{Cint}(x + 16), 2, 30)
-    f === :min_distance && return Ptr{Cint}(x + 20)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVIndexEntry, f::Symbol)
-    r = Ref{AVIndexEntry}(x)
-    ptr = Base.unsafe_convert(Ptr{AVIndexEntry}, r)
-    fptr = getproperty(ptr, f)
-    begin
-        if fptr isa Ptr
-            return GC.@preserve(r, unsafe_load(fptr))
-        else
-            (baseptr, offset, width) = fptr
-            ty = eltype(baseptr)
-            baseptr32 = convert(Ptr{UInt32}, baseptr)
-            u64 = GC.@preserve(r, unsafe_load(baseptr32))
-            if offset + width > 32
-                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
-            end
-            u64 = u64 >> offset & (1 << width - 1)
-            return u64 % ty
-        end
-    end
-end
-
-function Base.setproperty!(x::Ptr{AVIndexEntry}, f::Symbol, v)
-    fptr = getproperty(x, f)
-    if fptr isa Ptr
-        unsafe_store!(getproperty(x, f), v)
-    else
-        (baseptr, offset, width) = fptr
-        baseptr32 = convert(Ptr{UInt32}, baseptr)
-        u64 = unsafe_load(baseptr32)
-        straddle = offset + width > 32
-        if straddle
-            u64 |= unsafe_load(baseptr32 + 4) << 32
-        end
-        mask = 1 << width - 1
-        u64 &= ~(mask << offset)
-        u64 |= (unsigned(v) & mask) << offset
-        unsafe_store!(baseptr32, u64 & typemax(UInt32))
-        if straddle
-            unsafe_store!(baseptr32 + 4, u64 >> 32)
-        end
-    end
-end
-
-mutable struct AVStreamInternal end
-
-"""
-    AVFieldOrder
-
-` lavc_core`
-"""
-@cenum AVFieldOrder::UInt32 begin
-    AV_FIELD_UNKNOWN = 0
-    AV_FIELD_PROGRESSIVE = 1
-    AV_FIELD_TT = 2
-    AV_FIELD_BB = 3
-    AV_FIELD_TB = 4
-    AV_FIELD_BT = 5
-end
-
-"""
-    AVCodecParameters
-
-This struct describes the properties of an encoded stream.
-
-sizeof([`AVCodecParameters`](@ref)) is not a part of the public ABI, this struct must be allocated with [`avcodec_parameters_alloc`](@ref)() and freed with [`avcodec_parameters_free`](@ref)().
-"""
-struct AVCodecParameters
-    codec_type::AVMediaType
-    codec_id::AVCodecID
-    codec_tag::UInt32
-    extradata::Ptr{UInt8}
-    extradata_size::Cint
-    format::Cint
-    bit_rate::Int64
-    bits_per_coded_sample::Cint
-    bits_per_raw_sample::Cint
-    profile::Cint
-    level::Cint
-    width::Cint
-    height::Cint
-    sample_aspect_ratio::AVRational
-    field_order::AVFieldOrder
-    color_range::AVColorRange
-    color_primaries::AVColorPrimaries
-    color_trc::AVColorTransferCharacteristic
-    color_space::AVColorSpace
-    chroma_location::AVChromaLocation
-    video_delay::Cint
-    channel_layout::UInt64
-    channels::Cint
-    sample_rate::Cint
-    block_align::Cint
-    frame_size::Cint
-    initial_padding::Cint
-    trailing_padding::Cint
-    seek_preroll::Cint
-end
-
-"""
-    AVStream
-
-Stream structure. New fields can be added to the end with minor version bumps. Removal, reordering and changes to existing fields require a major version bump. sizeof([`AVStream`](@ref)) must not be used outside libav*.
-"""
-struct AVStream
-    data::NTuple{496, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVStream}, f::Symbol)
-    f === :index && return Ptr{Cint}(x + 0)
-    f === :id && return Ptr{Cint}(x + 4)
-    f === :codec && return Ptr{Ptr{AVCodecContext}}(x + 8)
-    f === :priv_data && return Ptr{Ptr{Cvoid}}(x + 16)
-    f === :time_base && return Ptr{AVRational}(x + 24)
-    f === :start_time && return Ptr{Int64}(x + 32)
-    f === :duration && return Ptr{Int64}(x + 40)
-    f === :nb_frames && return Ptr{Int64}(x + 48)
-    f === :disposition && return Ptr{Cint}(x + 56)
-    f === :discard && return Ptr{AVDiscard}(x + 60)
-    f === :sample_aspect_ratio && return Ptr{AVRational}(x + 64)
-    f === :metadata && return Ptr{Ptr{AVDictionary}}(x + 72)
-    f === :avg_frame_rate && return Ptr{AVRational}(x + 80)
-    f === :attached_pic && return Ptr{AVPacket}(x + 88)
-    f === :side_data && return Ptr{Ptr{AVPacketSideData}}(x + 176)
-    f === :nb_side_data && return Ptr{Cint}(x + 184)
-    f === :event_flags && return Ptr{Cint}(x + 188)
-    f === :r_frame_rate && return Ptr{AVRational}(x + 192)
-    f === :recommended_encoder_configuration && return Ptr{Cstring}(x + 200)
-    f === :codecpar && return Ptr{Ptr{AVCodecParameters}}(x + 208)
-    f === :unused && return Ptr{Ptr{Cvoid}}(x + 216)
-    f === :pts_wrap_bits && return Ptr{Cint}(x + 224)
-    f === :first_dts && return Ptr{Int64}(x + 232)
-    f === :cur_dts && return Ptr{Int64}(x + 240)
-    f === :last_IP_pts && return Ptr{Int64}(x + 248)
-    f === :last_IP_duration && return Ptr{Cint}(x + 256)
-    f === :probe_packets && return Ptr{Cint}(x + 260)
-    f === :codec_info_nb_frames && return Ptr{Cint}(x + 264)
-    f === :need_parsing && return Ptr{AVStreamParseType}(x + 268)
-    f === :parser && return Ptr{Ptr{AVCodecParserContext}}(x + 272)
-    f === :unused7 && return Ptr{Ptr{Cvoid}}(x + 280)
-    f === :unused6 && return Ptr{AVProbeData}(x + 288)
-    f === :unused5 && return Ptr{NTuple{17, Int64}}(x + 320)
-    f === :index_entries && return Ptr{Ptr{AVIndexEntry}}(x + 456)
-    f === :nb_index_entries && return Ptr{Cint}(x + 464)
-    f === :index_entries_allocated_size && return Ptr{Cuint}(x + 468)
-    f === :stream_identifier && return Ptr{Cint}(x + 472)
-    f === :unused8 && return Ptr{Cint}(x + 476)
-    f === :unused9 && return Ptr{Cint}(x + 480)
-    f === :unused10 && return Ptr{Cint}(x + 484)
-    f === :internal && return Ptr{Ptr{AVStreamInternal}}(x + 488)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVStream, f::Symbol)
-    r = Ref{AVStream}(x)
-    ptr = Base.unsafe_convert(Ptr{AVStream}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVStream}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-"""
     av_stream_get_r_frame_rate(s)
 
 Accessors for some [`AVStream`](@ref) fields. These used to be provided for ABI compatibility, and do not need to be used anymore.
@@ -5029,75 +8117,6 @@ end
 
 function av_stream_set_recommended_encoder_configuration(s, configuration)
     ccall((:av_stream_set_recommended_encoder_configuration, libavformat), Cvoid, (Ptr{AVStream}, Cstring), s, configuration)
-end
-
-"""
-    AVPictureStructure
-
-` lavc_parsing Frame parsing`
-
-@{
-"""
-@cenum AVPictureStructure::UInt32 begin
-    AV_PICTURE_STRUCTURE_UNKNOWN = 0
-    AV_PICTURE_STRUCTURE_TOP_FIELD = 1
-    AV_PICTURE_STRUCTURE_BOTTOM_FIELD = 2
-    AV_PICTURE_STRUCTURE_FRAME = 3
-end
-
-struct AVCodecParserContext
-    data::NTuple{352, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVCodecParserContext}, f::Symbol)
-    f === :priv_data && return Ptr{Ptr{Cvoid}}(x + 0)
-    f === :parser && return Ptr{Ptr{AVCodecParser}}(x + 8)
-    f === :frame_offset && return Ptr{Int64}(x + 16)
-    f === :cur_offset && return Ptr{Int64}(x + 24)
-    f === :next_frame_offset && return Ptr{Int64}(x + 32)
-    f === :pict_type && return Ptr{Cint}(x + 40)
-    f === :repeat_pict && return Ptr{Cint}(x + 44)
-    f === :pts && return Ptr{Int64}(x + 48)
-    f === :dts && return Ptr{Int64}(x + 56)
-    f === :last_pts && return Ptr{Int64}(x + 64)
-    f === :last_dts && return Ptr{Int64}(x + 72)
-    f === :fetch_timestamp && return Ptr{Cint}(x + 80)
-    f === :cur_frame_start_index && return Ptr{Cint}(x + 84)
-    f === :cur_frame_offset && return Ptr{NTuple{4, Int64}}(x + 88)
-    f === :cur_frame_pts && return Ptr{NTuple{4, Int64}}(x + 120)
-    f === :cur_frame_dts && return Ptr{NTuple{4, Int64}}(x + 152)
-    f === :flags && return Ptr{Cint}(x + 184)
-    f === :offset && return Ptr{Int64}(x + 192)
-    f === :cur_frame_end && return Ptr{NTuple{4, Int64}}(x + 200)
-    f === :key_frame && return Ptr{Cint}(x + 232)
-    f === :convergence_duration && return Ptr{Int64}(x + 240)
-    f === :dts_sync_point && return Ptr{Cint}(x + 248)
-    f === :dts_ref_dts_delta && return Ptr{Cint}(x + 252)
-    f === :pts_dts_delta && return Ptr{Cint}(x + 256)
-    f === :cur_frame_pos && return Ptr{NTuple{4, Int64}}(x + 264)
-    f === :pos && return Ptr{Int64}(x + 296)
-    f === :last_pos && return Ptr{Int64}(x + 304)
-    f === :duration && return Ptr{Cint}(x + 312)
-    f === :field_order && return Ptr{AVFieldOrder}(x + 316)
-    f === :picture_structure && return Ptr{AVPictureStructure}(x + 320)
-    f === :output_picture_number && return Ptr{Cint}(x + 324)
-    f === :width && return Ptr{Cint}(x + 328)
-    f === :height && return Ptr{Cint}(x + 332)
-    f === :coded_width && return Ptr{Cint}(x + 336)
-    f === :coded_height && return Ptr{Cint}(x + 340)
-    f === :format && return Ptr{Cint}(x + 344)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVCodecParserContext, f::Symbol)
-    r = Ref{AVCodecParserContext}(x)
-    ptr = Base.unsafe_convert(Ptr{AVCodecParserContext}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVCodecParserContext}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
 end
 
 function av_stream_get_parser(s)
@@ -6401,319 +9420,6 @@ function avformat_queue_attached_pictures(s)
     ccall((:avformat_queue_attached_pictures, libavformat), Cint, (Ptr{AVFormatContext},), s)
 end
 
-mutable struct AVCodecInternal end
-
-@cenum AVAudioServiceType::UInt32 begin
-    AV_AUDIO_SERVICE_TYPE_MAIN = 0
-    AV_AUDIO_SERVICE_TYPE_EFFECTS = 1
-    AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED = 2
-    AV_AUDIO_SERVICE_TYPE_HEARING_IMPAIRED = 3
-    AV_AUDIO_SERVICE_TYPE_DIALOGUE = 4
-    AV_AUDIO_SERVICE_TYPE_COMMENTARY = 5
-    AV_AUDIO_SERVICE_TYPE_EMERGENCY = 6
-    AV_AUDIO_SERVICE_TYPE_VOICE_OVER = 7
-    AV_AUDIO_SERVICE_TYPE_KARAOKE = 8
-    AV_AUDIO_SERVICE_TYPE_NB = 9
-end
-
-"""
-    RcOverride
-
-` lavc_encoding`
-"""
-struct RcOverride
-    start_frame::Cint
-    end_frame::Cint
-    qscale::Cint
-    quality_factor::Cfloat
-end
-
-"""
-    AVHWAccel
-
-` lavc_hwaccel AVHWAccel`
-
-!!! note
-
-    Nothing in this structure should be accessed by the user. At some point in future it will not be externally visible at all.
-
-@{
-"""
-struct AVHWAccel
-    name::Cstring
-    type::AVMediaType
-    id::AVCodecID
-    pix_fmt::AVPixelFormat
-    capabilities::Cint
-    alloc_frame::Ptr{Cvoid}
-    start_frame::Ptr{Cvoid}
-    decode_params::Ptr{Cvoid}
-    decode_slice::Ptr{Cvoid}
-    end_frame::Ptr{Cvoid}
-    frame_priv_data_size::Cint
-    decode_mb::Ptr{Cvoid}
-    init::Ptr{Cvoid}
-    uninit::Ptr{Cvoid}
-    priv_data_size::Cint
-    caps_internal::Cint
-    frame_params::Ptr{Cvoid}
-end
-
-"""
-    AVCodecDescriptor
-
-This struct describes the properties of a single codec described by an [`AVCodecID`](@ref). 
-
-### See also
-[`avcodec_descriptor_get`](@ref)()
-"""
-struct AVCodecDescriptor
-    id::AVCodecID
-    type::AVMediaType
-    name::Cstring
-    long_name::Cstring
-    props::Cint
-    mime_types::Ptr{Cstring}
-    profiles::Ptr{AVProfile}
-end
-
-"""
-    AVCodecContext
-
-main external API structure. New fields can be added to the end with minor version bumps. Removal, reordering and changes to existing fields require a major version bump. You can use AVOptions (av\\_opt* / av\\_set/get*()) to access these fields from user applications. The name string for AVOptions options matches the associated command line parameter name and can be found in libavcodec/options\\_table.h The [`AVOption`](@ref)/command line parameter names differ in some cases from the C structure field names for historic reasons or brevity. sizeof([`AVCodecContext`](@ref)) must not be used outside libav*.
-"""
-struct AVCodecContext
-    data::NTuple{1080, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVCodecContext}, f::Symbol)
-    f === :av_class && return Ptr{Ptr{AVClass}}(x + 0)
-    f === :log_level_offset && return Ptr{Cint}(x + 8)
-    f === :codec_type && return Ptr{AVMediaType}(x + 12)
-    f === :codec && return Ptr{Ptr{AVCodec}}(x + 16)
-    f === :codec_id && return Ptr{AVCodecID}(x + 24)
-    f === :codec_tag && return Ptr{Cuint}(x + 28)
-    f === :priv_data && return Ptr{Ptr{Cvoid}}(x + 32)
-    f === :internal && return Ptr{Ptr{AVCodecInternal}}(x + 40)
-    f === :opaque && return Ptr{Ptr{Cvoid}}(x + 48)
-    f === :bit_rate && return Ptr{Int64}(x + 56)
-    f === :bit_rate_tolerance && return Ptr{Cint}(x + 64)
-    f === :global_quality && return Ptr{Cint}(x + 68)
-    f === :compression_level && return Ptr{Cint}(x + 72)
-    f === :flags && return Ptr{Cint}(x + 76)
-    f === :flags2 && return Ptr{Cint}(x + 80)
-    f === :extradata && return Ptr{Ptr{UInt8}}(x + 88)
-    f === :extradata_size && return Ptr{Cint}(x + 96)
-    f === :time_base && return Ptr{AVRational}(x + 100)
-    f === :ticks_per_frame && return Ptr{Cint}(x + 108)
-    f === :delay && return Ptr{Cint}(x + 112)
-    f === :width && return Ptr{Cint}(x + 116)
-    f === :height && return Ptr{Cint}(x + 120)
-    f === :coded_width && return Ptr{Cint}(x + 124)
-    f === :coded_height && return Ptr{Cint}(x + 128)
-    f === :gop_size && return Ptr{Cint}(x + 132)
-    f === :pix_fmt && return Ptr{AVPixelFormat}(x + 136)
-    f === :draw_horiz_band && return Ptr{Ptr{Cvoid}}(x + 144)
-    f === :get_format && return Ptr{Ptr{Cvoid}}(x + 152)
-    f === :max_b_frames && return Ptr{Cint}(x + 160)
-    f === :b_quant_factor && return Ptr{Cfloat}(x + 164)
-    f === :b_frame_strategy && return Ptr{Cint}(x + 168)
-    f === :b_quant_offset && return Ptr{Cfloat}(x + 172)
-    f === :has_b_frames && return Ptr{Cint}(x + 176)
-    f === :mpeg_quant && return Ptr{Cint}(x + 180)
-    f === :i_quant_factor && return Ptr{Cfloat}(x + 184)
-    f === :i_quant_offset && return Ptr{Cfloat}(x + 188)
-    f === :lumi_masking && return Ptr{Cfloat}(x + 192)
-    f === :temporal_cplx_masking && return Ptr{Cfloat}(x + 196)
-    f === :spatial_cplx_masking && return Ptr{Cfloat}(x + 200)
-    f === :p_masking && return Ptr{Cfloat}(x + 204)
-    f === :dark_masking && return Ptr{Cfloat}(x + 208)
-    f === :slice_count && return Ptr{Cint}(x + 212)
-    f === :prediction_method && return Ptr{Cint}(x + 216)
-    f === :slice_offset && return Ptr{Ptr{Cint}}(x + 224)
-    f === :sample_aspect_ratio && return Ptr{AVRational}(x + 232)
-    f === :me_cmp && return Ptr{Cint}(x + 240)
-    f === :me_sub_cmp && return Ptr{Cint}(x + 244)
-    f === :mb_cmp && return Ptr{Cint}(x + 248)
-    f === :ildct_cmp && return Ptr{Cint}(x + 252)
-    f === :dia_size && return Ptr{Cint}(x + 256)
-    f === :last_predictor_count && return Ptr{Cint}(x + 260)
-    f === :pre_me && return Ptr{Cint}(x + 264)
-    f === :me_pre_cmp && return Ptr{Cint}(x + 268)
-    f === :pre_dia_size && return Ptr{Cint}(x + 272)
-    f === :me_subpel_quality && return Ptr{Cint}(x + 276)
-    f === :me_range && return Ptr{Cint}(x + 280)
-    f === :slice_flags && return Ptr{Cint}(x + 284)
-    f === :mb_decision && return Ptr{Cint}(x + 288)
-    f === :intra_matrix && return Ptr{Ptr{UInt16}}(x + 296)
-    f === :inter_matrix && return Ptr{Ptr{UInt16}}(x + 304)
-    f === :scenechange_threshold && return Ptr{Cint}(x + 312)
-    f === :noise_reduction && return Ptr{Cint}(x + 316)
-    f === :intra_dc_precision && return Ptr{Cint}(x + 320)
-    f === :skip_top && return Ptr{Cint}(x + 324)
-    f === :skip_bottom && return Ptr{Cint}(x + 328)
-    f === :mb_lmin && return Ptr{Cint}(x + 332)
-    f === :mb_lmax && return Ptr{Cint}(x + 336)
-    f === :me_penalty_compensation && return Ptr{Cint}(x + 340)
-    f === :bidir_refine && return Ptr{Cint}(x + 344)
-    f === :brd_scale && return Ptr{Cint}(x + 348)
-    f === :keyint_min && return Ptr{Cint}(x + 352)
-    f === :refs && return Ptr{Cint}(x + 356)
-    f === :chromaoffset && return Ptr{Cint}(x + 360)
-    f === :mv0_threshold && return Ptr{Cint}(x + 364)
-    f === :b_sensitivity && return Ptr{Cint}(x + 368)
-    f === :color_primaries && return Ptr{AVColorPrimaries}(x + 372)
-    f === :color_trc && return Ptr{AVColorTransferCharacteristic}(x + 376)
-    f === :colorspace && return Ptr{AVColorSpace}(x + 380)
-    f === :color_range && return Ptr{AVColorRange}(x + 384)
-    f === :chroma_sample_location && return Ptr{AVChromaLocation}(x + 388)
-    f === :slices && return Ptr{Cint}(x + 392)
-    f === :field_order && return Ptr{AVFieldOrder}(x + 396)
-    f === :sample_rate && return Ptr{Cint}(x + 400)
-    f === :channels && return Ptr{Cint}(x + 404)
-    f === :sample_fmt && return Ptr{AVSampleFormat}(x + 408)
-    f === :frame_size && return Ptr{Cint}(x + 412)
-    f === :frame_number && return Ptr{Cint}(x + 416)
-    f === :block_align && return Ptr{Cint}(x + 420)
-    f === :cutoff && return Ptr{Cint}(x + 424)
-    f === :channel_layout && return Ptr{UInt64}(x + 432)
-    f === :request_channel_layout && return Ptr{UInt64}(x + 440)
-    f === :audio_service_type && return Ptr{AVAudioServiceType}(x + 448)
-    f === :request_sample_fmt && return Ptr{AVSampleFormat}(x + 452)
-    f === :get_buffer2 && return Ptr{Ptr{Cvoid}}(x + 456)
-    f === :refcounted_frames && return Ptr{Cint}(x + 464)
-    f === :qcompress && return Ptr{Cfloat}(x + 468)
-    f === :qblur && return Ptr{Cfloat}(x + 472)
-    f === :qmin && return Ptr{Cint}(x + 476)
-    f === :qmax && return Ptr{Cint}(x + 480)
-    f === :max_qdiff && return Ptr{Cint}(x + 484)
-    f === :rc_buffer_size && return Ptr{Cint}(x + 488)
-    f === :rc_override_count && return Ptr{Cint}(x + 492)
-    f === :rc_override && return Ptr{Ptr{RcOverride}}(x + 496)
-    f === :rc_max_rate && return Ptr{Int64}(x + 504)
-    f === :rc_min_rate && return Ptr{Int64}(x + 512)
-    f === :rc_max_available_vbv_use && return Ptr{Cfloat}(x + 520)
-    f === :rc_min_vbv_overflow_use && return Ptr{Cfloat}(x + 524)
-    f === :rc_initial_buffer_occupancy && return Ptr{Cint}(x + 528)
-    f === :coder_type && return Ptr{Cint}(x + 532)
-    f === :context_model && return Ptr{Cint}(x + 536)
-    f === :frame_skip_threshold && return Ptr{Cint}(x + 540)
-    f === :frame_skip_factor && return Ptr{Cint}(x + 544)
-    f === :frame_skip_exp && return Ptr{Cint}(x + 548)
-    f === :frame_skip_cmp && return Ptr{Cint}(x + 552)
-    f === :trellis && return Ptr{Cint}(x + 556)
-    f === :min_prediction_order && return Ptr{Cint}(x + 560)
-    f === :max_prediction_order && return Ptr{Cint}(x + 564)
-    f === :timecode_frame_start && return Ptr{Int64}(x + 568)
-    f === :rtp_callback && return Ptr{Ptr{Cvoid}}(x + 576)
-    f === :rtp_payload_size && return Ptr{Cint}(x + 584)
-    f === :mv_bits && return Ptr{Cint}(x + 588)
-    f === :header_bits && return Ptr{Cint}(x + 592)
-    f === :i_tex_bits && return Ptr{Cint}(x + 596)
-    f === :p_tex_bits && return Ptr{Cint}(x + 600)
-    f === :i_count && return Ptr{Cint}(x + 604)
-    f === :p_count && return Ptr{Cint}(x + 608)
-    f === :skip_count && return Ptr{Cint}(x + 612)
-    f === :misc_bits && return Ptr{Cint}(x + 616)
-    f === :frame_bits && return Ptr{Cint}(x + 620)
-    f === :stats_out && return Ptr{Cstring}(x + 624)
-    f === :stats_in && return Ptr{Cstring}(x + 632)
-    f === :workaround_bugs && return Ptr{Cint}(x + 640)
-    f === :strict_std_compliance && return Ptr{Cint}(x + 644)
-    f === :error_concealment && return Ptr{Cint}(x + 648)
-    f === :debug && return Ptr{Cint}(x + 652)
-    f === :err_recognition && return Ptr{Cint}(x + 656)
-    f === :reordered_opaque && return Ptr{Int64}(x + 664)
-    f === :hwaccel && return Ptr{Ptr{AVHWAccel}}(x + 672)
-    f === :hwaccel_context && return Ptr{Ptr{Cvoid}}(x + 680)
-    f === :error && return Ptr{NTuple{8, UInt64}}(x + 688)
-    f === :dct_algo && return Ptr{Cint}(x + 752)
-    f === :idct_algo && return Ptr{Cint}(x + 756)
-    f === :bits_per_coded_sample && return Ptr{Cint}(x + 760)
-    f === :bits_per_raw_sample && return Ptr{Cint}(x + 764)
-    f === :lowres && return Ptr{Cint}(x + 768)
-    f === :coded_frame && return Ptr{Ptr{AVFrame}}(x + 776)
-    f === :thread_count && return Ptr{Cint}(x + 784)
-    f === :thread_type && return Ptr{Cint}(x + 788)
-    f === :active_thread_type && return Ptr{Cint}(x + 792)
-    f === :thread_safe_callbacks && return Ptr{Cint}(x + 796)
-    f === :execute && return Ptr{Ptr{Cvoid}}(x + 800)
-    f === :execute2 && return Ptr{Ptr{Cvoid}}(x + 808)
-    f === :nsse_weight && return Ptr{Cint}(x + 816)
-    f === :profile && return Ptr{Cint}(x + 820)
-    f === :level && return Ptr{Cint}(x + 824)
-    f === :skip_loop_filter && return Ptr{AVDiscard}(x + 828)
-    f === :skip_idct && return Ptr{AVDiscard}(x + 832)
-    f === :skip_frame && return Ptr{AVDiscard}(x + 836)
-    f === :subtitle_header && return Ptr{Ptr{UInt8}}(x + 840)
-    f === :subtitle_header_size && return Ptr{Cint}(x + 848)
-    f === :vbv_delay && return Ptr{UInt64}(x + 856)
-    f === :side_data_only_packets && return Ptr{Cint}(x + 864)
-    f === :initial_padding && return Ptr{Cint}(x + 868)
-    f === :framerate && return Ptr{AVRational}(x + 872)
-    f === :sw_pix_fmt && return Ptr{AVPixelFormat}(x + 880)
-    f === :pkt_timebase && return Ptr{AVRational}(x + 884)
-    f === :codec_descriptor && return Ptr{Ptr{AVCodecDescriptor}}(x + 896)
-    f === :pts_correction_num_faulty_pts && return Ptr{Int64}(x + 904)
-    f === :pts_correction_num_faulty_dts && return Ptr{Int64}(x + 912)
-    f === :pts_correction_last_pts && return Ptr{Int64}(x + 920)
-    f === :pts_correction_last_dts && return Ptr{Int64}(x + 928)
-    f === :sub_charenc && return Ptr{Cstring}(x + 936)
-    f === :sub_charenc_mode && return Ptr{Cint}(x + 944)
-    f === :skip_alpha && return Ptr{Cint}(x + 948)
-    f === :seek_preroll && return Ptr{Cint}(x + 952)
-    f === :debug_mv && return Ptr{Cint}(x + 956)
-    f === :chroma_intra_matrix && return Ptr{Ptr{UInt16}}(x + 960)
-    f === :dump_separator && return Ptr{Ptr{UInt8}}(x + 968)
-    f === :codec_whitelist && return Ptr{Cstring}(x + 976)
-    f === :properties && return Ptr{Cuint}(x + 984)
-    f === :coded_side_data && return Ptr{Ptr{AVPacketSideData}}(x + 992)
-    f === :nb_coded_side_data && return Ptr{Cint}(x + 1000)
-    f === :hw_frames_ctx && return Ptr{Ptr{AVBufferRef}}(x + 1008)
-    f === :sub_text_format && return Ptr{Cint}(x + 1016)
-    f === :trailing_padding && return Ptr{Cint}(x + 1020)
-    f === :max_pixels && return Ptr{Int64}(x + 1024)
-    f === :hw_device_ctx && return Ptr{Ptr{AVBufferRef}}(x + 1032)
-    f === :hwaccel_flags && return Ptr{Cint}(x + 1040)
-    f === :apply_cropping && return Ptr{Cint}(x + 1044)
-    f === :extra_hw_frames && return Ptr{Cint}(x + 1048)
-    f === :discard_damaged_percentage && return Ptr{Cint}(x + 1052)
-    f === :max_samples && return Ptr{Int64}(x + 1056)
-    f === :export_side_data && return Ptr{Cint}(x + 1064)
-    f === :get_encode_buffer && return Ptr{Ptr{Cvoid}}(x + 1072)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVCodecContext, f::Symbol)
-    r = Ref{AVCodecContext}(x)
-    ptr = Base.unsafe_convert(Ptr{AVCodecContext}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVCodecContext}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-struct AVBitStreamFilter
-    name::Cstring
-    codec_ids::Ptr{AVCodecID}
-    priv_class::Ptr{AVClass}
-    priv_data_size::Cint
-    init::Ptr{Cvoid}
-    filter::Ptr{Cvoid}
-    close::Ptr{Cvoid}
-    flush::Ptr{Cvoid}
-end
-
-struct AVBitStreamFilterContext
-    priv_data::Ptr{Cvoid}
-    filter::Ptr{AVBitStreamFilter}
-    parser::Ptr{AVCodecParserContext}
-    next::Ptr{AVBitStreamFilterContext}
-    args::Cstring
-end
-
 """
     av_apply_bitstream_filters(codec, pkt, bsfc)
 
@@ -7545,3077 +10251,6 @@ Perform one step of the protocol handshake to accept a new client. This function
 """
 function avio_handshake(c)
     ccall((:avio_handshake, libavformat), Cint, (Ptr{AVIOContext},), c)
-end
-
-"""
-    av_ac3_parse_header(buf, size::Csize_t, bitstream_id, frame_size)
-
-Extract the bitstream ID and the frame size from AC-3 data.
-"""
-function av_ac3_parse_header(buf, size::Csize_t, bitstream_id, frame_size)
-    ccall((:av_ac3_parse_header, libavcodec), Cint, (Ptr{UInt8}, Csize_t, Ptr{UInt8}, Ptr{UInt16}), buf, size, bitstream_id, frame_size)
-end
-
-"""
-    av_adts_header_parse(buf, samples, frames)
-
-Extract the number of samples and frames from AAC data. 
-
-### Parameters
-* `buf`:\\[in\\] pointer to AAC data buffer 
-
-* `samples`:\\[out\\] Pointer to where number of samples is written 
-
-* `frames`:\\[out\\] Pointer to where number of frames is written 
-
-### Returns
-Returns 0 on success, error code on failure.
-"""
-function av_adts_header_parse(buf, samples, frames)
-    ccall((:av_adts_header_parse, libavcodec), Cint, (Ptr{UInt8}, Ptr{UInt32}, Ptr{UInt8}), buf, samples, frames)
-end
-
-"""
-    AVPanScan
-
-Pan Scan area. This specifies the area which should be displayed. Note there may be multiple such areas for one frame.
-"""
-struct AVPanScan
-    id::Cint
-    width::Cint
-    height::Cint
-    position::NTuple{3, NTuple{2, Int16}}
-end
-
-"""
-    AVCPBProperties
-
-This structure describes the bitrate properties of an encoded bitstream. It roughly corresponds to a subset the VBV parameters for MPEG-2 or HRD parameters for H.264/HEVC.
-"""
-struct AVCPBProperties
-    max_bitrate::Cint
-    min_bitrate::Cint
-    avg_bitrate::Cint
-    buffer_size::Cint
-    vbv_delay::UInt64
-end
-
-"""
-    AVProducerReferenceTime
-
-This structure supplies correlation between a packet timestamp and a wall clock production time. The definition follows the Producer Reference Time ('prft') as defined in ISO/IEC 14496-12
-"""
-struct AVProducerReferenceTime
-    wallclock::Int64
-    flags::Cint
-end
-
-"""
-    av_codec_get_pkt_timebase(avctx)
-
-Accessors for some [`AVCodecContext`](@ref) fields. These used to be provided for ABI compatibility, and do not need to be used anymore.
-"""
-function av_codec_get_pkt_timebase(avctx)
-    ccall((:av_codec_get_pkt_timebase, libavcodec), AVRational, (Ptr{AVCodecContext},), avctx)
-end
-
-function av_codec_set_pkt_timebase(avctx, val::AVRational)
-    ccall((:av_codec_set_pkt_timebase, libavcodec), Cvoid, (Ptr{AVCodecContext}, AVRational), avctx, val)
-end
-
-function av_codec_get_codec_descriptor(avctx)
-    ccall((:av_codec_get_codec_descriptor, libavcodec), Ptr{AVCodecDescriptor}, (Ptr{AVCodecContext},), avctx)
-end
-
-function av_codec_set_codec_descriptor(avctx, desc)
-    ccall((:av_codec_set_codec_descriptor, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{AVCodecDescriptor}), avctx, desc)
-end
-
-function av_codec_get_codec_properties(avctx)
-    ccall((:av_codec_get_codec_properties, libavcodec), Cuint, (Ptr{AVCodecContext},), avctx)
-end
-
-function av_codec_get_lowres(avctx)
-    ccall((:av_codec_get_lowres, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
-end
-
-function av_codec_set_lowres(avctx, val::Integer)
-    ccall((:av_codec_set_lowres, libavcodec), Cvoid, (Ptr{AVCodecContext}, Cint), avctx, val)
-end
-
-function av_codec_get_seek_preroll(avctx)
-    ccall((:av_codec_get_seek_preroll, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
-end
-
-function av_codec_set_seek_preroll(avctx, val::Integer)
-    ccall((:av_codec_set_seek_preroll, libavcodec), Cvoid, (Ptr{AVCodecContext}, Cint), avctx, val)
-end
-
-function av_codec_get_chroma_intra_matrix(avctx)
-    ccall((:av_codec_get_chroma_intra_matrix, libavcodec), Ptr{UInt16}, (Ptr{AVCodecContext},), avctx)
-end
-
-function av_codec_set_chroma_intra_matrix(avctx, val)
-    ccall((:av_codec_set_chroma_intra_matrix, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{UInt16}), avctx, val)
-end
-
-function av_codec_get_max_lowres(codec)
-    ccall((:av_codec_get_max_lowres, libavcodec), Cint, (Ptr{AVCodec},), codec)
-end
-
-mutable struct MpegEncContext end
-
-"""
-    AVPicture
-
-[`Picture`](@ref) data structure.
-
-Up to four components can be stored into it, the last component is alpha. 
-
-\\deprecated use [`AVFrame`](@ref) or imgutils functions instead
-"""
-struct AVPicture
-    data::NTuple{96, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVPicture}, f::Symbol)
-    f === :data && return Ptr{NTuple{8, Ptr{UInt8}}}(x + 0)
-    f === :linesize && return Ptr{NTuple{8, Cint}}(x + 64)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVPicture, f::Symbol)
-    r = Ref{AVPicture}(x)
-    ptr = Base.unsafe_convert(Ptr{AVPicture}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVPicture}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-@cenum AVSubtitleType::UInt32 begin
-    SUBTITLE_NONE = 0
-    SUBTITLE_BITMAP = 1
-    SUBTITLE_TEXT = 2
-    SUBTITLE_ASS = 3
-end
-
-struct AVSubtitleRect
-    data::NTuple{200, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVSubtitleRect}, f::Symbol)
-    f === :x && return Ptr{Cint}(x + 0)
-    f === :y && return Ptr{Cint}(x + 4)
-    f === :w && return Ptr{Cint}(x + 8)
-    f === :h && return Ptr{Cint}(x + 12)
-    f === :nb_colors && return Ptr{Cint}(x + 16)
-    f === :pict && return Ptr{AVPicture}(x + 24)
-    f === :data && return Ptr{NTuple{4, Ptr{UInt8}}}(x + 120)
-    f === :linesize && return Ptr{NTuple{4, Cint}}(x + 152)
-    f === :type && return Ptr{AVSubtitleType}(x + 168)
-    f === :text && return Ptr{Cstring}(x + 176)
-    f === :ass && return Ptr{Cstring}(x + 184)
-    f === :flags && return Ptr{Cint}(x + 192)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVSubtitleRect, f::Symbol)
-    r = Ref{AVSubtitleRect}(x)
-    ptr = Base.unsafe_convert(Ptr{AVSubtitleRect}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVSubtitleRect}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-struct AVSubtitle
-    format::UInt16
-    start_display_time::UInt32
-    end_display_time::UInt32
-    num_rects::Cuint
-    rects::Ptr{Ptr{AVSubtitleRect}}
-    pts::Int64
-end
-
-"""
-    av_codec_next(c)
-
-If c is NULL, returns the first registered codec, if c is non-NULL, returns the next registered codec after c, or NULL if c is the last one.
-"""
-function av_codec_next(c)
-    ccall((:av_codec_next, libavcodec), Ptr{AVCodec}, (Ptr{AVCodec},), c)
-end
-
-"""
-    avcodec_version()
-
-Return the [`LIBAVCODEC_VERSION_INT`](@ref) constant.
-"""
-function avcodec_version()
-    ccall((:avcodec_version, libavcodec), Cuint, ())
-end
-
-"""
-    avcodec_configuration()
-
-Return the libavcodec build-time configuration.
-"""
-function avcodec_configuration()
-    ccall((:avcodec_configuration, libavcodec), Cstring, ())
-end
-
-"""
-    avcodec_license()
-
-Return the libavcodec license.
-"""
-function avcodec_license()
-    ccall((:avcodec_license, libavcodec), Cstring, ())
-end
-
-"""
-    avcodec_register(codec)
-
-\\deprecated Calling this function is unnecessary.
-"""
-function avcodec_register(codec)
-    ccall((:avcodec_register, libavcodec), Cvoid, (Ptr{AVCodec},), codec)
-end
-
-"""
-    avcodec_register_all()
-
-\\deprecated Calling this function is unnecessary.
-"""
-function avcodec_register_all()
-    ccall((:avcodec_register_all, libavcodec), Cvoid, ())
-end
-
-"""
-    avcodec_alloc_context3(codec)
-
-Allocate an [`AVCodecContext`](@ref) and set its fields to default values. The resulting struct should be freed with [`avcodec_free_context`](@ref)().
-
-### Parameters
-* `codec`: if non-NULL, allocate private data and initialize defaults for the given codec. It is illegal to then call [`avcodec_open2`](@ref)() with a different codec. If NULL, then the codec-specific defaults won't be initialized, which may result in suboptimal default settings (this is important mainly for encoders, e.g. libx264).
-
-### Returns
-An [`AVCodecContext`](@ref) filled with default values or NULL on failure.
-"""
-function avcodec_alloc_context3(codec)
-    ccall((:avcodec_alloc_context3, libavcodec), Ptr{AVCodecContext}, (Ptr{AVCodec},), codec)
-end
-
-"""
-    avcodec_free_context(avctx)
-
-Free the codec context and everything associated with it and write NULL to the provided pointer.
-"""
-function avcodec_free_context(avctx)
-    ccall((:avcodec_free_context, libavcodec), Cvoid, (Ptr{Ptr{AVCodecContext}},), avctx)
-end
-
-"""
-    avcodec_get_context_defaults3(s, codec)
-
-\\deprecated This function should not be used, as closing and opening a codec context multiple time is not supported. A new codec context should be allocated for each new use.
-"""
-function avcodec_get_context_defaults3(s, codec)
-    ccall((:avcodec_get_context_defaults3, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodec}), s, codec)
-end
-
-"""
-    avcodec_get_class()
-
-Get the [`AVClass`](@ref) for [`AVCodecContext`](@ref). It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
-
-### See also
-[`av_opt_find`](@ref)().
-"""
-function avcodec_get_class()
-    ccall((:avcodec_get_class, libavcodec), Ptr{AVClass}, ())
-end
-
-"""
-    avcodec_get_frame_class()
-
-\\deprecated This function should not be used.
-"""
-function avcodec_get_frame_class()
-    ccall((:avcodec_get_frame_class, libavcodec), Ptr{AVClass}, ())
-end
-
-"""
-    avcodec_get_subtitle_rect_class()
-
-Get the [`AVClass`](@ref) for [`AVSubtitleRect`](@ref). It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
-
-### See also
-[`av_opt_find`](@ref)().
-"""
-function avcodec_get_subtitle_rect_class()
-    ccall((:avcodec_get_subtitle_rect_class, libavcodec), Ptr{AVClass}, ())
-end
-
-"""
-    avcodec_copy_context(dest, src)
-
-Copy the settings of the source [`AVCodecContext`](@ref) into the destination [`AVCodecContext`](@ref). The resulting destination codec context will be unopened, i.e. you are required to call [`avcodec_open2`](@ref)() before you can use this [`AVCodecContext`](@ref) to decode/encode video/audio data.
-
-\\deprecated The semantics of this function are ill-defined and it should not be used. If you need to transfer the stream parameters from one codec context to another, use an intermediate [`AVCodecParameters`](@ref) instance and the [`avcodec_parameters_from_context`](@ref)() / [`avcodec_parameters_to_context`](@ref)() functions.
-
-### Parameters
-* `dest`: target codec context, should be initialized with [`avcodec_alloc_context3`](@ref)(NULL), but otherwise uninitialized 
-
-* `src`: source codec context 
-
-### Returns
-[`AVERROR`](@ref)() on error (e.g. memory allocation error), 0 on success
-"""
-function avcodec_copy_context(dest, src)
-    ccall((:avcodec_copy_context, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodecContext}), dest, src)
-end
-
-"""
-    avcodec_parameters_from_context(par, codec)
-
-Fill the parameters struct based on the values from the supplied codec context. Any allocated fields in par are freed and replaced with duplicates of the corresponding fields in codec.
-
-### Returns
->= 0 on success, a negative [`AVERROR`](@ref) code on failure
-"""
-function avcodec_parameters_from_context(par, codec)
-    ccall((:avcodec_parameters_from_context, libavcodec), Cint, (Ptr{AVCodecParameters}, Ptr{AVCodecContext}), par, codec)
-end
-
-"""
-    avcodec_parameters_to_context(codec, par)
-
-Fill the codec context based on the values from the supplied codec parameters. Any allocated fields in codec that have a corresponding field in par are freed and replaced with duplicates of the corresponding field in par. Fields in codec that do not have a counterpart in par are not touched.
-
-### Returns
->= 0 on success, a negative [`AVERROR`](@ref) code on failure.
-"""
-function avcodec_parameters_to_context(codec, par)
-    ccall((:avcodec_parameters_to_context, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodecParameters}), codec, par)
-end
-
-"""
-    avcodec_open2(avctx, codec, options)
-
-Initialize the [`AVCodecContext`](@ref) to use the given [`AVCodec`](@ref). Prior to using this function the context has to be allocated with [`avcodec_alloc_context3`](@ref)().
-
-The functions [`avcodec_find_decoder_by_name`](@ref)(), [`avcodec_find_encoder_by_name`](@ref)(), [`avcodec_find_decoder`](@ref)() and [`avcodec_find_encoder`](@ref)() provide an easy way for retrieving a codec.
-
-!!! warning
-
-    This function is not thread safe!
-
-!!! note
-
-    Always call this function before using decoding routines (such as avcodec_receive_frame()).
-
-```c++
- av_dict_set(&opts, "b", "2.5M", 0);
- codec = avcodec_find_decoder(AV_CODEC_ID_H264);
- if (!codec)
-     exit(1);
- context = avcodec_alloc_context3(codec);
- if (avcodec_open2(context, codec, opts) < 0)
-     exit(1);
-```
-
-### Parameters
-* `avctx`: The context to initialize. 
-
-* `codec`: The codec to open this context for. If a non-NULL codec has been previously passed to [`avcodec_alloc_context3`](@ref)() or for this context, then this parameter MUST be either NULL or equal to the previously passed codec. 
-
-* `options`: A dictionary filled with [`AVCodecContext`](@ref) and codec-private options. On return this object will be filled with options that were not found.
-
-### Returns
-zero on success, a negative value on error 
-
-### See also
-[`avcodec_alloc_context3`](@ref)(), [`avcodec_find_decoder`](@ref)(), [`avcodec_find_encoder`](@ref)(), [`av_dict_set`](@ref)(), [`av_opt_find`](@ref)().
-"""
-function avcodec_open2(avctx, codec, options)
-    ccall((:avcodec_open2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVCodec}, Ptr{Ptr{AVDictionary}}), avctx, codec, options)
-end
-
-"""
-    avcodec_close(avctx)
-
-Close a given [`AVCodecContext`](@ref) and free all the data associated with it (but not the [`AVCodecContext`](@ref) itself).
-
-Calling this function on an [`AVCodecContext`](@ref) that hasn't been opened will free the codec-specific data allocated in [`avcodec_alloc_context3`](@ref)() with a non-NULL codec. Subsequent calls will do nothing.
-
-!!! note
-
-    Do not use this function. Use [`avcodec_free_context`](@ref)() to destroy a codec context (either open or closed). Opening and closing a codec context multiple times is not supported anymore -- use multiple codec contexts instead.
-"""
-function avcodec_close(avctx)
-    ccall((:avcodec_close, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
-end
-
-"""
-    avsubtitle_free(sub)
-
-Free all allocated data in the given subtitle struct.
-
-### Parameters
-* `sub`: [`AVSubtitle`](@ref) to free.
-"""
-function avsubtitle_free(sub)
-    ccall((:avsubtitle_free, libavcodec), Cvoid, (Ptr{AVSubtitle},), sub)
-end
-
-"""
-    avcodec_default_get_buffer2(s, frame, flags::Integer)
-
-The default callback for [`AVCodecContext`](@ref).get\\_buffer2(). It is made public so it can be called by custom get\\_buffer2() implementations for decoders without [`AV_CODEC_CAP_DR1`](@ref) set.
-"""
-function avcodec_default_get_buffer2(s, frame, flags::Integer)
-    ccall((:avcodec_default_get_buffer2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}, Cint), s, frame, flags)
-end
-
-"""
-    avcodec_default_get_encode_buffer(s, pkt, flags::Integer)
-
-The default callback for [`AVCodecContext`](@ref).get\\_encode\\_buffer(). It is made public so it can be called by custom get\\_encode\\_buffer() implementations for encoders without [`AV_CODEC_CAP_DR1`](@ref) set.
-"""
-function avcodec_default_get_encode_buffer(s, pkt, flags::Integer)
-    ccall((:avcodec_default_get_encode_buffer, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Cint), s, pkt, flags)
-end
-
-"""
-    avcodec_align_dimensions(s, width, height)
-
-Modify width and height values so that they will result in a memory buffer that is acceptable for the codec if you do not use any horizontal padding.
-
-May only be used if a codec with [`AV_CODEC_CAP_DR1`](@ref) has been opened.
-"""
-function avcodec_align_dimensions(s, width, height)
-    ccall((:avcodec_align_dimensions, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{Cint}, Ptr{Cint}), s, width, height)
-end
-
-"""
-    avcodec_align_dimensions2(s, width, height, linesize_align)
-
-Modify width and height values so that they will result in a memory buffer that is acceptable for the codec if you also ensure that all line sizes are a multiple of the respective linesize\\_align[i].
-
-May only be used if a codec with [`AV_CODEC_CAP_DR1`](@ref) has been opened.
-"""
-function avcodec_align_dimensions2(s, width, height, linesize_align)
-    ccall((:avcodec_align_dimensions2, libavcodec), Cvoid, (Ptr{AVCodecContext}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), s, width, height, linesize_align)
-end
-
-"""
-    avcodec_enum_to_chroma_pos(xpos, ypos, pos::AVChromaLocation)
-
-Converts [`AVChromaLocation`](@ref) to swscale x/y chroma position.
-
-The positions represent the chroma (0,0) position in a coordinates system with luma (0,0) representing the origin and luma(1,1) representing 256,256
-
-### Parameters
-* `xpos`: horizontal chroma sample position 
-
-* `ypos`: vertical chroma sample position
-"""
-function avcodec_enum_to_chroma_pos(xpos, ypos, pos::AVChromaLocation)
-    ccall((:avcodec_enum_to_chroma_pos, libavcodec), Cint, (Ptr{Cint}, Ptr{Cint}, AVChromaLocation), xpos, ypos, pos)
-end
-
-"""
-    avcodec_chroma_pos_to_enum(xpos::Integer, ypos::Integer)
-
-Converts swscale x/y chroma position to [`AVChromaLocation`](@ref).
-
-The positions represent the chroma (0,0) position in a coordinates system with luma (0,0) representing the origin and luma(1,1) representing 256,256
-
-### Parameters
-* `xpos`: horizontal chroma sample position 
-
-* `ypos`: vertical chroma sample position
-"""
-function avcodec_chroma_pos_to_enum(xpos::Integer, ypos::Integer)
-    ccall((:avcodec_chroma_pos_to_enum, libavcodec), AVChromaLocation, (Cint, Cint), xpos, ypos)
-end
-
-"""
-    avcodec_decode_audio4(avctx, frame, got_frame_ptr, avpkt)
-
-Decode the audio frame of size avpkt->size from avpkt->data into frame.
-
-Some decoders may support multiple frames in a single [`AVPacket`](@ref). Such decoders would then just decode the first frame and the return value would be less than the packet size. In this case, [`avcodec_decode_audio4`](@ref) has to be called again with an [`AVPacket`](@ref) containing the remaining data in order to decode the second frame, etc... Even if no frames are returned, the packet needs to be fed to the decoder with remaining data until it is completely consumed or an error occurs.
-
-Some decoders (those marked with [`AV_CODEC_CAP_DELAY`](@ref)) have a delay between input and output. This means that for some packets they will not immediately produce decoded output and need to be flushed at the end of decoding to get all the decoded data. Flushing is done by calling this function with packets with avpkt->data set to NULL and avpkt->size set to 0 until it stops returning samples. It is safe to flush even those decoders that are not marked with [`AV_CODEC_CAP_DELAY`](@ref), then no samples will be returned.
-
-!!! warning
-
-    The input buffer, avpkt->data must be [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) larger than the actual read bytes because some optimized bitstream readers read 32 or 64 bits at once and could read over the end.
-
-!!! note
-
-    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
-
-\\deprecated Use [`avcodec_send_packet`](@ref)() and [`avcodec_receive_frame`](@ref)().
-
-### Parameters
-* `avctx`: the codec context 
-
-* `frame`:\\[out\\] The [`AVFrame`](@ref) in which to store decoded audio samples. The decoder will allocate a buffer for the decoded frame by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it. 
-
-* `got_frame_ptr`:\\[out\\] Zero if no frame could be decoded, otherwise it is non-zero. Note that this field being set to zero does not mean that an error has occurred. For decoders with [`AV_CODEC_CAP_DELAY`](@ref) set, no given decode call is guaranteed to produce a frame. 
-
-* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. At least avpkt->data and avpkt->size should be set. Some decoders might also require additional fields to be set. 
-
-### Returns
-A negative error code is returned if an error occurred during decoding, otherwise the number of bytes consumed from the input [`AVPacket`](@ref) is returned.
-"""
-function avcodec_decode_audio4(avctx, frame, got_frame_ptr, avpkt)
-    ccall((:avcodec_decode_audio4, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}, Ptr{Cint}, Ptr{AVPacket}), avctx, frame, got_frame_ptr, avpkt)
-end
-
-"""
-    avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt)
-
-Decode the video frame of size avpkt->size from avpkt->data into picture. Some decoders may support multiple frames in a single [`AVPacket`](@ref), such decoders would then just decode the first frame.
-
-!!! warning
-
-    The input buffer must be [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) larger than the actual read bytes because some optimized bitstream readers read 32 or 64 bits at once and could read over the end.
-
-!!! warning
-
-    The end of the input buffer buf should be set to 0 to ensure that no overreading happens for damaged MPEG streams.
-
-!!! note
-
-    Codecs which have the [`AV_CODEC_CAP_DELAY`](@ref) capability set have a delay between input and output, these need to be fed with avpkt->data=NULL, avpkt->size=0 at the end to return the remaining frames.
-
-!!! note
-
-    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
-
-\\deprecated Use [`avcodec_send_packet`](@ref)() and [`avcodec_receive_frame`](@ref)().
-
-### Parameters
-* `avctx`: the codec context 
-
-* `picture`:\\[out\\] The [`AVFrame`](@ref) in which the decoded video frame will be stored. Use [`av_frame_alloc`](@ref)() to get an [`AVFrame`](@ref). The codec will allocate memory for the actual bitmap by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it.
-
-* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. You can create such packet with [`av_init_packet`](@ref)() and by then setting data and size, some decoders might in addition need other fields like flags&AV\\_PKT\\_FLAG\\_KEY. All decoders are designed to use the least fields possible. 
-
-* `got_picture_ptr`:\\[in,out\\] Zero if no frame could be decompressed, otherwise, it is nonzero. 
-
-### Returns
-On error a negative value is returned, otherwise the number of bytes used or zero if no frame could be decompressed.
-"""
-function avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt)
-    ccall((:avcodec_decode_video2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}, Ptr{Cint}, Ptr{AVPacket}), avctx, picture, got_picture_ptr, avpkt)
-end
-
-"""
-    avcodec_decode_subtitle2(avctx, sub, got_sub_ptr, avpkt)
-
-Decode a subtitle message. Return a negative value on error, otherwise return the number of bytes used. If no subtitle could be decompressed, got\\_sub\\_ptr is zero. Otherwise, the subtitle is stored in *sub. Note that [`AV_CODEC_CAP_DR1`](@ref) is not available for subtitle codecs. This is for simplicity, because the performance difference is expected to be negligible and reusing a get\\_buffer written for video codecs would probably perform badly due to a potentially very different allocation pattern.
-
-Some decoders (those marked with [`AV_CODEC_CAP_DELAY`](@ref)) have a delay between input and output. This means that for some packets they will not immediately produce decoded output and need to be flushed at the end of decoding to get all the decoded data. Flushing is done by calling this function with packets with avpkt->data set to NULL and avpkt->size set to 0 until it stops returning subtitles. It is safe to flush even those decoders that are not marked with [`AV_CODEC_CAP_DELAY`](@ref), then no subtitles will be returned.
-
-!!! note
-
-    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
-
-### Parameters
-* `avctx`: the codec context 
-
-* `sub`:\\[out\\] The preallocated [`AVSubtitle`](@ref) in which the decoded subtitle will be stored, must be freed with [`avsubtitle_free`](@ref) if *got\\_sub\\_ptr is set. 
-
-* `got_sub_ptr`:\\[in,out\\] Zero if no subtitle could be decompressed, otherwise, it is nonzero. 
-
-* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer.
-"""
-function avcodec_decode_subtitle2(avctx, sub, got_sub_ptr, avpkt)
-    ccall((:avcodec_decode_subtitle2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVSubtitle}, Ptr{Cint}, Ptr{AVPacket}), avctx, sub, got_sub_ptr, avpkt)
-end
-
-"""
-    avcodec_send_packet(avctx, avpkt)
-
-Supply raw packet data as input to a decoder.
-
-Internally, this call will copy relevant [`AVCodecContext`](@ref) fields, which can influence decoding per-packet, and apply them when the packet is actually decoded. (For example [`AVCodecContext`](@ref).skip\\_frame, which might direct the decoder to drop the frame contained by the packet sent with this function.)
-
-!!! warning
-
-    The input buffer, avpkt->data must be [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) larger than the actual read bytes because some optimized bitstream readers read 32 or 64 bits at once and could read over the end.
-
-!!! warning
-
-    Do not mix this API with the legacy API (like [`avcodec_decode_video2`](@ref)()) on the same [`AVCodecContext`](@ref). It will return unexpected results now or in future libavcodec versions.
-
-!!! note
-
-    The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
-
-### Parameters
-* `avctx`: codec context 
-
-* `avpkt`:\\[in\\] The input [`AVPacket`](@ref). Usually, this will be a single video frame, or several complete audio frames. Ownership of the packet remains with the caller, and the decoder will not write to the packet. The decoder may create a reference to the packet data (or copy it if the packet is not reference-counted). Unlike with older APIs, the packet is always fully consumed, and if it contains multiple frames (e.g. some audio codecs), will require you to call [`avcodec_receive_frame`](@ref)() multiple times afterwards before you can send a new packet. It can be NULL (or an [`AVPacket`](@ref) with data set to NULL and size set to 0); in this case, it is considered a flush packet, which signals the end of the stream. Sending the first flush packet will return success. Subsequent ones are unnecessary and will return [`AVERROR_EOF`](@ref). If the decoder still has frames buffered, it will return them after sending a flush packet.
-
-### Returns
-0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): input is not accepted in the current state - user must read output with [`avcodec_receive_frame`](@ref)() (once all output is read, the packet should be resent, and the call will not fail with EAGAIN). [`AVERROR_EOF`](@ref): the decoder has been flushed, and no new packets can be sent to it (also returned if more than 1 flush packet is sent) [`AVERROR`](@ref)(EINVAL): codec not opened, it is an encoder, or requires flush [`AVERROR`](@ref)(ENOMEM): failed to add packet to internal queue, or similar other errors: legitimate decoding errors
-"""
-function avcodec_send_packet(avctx, avpkt)
-    ccall((:avcodec_send_packet, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}), avctx, avpkt)
-end
-
-"""
-    avcodec_receive_frame(avctx, frame)
-
-Return decoded output data from a decoder.
-
-### Parameters
-* `avctx`: codec context 
-
-* `frame`: This will be set to a reference-counted video or audio frame (depending on the decoder type) allocated by the decoder. Note that the function will always call [`av_frame_unref`](@ref)(frame) before doing anything else.
-
-### Returns
-0: success, a frame was returned [`AVERROR`](@ref)(EAGAIN): output is not available in this state - user must try to send new input [`AVERROR_EOF`](@ref): the decoder has been fully flushed, and there will be no more output frames [`AVERROR`](@ref)(EINVAL): codec not opened, or it is an encoder [`AVERROR_INPUT_CHANGED`](@ref): current decoded frame has changed parameters with respect to first decoded frame. Applicable when flag [`AV_CODEC_FLAG_DROPCHANGED`](@ref) is set. other negative values: legitimate decoding errors
-"""
-function avcodec_receive_frame(avctx, frame)
-    ccall((:avcodec_receive_frame, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}), avctx, frame)
-end
-
-"""
-    avcodec_send_frame(avctx, frame)
-
-Supply a raw video or audio frame to the encoder. Use [`avcodec_receive_packet`](@ref)() to retrieve buffered output packets.
-
-For audio: If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size. 
-
-### Parameters
-* `avctx`: codec context 
-
-* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio or video frame to be encoded. Ownership of the frame remains with the caller, and the encoder will not write to the frame. The encoder may create a reference to the frame data (or copy it if the frame is not reference-counted). It can be NULL, in which case it is considered a flush packet. This signals the end of the stream. If the encoder still has packets buffered, it will return them after this call. Once flushing mode has been entered, additional flush packets are ignored, and sending frames will return [`AVERROR_EOF`](@ref).
-
-### Returns
-0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): input is not accepted in the current state - user must read output with [`avcodec_receive_packet`](@ref)() (once all output is read, the packet should be resent, and the call will not fail with EAGAIN). [`AVERROR_EOF`](@ref): the encoder has been flushed, and no new frames can be sent to it [`AVERROR`](@ref)(EINVAL): codec not opened, refcounted\\_frames not set, it is a decoder, or requires flush [`AVERROR`](@ref)(ENOMEM): failed to add packet to internal queue, or similar other errors: legitimate encoding errors
-"""
-function avcodec_send_frame(avctx, frame)
-    ccall((:avcodec_send_frame, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVFrame}), avctx, frame)
-end
-
-"""
-    avcodec_receive_packet(avctx, avpkt)
-
-Read encoded data from the encoder.
-
-### Parameters
-* `avctx`: codec context 
-
-* `avpkt`: This will be set to a reference-counted packet allocated by the encoder. Note that the function will always call [`av_packet_unref`](@ref)(avpkt) before doing anything else. 
-
-### Returns
-0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): output is not available in the current state - user must try to send input [`AVERROR_EOF`](@ref): the encoder has been fully flushed, and there will be no more output packets [`AVERROR`](@ref)(EINVAL): codec not opened, or it is a decoder other errors: legitimate encoding errors
-"""
-function avcodec_receive_packet(avctx, avpkt)
-    ccall((:avcodec_receive_packet, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}), avctx, avpkt)
-end
-
-"""
-    avcodec_get_hw_frames_parameters(avctx, device_ref, hw_pix_fmt::AVPixelFormat, out_frames_ref)
-
-Create and return a [`AVHWFramesContext`](@ref) with values adequate for hardware decoding. This is meant to get called from the get\\_format callback, and is a helper for preparing a [`AVHWFramesContext`](@ref) for [`AVCodecContext`](@ref).hw\\_frames\\_ctx. This API is for decoding with certain hardware acceleration modes/APIs only.
-
-The returned [`AVHWFramesContext`](@ref) is not initialized. The caller must do this with [`av_hwframe_ctx_init`](@ref)().
-
-Calling this function is not a requirement, but makes it simpler to avoid codec or hardware API specific details when manually allocating frames.
-
-Alternatively to this, an API user can set [`AVCodecContext`](@ref).hw\\_device\\_ctx, which sets up [`AVCodecContext`](@ref).hw\\_frames\\_ctx fully automatically, and makes it unnecessary to call this function or having to care about [`AVHWFramesContext`](@ref) initialization at all.
-
-There are a number of requirements for calling this function:
-
-- It must be called from get\\_format with the same avctx parameter that was passed to get\\_format. Calling it outside of get\\_format is not allowed, and can trigger undefined behavior. - The function is not always supported (see description of return values). Even if this function returns successfully, hwaccel initialization could fail later. (The degree to which implementations check whether the stream is actually supported varies. Some do this check only after the user's get\\_format callback returns.) - The hw\\_pix\\_fmt must be one of the choices suggested by get\\_format. If the user decides to use a [`AVHWFramesContext`](@ref) prepared with this API function, the user must return the same hw\\_pix\\_fmt from get\\_format. - The device\\_ref passed to this function must support the given hw\\_pix\\_fmt. - After calling this API function, it is the user's responsibility to initialize the [`AVHWFramesContext`](@ref) (returned by the out\\_frames\\_ref parameter), and to set [`AVCodecContext`](@ref).hw\\_frames\\_ctx to it. If done, this must be done before returning from get\\_format (this is implied by the normal [`AVCodecContext`](@ref).hw\\_frames\\_ctx API rules). - The [`AVHWFramesContext`](@ref) parameters may change every time time get\\_format is called. Also, [`AVCodecContext`](@ref).hw\\_frames\\_ctx is reset before get\\_format. So you are inherently required to go through this process again on every get\\_format call. - It is perfectly possible to call this function without actually using the resulting [`AVHWFramesContext`](@ref). One use-case might be trying to reuse a previously initialized [`AVHWFramesContext`](@ref), and calling this API function only to test whether the required frame parameters have changed. - Fields that use dynamically allocated values of any kind must not be set by the user unless setting them is explicitly allowed by the documentation. If the user sets [`AVHWFramesContext`](@ref).free and [`AVHWFramesContext`](@ref).user\\_opaque, the new free callback must call the potentially set previous free callback. This API call may set any dynamically allocated fields, including the free callback.
-
-The function will set at least the following fields on [`AVHWFramesContext`](@ref) (potentially more, depending on hwaccel API):
-
-- All fields set by [`av_hwframe_ctx_alloc`](@ref)(). - Set the format field to hw\\_pix\\_fmt. - Set the sw\\_format field to the most suited and most versatile format. (An implication is that this will prefer generic formats over opaque formats with arbitrary restrictions, if possible.) - Set the width/height fields to the coded frame size, rounded up to the API-specific minimum alignment. - Only \\_if\\_ the hwaccel requires a pre-allocated pool: set the initial\\_pool\\_size field to the number of maximum reference surfaces possible with the codec, plus 1 surface for the user to work (meaning the user can safely reference at most 1 decoded surface at a time), plus additional buffering introduced by frame threading. If the hwaccel does not require pre-allocation, the field is left to 0, and the decoder will allocate new surfaces on demand during decoding. - Possibly [`AVHWFramesContext`](@ref).hwctx fields, depending on the underlying hardware API.
-
-Essentially, out\\_frames\\_ref returns the same as [`av_hwframe_ctx_alloc`](@ref)(), but with basic frame parameters set.
-
-The function is stateless, and does not change the [`AVCodecContext`](@ref) or the device\\_ref [`AVHWDeviceContext`](@ref).
-
-### Parameters
-* `avctx`: The context which is currently calling get\\_format, and which implicitly contains all state needed for filling the returned [`AVHWFramesContext`](@ref) properly. 
-
-* `device_ref`: A reference to the [`AVHWDeviceContext`](@ref) describing the device which will be used by the hardware decoder. 
-
-* `hw_pix_fmt`: The hwaccel format you are going to return from get\\_format. 
-
-* `out_frames_ref`: On success, set to a reference to an \\_uninitialized\\_ [`AVHWFramesContext`](@ref), created from the given device\\_ref. Fields will be set to values required for decoding. Not changed if an error is returned. 
-
-### Returns
-zero on success, a negative value on error. The following error codes have special semantics: [`AVERROR`](@ref)(ENOENT): the decoder does not support this functionality. Setup is always manual, or it is a decoder which does not support setting [`AVCodecContext`](@ref).hw\\_frames\\_ctx at all, or it is a software format. [`AVERROR`](@ref)(EINVAL): it is known that hardware decoding is not supported for this configuration, or the device\\_ref is not supported for the hwaccel referenced by hw\\_pix\\_fmt.
-"""
-function avcodec_get_hw_frames_parameters(avctx, device_ref, hw_pix_fmt::AVPixelFormat, out_frames_ref)
-    ccall((:avcodec_get_hw_frames_parameters, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVBufferRef}, AVPixelFormat, Ptr{Ptr{AVBufferRef}}), avctx, device_ref, hw_pix_fmt, out_frames_ref)
-end
-
-struct AVCodecParser
-    data::NTuple{64, UInt8}
-end
-
-function Base.getproperty(x::Ptr{AVCodecParser}, f::Symbol)
-    f === :codec_ids && return Ptr{NTuple{5, Cint}}(x + 0)
-    f === :priv_data_size && return Ptr{Cint}(x + 20)
-    f === :parser_init && return Ptr{Ptr{Cvoid}}(x + 24)
-    f === :parser_parse && return Ptr{Ptr{Cvoid}}(x + 32)
-    f === :parser_close && return Ptr{Ptr{Cvoid}}(x + 40)
-    f === :split && return Ptr{Ptr{Cvoid}}(x + 48)
-    f === :next && return Ptr{Ptr{AVCodecParser}}(x + 56)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::AVCodecParser, f::Symbol)
-    r = Ref{AVCodecParser}(x)
-    ptr = Base.unsafe_convert(Ptr{AVCodecParser}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{AVCodecParser}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-"""
-    av_parser_iterate(opaque)
-
-Iterate over all registered codec parsers.
-
-### Parameters
-* `opaque`: a pointer where libavcodec will store the iteration state. Must point to NULL to start the iteration.
-
-### Returns
-the next registered codec parser or NULL when the iteration is finished
-"""
-function av_parser_iterate(opaque)
-    ccall((:av_parser_iterate, libavcodec), Ptr{AVCodecParser}, (Ptr{Ptr{Cvoid}},), opaque)
-end
-
-function av_parser_next(c)
-    ccall((:av_parser_next, libavcodec), Ptr{AVCodecParser}, (Ptr{AVCodecParser},), c)
-end
-
-function av_register_codec_parser(parser)
-    ccall((:av_register_codec_parser, libavcodec), Cvoid, (Ptr{AVCodecParser},), parser)
-end
-
-function av_parser_init(codec_id::Integer)
-    ccall((:av_parser_init, libavcodec), Ptr{AVCodecParserContext}, (Cint,), codec_id)
-end
-
-"""
-    av_parser_parse2(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, pts::Int64, dts::Int64, pos::Int64)
-
-Parse a packet.
-
-Example: 
-
-```c++
-   while(in_len){
-       len = av_parser_parse2(myparser, AVCodecContext, &data, &size,
-                                        in_data, in_len,
-                                        pts, dts, pos);
-       in_data += len;
-       in_len  -= len;
-       if(size)
-          decode_frame(data, size);
-   }
-```
-
-### Parameters
-* `s`: parser context. 
-
-* `avctx`: codec context. 
-
-* `poutbuf`: set to pointer to parsed buffer or NULL if not yet finished. 
-
-* `poutbuf_size`: set to size of parsed buffer or zero if not yet finished. 
-
-* `buf`: input buffer. 
-
-* `buf_size`: buffer size in bytes without the padding. I.e. the full buffer size is assumed to be buf\\_size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref). To signal EOF, this should be 0 (so that the last frame can be output). 
-
-* `pts`: input presentation timestamp. 
-
-* `dts`: input decoding timestamp. 
-
-* `pos`: input byte position in stream. 
-
-### Returns
-the number of bytes of the input bitstream used.
-"""
-function av_parser_parse2(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, pts::Int64, dts::Int64, pos::Int64)
-    ccall((:av_parser_parse2, libavcodec), Cint, (Ptr{AVCodecParserContext}, Ptr{AVCodecContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Int64, Int64, Int64), s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos)
-end
-
-"""
-    av_parser_change(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
-
-\\deprecated Use dump\\_extradata, remove\\_extra or extract\\_extradata bitstream filters instead.
-
-### Returns
-0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed 
-"""
-function av_parser_change(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
-    ccall((:av_parser_change, libavcodec), Cint, (Ptr{AVCodecParserContext}, Ptr{AVCodecContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Cint), s, avctx, poutbuf, poutbuf_size, buf, buf_size, keyframe)
-end
-
-function av_parser_close(s)
-    ccall((:av_parser_close, libavcodec), Cvoid, (Ptr{AVCodecParserContext},), s)
-end
-
-"""
-    avcodec_encode_audio2(avctx, avpkt, frame, got_packet_ptr)
-
-Encode a frame of audio.
-
-Takes input samples from frame and writes the next output packet, if available, to avpkt. The output packet does not necessarily contain data for the most recent frame, as encoders can delay, split, and combine input frames internally as needed.
-
-If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)(). 
-
-\\deprecated use [`avcodec_send_frame`](@ref)()/[`avcodec_receive_packet`](@ref)() instead. If allowed and required, set [`AVCodecContext`](@ref).get\\_encode\\_buffer to a custom function to pass user supplied output buffers.
-
-### Parameters
-* `avctx`: codec context 
-
-* `avpkt`: output [`AVPacket`](@ref). The user can supply an output buffer by setting avpkt->data and avpkt->size prior to calling the function, but if the size of the user-provided data is not large enough, encoding will fail. If avpkt->data and avpkt->size are set, avpkt->destruct must also be set. All other [`AVPacket`](@ref) fields will be reset by the encoder using [`av_init_packet`](@ref)(). If avpkt->data is NULL, the encoder will allocate it. The encoder will set avpkt->size to the size of the output packet.
-
-* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size. 
-
-* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used. 
-
-### Returns
-0 on success, negative error code on failure
-"""
-function avcodec_encode_audio2(avctx, avpkt, frame, got_packet_ptr)
-    ccall((:avcodec_encode_audio2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Ptr{AVFrame}, Ptr{Cint}), avctx, avpkt, frame, got_packet_ptr)
-end
-
-"""
-    avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr)
-
-Encode a frame of video.
-
-Takes input raw video data from frame and writes the next output packet, if available, to avpkt. The output packet does not necessarily contain data for the most recent frame, as encoders can delay and reorder input frames internally as needed.
-
-If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)(). 
-
-\\deprecated use [`avcodec_send_frame`](@ref)()/[`avcodec_receive_packet`](@ref)() instead. If allowed and required, set [`AVCodecContext`](@ref).get\\_encode\\_buffer to a custom function to pass user supplied output buffers.
-
-### Parameters
-* `avctx`: codec context 
-
-* `avpkt`: output [`AVPacket`](@ref). The user can supply an output buffer by setting avpkt->data and avpkt->size prior to calling the function, but if the size of the user-provided data is not large enough, encoding will fail. All other [`AVPacket`](@ref) fields will be reset by the encoder using [`av_init_packet`](@ref)(). If avpkt->data is NULL, the encoder will allocate it. The encoder will set avpkt->size to the size of the output packet. The returned data (if any) belongs to the caller, he is responsible for freeing it.
-
-* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw video data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. 
-
-* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used. 
-
-### Returns
-0 on success, negative error code on failure
-"""
-function avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr)
-    ccall((:avcodec_encode_video2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVPacket}, Ptr{AVFrame}, Ptr{Cint}), avctx, avpkt, frame, got_packet_ptr)
-end
-
-function avcodec_encode_subtitle(avctx, buf, buf_size::Integer, sub)
-    ccall((:avcodec_encode_subtitle, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{UInt8}, Cint, Ptr{AVSubtitle}), avctx, buf, buf_size, sub)
-end
-
-"""
-    avpicture_alloc(picture, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-
-\\deprecated unused
-"""
-function avpicture_alloc(picture, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-    ccall((:avpicture_alloc, libavcodec), Cint, (Ptr{AVPicture}, AVPixelFormat, Cint, Cint), picture, pix_fmt, width, height)
-end
-
-"""
-    avpicture_free(picture)
-
-\\deprecated unused
-"""
-function avpicture_free(picture)
-    ccall((:avpicture_free, libavcodec), Cvoid, (Ptr{AVPicture},), picture)
-end
-
-"""
-    avpicture_fill(picture, ptr, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-
-\\deprecated use [`av_image_fill_arrays`](@ref)() instead.
-"""
-function avpicture_fill(picture, ptr, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-    ccall((:avpicture_fill, libavcodec), Cint, (Ptr{AVPicture}, Ptr{UInt8}, AVPixelFormat, Cint, Cint), picture, ptr, pix_fmt, width, height)
-end
-
-"""
-    avpicture_layout(src, pix_fmt::AVPixelFormat, width::Integer, height::Integer, dest, dest_size::Integer)
-
-\\deprecated use [`av_image_copy_to_buffer`](@ref)() instead.
-"""
-function avpicture_layout(src, pix_fmt::AVPixelFormat, width::Integer, height::Integer, dest, dest_size::Integer)
-    ccall((:avpicture_layout, libavcodec), Cint, (Ptr{AVPicture}, AVPixelFormat, Cint, Cint, Ptr{Cuchar}, Cint), src, pix_fmt, width, height, dest, dest_size)
-end
-
-"""
-    avpicture_get_size(pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-
-\\deprecated use [`av_image_get_buffer_size`](@ref)() instead.
-"""
-function avpicture_get_size(pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-    ccall((:avpicture_get_size, libavcodec), Cint, (AVPixelFormat, Cint, Cint), pix_fmt, width, height)
-end
-
-"""
-    av_picture_copy(dst, src, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-
-\\deprecated [`av_image_copy`](@ref)() instead.
-"""
-function av_picture_copy(dst, src, pix_fmt::AVPixelFormat, width::Integer, height::Integer)
-    ccall((:av_picture_copy, libavcodec), Cvoid, (Ptr{AVPicture}, Ptr{AVPicture}, AVPixelFormat, Cint, Cint), dst, src, pix_fmt, width, height)
-end
-
-"""
-    av_picture_crop(dst, src, pix_fmt::AVPixelFormat, top_band::Integer, left_band::Integer)
-
-\\deprecated unused
-"""
-function av_picture_crop(dst, src, pix_fmt::AVPixelFormat, top_band::Integer, left_band::Integer)
-    ccall((:av_picture_crop, libavcodec), Cint, (Ptr{AVPicture}, Ptr{AVPicture}, AVPixelFormat, Cint, Cint), dst, src, pix_fmt, top_band, left_band)
-end
-
-"""
-    av_picture_pad(dst, src, height::Integer, width::Integer, pix_fmt::AVPixelFormat, padtop::Integer, padbottom::Integer, padleft::Integer, padright::Integer, color)
-
-\\deprecated unused
-"""
-function av_picture_pad(dst, src, height::Integer, width::Integer, pix_fmt::AVPixelFormat, padtop::Integer, padbottom::Integer, padleft::Integer, padright::Integer, color)
-    ccall((:av_picture_pad, libavcodec), Cint, (Ptr{AVPicture}, Ptr{AVPicture}, Cint, Cint, AVPixelFormat, Cint, Cint, Cint, Cint, Ptr{Cint}), dst, src, height, width, pix_fmt, padtop, padbottom, padleft, padright, color)
-end
-
-"""
-    avcodec_get_chroma_sub_sample(pix_fmt::AVPixelFormat, h_shift, v_shift)
-
-\\deprecated Use [`av_pix_fmt_get_chroma_sub_sample`](@ref)
-"""
-function avcodec_get_chroma_sub_sample(pix_fmt::AVPixelFormat, h_shift, v_shift)
-    ccall((:avcodec_get_chroma_sub_sample, libavcodec), Cvoid, (AVPixelFormat, Ptr{Cint}, Ptr{Cint}), pix_fmt, h_shift, v_shift)
-end
-
-"""
-    avcodec_pix_fmt_to_codec_tag(pix_fmt::AVPixelFormat)
-
-Return a value representing the fourCC code associated to the pixel format pix\\_fmt, or 0 if no associated fourCC code can be found.
-"""
-function avcodec_pix_fmt_to_codec_tag(pix_fmt::AVPixelFormat)
-    ccall((:avcodec_pix_fmt_to_codec_tag, libavcodec), Cuint, (AVPixelFormat,), pix_fmt)
-end
-
-"""
-    avcodec_find_best_pix_fmt_of_list(pix_fmt_list, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
-
-Find the best pixel format to convert to given a certain source pixel format. When converting from one pixel format to another, information loss may occur. For example, when converting from RGB24 to GRAY, the color information will be lost. Similarly, other losses occur when converting from some formats to other formats. [`avcodec_find_best_pix_fmt_of_2`](@ref)() searches which of the given pixel formats should be used to suffer the least amount of loss. The pixel formats from which it chooses one, are determined by the pix\\_fmt\\_list parameter.
-
-### Parameters
-* `pix_fmt_list`:\\[in\\] AV\\_PIX\\_FMT\\_NONE terminated array of pixel formats to choose from 
-
-* `src_pix_fmt`:\\[in\\] source pixel format 
-
-* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used. 
-
-* `loss_ptr`:\\[out\\] Combination of flags informing you what kind of losses will occur. 
-
-### Returns
-The best pixel format to convert to or -1 if none was found.
-"""
-function avcodec_find_best_pix_fmt_of_list(pix_fmt_list, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
-    ccall((:avcodec_find_best_pix_fmt_of_list, libavcodec), AVPixelFormat, (Ptr{AVPixelFormat}, AVPixelFormat, Cint, Ptr{Cint}), pix_fmt_list, src_pix_fmt, has_alpha, loss_ptr)
-end
-
-"""
-    avcodec_get_pix_fmt_loss(dst_pix_fmt::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer)
-
-\\deprecated see [`av_get_pix_fmt_loss`](@ref)()
-"""
-function avcodec_get_pix_fmt_loss(dst_pix_fmt::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer)
-    ccall((:avcodec_get_pix_fmt_loss, libavcodec), Cint, (AVPixelFormat, AVPixelFormat, Cint), dst_pix_fmt, src_pix_fmt, has_alpha)
-end
-
-"""
-    avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
-
-\\deprecated see [`av_find_best_pix_fmt_of_2`](@ref)()
-"""
-function avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
-    ccall((:avcodec_find_best_pix_fmt_of_2, libavcodec), AVPixelFormat, (AVPixelFormat, AVPixelFormat, AVPixelFormat, Cint, Ptr{Cint}), dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
-end
-
-function avcodec_find_best_pix_fmt2(dst_pix_fmt1::AVPixelFormat, dst_pix_fmt2::AVPixelFormat, src_pix_fmt::AVPixelFormat, has_alpha::Integer, loss_ptr)
-    ccall((:avcodec_find_best_pix_fmt2, libavcodec), AVPixelFormat, (AVPixelFormat, AVPixelFormat, AVPixelFormat, Cint, Ptr{Cint}), dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
-end
-
-function avcodec_default_get_format(s, fmt)
-    ccall((:avcodec_default_get_format, libavcodec), AVPixelFormat, (Ptr{AVCodecContext}, Ptr{AVPixelFormat}), s, fmt)
-end
-
-"""
-    av_get_codec_tag_string(buf, buf_size::Csize_t, codec_tag::Integer)
-
-Put a string representing the codec tag codec\\_tag in buf.
-
-\\deprecated see [`av_fourcc_make_string`](@ref)() and [`av_fourcc2str`](@ref)().
-
-### Parameters
-* `buf`: buffer to place codec tag in 
-
-* `buf_size`: size in bytes of buf 
-
-* `codec_tag`: codec tag to assign 
-
-### Returns
-the length of the string that would have been generated if enough space had been available, excluding the trailing null
-"""
-function av_get_codec_tag_string(buf, buf_size::Csize_t, codec_tag::Integer)
-    ccall((:av_get_codec_tag_string, libavcodec), Csize_t, (Cstring, Csize_t, Cuint), buf, buf_size, codec_tag)
-end
-
-function avcodec_string(buf, buf_size::Integer, enc, encode::Integer)
-    ccall((:avcodec_string, libavcodec), Cvoid, (Cstring, Cint, Ptr{AVCodecContext}, Cint), buf, buf_size, enc, encode)
-end
-
-"""
-    av_get_profile_name(codec, profile::Integer)
-
-Return a name for the specified profile, if available.
-
-### Parameters
-* `codec`: the codec that is searched for the given profile 
-
-* `profile`: the profile value for which a name is requested 
-
-### Returns
-A name for the profile if found, NULL otherwise.
-"""
-function av_get_profile_name(codec, profile::Integer)
-    ccall((:av_get_profile_name, libavcodec), Cstring, (Ptr{AVCodec}, Cint), codec, profile)
-end
-
-"""
-    avcodec_profile_name(codec_id::AVCodecID, profile::Integer)
-
-Return a name for the specified profile, if available.
-
-!!! note
-
-    unlike [`av_get_profile_name`](@ref)(), which searches a list of profiles supported by a specific decoder or encoder implementation, this function searches the list of profiles from the [`AVCodecDescriptor`](@ref)
-
-### Parameters
-* `codec_id`: the ID of the codec to which the requested profile belongs 
-
-* `profile`: the profile value for which a name is requested 
-
-### Returns
-A name for the profile if found, NULL otherwise.
-"""
-function avcodec_profile_name(codec_id::AVCodecID, profile::Integer)
-    ccall((:avcodec_profile_name, libavcodec), Cstring, (AVCodecID, Cint), codec_id, profile)
-end
-
-function avcodec_default_execute(c, func, arg, ret, count::Integer, size::Integer)
-    ccall((:avcodec_default_execute, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cint}, Cint, Cint), c, func, arg, ret, count, size)
-end
-
-function avcodec_default_execute2(c, func, arg, ret, count::Integer)
-    ccall((:avcodec_default_execute2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cint}, Cint), c, func, arg, ret, count)
-end
-
-"""
-    avcodec_fill_audio_frame(frame, nb_channels::Integer, sample_fmt::AVSampleFormat, buf, buf_size::Integer, align::Integer)
-
-Fill [`AVFrame`](@ref) audio data and linesize pointers.
-
-The buffer buf must be a preallocated buffer with a size big enough to contain the specified samples amount. The filled [`AVFrame`](@ref) data pointers will point to this buffer.
-
-[`AVFrame`](@ref) extended\\_data channel pointers are allocated if necessary for planar audio.
-
-\\todo return the size in bytes required to store the samples in case of success, at the next libavutil bump
-
-### Parameters
-* `frame`: the [`AVFrame`](@ref) frame->nb\\_samples must be set prior to calling the function. This function fills in frame->data, frame->extended\\_data, frame->linesize[0]. 
-
-* `nb_channels`: channel count 
-
-* `sample_fmt`: sample format 
-
-* `buf`: buffer to use for frame data 
-
-* `buf_size`: size of buffer 
-
-* `align`: plane size sample alignment (0 = default) 
-
-### Returns
->=0 on success, negative error code on failure 
-"""
-function avcodec_fill_audio_frame(frame, nb_channels::Integer, sample_fmt::AVSampleFormat, buf, buf_size::Integer, align::Integer)
-    ccall((:avcodec_fill_audio_frame, libavcodec), Cint, (Ptr{AVFrame}, Cint, AVSampleFormat, Ptr{UInt8}, Cint, Cint), frame, nb_channels, sample_fmt, buf, buf_size, align)
-end
-
-"""
-    avcodec_flush_buffers(avctx)
-
-Reset the internal codec state / flush internal buffers. Should be called e.g. when seeking or when switching to a different stream.
-
-!!! note
-
-    for decoders, when refcounted frames are not used (i.e. avctx->refcounted\\_frames is 0), this invalidates the frames previously returned from the decoder. When refcounted frames are used, the decoder just releases any references it might keep internally, but the caller's reference remains valid.
-
-!!! note
-
-    for encoders, this function will only do something if the encoder declares support for [`AV_CODEC_CAP_ENCODER_FLUSH`](@ref). When called, the encoder will drain any remaining packets, and can then be re-used for a different stream (as opposed to sending a null frame which will leave the encoder in a permanent EOF state after draining). This can be desirable if the cost of tearing down and replacing the encoder instance is high.
-"""
-function avcodec_flush_buffers(avctx)
-    ccall((:avcodec_flush_buffers, libavcodec), Cvoid, (Ptr{AVCodecContext},), avctx)
-end
-
-"""
-    av_get_bits_per_sample(codec_id::AVCodecID)
-
-Return codec bits per sample.
-
-### Parameters
-* `codec_id`:\\[in\\] the codec 
-
-### Returns
-Number of bits per sample or zero if unknown for the given codec.
-"""
-function av_get_bits_per_sample(codec_id::AVCodecID)
-    ccall((:av_get_bits_per_sample, libavcodec), Cint, (AVCodecID,), codec_id)
-end
-
-"""
-    av_get_pcm_codec(fmt::AVSampleFormat, be::Integer)
-
-Return the PCM codec associated with a sample format. 
-
-### Parameters
-* `be`: endianness, 0 for little, 1 for big, -1 (or anything else) for native 
-
-### Returns
-AV\\_CODEC\\_ID\\_PCM\\_* or AV\\_CODEC\\_ID\\_NONE
-"""
-function av_get_pcm_codec(fmt::AVSampleFormat, be::Integer)
-    ccall((:av_get_pcm_codec, libavcodec), AVCodecID, (AVSampleFormat, Cint), fmt, be)
-end
-
-"""
-    av_get_exact_bits_per_sample(codec_id::AVCodecID)
-
-Return codec bits per sample. Only return non-zero if the bits per sample is exactly correct, not an approximation.
-
-### Parameters
-* `codec_id`:\\[in\\] the codec 
-
-### Returns
-Number of bits per sample or zero if unknown for the given codec.
-"""
-function av_get_exact_bits_per_sample(codec_id::AVCodecID)
-    ccall((:av_get_exact_bits_per_sample, libavcodec), Cint, (AVCodecID,), codec_id)
-end
-
-"""
-    av_get_audio_frame_duration(avctx, frame_bytes::Integer)
-
-Return audio frame duration.
-
-### Parameters
-* `avctx`: codec context 
-
-* `frame_bytes`: size of the frame, or 0 if unknown 
-
-### Returns
-frame duration, in samples, if known. 0 if not able to determine.
-"""
-function av_get_audio_frame_duration(avctx, frame_bytes::Integer)
-    ccall((:av_get_audio_frame_duration, libavcodec), Cint, (Ptr{AVCodecContext}, Cint), avctx, frame_bytes)
-end
-
-"""
-    av_get_audio_frame_duration2(par, frame_bytes::Integer)
-
-This function is the same as [`av_get_audio_frame_duration`](@ref)(), except it works with [`AVCodecParameters`](@ref) instead of an [`AVCodecContext`](@ref).
-"""
-function av_get_audio_frame_duration2(par, frame_bytes::Integer)
-    ccall((:av_get_audio_frame_duration2, libavcodec), Cint, (Ptr{AVCodecParameters}, Cint), par, frame_bytes)
-end
-
-"""
-    av_register_bitstream_filter(bsf)
-
-\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use the new bitstream filtering API (using [`AVBSFContext`](@ref)).
-"""
-function av_register_bitstream_filter(bsf)
-    ccall((:av_register_bitstream_filter, libavcodec), Cvoid, (Ptr{AVBitStreamFilter},), bsf)
-end
-
-"""
-    av_bitstream_filter_init(name)
-
-\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_get_by_name`](@ref)(), [`av_bsf_alloc`](@ref)(), and [`av_bsf_init`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
-"""
-function av_bitstream_filter_init(name)
-    ccall((:av_bitstream_filter_init, libavcodec), Ptr{AVBitStreamFilterContext}, (Cstring,), name)
-end
-
-"""
-    av_bitstream_filter_filter(bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
-
-\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_send_packet`](@ref)() and [`av_bsf_receive_packet`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
-"""
-function av_bitstream_filter_filter(bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
-    ccall((:av_bitstream_filter_filter, libavcodec), Cint, (Ptr{AVBitStreamFilterContext}, Ptr{AVCodecContext}, Cstring, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Cint), bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size, keyframe)
-end
-
-"""
-    av_bitstream_filter_close(bsf)
-
-\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_free`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
-"""
-function av_bitstream_filter_close(bsf)
-    ccall((:av_bitstream_filter_close, libavcodec), Cvoid, (Ptr{AVBitStreamFilterContext},), bsf)
-end
-
-"""
-    av_bitstream_filter_next(f)
-
-\\deprecated the old bitstream filtering API (using [`AVBitStreamFilterContext`](@ref)) is deprecated. Use [`av_bsf_iterate`](@ref)() from the new bitstream filtering API (using [`AVBSFContext`](@ref)).
-"""
-function av_bitstream_filter_next(f)
-    ccall((:av_bitstream_filter_next, libavcodec), Ptr{AVBitStreamFilter}, (Ptr{AVBitStreamFilter},), f)
-end
-
-function av_bsf_next(opaque)
-    ccall((:av_bsf_next, libavcodec), Ptr{AVBitStreamFilter}, (Ptr{Ptr{Cvoid}},), opaque)
-end
-
-"""
-    av_fast_padded_malloc(ptr, size, min_size::Csize_t)
-
-Same behaviour [`av_fast_malloc`](@ref) but the buffer has additional [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) at the end which will always be 0.
-
-In addition the whole buffer will initially and after resizes be 0-initialized so that no uninitialized data will ever appear.
-"""
-function av_fast_padded_malloc(ptr, size, min_size::Csize_t)
-    ccall((:av_fast_padded_malloc, libavcodec), Cvoid, (Ptr{Cvoid}, Ptr{Cuint}, Csize_t), ptr, size, min_size)
-end
-
-"""
-    av_fast_padded_mallocz(ptr, size, min_size::Csize_t)
-
-Same behaviour [`av_fast_padded_malloc`](@ref) except that buffer will always be 0-initialized after call.
-"""
-function av_fast_padded_mallocz(ptr, size, min_size::Csize_t)
-    ccall((:av_fast_padded_mallocz, libavcodec), Cvoid, (Ptr{Cvoid}, Ptr{Cuint}, Csize_t), ptr, size, min_size)
-end
-
-"""
-    av_xiphlacing(s, v::Integer)
-
-Encode extradata length to a buffer. Used by xiph codecs.
-
-### Parameters
-* `s`: buffer to write to; must be at least (v/255+1) bytes long 
-
-* `v`: size of extradata in bytes 
-
-### Returns
-number of bytes written to the buffer.
-"""
-function av_xiphlacing(s, v::Integer)
-    ccall((:av_xiphlacing, libavcodec), Cuint, (Ptr{Cuchar}, Cuint), s, v)
-end
-
-"""
-    av_register_hwaccel(hwaccel)
-
-Register the hardware accelerator hwaccel.
-
-\\deprecated This function doesn't do anything.
-"""
-function av_register_hwaccel(hwaccel)
-    ccall((:av_register_hwaccel, libavcodec), Cvoid, (Ptr{AVHWAccel},), hwaccel)
-end
-
-"""
-    av_hwaccel_next(hwaccel)
-
-If hwaccel is NULL, returns the first registered hardware accelerator, if hwaccel is non-NULL, returns the next registered hardware accelerator after hwaccel, or NULL if hwaccel is the last one.
-
-\\deprecated AVHWaccel structures contain no user-serviceable parts, so this function should not be used.
-"""
-function av_hwaccel_next(hwaccel)
-    ccall((:av_hwaccel_next, libavcodec), Ptr{AVHWAccel}, (Ptr{AVHWAccel},), hwaccel)
-end
-
-"""
-    AVLockOp
-
-Lock operation used by lockmgr
-
-\\deprecated Deprecated together with [`av_lockmgr_register`](@ref)().
-"""
-@cenum AVLockOp::UInt32 begin
-    AV_LOCK_CREATE = 0
-    AV_LOCK_OBTAIN = 1
-    AV_LOCK_RELEASE = 2
-    AV_LOCK_DESTROY = 3
-end
-
-"""
-    av_lockmgr_register(cb)
-
-Register a user provided lock manager supporting the operations specified by [`AVLockOp`](@ref). The "mutex" argument to the function points to a (void *) where the lockmgr should store/get a pointer to a user allocated mutex. It is NULL upon AV\\_LOCK\\_CREATE and equal to the value left by the last call for all other ops. If the lock manager is unable to perform the op then it should leave the mutex in the same state as when it was called and return a non-zero value. However, when called with AV\\_LOCK\\_DESTROY the mutex will always be assumed to have been successfully destroyed. If [`av_lockmgr_register`](@ref) succeeds it will return a non-negative value, if it fails it will return a negative value and destroy all mutex and unregister all callbacks. [`av_lockmgr_register`](@ref) is not thread-safe, it must be called from a single thread before any calls which make use of locking are used.
-
-\\deprecated This function does nothing, and always returns 0. Be sure to build with thread support to get basic thread safety.
-
-### Parameters
-* `cb`: User defined callback. [`av_lockmgr_register`](@ref) invokes calls to this callback and the previously registered callback. The callback will be used to create more than one mutex each of which must be backed by its own underlying locking mechanism (i.e. do not use a single static object to implement your lock manager). If cb is set to NULL the lockmgr will be unregistered.
-"""
-function av_lockmgr_register(cb)
-    ccall((:av_lockmgr_register, libavcodec), Cint, (Ptr{Cvoid},), cb)
-end
-
-"""
-    avcodec_is_open(s)
-
-### Returns
-a positive value if s is open (i.e. [`avcodec_open2`](@ref)() was called on it with no corresponding [`avcodec_close`](@ref)()), 0 otherwise.
-"""
-function avcodec_is_open(s)
-    ccall((:avcodec_is_open, libavcodec), Cint, (Ptr{AVCodecContext},), s)
-end
-
-"""
-    av_cpb_properties_alloc(size)
-
-Allocate a CPB properties structure and initialize its fields to default values.
-
-### Parameters
-* `size`: if non-NULL, the size of the allocated struct will be written here. This is useful for embedding it in side data.
-
-### Returns
-the newly allocated struct or NULL on failure
-"""
-function av_cpb_properties_alloc(size)
-    ccall((:av_cpb_properties_alloc, libavcodec), Ptr{AVCPBProperties}, (Ptr{Csize_t},), size)
-end
-
-"""
-    AVDCT
-
-[`AVDCT`](@ref) context. 
-
-!!! note
-
-    function pointers can be NULL if the specific features have been disabled at build time.
-"""
-struct AVDCT
-    av_class::Ptr{AVClass}
-    idct::Ptr{Cvoid}
-    idct_permutation::NTuple{64, UInt8}
-    fdct::Ptr{Cvoid}
-    dct_algo::Cint
-    idct_algo::Cint
-    get_pixels::Ptr{Cvoid}
-    bits_per_sample::Cint
-    get_pixels_unaligned::Ptr{Cvoid}
-end
-
-"""
-    avcodec_dct_alloc()
-
-Allocates a [`AVDCT`](@ref) context. This needs to be initialized with [`avcodec_dct_init`](@ref)() after optionally configuring it with AVOptions.
-
-To free it use [`av_free`](@ref)()
-"""
-function avcodec_dct_alloc()
-    ccall((:avcodec_dct_alloc, libavcodec), Ptr{AVDCT}, ())
-end
-
-function avcodec_dct_init(arg1)
-    ccall((:avcodec_dct_init, libavcodec), Cint, (Ptr{AVDCT},), arg1)
-end
-
-function avcodec_dct_get_class()
-    ccall((:avcodec_dct_get_class, libavcodec), Ptr{AVClass}, ())
-end
-
-"""
-` lavc_fft FFT functions`
-
-` lavc_misc`
-
-@{
-"""
-const FFTSample = Cfloat
-
-struct FFTComplex
-    re::FFTSample
-    im::FFTSample
-end
-
-mutable struct FFTContext end
-
-"""
-    av_fft_init(nbits::Integer, inverse::Integer)
-
-Set up a complex FFT. 
-
-### Parameters
-* `nbits`: log2 of the length of the input array 
-
-* `inverse`: if 0 perform the forward transform, if 1 perform the inverse
-"""
-function av_fft_init(nbits::Integer, inverse::Integer)
-    ccall((:av_fft_init, libavcodec), Ptr{FFTContext}, (Cint, Cint), nbits, inverse)
-end
-
-"""
-    av_fft_permute(s, z)
-
-Do the permutation needed BEFORE calling ff\\_fft\\_calc().
-"""
-function av_fft_permute(s, z)
-    ccall((:av_fft_permute, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTComplex}), s, z)
-end
-
-"""
-    av_fft_calc(s, z)
-
-Do a complex FFT with the parameters defined in [`av_fft_init`](@ref)(). The input data must be permuted before. No 1.0/sqrt(n) normalization is done.
-"""
-function av_fft_calc(s, z)
-    ccall((:av_fft_calc, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTComplex}), s, z)
-end
-
-function av_fft_end(s)
-    ccall((:av_fft_end, libavcodec), Cvoid, (Ptr{FFTContext},), s)
-end
-
-function av_mdct_init(nbits::Integer, inverse::Integer, scale::Cdouble)
-    ccall((:av_mdct_init, libavcodec), Ptr{FFTContext}, (Cint, Cint, Cdouble), nbits, inverse, scale)
-end
-
-function av_imdct_calc(s, output, input)
-    ccall((:av_imdct_calc, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTSample}, Ptr{FFTSample}), s, output, input)
-end
-
-function av_imdct_half(s, output, input)
-    ccall((:av_imdct_half, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTSample}, Ptr{FFTSample}), s, output, input)
-end
-
-function av_mdct_calc(s, output, input)
-    ccall((:av_mdct_calc, libavcodec), Cvoid, (Ptr{FFTContext}, Ptr{FFTSample}, Ptr{FFTSample}), s, output, input)
-end
-
-function av_mdct_end(s)
-    ccall((:av_mdct_end, libavcodec), Cvoid, (Ptr{FFTContext},), s)
-end
-
-@cenum RDFTransformType::UInt32 begin
-    DFT_R2C = 0
-    IDFT_C2R = 1
-    IDFT_R2C = 2
-    DFT_C2R = 3
-end
-
-mutable struct RDFTContext end
-
-"""
-    av_rdft_init(nbits::Integer, trans::RDFTransformType)
-
-Set up a real FFT. 
-
-### Parameters
-* `nbits`: log2 of the length of the input array 
-
-* `trans`: the type of transform
-"""
-function av_rdft_init(nbits::Integer, trans::RDFTransformType)
-    ccall((:av_rdft_init, libavcodec), Ptr{RDFTContext}, (Cint, RDFTransformType), nbits, trans)
-end
-
-function av_rdft_calc(s, data)
-    ccall((:av_rdft_calc, libavcodec), Cvoid, (Ptr{RDFTContext}, Ptr{FFTSample}), s, data)
-end
-
-function av_rdft_end(s)
-    ccall((:av_rdft_end, libavcodec), Cvoid, (Ptr{RDFTContext},), s)
-end
-
-mutable struct DCTContext end
-
-@cenum DCTTransformType::UInt32 begin
-    DCT_II = 0
-    DCT_III = 1
-    DCT_I = 2
-    DST_I = 3
-end
-
-"""
-    av_dct_init(nbits::Integer, type::DCTTransformType)
-
-Set up DCT.
-
-!!! note
-
-    the first element of the input of DST-I is ignored
-
-### Parameters
-* `nbits`: size of the input array: (1 << nbits) for DCT-II, DCT-III and DST-I (1 << nbits) + 1 for DCT-I 
-
-* `type`: the type of transform
-"""
-function av_dct_init(nbits::Integer, type::DCTTransformType)
-    ccall((:av_dct_init, libavcodec), Ptr{DCTContext}, (Cint, DCTTransformType), nbits, type)
-end
-
-function av_dct_calc(s, data)
-    ccall((:av_dct_calc, libavcodec), Cvoid, (Ptr{DCTContext}, Ptr{FFTSample}), s, data)
-end
-
-function av_dct_end(s)
-    ccall((:av_dct_end, libavcodec), Cvoid, (Ptr{DCTContext},), s)
-end
-
-mutable struct AVBSFInternal end
-
-"""
-    AVBSFContext
-
-The bitstream filter state.
-
-This struct must be allocated with [`av_bsf_alloc`](@ref)() and freed with [`av_bsf_free`](@ref)().
-
-The fields in the struct will only be changed (by the caller or by the filter) as described in their documentation, and are to be considered immutable otherwise.
-"""
-struct AVBSFContext
-    av_class::Ptr{AVClass}
-    filter::Ptr{AVBitStreamFilter}
-    internal::Ptr{AVBSFInternal}
-    priv_data::Ptr{Cvoid}
-    par_in::Ptr{AVCodecParameters}
-    par_out::Ptr{AVCodecParameters}
-    time_base_in::AVRational
-    time_base_out::AVRational
-end
-
-"""
-    av_bsf_get_by_name(name)
-
-### Returns
-a bitstream filter with the specified name or NULL if no such bitstream filter exists.
-"""
-function av_bsf_get_by_name(name)
-    ccall((:av_bsf_get_by_name, libavcodec), Ptr{AVBitStreamFilter}, (Cstring,), name)
-end
-
-"""
-    av_bsf_iterate(opaque)
-
-Iterate over all registered bitstream filters.
-
-### Parameters
-* `opaque`: a pointer where libavcodec will store the iteration state. Must point to NULL to start the iteration.
-
-### Returns
-the next registered bitstream filter or NULL when the iteration is finished
-"""
-function av_bsf_iterate(opaque)
-    ccall((:av_bsf_iterate, libavcodec), Ptr{AVBitStreamFilter}, (Ptr{Ptr{Cvoid}},), opaque)
-end
-
-"""
-    av_bsf_alloc(filter, ctx)
-
-Allocate a context for a given bitstream filter. The caller must fill in the context parameters as described in the documentation and then call [`av_bsf_init`](@ref)() before sending any data to the filter.
-
-### Parameters
-* `filter`: the filter for which to allocate an instance. 
-
-* `ctx`: a pointer into which the pointer to the newly-allocated context will be written. It must be freed with [`av_bsf_free`](@ref)() after the filtering is done.
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) code on failure
-"""
-function av_bsf_alloc(filter, ctx)
-    ccall((:av_bsf_alloc, libavcodec), Cint, (Ptr{AVBitStreamFilter}, Ptr{Ptr{AVBSFContext}}), filter, ctx)
-end
-
-"""
-    av_bsf_init(ctx)
-
-Prepare the filter for use, after all the parameters and options have been set.
-"""
-function av_bsf_init(ctx)
-    ccall((:av_bsf_init, libavcodec), Cint, (Ptr{AVBSFContext},), ctx)
-end
-
-"""
-    av_bsf_send_packet(ctx, pkt)
-
-Submit a packet for filtering.
-
-After sending each packet, the filter must be completely drained by calling [`av_bsf_receive_packet`](@ref)() repeatedly until it returns [`AVERROR`](@ref)(EAGAIN) or [`AVERROR_EOF`](@ref).
-
-### Parameters
-* `pkt`: the packet to filter. The bitstream filter will take ownership of the packet and reset the contents of pkt. pkt is not touched if an error occurs. If pkt is empty (i.e. NULL, or pkt->data is NULL and pkt->side\\_data\\_elems zero), it signals the end of the stream (i.e. no more non-empty packets will be sent; sending more empty packets does nothing) and will cause the filter to output any packets it may have buffered internally.
-
-### Returns
-0 on success. [`AVERROR`](@ref)(EAGAIN) if packets need to be retrieved from the filter (using [`av_bsf_receive_packet`](@ref)()) before new input can be consumed. Another negative [`AVERROR`](@ref) value if an error occurs.
-"""
-function av_bsf_send_packet(ctx, pkt)
-    ccall((:av_bsf_send_packet, libavcodec), Cint, (Ptr{AVBSFContext}, Ptr{AVPacket}), ctx, pkt)
-end
-
-"""
-    av_bsf_receive_packet(ctx, pkt)
-
-Retrieve a filtered packet.
-
-!!! note
-
-    one input packet may result in several output packets, so after sending a packet with [`av_bsf_send_packet`](@ref)(), this function needs to be called repeatedly until it stops returning 0. It is also possible for a filter to output fewer packets than were sent to it, so this function may return [`AVERROR`](@ref)(EAGAIN) immediately after a successful [`av_bsf_send_packet`](@ref)() call.
-
-### Parameters
-* `pkt`:\\[out\\] this struct will be filled with the contents of the filtered packet. It is owned by the caller and must be freed using [`av_packet_unref`](@ref)() when it is no longer needed. This parameter should be "clean" (i.e. freshly allocated with [`av_packet_alloc`](@ref)() or unreffed with [`av_packet_unref`](@ref)()) when this function is called. If this function returns successfully, the contents of pkt will be completely overwritten by the returned data. On failure, pkt is not touched.
-
-### Returns
-0 on success. [`AVERROR`](@ref)(EAGAIN) if more packets need to be sent to the filter (using [`av_bsf_send_packet`](@ref)()) to get more output. [`AVERROR_EOF`](@ref) if there will be no further output from the filter. Another negative [`AVERROR`](@ref) value if an error occurs.
-"""
-function av_bsf_receive_packet(ctx, pkt)
-    ccall((:av_bsf_receive_packet, libavcodec), Cint, (Ptr{AVBSFContext}, Ptr{AVPacket}), ctx, pkt)
-end
-
-"""
-    av_bsf_flush(ctx)
-
-Reset the internal bitstream filter state. Should be called e.g. when seeking.
-"""
-function av_bsf_flush(ctx)
-    ccall((:av_bsf_flush, libavcodec), Cvoid, (Ptr{AVBSFContext},), ctx)
-end
-
-"""
-    av_bsf_free(ctx)
-
-Free a bitstream filter context and everything associated with it; write NULL into the supplied pointer.
-"""
-function av_bsf_free(ctx)
-    ccall((:av_bsf_free, libavcodec), Cvoid, (Ptr{Ptr{AVBSFContext}},), ctx)
-end
-
-"""
-    av_bsf_get_class()
-
-Get the [`AVClass`](@ref) for [`AVBSFContext`](@ref). It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
-
-### See also
-[`av_opt_find`](@ref)().
-"""
-function av_bsf_get_class()
-    ccall((:av_bsf_get_class, libavcodec), Ptr{AVClass}, ())
-end
-
-mutable struct AVBSFList end
-
-"""
-    av_bsf_list_alloc()
-
-Allocate empty list of bitstream filters. The list must be later freed by [`av_bsf_list_free`](@ref)() or finalized by [`av_bsf_list_finalize`](@ref)().
-
-### Returns
-Pointer to AVBSFList on success, NULL in case of failure
-"""
-function av_bsf_list_alloc()
-    ccall((:av_bsf_list_alloc, libavcodec), Ptr{AVBSFList}, ())
-end
-
-"""
-    av_bsf_list_free(lst)
-
-Free list of bitstream filters.
-
-### Parameters
-* `lst`: Pointer to pointer returned by [`av_bsf_list_alloc`](@ref)()
-"""
-function av_bsf_list_free(lst)
-    ccall((:av_bsf_list_free, libavcodec), Cvoid, (Ptr{Ptr{AVBSFList}},), lst)
-end
-
-"""
-    av_bsf_list_append(lst, bsf)
-
-Append bitstream filter to the list of bitstream filters.
-
-### Parameters
-* `lst`: List to append to 
-
-* `bsf`: Filter context to be appended
-
-### Returns
->=0 on success, negative [`AVERROR`](@ref) in case of failure
-"""
-function av_bsf_list_append(lst, bsf)
-    ccall((:av_bsf_list_append, libavcodec), Cint, (Ptr{AVBSFList}, Ptr{AVBSFContext}), lst, bsf)
-end
-
-"""
-    av_bsf_list_append2(lst, bsf_name, options)
-
-Construct new bitstream filter context given it's name and options and append it to the list of bitstream filters.
-
-### Parameters
-* `lst`: List to append to 
-
-* `bsf_name`: Name of the bitstream filter 
-
-* `options`: Options for the bitstream filter, can be set to NULL
-
-### Returns
->=0 on success, negative [`AVERROR`](@ref) in case of failure
-"""
-function av_bsf_list_append2(lst, bsf_name, options)
-    ccall((:av_bsf_list_append2, libavcodec), Cint, (Ptr{AVBSFList}, Cstring, Ptr{Ptr{AVDictionary}}), lst, bsf_name, options)
-end
-
-"""
-    av_bsf_list_finalize(lst, bsf)
-
-Finalize list of bitstream filters.
-
-This function will transform AVBSFList to single AVBSFContext, so the whole chain of bitstream filters can be treated as single filter freshly allocated by [`av_bsf_alloc`](@ref)(). If the call is successful, AVBSFList structure is freed and lst will be set to NULL. In case of failure, caller is responsible for freeing the structure by [`av_bsf_list_free`](@ref)()
-
-### Parameters
-* `lst`: Filter list structure to be transformed 
-
-* `bsf`:\\[out\\] Pointer to be set to newly created AVBSFContext structure representing the chain of bitstream filters
-
-### Returns
->=0 on success, negative [`AVERROR`](@ref) in case of failure
-"""
-function av_bsf_list_finalize(lst, bsf)
-    ccall((:av_bsf_list_finalize, libavcodec), Cint, (Ptr{Ptr{AVBSFList}}, Ptr{Ptr{AVBSFContext}}), lst, bsf)
-end
-
-"""
-    av_bsf_list_parse_str(str, bsf)
-
-Parse string describing list of bitstream filters and create single AVBSFContext describing the whole chain of bitstream filters. Resulting AVBSFContext can be treated as any other AVBSFContext freshly allocated by [`av_bsf_alloc`](@ref)().
-
-### Parameters
-* `str`: String describing chain of bitstream filters in format `bsf1[=opt1=val1:opt2=val2][,bsf2]` 
-
-* `bsf`:\\[out\\] Pointer to be set to newly created AVBSFContext structure representing the chain of bitstream filters
-
-### Returns
->=0 on success, negative [`AVERROR`](@ref) in case of failure
-"""
-function av_bsf_list_parse_str(str, bsf)
-    ccall((:av_bsf_list_parse_str, libavcodec), Cint, (Cstring, Ptr{Ptr{AVBSFContext}}), str, bsf)
-end
-
-"""
-    av_bsf_get_null_filter(bsf)
-
-Get null/pass-through bitstream filter.
-
-### Parameters
-* `bsf`:\\[out\\] Pointer to be set to new instance of pass-through bitstream filter
-
-### Returns
-
-"""
-function av_bsf_get_null_filter(bsf)
-    ccall((:av_bsf_get_null_filter, libavcodec), Cint, (Ptr{Ptr{AVBSFContext}},), bsf)
-end
-
-"""
-    av_codec_iterate(opaque)
-
-Iterate over all registered codecs.
-
-### Parameters
-* `opaque`: a pointer where libavcodec will store the iteration state. Must point to NULL to start the iteration.
-
-### Returns
-the next registered codec or NULL when the iteration is finished
-"""
-function av_codec_iterate(opaque)
-    ccall((:av_codec_iterate, libavcodec), Ptr{AVCodec}, (Ptr{Ptr{Cvoid}},), opaque)
-end
-
-"""
-    avcodec_find_decoder(id::AVCodecID)
-
-Find a registered decoder with a matching codec ID.
-
-### Parameters
-* `id`: [`AVCodecID`](@ref) of the requested decoder 
-
-### Returns
-A decoder if one was found, NULL otherwise.
-"""
-function avcodec_find_decoder(id::AVCodecID)
-    ccall((:avcodec_find_decoder, libavcodec), Ptr{AVCodec}, (AVCodecID,), id)
-end
-
-"""
-    avcodec_find_decoder_by_name(name)
-
-Find a registered decoder with the specified name.
-
-### Parameters
-* `name`: name of the requested decoder 
-
-### Returns
-A decoder if one was found, NULL otherwise.
-"""
-function avcodec_find_decoder_by_name(name)
-    ccall((:avcodec_find_decoder_by_name, libavcodec), Ptr{AVCodec}, (Cstring,), name)
-end
-
-"""
-    avcodec_find_encoder(id::AVCodecID)
-
-Find a registered encoder with a matching codec ID.
-
-### Parameters
-* `id`: [`AVCodecID`](@ref) of the requested encoder 
-
-### Returns
-An encoder if one was found, NULL otherwise.
-"""
-function avcodec_find_encoder(id::AVCodecID)
-    ccall((:avcodec_find_encoder, libavcodec), Ptr{AVCodec}, (AVCodecID,), id)
-end
-
-"""
-    avcodec_find_encoder_by_name(name)
-
-Find a registered encoder with the specified name.
-
-### Parameters
-* `name`: name of the requested encoder 
-
-### Returns
-An encoder if one was found, NULL otherwise.
-"""
-function avcodec_find_encoder_by_name(name)
-    ccall((:avcodec_find_encoder_by_name, libavcodec), Ptr{AVCodec}, (Cstring,), name)
-end
-
-"""
-    av_codec_is_encoder(codec)
-
-### Returns
-a non-zero number if codec is an encoder, zero otherwise
-"""
-function av_codec_is_encoder(codec)
-    ccall((:av_codec_is_encoder, libavcodec), Cint, (Ptr{AVCodec},), codec)
-end
-
-"""
-    av_codec_is_decoder(codec)
-
-### Returns
-a non-zero number if codec is a decoder, zero otherwise
-"""
-function av_codec_is_decoder(codec)
-    ccall((:av_codec_is_decoder, libavcodec), Cint, (Ptr{AVCodec},), codec)
-end
-
-@cenum __JL_Ctag_258::UInt32 begin
-    AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX = 1
-    AV_CODEC_HW_CONFIG_METHOD_HW_FRAMES_CTX = 2
-    AV_CODEC_HW_CONFIG_METHOD_INTERNAL = 4
-    AV_CODEC_HW_CONFIG_METHOD_AD_HOC = 8
-end
-
-@cenum AVHWDeviceType::UInt32 begin
-    AV_HWDEVICE_TYPE_NONE = 0
-    AV_HWDEVICE_TYPE_VDPAU = 1
-    AV_HWDEVICE_TYPE_CUDA = 2
-    AV_HWDEVICE_TYPE_VAAPI = 3
-    AV_HWDEVICE_TYPE_DXVA2 = 4
-    AV_HWDEVICE_TYPE_QSV = 5
-    AV_HWDEVICE_TYPE_VIDEOTOOLBOX = 6
-    AV_HWDEVICE_TYPE_D3D11VA = 7
-    AV_HWDEVICE_TYPE_DRM = 8
-    AV_HWDEVICE_TYPE_OPENCL = 9
-    AV_HWDEVICE_TYPE_MEDIACODEC = 10
-    AV_HWDEVICE_TYPE_VULKAN = 11
-end
-
-struct AVCodecHWConfig
-    pix_fmt::AVPixelFormat
-    methods::Cint
-    device_type::AVHWDeviceType
-end
-
-"""
-    avcodec_get_hw_config(codec, index::Integer)
-
-Retrieve supported hardware configurations for a codec.
-
-Values of index from zero to some maximum return the indexed configuration descriptor; all other values return NULL. If the codec does not support any hardware configurations then it will always return NULL.
-"""
-function avcodec_get_hw_config(codec, index::Integer)
-    ccall((:avcodec_get_hw_config, libavcodec), Ptr{AVCodecHWConfig}, (Ptr{AVCodec}, Cint), codec, index)
-end
-
-"""
-    avcodec_descriptor_get(id::AVCodecID)
-
-### Returns
-descriptor for given codec ID or NULL if no descriptor exists.
-"""
-function avcodec_descriptor_get(id::AVCodecID)
-    ccall((:avcodec_descriptor_get, libavcodec), Ptr{AVCodecDescriptor}, (AVCodecID,), id)
-end
-
-"""
-    avcodec_descriptor_next(prev)
-
-Iterate over all codec descriptors known to libavcodec.
-
-### Parameters
-* `prev`: previous descriptor. NULL to get the first descriptor.
-
-### Returns
-next descriptor or NULL after the last descriptor
-"""
-function avcodec_descriptor_next(prev)
-    ccall((:avcodec_descriptor_next, libavcodec), Ptr{AVCodecDescriptor}, (Ptr{AVCodecDescriptor},), prev)
-end
-
-"""
-    avcodec_descriptor_get_by_name(name)
-
-### Returns
-codec descriptor with the given name or NULL if no such descriptor exists.
-"""
-function avcodec_descriptor_get_by_name(name)
-    ccall((:avcodec_descriptor_get_by_name, libavcodec), Ptr{AVCodecDescriptor}, (Cstring,), name)
-end
-
-"""
-    avcodec_get_type(codec_id::AVCodecID)
-
-Get the type of the given codec.
-"""
-function avcodec_get_type(codec_id::AVCodecID)
-    ccall((:avcodec_get_type, libavcodec), AVMediaType, (AVCodecID,), codec_id)
-end
-
-"""
-    avcodec_get_name(id::AVCodecID)
-
-Get the name of a codec. 
-
-### Returns
-a static string identifying the codec; never NULL
-"""
-function avcodec_get_name(id::AVCodecID)
-    ccall((:avcodec_get_name, libavcodec), Cstring, (AVCodecID,), id)
-end
-
-"""
-    avcodec_parameters_alloc()
-
-Allocate a new [`AVCodecParameters`](@ref) and set its fields to default values (unknown/invalid/0). The returned struct must be freed with [`avcodec_parameters_free`](@ref)().
-"""
-function avcodec_parameters_alloc()
-    ccall((:avcodec_parameters_alloc, libavcodec), Ptr{AVCodecParameters}, ())
-end
-
-"""
-    avcodec_parameters_free(par)
-
-Free an [`AVCodecParameters`](@ref) instance and everything associated with it and write NULL to the supplied pointer.
-"""
-function avcodec_parameters_free(par)
-    ccall((:avcodec_parameters_free, libavcodec), Cvoid, (Ptr{Ptr{AVCodecParameters}},), par)
-end
-
-"""
-    avcodec_parameters_copy(dst, src)
-
-Copy the contents of src to dst. Any allocated fields in dst are freed and replaced with newly allocated duplicates of the corresponding fields in src.
-
-### Returns
->= 0 on success, a negative [`AVERROR`](@ref) code on failure.
-"""
-function avcodec_parameters_copy(dst, src)
-    ccall((:avcodec_parameters_copy, libavcodec), Cint, (Ptr{AVCodecParameters}, Ptr{AVCodecParameters}), dst, src)
-end
-
-struct AVD3D11VAContext
-    decoder::Ptr{Cint}
-    video_context::Ptr{Cint}
-    cfg::Ptr{Cint}
-    surface_count::Cuint
-    surface::Ptr{Ptr{Cint}}
-    workaround::UInt64
-    report_id::Cuint
-    context_mutex::Cint
-end
-
-"""
-    av_d3d11va_alloc_context()
-
-Allocate an [`AVD3D11VAContext`](@ref).
-
-### Returns
-Newly-allocated [`AVD3D11VAContext`](@ref) or NULL on failure.
-"""
-function av_d3d11va_alloc_context()
-    ccall((:av_d3d11va_alloc_context, libavcodec), Ptr{AVD3D11VAContext}, ())
-end
-
-"""
-    DiracParseCodes
-
-Parse code values:
-
-Dirac Specification -> 9.6.1 Table 9.1
-
-VC-2 Specification -> 10.4.1 Table 10.1
-"""
-@cenum DiracParseCodes::UInt32 begin
-    DIRAC_PCODE_SEQ_HEADER = 0
-    DIRAC_PCODE_END_SEQ = 16
-    DIRAC_PCODE_AUX = 32
-    DIRAC_PCODE_PAD = 48
-    DIRAC_PCODE_PICTURE_CODED = 8
-    DIRAC_PCODE_PICTURE_RAW = 72
-    DIRAC_PCODE_PICTURE_LOW_DEL = 200
-    DIRAC_PCODE_PICTURE_HQ = 232
-    DIRAC_PCODE_INTER_NOREF_CO1 = 10
-    DIRAC_PCODE_INTER_NOREF_CO2 = 9
-    DIRAC_PCODE_INTER_REF_CO1 = 13
-    DIRAC_PCODE_INTER_REF_CO2 = 14
-    DIRAC_PCODE_INTRA_REF_CO = 12
-    DIRAC_PCODE_INTRA_REF_RAW = 76
-    DIRAC_PCODE_INTRA_REF_PICT = 204
-    DIRAC_PCODE_MAGIC = 1111638852
-end
-
-struct DiracVersionInfo
-    major::Cint
-    minor::Cint
-end
-
-struct AVDiracSeqHeader
-    width::Cuint
-    height::Cuint
-    chroma_format::UInt8
-    interlaced::UInt8
-    top_field_first::UInt8
-    frame_rate_index::UInt8
-    aspect_ratio_index::UInt8
-    clean_width::UInt16
-    clean_height::UInt16
-    clean_left_offset::UInt16
-    clean_right_offset::UInt16
-    pixel_range_index::UInt8
-    color_spec_index::UInt8
-    profile::Cint
-    level::Cint
-    framerate::AVRational
-    sample_aspect_ratio::AVRational
-    pix_fmt::AVPixelFormat
-    color_range::AVColorRange
-    color_primaries::AVColorPrimaries
-    color_trc::AVColorTransferCharacteristic
-    colorspace::AVColorSpace
-    version::DiracVersionInfo
-    bit_depth::Cint
-end
-
-"""
-    av_dirac_parse_sequence_header(dsh, buf, buf_size::Csize_t, log_ctx)
-
-Parse a Dirac sequence header.
-
-### Parameters
-* `dsh`: this function will allocate and fill an [`AVDiracSeqHeader`](@ref) struct and write it into this pointer. The caller must free it with [`av_free`](@ref)(). 
-
-* `buf`: the data buffer 
-
-* `buf_size`: the size of the data buffer in bytes 
-
-* `log_ctx`: if non-NULL, this function will log errors here 
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) code on failure
-"""
-function av_dirac_parse_sequence_header(dsh, buf, buf_size::Csize_t, log_ctx)
-    ccall((:av_dirac_parse_sequence_header, libavcodec), Cint, (Ptr{Ptr{AVDiracSeqHeader}}, Ptr{UInt8}, Csize_t, Ptr{Cvoid}), dsh, buf, buf_size, log_ctx)
-end
-
-struct AVDVProfile
-    dsf::Cint
-    video_stype::Cint
-    frame_size::Cint
-    difseg_size::Cint
-    n_difchan::Cint
-    time_base::AVRational
-    ltc_divisor::Cint
-    height::Cint
-    width::Cint
-    sar::NTuple{2, AVRational}
-    pix_fmt::AVPixelFormat
-    bpm::Cint
-    block_sizes::Ptr{UInt8}
-    audio_stride::Cint
-    audio_min_samples::NTuple{3, Cint}
-    audio_samples_dist::NTuple{5, Cint}
-    audio_shuffle::Ptr{NTuple{9, UInt8}}
-end
-
-"""
-    av_dv_frame_profile(sys, frame, buf_size::Integer)
-
-Get a DV profile for the provided compressed frame.
-
-### Parameters
-* `sys`: the profile used for the previous frame, may be NULL 
-
-* `frame`: the compressed data buffer 
-
-* `buf_size`: size of the buffer in bytes 
-
-### Returns
-the DV profile for the supplied data or NULL on failure
-"""
-function av_dv_frame_profile(sys, frame, buf_size::Integer)
-    ccall((:av_dv_frame_profile, libavcodec), Ptr{AVDVProfile}, (Ptr{AVDVProfile}, Ptr{UInt8}, Cuint), sys, frame, buf_size)
-end
-
-"""
-    av_dv_codec_profile(width::Integer, height::Integer, pix_fmt::AVPixelFormat)
-
-Get a DV profile for the provided stream parameters.
-"""
-function av_dv_codec_profile(width::Integer, height::Integer, pix_fmt::AVPixelFormat)
-    ccall((:av_dv_codec_profile, libavcodec), Ptr{AVDVProfile}, (Cint, Cint, AVPixelFormat), width, height, pix_fmt)
-end
-
-"""
-    av_dv_codec_profile2(width::Integer, height::Integer, pix_fmt::AVPixelFormat, frame_rate::AVRational)
-
-Get a DV profile for the provided stream parameters. The frame rate is used as a best-effort parameter.
-"""
-function av_dv_codec_profile2(width::Integer, height::Integer, pix_fmt::AVPixelFormat, frame_rate::AVRational)
-    ccall((:av_dv_codec_profile2, libavcodec), Ptr{AVDVProfile}, (Cint, Cint, AVPixelFormat, AVRational), width, height, pix_fmt, frame_rate)
-end
-
-struct dxva_context
-    decoder::Ptr{Cint}
-    cfg::Ptr{Cint}
-    surface_count::Cuint
-    surface::Ptr{Cint}
-    workaround::UInt64
-    report_id::Cuint
-end
-
-function av_jni_set_java_vm(vm, log_ctx)
-    ccall((:av_jni_set_java_vm, libavcodec), Cint, (Ptr{Cvoid}, Ptr{Cvoid}), vm, log_ctx)
-end
-
-function av_jni_get_java_vm(log_ctx)
-    ccall((:av_jni_get_java_vm, libavcodec), Ptr{Cvoid}, (Ptr{Cvoid},), log_ctx)
-end
-
-"""
-    AVMediaCodecContext
-
-This structure holds a reference to a android/view/Surface object that will be used as output by the decoder.
-"""
-struct AVMediaCodecContext
-    surface::Ptr{Cvoid}
-end
-
-"""
-    av_mediacodec_alloc_context()
-
-Allocate and initialize a MediaCodec context.
-
-When decoding with MediaCodec is finished, the caller must free the MediaCodec context with [`av_mediacodec_default_free`](@ref).
-
-### Returns
-a pointer to a newly allocated [`AVMediaCodecContext`](@ref) on success, NULL otherwise
-"""
-function av_mediacodec_alloc_context()
-    ccall((:av_mediacodec_alloc_context, libavcodec), Ptr{AVMediaCodecContext}, ())
-end
-
-"""
-    av_mediacodec_default_init(avctx, ctx, surface)
-
-Convenience function that sets up the MediaCodec context.
-
-### Parameters
-* `avctx`: codec context 
-
-* `ctx`: MediaCodec context to initialize 
-
-* `surface`: reference to an android/view/Surface 
-
-### Returns
-0 on success, < 0 otherwise
-"""
-function av_mediacodec_default_init(avctx, ctx, surface)
-    ccall((:av_mediacodec_default_init, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVMediaCodecContext}, Ptr{Cvoid}), avctx, ctx, surface)
-end
-
-"""
-    av_mediacodec_default_free(avctx)
-
-This function must be called to free the MediaCodec context initialized with [`av_mediacodec_default_init`](@ref)().
-
-### Parameters
-* `avctx`: codec context
-"""
-function av_mediacodec_default_free(avctx)
-    ccall((:av_mediacodec_default_free, libavcodec), Cvoid, (Ptr{AVCodecContext},), avctx)
-end
-
-mutable struct MediaCodecBuffer end
-
-"""
-Opaque structure representing a MediaCodec buffer to render.
-"""
-const AVMediaCodecBuffer = MediaCodecBuffer
-
-"""
-    av_mediacodec_release_buffer(buffer, render::Integer)
-
-Release a MediaCodec buffer and render it to the surface that is associated with the decoder. This function should only be called once on a given buffer, once released the underlying buffer returns to the codec, thus subsequent calls to this function will have no effect.
-
-### Parameters
-* `buffer`: the buffer to render 
-
-* `render`: 1 to release and render the buffer to the surface or 0 to discard the buffer 
-
-### Returns
-0 on success, < 0 otherwise
-"""
-function av_mediacodec_release_buffer(buffer, render::Integer)
-    ccall((:av_mediacodec_release_buffer, libavcodec), Cint, (Ptr{AVMediaCodecBuffer}, Cint), buffer, render)
-end
-
-"""
-    av_mediacodec_render_buffer_at_time(buffer, time::Int64)
-
-Release a MediaCodec buffer and render it at the given time to the surface that is associated with the decoder. The timestamp must be within one second of the current java/lang/System#nanoTime() (which is implemented using CLOCK\\_MONOTONIC on Android). See the Android MediaCodec documentation of android/media/MediaCodec#releaseOutputBuffer(int,long) for more details.
-
-### Parameters
-* `buffer`: the buffer to render 
-
-* `time`: timestamp in nanoseconds of when to render the buffer 
-
-### Returns
-0 on success, < 0 otherwise
-"""
-function av_mediacodec_render_buffer_at_time(buffer, time::Int64)
-    ccall((:av_mediacodec_render_buffer_at_time, libavcodec), Cint, (Ptr{AVMediaCodecBuffer}, Int64), buffer, time)
-end
-
-struct AVPacketList
-    pkt::AVPacket
-    next::Ptr{AVPacketList}
-end
-
-@cenum AVSideDataParamChangeFlags::UInt32 begin
-    AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT = 1
-    AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT = 2
-    AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE = 4
-    AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS = 8
-end
-
-"""
-    av_packet_alloc()
-
-Allocate an [`AVPacket`](@ref) and set its fields to default values. The resulting struct must be freed using [`av_packet_free`](@ref)().
-
-!!! note
-
-    this only allocates the [`AVPacket`](@ref) itself, not the data buffers. Those must be allocated through other means such as [`av_new_packet`](@ref).
-
-### Returns
-An [`AVPacket`](@ref) filled with default values or NULL on failure.
-
-### See also
-[`av_new_packet`](@ref)
-"""
-function av_packet_alloc()
-    ccall((:av_packet_alloc, libavcodec), Ptr{AVPacket}, ())
-end
-
-"""
-    av_packet_clone(src)
-
-Create a new packet that references the same data as src.
-
-This is a shortcut for [`av_packet_alloc`](@ref)()+[`av_packet_ref`](@ref)().
-
-### Returns
-newly created [`AVPacket`](@ref) on success, NULL on error.
-
-### See also
-[`av_packet_alloc`](@ref), [`av_packet_ref`](@ref)
-"""
-function av_packet_clone(src)
-    ccall((:av_packet_clone, libavcodec), Ptr{AVPacket}, (Ptr{AVPacket},), src)
-end
-
-"""
-    av_packet_free(pkt)
-
-Free the packet, if the packet is reference counted, it will be unreferenced first.
-
-!!! note
-
-    passing NULL is a no-op.
-
-### Parameters
-* `pkt`: packet to be freed. The pointer will be set to NULL. 
-"""
-function av_packet_free(pkt)
-    ccall((:av_packet_free, libavcodec), Cvoid, (Ptr{Ptr{AVPacket}},), pkt)
-end
-
-"""
-    av_init_packet(pkt)
-
-Initialize optional fields of a packet with default values.
-
-Note, this does not touch the data and size members, which have to be initialized separately.
-
-\\deprecated This function is deprecated. Once it's removed, sizeof([`AVPacket`](@ref)) will not be a part of the ABI anymore.
-
-### Parameters
-* `pkt`: packet
-
-### See also
-[`av_packet_alloc`](@ref), [`av_packet_unref`](@ref)
-"""
-function av_init_packet(pkt)
-    ccall((:av_init_packet, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_new_packet(pkt, size::Integer)
-
-Allocate the payload of a packet and initialize its fields with default values.
-
-### Parameters
-* `pkt`: packet 
-
-* `size`: wanted payload size 
-
-### Returns
-0 if OK, AVERROR\\_xxx otherwise
-"""
-function av_new_packet(pkt, size::Integer)
-    ccall((:av_new_packet, libavcodec), Cint, (Ptr{AVPacket}, Cint), pkt, size)
-end
-
-"""
-    av_shrink_packet(pkt, size::Integer)
-
-Reduce packet size, correctly zeroing padding
-
-### Parameters
-* `pkt`: packet 
-
-* `size`: new size
-"""
-function av_shrink_packet(pkt, size::Integer)
-    ccall((:av_shrink_packet, libavcodec), Cvoid, (Ptr{AVPacket}, Cint), pkt, size)
-end
-
-"""
-    av_grow_packet(pkt, grow_by::Integer)
-
-Increase packet size, correctly zeroing padding
-
-### Parameters
-* `pkt`: packet 
-
-* `grow_by`: number of bytes by which to increase the size of the packet
-"""
-function av_grow_packet(pkt, grow_by::Integer)
-    ccall((:av_grow_packet, libavcodec), Cint, (Ptr{AVPacket}, Cint), pkt, grow_by)
-end
-
-"""
-    av_packet_from_data(pkt, data, size::Integer)
-
-Initialize a reference-counted packet from [`av_malloc`](@ref)()ed data.
-
-### Parameters
-* `pkt`: packet to be initialized. This function will set the data, size, and buf fields, all others are left untouched. 
-
-* `data`: Data allocated by [`av_malloc`](@ref)() to be used as packet data. If this function returns successfully, the data is owned by the underlying [`AVBuffer`](@ref). The caller may not access the data through other means. 
-
-* `size`: size of data in bytes, without the padding. I.e. the full buffer size is assumed to be size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref).
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) on error
-"""
-function av_packet_from_data(pkt, data, size::Integer)
-    ccall((:av_packet_from_data, libavcodec), Cint, (Ptr{AVPacket}, Ptr{UInt8}, Cint), pkt, data, size)
-end
-
-"""
-    av_dup_packet(pkt)
-
-!!! warning
-
-    This is a hack - the packet memory allocation stuff is broken. The packet is allocated if it was not really allocated.
-
-\\deprecated Use [`av_packet_ref`](@ref) or [`av_packet_make_refcounted`](@ref)
-"""
-function av_dup_packet(pkt)
-    ccall((:av_dup_packet, libavcodec), Cint, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_copy_packet(dst, src)
-
-Copy packet, including contents
-
-\\deprecated Use [`av_packet_ref`](@ref)
-
-### Returns
-0 on success, negative [`AVERROR`](@ref) on fail
-"""
-function av_copy_packet(dst, src)
-    ccall((:av_copy_packet, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
-end
-
-"""
-    av_copy_packet_side_data(dst, src)
-
-Copy packet side data
-
-\\deprecated Use [`av_packet_copy_props`](@ref)
-
-### Returns
-0 on success, negative [`AVERROR`](@ref) on fail
-"""
-function av_copy_packet_side_data(dst, src)
-    ccall((:av_copy_packet_side_data, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
-end
-
-"""
-    av_free_packet(pkt)
-
-Free a packet.
-
-\\deprecated Use [`av_packet_unref`](@ref)
-
-### Parameters
-* `pkt`: packet to free
-"""
-function av_free_packet(pkt)
-    ccall((:av_free_packet, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_packet_new_side_data(pkt, type::AVPacketSideDataType, size::Integer)
-
-Allocate new information of a packet.
-
-### Parameters
-* `pkt`: packet 
-
-* `type`: side information type 
-
-* `size`: side information size 
-
-### Returns
-pointer to fresh allocated data or NULL otherwise
-"""
-function av_packet_new_side_data(pkt, type::AVPacketSideDataType, size::Integer)
-    ccall((:av_packet_new_side_data, libavcodec), Ptr{UInt8}, (Ptr{AVPacket}, AVPacketSideDataType, Cint), pkt, type, size)
-end
-
-"""
-    av_packet_add_side_data(pkt, type::AVPacketSideDataType, data, size::Csize_t)
-
-Wrap an existing array as a packet side data.
-
-### Parameters
-* `pkt`: packet 
-
-* `type`: side information type 
-
-* `data`: the side data array. It must be allocated with the [`av_malloc`](@ref)() family of functions. The ownership of the data is transferred to pkt. 
-
-* `size`: side information size 
-
-### Returns
-a non-negative number on success, a negative [`AVERROR`](@ref) code on failure. On failure, the packet is unchanged and the data remains owned by the caller.
-"""
-function av_packet_add_side_data(pkt, type::AVPacketSideDataType, data, size::Csize_t)
-    ccall((:av_packet_add_side_data, libavcodec), Cint, (Ptr{AVPacket}, AVPacketSideDataType, Ptr{UInt8}, Csize_t), pkt, type, data, size)
-end
-
-"""
-    av_packet_shrink_side_data(pkt, type::AVPacketSideDataType, size::Integer)
-
-Shrink the already allocated side data buffer
-
-### Parameters
-* `pkt`: packet 
-
-* `type`: side information type 
-
-* `size`: new side information size 
-
-### Returns
-0 on success, < 0 on failure
-"""
-function av_packet_shrink_side_data(pkt, type::AVPacketSideDataType, size::Integer)
-    ccall((:av_packet_shrink_side_data, libavcodec), Cint, (Ptr{AVPacket}, AVPacketSideDataType, Cint), pkt, type, size)
-end
-
-"""
-    av_packet_get_side_data(pkt, type::AVPacketSideDataType, size)
-
-Get side information from packet.
-
-### Parameters
-* `pkt`: packet 
-
-* `type`: desired side information type 
-
-* `size`: If supplied, *size will be set to the size of the side data or to zero if the desired side data is not present. 
-
-### Returns
-pointer to data if present or NULL otherwise
-"""
-function av_packet_get_side_data(pkt, type::AVPacketSideDataType, size)
-    ccall((:av_packet_get_side_data, libavcodec), Ptr{UInt8}, (Ptr{AVPacket}, AVPacketSideDataType, Ptr{Cint}), pkt, type, size)
-end
-
-function av_packet_merge_side_data(pkt)
-    ccall((:av_packet_merge_side_data, libavcodec), Cint, (Ptr{AVPacket},), pkt)
-end
-
-function av_packet_split_side_data(pkt)
-    ccall((:av_packet_split_side_data, libavcodec), Cint, (Ptr{AVPacket},), pkt)
-end
-
-function av_packet_side_data_name(type::AVPacketSideDataType)
-    ccall((:av_packet_side_data_name, libavcodec), Cstring, (AVPacketSideDataType,), type)
-end
-
-function av_packet_pack_dictionary(dict, size)
-    ccall((:av_packet_pack_dictionary, libavcodec), Ptr{UInt8}, (Ptr{AVDictionary}, Ptr{Cint}), dict, size)
-end
-
-function av_packet_unpack_dictionary(data, size::Integer, dict)
-    ccall((:av_packet_unpack_dictionary, libavcodec), Cint, (Ptr{UInt8}, Cint, Ptr{Ptr{AVDictionary}}), data, size, dict)
-end
-
-"""
-    av_packet_free_side_data(pkt)
-
-Convenience function to free all the side data stored. All the other fields stay untouched.
-
-### Parameters
-* `pkt`: packet
-"""
-function av_packet_free_side_data(pkt)
-    ccall((:av_packet_free_side_data, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_packet_ref(dst, src)
-
-Setup a new reference to the data described by a given packet
-
-If src is reference-counted, setup dst as a new reference to the buffer in src. Otherwise allocate a new buffer in dst and copy the data from src into it.
-
-All the other fields are copied from src.
-
-### Parameters
-* `dst`: Destination packet. Will be completely overwritten. 
-
-* `src`: Source packet
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) on error. On error, dst will be blank (as if returned by [`av_packet_alloc`](@ref)()).
-
-### See also
-[`av_packet_unref`](@ref)
-"""
-function av_packet_ref(dst, src)
-    ccall((:av_packet_ref, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
-end
-
-"""
-    av_packet_unref(pkt)
-
-Wipe the packet.
-
-Unreference the buffer referenced by the packet and reset the remaining packet fields to their default values.
-
-### Parameters
-* `pkt`: The packet to be unreferenced.
-"""
-function av_packet_unref(pkt)
-    ccall((:av_packet_unref, libavcodec), Cvoid, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_packet_move_ref(dst, src)
-
-Move every field in src to dst and reset src.
-
-### Parameters
-* `src`: Source packet, will be reset 
-
-* `dst`: Destination packet
-
-### See also
-[`av_packet_unref`](@ref)
-"""
-function av_packet_move_ref(dst, src)
-    ccall((:av_packet_move_ref, libavcodec), Cvoid, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
-end
-
-"""
-    av_packet_copy_props(dst, src)
-
-Copy only "properties" fields from src to dst.
-
-Properties for the purpose of this function are all the fields beside those related to the packet data (buf, data, size)
-
-### Parameters
-* `dst`: Destination packet 
-
-* `src`: Source packet
-
-### Returns
-0 on success [`AVERROR`](@ref) on failure.
-"""
-function av_packet_copy_props(dst, src)
-    ccall((:av_packet_copy_props, libavcodec), Cint, (Ptr{AVPacket}, Ptr{AVPacket}), dst, src)
-end
-
-"""
-    av_packet_make_refcounted(pkt)
-
-Ensure the data described by a given packet is reference counted.
-
-!!! note
-
-    This function does not ensure that the reference will be writable. Use [`av_packet_make_writable`](@ref) instead for that purpose.
-
-### Parameters
-* `pkt`: packet whose data should be made reference counted.
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) on error. On failure, the packet is unchanged.
-
-### See also
-[`av_packet_ref`](@ref), [`av_packet_make_writable`](@ref)
-"""
-function av_packet_make_refcounted(pkt)
-    ccall((:av_packet_make_refcounted, libavcodec), Cint, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_packet_make_writable(pkt)
-
-Create a writable reference for the data described by a given packet, avoiding data copy if possible.
-
-### Parameters
-* `pkt`: Packet whose data should be made writable.
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) on failure. On failure, the packet is unchanged.
-"""
-function av_packet_make_writable(pkt)
-    ccall((:av_packet_make_writable, libavcodec), Cint, (Ptr{AVPacket},), pkt)
-end
-
-"""
-    av_packet_rescale_ts(pkt, tb_src::AVRational, tb_dst::AVRational)
-
-Convert valid timing fields (timestamps / durations) in a packet from one timebase to another. Timestamps with unknown values ([`AV_NOPTS_VALUE`](@ref)) will be ignored.
-
-### Parameters
-* `pkt`: packet on which the conversion will be performed 
-
-* `tb_src`: source timebase, in which the timing fields in pkt are expressed 
-
-* `tb_dst`: destination timebase, to which the timing fields will be converted
-"""
-function av_packet_rescale_ts(pkt, tb_src::AVRational, tb_dst::AVRational)
-    ccall((:av_packet_rescale_ts, libavcodec), Cvoid, (Ptr{AVPacket}, AVRational, AVRational), pkt, tb_src, tb_dst)
-end
-
-struct AVQSVContext
-    session::Cint
-    iopattern::Cint
-    ext_buffers::Ptr{Ptr{Cint}}
-    nb_ext_buffers::Cint
-    opaque_alloc::Cint
-    nb_opaque_surfaces::Cint
-    opaque_surfaces::Ptr{AVBufferRef}
-    opaque_alloc_type::Cint
-end
-
-"""
-    av_qsv_alloc_context()
-
-Allocate a new context.
-
-It must be freed by the caller with [`av_free`](@ref)().
-"""
-function av_qsv_alloc_context()
-    ccall((:av_qsv_alloc_context, libavcodec), Ptr{AVQSVContext}, ())
-end
-
-"""
-    vaapi_context
-
-This structure is used to share data between the FFmpeg library and the client video application. This shall be zero-allocated and available as [`AVCodecContext`](@ref).hwaccel\\_context. All user members can be set once during initialization or through each [`AVCodecContext`](@ref).get\\_buffer() function call. In any case, they must be valid prior to calling decoding functions.
-
-Deprecated: use [`AVCodecContext`](@ref).hw\\_frames\\_ctx instead.
-"""
-struct vaapi_context
-    data::NTuple{16, UInt8}
-end
-
-function Base.getproperty(x::Ptr{vaapi_context}, f::Symbol)
-    f === :display && return Ptr{Ptr{Cvoid}}(x + 0)
-    f === :config_id && return Ptr{UInt32}(x + 8)
-    f === :context_id && return Ptr{UInt32}(x + 12)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::vaapi_context, f::Symbol)
-    r = Ref{vaapi_context}(x)
-    ptr = Base.unsafe_convert(Ptr{vaapi_context}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{vaapi_context}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-# typedef int ( * AVVDPAU_Render2 ) ( struct AVCodecContext * , struct AVFrame * , const VdpPictureInfo * , uint32_t , const VdpBitstreamBuffer * )
-const AVVDPAU_Render2 = Ptr{Cvoid}
-
-"""
-    AVVDPAUContext
-
-This structure is used to share data between the libavcodec library and the client video application. The user shall allocate the structure via the av\\_alloc\\_vdpau\\_hwaccel function and make it available as [`AVCodecContext`](@ref).hwaccel\\_context. Members can be set by the user once during initialization or through each [`AVCodecContext`](@ref).get\\_buffer() function call. In any case, they must be valid prior to calling decoding functions.
-
-The size of this structure is not a part of the public ABI and must not be used outside of libavcodec. Use [`av_vdpau_alloc_context`](@ref)() to allocate an [`AVVDPAUContext`](@ref).
-"""
-struct AVVDPAUContext
-    decoder::VdpDecoder
-    render::Ptr{Cvoid}
-    render2::AVVDPAU_Render2
-end
-
-"""
-    av_alloc_vdpaucontext()
-
-allocation function for [`AVVDPAUContext`](@ref)
-
-Allows extending the struct without breaking API/ABI
-"""
-function av_alloc_vdpaucontext()
-    ccall((:av_alloc_vdpaucontext, libavcodec), Ptr{AVVDPAUContext}, ())
-end
-
-function av_vdpau_hwaccel_get_render2(arg1)
-    ccall((:av_vdpau_hwaccel_get_render2, libavcodec), AVVDPAU_Render2, (Ptr{AVVDPAUContext},), arg1)
-end
-
-function av_vdpau_hwaccel_set_render2(arg1, arg2::AVVDPAU_Render2)
-    ccall((:av_vdpau_hwaccel_set_render2, libavcodec), Cvoid, (Ptr{AVVDPAUContext}, AVVDPAU_Render2), arg1, arg2)
-end
-
-"""
-    av_vdpau_bind_context(avctx, device::VdpDevice, get_proc_address, flags::Integer)
-
-Associate a VDPAU device with a codec context for hardware acceleration. This function is meant to be called from the get\\_format() codec callback, or earlier. It can also be called after [`avcodec_flush_buffers`](@ref)() to change the underlying VDPAU device mid-stream (e.g. to recover from non-transparent display preemption).
-
-!!! note
-
-    get\\_format() must return AV\\_PIX\\_FMT\\_VDPAU if this function completes successfully.
-
-### Parameters
-* `avctx`: decoding context whose get\\_format() callback is invoked 
-
-* `device`: VDPAU device handle to use for hardware acceleration 
-
-* `get_proc_address`: VDPAU device driver 
-
-* `flags`: zero of more OR'd AV\\_HWACCEL\\_FLAG\\_* flags
-
-### Returns
-0 on success, an [`AVERROR`](@ref) code on failure.
-"""
-function av_vdpau_bind_context(avctx, device::VdpDevice, get_proc_address, flags::Integer)
-    ccall((:av_vdpau_bind_context, libavcodec), Cint, (Ptr{AVCodecContext}, VdpDevice, Ptr{Cvoid}, Cuint), avctx, device, get_proc_address, flags)
-end
-
-"""
-    av_vdpau_get_surface_parameters(avctx, type, width, height)
-
-Gets the parameters to create an adequate VDPAU video surface for the codec context using VDPAU hardware decoding acceleration.
-
-!!! note
-
-    Behavior is undefined if the context was not successfully bound to a VDPAU device using [`av_vdpau_bind_context`](@ref)().
-
-### Parameters
-* `avctx`: the codec context being used for decoding the stream 
-
-* `type`: storage space for the VDPAU video surface chroma type (or NULL to ignore) 
-
-* `width`: storage space for the VDPAU video surface pixel width (or NULL to ignore) 
-
-* `height`: storage space for the VDPAU video surface pixel height (or NULL to ignore)
-
-### Returns
-0 on success, a negative [`AVERROR`](@ref) code on failure.
-"""
-function av_vdpau_get_surface_parameters(avctx, type, width, height)
-    ccall((:av_vdpau_get_surface_parameters, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{VdpChromaType}, Ptr{UInt32}, Ptr{UInt32}), avctx, type, width, height)
-end
-
-"""
-    av_vdpau_alloc_context()
-
-Allocate an [`AVVDPAUContext`](@ref).
-
-### Returns
-Newly-allocated [`AVVDPAUContext`](@ref) or NULL on failure.
-"""
-function av_vdpau_alloc_context()
-    ccall((:av_vdpau_alloc_context, libavcodec), Ptr{AVVDPAUContext}, ())
-end
-
-"""
-    av_vdpau_get_profile(avctx, profile)
-
-Get a decoder profile that should be used for initializing a VDPAU decoder. Should be called from the [`AVCodecContext`](@ref).get\\_format() callback.
-
-\\deprecated Use [`av_vdpau_bind_context`](@ref)() instead.
-
-### Parameters
-* `avctx`: the codec context being used for decoding the stream 
-
-* `profile`: a pointer into which the result will be written on success. The contents of profile are undefined if this function returns an error.
-
-### Returns
-0 on success (non-negative), a negative [`AVERROR`](@ref) on failure.
-"""
-function av_vdpau_get_profile(avctx, profile)
-    ccall((:av_vdpau_get_profile, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{VdpDecoderProfile}), avctx, profile)
-end
-
-struct AVVideotoolboxContext
-    session::Cint
-    output_callback::Cint
-    cv_pix_fmt_type::Cint
-    cm_fmt_desc::Cint
-    cm_codec_type::Cint
-end
-
-"""
-    av_videotoolbox_alloc_context()
-
-Allocate and initialize a Videotoolbox context.
-
-This function should be called from the get\\_format() callback when the caller selects the AV\\_PIX\\_FMT\\_VIDETOOLBOX format. The caller must then create the decoder object (using the output callback provided by libavcodec) that will be used for Videotoolbox-accelerated decoding.
-
-When decoding with Videotoolbox is finished, the caller must destroy the decoder object and free the Videotoolbox context using [`av_free`](@ref)().
-
-### Returns
-the newly allocated context or NULL on failure
-"""
-function av_videotoolbox_alloc_context()
-    ccall((:av_videotoolbox_alloc_context, libavcodec), Ptr{AVVideotoolboxContext}, ())
-end
-
-"""
-    av_videotoolbox_default_init(avctx)
-
-This is a convenience function that creates and sets up the Videotoolbox context using an internal implementation.
-
-### Parameters
-* `avctx`: the corresponding codec context
-
-### Returns
->= 0 on success, a negative [`AVERROR`](@ref) code on failure
-"""
-function av_videotoolbox_default_init(avctx)
-    ccall((:av_videotoolbox_default_init, libavcodec), Cint, (Ptr{AVCodecContext},), avctx)
-end
-
-"""
-    av_videotoolbox_default_init2(avctx, vtctx)
-
-This is a convenience function that creates and sets up the Videotoolbox context using an internal implementation.
-
-### Parameters
-* `avctx`: the corresponding codec context 
-
-* `vtctx`: the Videotoolbox context to use
-
-### Returns
->= 0 on success, a negative [`AVERROR`](@ref) code on failure
-"""
-function av_videotoolbox_default_init2(avctx, vtctx)
-    ccall((:av_videotoolbox_default_init2, libavcodec), Cint, (Ptr{AVCodecContext}, Ptr{AVVideotoolboxContext}), avctx, vtctx)
-end
-
-"""
-    av_videotoolbox_default_free(avctx)
-
-This function must be called to free the Videotoolbox context initialized with [`av_videotoolbox_default_init`](@ref)().
-
-### Parameters
-* `avctx`: the corresponding codec context
-"""
-function av_videotoolbox_default_free(avctx)
-    ccall((:av_videotoolbox_default_free, libavcodec), Cvoid, (Ptr{AVCodecContext},), avctx)
-end
-
-mutable struct AVVorbisParseContext end
-
-"""
-    av_vorbis_parse_init(extradata, extradata_size::Integer)
-
-Allocate and initialize the Vorbis parser using headers in the extradata.
-"""
-function av_vorbis_parse_init(extradata, extradata_size::Integer)
-    ccall((:av_vorbis_parse_init, libavcodec), Ptr{AVVorbisParseContext}, (Ptr{UInt8}, Cint), extradata, extradata_size)
-end
-
-"""
-    av_vorbis_parse_free(s)
-
-Free the parser and everything associated with it.
-"""
-function av_vorbis_parse_free(s)
-    ccall((:av_vorbis_parse_free, libavcodec), Cvoid, (Ptr{Ptr{AVVorbisParseContext}},), s)
-end
-
-"""
-    av_vorbis_parse_frame_flags(s, buf, buf_size::Integer, flags)
-
-Get the duration for a Vorbis packet.
-
-If `flags` is `NULL`, special frames are considered invalid.
-
-### Parameters
-* `s`: Vorbis parser context 
-
-* `buf`: buffer containing a Vorbis frame 
-
-* `buf_size`: size of the buffer 
-
-* `flags`: flags for special frames
-"""
-function av_vorbis_parse_frame_flags(s, buf, buf_size::Integer, flags)
-    ccall((:av_vorbis_parse_frame_flags, libavcodec), Cint, (Ptr{AVVorbisParseContext}, Ptr{UInt8}, Cint, Ptr{Cint}), s, buf, buf_size, flags)
-end
-
-"""
-    av_vorbis_parse_frame(s, buf, buf_size::Integer)
-
-Get the duration for a Vorbis packet.
-
-### Parameters
-* `s`: Vorbis parser context 
-
-* `buf`: buffer containing a Vorbis frame 
-
-* `buf_size`: size of the buffer
-"""
-function av_vorbis_parse_frame(s, buf, buf_size::Integer)
-    ccall((:av_vorbis_parse_frame, libavcodec), Cint, (Ptr{AVVorbisParseContext}, Ptr{UInt8}, Cint), s, buf, buf_size)
-end
-
-function av_vorbis_parse_reset(s)
-    ccall((:av_vorbis_parse_reset, libavcodec), Cvoid, (Ptr{AVVorbisParseContext},), s)
-end
-
-struct xvmc_pix_fmt
-    data::NTuple{1, UInt8}
-end
-
-function Base.getproperty(x::Ptr{xvmc_pix_fmt}, f::Symbol)
-    f === :xvmc_id && return Ptr{Cint}(x + 0)
-    f === :data_blocks && return Ptr{Ptr{Cshort}}(x + 0)
-    f === :mv_blocks && return Ptr{Ptr{Cint}}(x + 0)
-    f === :allocated_mv_blocks && return Ptr{Cint}(x + 0)
-    f === :allocated_data_blocks && return Ptr{Cint}(x + 0)
-    f === :idct && return Ptr{Cint}(x + 0)
-    f === :unsigned_intra && return Ptr{Cint}(x + 0)
-    f === :p_surface && return Ptr{Ptr{Cint}}(x + 0)
-    f === :p_past_surface && return Ptr{Ptr{Cint}}(x + 0)
-    f === :p_future_surface && return Ptr{Ptr{Cint}}(x + 0)
-    f === :picture_structure && return Ptr{Cuint}(x + 0)
-    f === :flags && return Ptr{Cuint}(x + 0)
-    f === :start_mv_blocks_num && return Ptr{Cint}(x + 0)
-    f === :filled_mv_blocks_num && return Ptr{Cint}(x + 0)
-    f === :next_free_data_block_num && return Ptr{Cint}(x + 0)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::xvmc_pix_fmt, f::Symbol)
-    r = Ref{xvmc_pix_fmt}(x)
-    ptr = Base.unsafe_convert(Ptr{xvmc_pix_fmt}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{xvmc_pix_fmt}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
 end
 
 const AVAdler = Culong
@@ -14246,11 +13881,11 @@ function av_frame_remove_side_data(frame, type::AVFrameSideDataType)
 end
 
 """
-    __JL_Ctag_754
+    __JL_Ctag_731
 
 Flags for frame cropping.
 """
-@cenum __JL_Ctag_754::UInt32 begin
+@cenum __JL_Ctag_731::UInt32 begin
     AV_FRAME_CROP_UNALIGNED = 1
 end
 
@@ -15041,11 +14676,11 @@ function av_hwframe_constraints_free(constraints)
 end
 
 """
-    __JL_Ctag_802
+    __JL_Ctag_779
 
 Flags to apply to frame mappings.
 """
-@cenum __JL_Ctag_802::UInt32 begin
+@cenum __JL_Ctag_779::UInt32 begin
     AV_HWFRAME_MAP_READ = 1
     AV_HWFRAME_MAP_WRITE = 2
     AV_HWFRAME_MAP_OVERWRITE = 4
@@ -15134,13 +14769,13 @@ struct AVD3D11VAFramesContext
 end
 
 """
-    __JL_Ctag_804
+    __JL_Ctag_781
 
 API-specific header for AV\\_HWDEVICE\\_TYPE\\_DRM.
 
 Internal frame allocation is not currently supported - all frames must be allocated by the user. Thus [`AVHWFramesContext`](@ref) is always NULL, though this may change if support for frame allocation is added in future.
 """
-@cenum __JL_Ctag_804::UInt32 begin
+@cenum __JL_Ctag_781::UInt32 begin
     AV_DRM_MAX_PLANES = 4
 end
 
@@ -15260,7 +14895,7 @@ struct AVQSVFramesContext
 end
 
 """
-    __JL_Ctag_828
+    __JL_Ctag_805
 
 API-specific header for AV\\_HWDEVICE\\_TYPE\\_VAAPI.
 
@@ -15268,7 +14903,7 @@ Dynamic frame pools are supported, but note that any pool used as a render targe
 
 For user-allocated pools, [`AVHWFramesContext`](@ref).pool must return AVBufferRefs with the data pointer set to a VASurfaceID.
 """
-@cenum __JL_Ctag_828::UInt32 begin
+@cenum __JL_Ctag_805::UInt32 begin
     AV_VAAPI_DRIVER_QUIRK_USER_SET = 1
     AV_VAAPI_DRIVER_QUIRK_RENDER_PARAM_BUFFERS = 2
     AV_VAAPI_DRIVER_QUIRK_ATTRIB_MEMTYPE = 4
@@ -17279,7 +16914,7 @@ function av_opt_get_key_value(ropts, key_val_sep, pairs_sep, flags::Integer, rke
     ccall((:av_opt_get_key_value, libavutil), Cint, (Ptr{Cstring}, Cstring, Cstring, Cuint, Ptr{Cstring}, Ptr{Cstring}), ropts, key_val_sep, pairs_sep, flags, rkey, rval)
 end
 
-@cenum __JL_Ctag_998::UInt32 begin
+@cenum __JL_Ctag_975::UInt32 begin
     AV_OPT_FLAG_IMPLICIT_KEY = 1
 end
 
@@ -17903,7 +17538,7 @@ end
 """
     av_timegm(tm_)
 
-Convert the decomposed UTC time in [`tm`](@ref) to a [`time_t`](@ref) value.
+Convert the decomposed UTC time in [`tm`](@ref) to a time\\_t value.
 """
 function av_timegm(tm_)
     ccall((:av_timegm, libavutil), time_t, (Ptr{tm},), tm_)
@@ -20103,6 +19738,368 @@ function av_xtea_le_crypt(ctx, dst, src, count::Integer, iv, decrypt::Integer)
 end
 
 """
+    swscale_version()
+
+` libsws libswscale`
+
+Color conversion and scaling library.
+
+@{
+
+Return the [`LIBSWSCALE_VERSION_INT`](@ref) constant.
+"""
+function swscale_version()
+    ccall((:swscale_version, libswscale), Cuint, ())
+end
+
+"""
+    swscale_configuration()
+
+Return the libswscale build-time configuration.
+"""
+function swscale_configuration()
+    ccall((:swscale_configuration, libswscale), Cstring, ())
+end
+
+"""
+    swscale_license()
+
+Return the libswscale license.
+"""
+function swscale_license()
+    ccall((:swscale_license, libswscale), Cstring, ())
+end
+
+"""
+    sws_getCoefficients(colorspace::Integer)
+
+Return a pointer to yuv<->rgb coefficients for the given colorspace suitable for [`sws_setColorspaceDetails`](@ref)().
+
+### Parameters
+* `colorspace`: One of the SWS\\_CS\\_* macros. If invalid, [`SWS_CS_DEFAULT`](@ref) is used.
+"""
+function sws_getCoefficients(colorspace::Integer)
+    ccall((:sws_getCoefficients, libswscale), Ptr{Cint}, (Cint,), colorspace)
+end
+
+struct SwsVector
+    coeff::Ptr{Cdouble}
+    length::Cint
+end
+
+struct SwsFilter
+    lumH::Ptr{SwsVector}
+    lumV::Ptr{SwsVector}
+    chrH::Ptr{SwsVector}
+    chrV::Ptr{SwsVector}
+end
+
+mutable struct SwsContext end
+
+"""
+    sws_isSupportedInput(pix_fmt::AVPixelFormat)
+
+Return a positive value if pix\\_fmt is a supported input format, 0 otherwise.
+"""
+function sws_isSupportedInput(pix_fmt::AVPixelFormat)
+    ccall((:sws_isSupportedInput, libswscale), Cint, (AVPixelFormat,), pix_fmt)
+end
+
+"""
+    sws_isSupportedOutput(pix_fmt::AVPixelFormat)
+
+Return a positive value if pix\\_fmt is a supported output format, 0 otherwise.
+"""
+function sws_isSupportedOutput(pix_fmt::AVPixelFormat)
+    ccall((:sws_isSupportedOutput, libswscale), Cint, (AVPixelFormat,), pix_fmt)
+end
+
+"""
+    sws_isSupportedEndiannessConversion(pix_fmt::AVPixelFormat)
+
+### Parameters
+* `pix_fmt`:\\[in\\] the pixel format 
+
+### Returns
+a positive value if an endianness conversion for pix\\_fmt is supported, 0 otherwise.
+"""
+function sws_isSupportedEndiannessConversion(pix_fmt::AVPixelFormat)
+    ccall((:sws_isSupportedEndiannessConversion, libswscale), Cint, (AVPixelFormat,), pix_fmt)
+end
+
+"""
+    sws_alloc_context()
+
+Allocate an empty [`SwsContext`](@ref). This must be filled and passed to [`sws_init_context`](@ref)(). For filling see AVOptions, options.c and [`sws_setColorspaceDetails`](@ref)().
+"""
+function sws_alloc_context()
+    ccall((:sws_alloc_context, libswscale), Ptr{SwsContext}, ())
+end
+
+"""
+    sws_init_context(sws_context, srcFilter, dstFilter)
+
+Initialize the swscaler context sws\\_context.
+
+### Returns
+zero or positive value on success, a negative value on error
+"""
+function sws_init_context(sws_context, srcFilter, dstFilter)
+    ccall((:sws_init_context, libswscale), Cint, (Ptr{SwsContext}, Ptr{SwsFilter}, Ptr{SwsFilter}), sws_context, srcFilter, dstFilter)
+end
+
+"""
+    sws_freeContext(swsContext)
+
+Free the swscaler context swsContext. If swsContext is NULL, then does nothing.
+"""
+function sws_freeContext(swsContext)
+    ccall((:sws_freeContext, libswscale), Cvoid, (Ptr{SwsContext},), swsContext)
+end
+
+"""
+    sws_getContext(srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+
+Allocate and return an [`SwsContext`](@ref). You need it to perform scaling/conversion operations using [`sws_scale`](@ref)().
+
+!!! note
+
+    this function is to be removed after a saner alternative is written
+
+### Parameters
+* `srcW`: the width of the source image 
+
+* `srcH`: the height of the source image 
+
+* `srcFormat`: the source image format 
+
+* `dstW`: the width of the destination image 
+
+* `dstH`: the height of the destination image 
+
+* `dstFormat`: the destination image format 
+
+* `flags`: specify which algorithm and options to use for rescaling 
+
+* `param`: extra parameters to tune the used scaler For [`SWS_BICUBIC`](@ref) param[0] and [1] tune the shape of the basis function, param[0] tunes f(1) and param[1] f´(1) For [`SWS_GAUSS`](@ref) param[0] tunes the exponent and thus cutoff frequency For [`SWS_LANCZOS`](@ref) param[0] tunes the width of the window function 
+
+### Returns
+a pointer to an allocated context, or NULL in case of error 
+"""
+function sws_getContext(srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+    ccall((:sws_getContext, libswscale), Ptr{SwsContext}, (Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+end
+
+"""
+    sws_scale(c, srcSlice, srcStride, srcSliceY::Integer, srcSliceH::Integer, dst, dstStride)
+
+Scale the image slice in srcSlice and put the resulting scaled slice in the image in dst. A slice is a sequence of consecutive rows in an image.
+
+Slices have to be provided in sequential order, either in top-bottom or bottom-top order. If slices are provided in non-sequential order the behavior of the function is undefined.
+
+### Parameters
+* `c`: the scaling context previously created with [`sws_getContext`](@ref)() 
+
+* `srcSlice`: the array containing the pointers to the planes of the source slice 
+
+* `srcStride`: the array containing the strides for each plane of the source image 
+
+* `srcSliceY`: the position in the source image of the slice to process, that is the number (counted starting from zero) in the image of the first row of the slice 
+
+* `srcSliceH`: the height of the source slice, that is the number of rows in the slice 
+
+* `dst`: the array containing the pointers to the planes of the destination image 
+
+* `dstStride`: the array containing the strides for each plane of the destination image 
+
+### Returns
+the height of the output slice
+"""
+function sws_scale(c, srcSlice, srcStride, srcSliceY::Integer, srcSliceH::Integer, dst, dstStride)
+    ccall((:sws_scale, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Cint, Cint, Ptr{Ptr{UInt8}}, Ptr{Cint}), c, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride)
+end
+
+"""
+    sws_setColorspaceDetails(c, inv_table, srcRange::Integer, table, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
+
+### Parameters
+* `dstRange`: flag indicating the while-black range of the output (1=jpeg / 0=mpeg) 
+
+* `srcRange`: flag indicating the while-black range of the input (1=jpeg / 0=mpeg) 
+
+* `table`: the yuv2rgb coefficients describing the output yuv space, normally ff\\_yuv2rgb\\_coeffs[x] 
+
+* `inv_table`: the yuv2rgb coefficients describing the input yuv space, normally ff\\_yuv2rgb\\_coeffs[x] 
+
+* `brightness`: 16.16 fixed point brightness correction 
+
+* `contrast`: 16.16 fixed point contrast correction 
+
+* `saturation`: 16.16 fixed point saturation correction 
+
+### Returns
+-1 if not supported
+"""
+function sws_setColorspaceDetails(c, inv_table, srcRange::Integer, table, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
+    ccall((:sws_setColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, Ptr{Cint}, Cint, Ptr{Cint}, Cint, Cint, Cint, Cint), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+end
+
+"""
+    sws_getColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+
+### Returns
+-1 if not supported
+"""
+function sws_getColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+    ccall((:sws_getColorspaceDetails, libswscale), Cint, (Ptr{SwsContext}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Ptr{Cint}}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation)
+end
+
+"""
+    sws_allocVec(length::Integer)
+
+Allocate and return an uninitialized vector with length coefficients.
+"""
+function sws_allocVec(length::Integer)
+    ccall((:sws_allocVec, libswscale), Ptr{SwsVector}, (Cint,), length)
+end
+
+"""
+    sws_getGaussianVec(variance::Cdouble, quality::Cdouble)
+
+Return a normalized Gaussian curve used to filter stuff quality = 3 is high quality, lower is lower quality.
+"""
+function sws_getGaussianVec(variance::Cdouble, quality::Cdouble)
+    ccall((:sws_getGaussianVec, libswscale), Ptr{SwsVector}, (Cdouble, Cdouble), variance, quality)
+end
+
+"""
+    sws_scaleVec(a, scalar::Cdouble)
+
+Scale all the coefficients of a by the scalar value.
+"""
+function sws_scaleVec(a, scalar::Cdouble)
+    ccall((:sws_scaleVec, libswscale), Cvoid, (Ptr{SwsVector}, Cdouble), a, scalar)
+end
+
+"""
+    sws_normalizeVec(a, height::Cdouble)
+
+Scale all the coefficients of a so that their sum equals height.
+"""
+function sws_normalizeVec(a, height::Cdouble)
+    ccall((:sws_normalizeVec, libswscale), Cvoid, (Ptr{SwsVector}, Cdouble), a, height)
+end
+
+function sws_getConstVec(c::Cdouble, length::Integer)
+    ccall((:sws_getConstVec, libswscale), Ptr{SwsVector}, (Cdouble, Cint), c, length)
+end
+
+function sws_getIdentityVec()
+    ccall((:sws_getIdentityVec, libswscale), Ptr{SwsVector}, ())
+end
+
+function sws_convVec(a, b)
+    ccall((:sws_convVec, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{SwsVector}), a, b)
+end
+
+function sws_addVec(a, b)
+    ccall((:sws_addVec, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{SwsVector}), a, b)
+end
+
+function sws_subVec(a, b)
+    ccall((:sws_subVec, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{SwsVector}), a, b)
+end
+
+function sws_shiftVec(a, shift::Integer)
+    ccall((:sws_shiftVec, libswscale), Cvoid, (Ptr{SwsVector}, Cint), a, shift)
+end
+
+function sws_cloneVec(a)
+    ccall((:sws_cloneVec, libswscale), Ptr{SwsVector}, (Ptr{SwsVector},), a)
+end
+
+function sws_printVec2(a, log_ctx, log_level::Integer)
+    ccall((:sws_printVec2, libswscale), Cvoid, (Ptr{SwsVector}, Ptr{AVClass}, Cint), a, log_ctx, log_level)
+end
+
+function sws_freeVec(a)
+    ccall((:sws_freeVec, libswscale), Cvoid, (Ptr{SwsVector},), a)
+end
+
+function sws_getDefaultFilter(lumaGBlur::Cfloat, chromaGBlur::Cfloat, lumaSharpen::Cfloat, chromaSharpen::Cfloat, chromaHShift::Cfloat, chromaVShift::Cfloat, verbose::Integer)
+    ccall((:sws_getDefaultFilter, libswscale), Ptr{SwsFilter}, (Cfloat, Cfloat, Cfloat, Cfloat, Cfloat, Cfloat, Cint), lumaGBlur, chromaGBlur, lumaSharpen, chromaSharpen, chromaHShift, chromaVShift, verbose)
+end
+
+function sws_freeFilter(filter)
+    ccall((:sws_freeFilter, libswscale), Cvoid, (Ptr{SwsFilter},), filter)
+end
+
+"""
+    sws_getCachedContext(context, srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+
+Check if context can be reused, otherwise reallocate a new one.
+
+If context is NULL, just calls [`sws_getContext`](@ref)() to get a new context. Otherwise, checks if the parameters are the ones already saved in context. If that is the case, returns the current context. Otherwise, frees context and gets a new context with the new parameters.
+
+Be warned that srcFilter and dstFilter are not checked, they are assumed to remain the same.
+"""
+function sws_getCachedContext(context, srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
+    ccall((:sws_getCachedContext, libswscale), Ptr{SwsContext}, (Ptr{SwsContext}, Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), context, srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+end
+
+"""
+    sws_convertPalette8ToPacked32(src, dst, num_pixels::Integer, palette)
+
+Convert an 8-bit paletted frame into a frame with a color depth of 32 bits.
+
+The output frame will have the same packed format as the palette.
+
+### Parameters
+* `src`: source frame buffer 
+
+* `dst`: destination frame buffer 
+
+* `num_pixels`: number of pixels to convert 
+
+* `palette`: array with [256] entries, which must match color arrangement (RGB or BGR) of src
+"""
+function sws_convertPalette8ToPacked32(src, dst, num_pixels::Integer, palette)
+    ccall((:sws_convertPalette8ToPacked32, libswscale), Cvoid, (Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}), src, dst, num_pixels, palette)
+end
+
+"""
+    sws_convertPalette8ToPacked24(src, dst, num_pixels::Integer, palette)
+
+Convert an 8-bit paletted frame into a frame with a color depth of 24 bits.
+
+With the palette format "ABCD", the destination frame ends up with the format "ABC".
+
+### Parameters
+* `src`: source frame buffer 
+
+* `dst`: destination frame buffer 
+
+* `num_pixels`: number of pixels to convert 
+
+* `palette`: array with [256] entries, which must match color arrangement (RGB or BGR) of src
+"""
+function sws_convertPalette8ToPacked24(src, dst, num_pixels::Integer, palette)
+    ccall((:sws_convertPalette8ToPacked24, libswscale), Cvoid, (Ptr{UInt8}, Ptr{UInt8}, Cint, Ptr{UInt8}), src, dst, num_pixels, palette)
+end
+
+"""
+    sws_get_class()
+
+Get the [`AVClass`](@ref) for swsContext. It can be used in combination with [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) for examining options.
+
+### See also
+[`av_opt_find`](@ref)().
+"""
+function sws_get_class()
+    ccall((:sws_get_class, libswscale), Ptr{AVClass}, ())
+end
+
+"""
     __JL_Ctag_1122
 
 the default value for scalar options
@@ -20154,370 +20151,6 @@ end
 function Base.setproperty!(x::Ptr{__JL_Ctag_1123}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
-
-const SWS_FAST_BILINEAR = 1
-
-const SWS_BILINEAR = 2
-
-const SWS_BICUBIC = 4
-
-const SWS_X = 8
-
-const SWS_POINT = 0x10
-
-const SWS_AREA = 0x20
-
-const SWS_BICUBLIN = 0x40
-
-const SWS_GAUSS = 0x80
-
-const SWS_SINC = 0x0100
-
-const SWS_LANCZOS = 0x0200
-
-const SWS_SPLINE = 0x0400
-
-const SWS_SRC_V_CHR_DROP_MASK = 0x00030000
-
-const SWS_SRC_V_CHR_DROP_SHIFT = 16
-
-const SWS_PARAM_DEFAULT = 123456
-
-const SWS_PRINT_INFO = 0x1000
-
-const SWS_FULL_CHR_H_INT = 0x2000
-
-const SWS_FULL_CHR_H_INP = 0x4000
-
-const SWS_DIRECT_BGR = 0x8000
-
-const SWS_ACCURATE_RND = 0x00040000
-
-const SWS_BITEXACT = 0x00080000
-
-const SWS_ERROR_DIFFUSION = 0x00800000
-
-const SWS_MAX_REDUCE_CUTOFF = 0.002
-
-const SWS_CS_ITU709 = 1
-
-const SWS_CS_FCC = 4
-
-const SWS_CS_ITU601 = 5
-
-const SWS_CS_ITU624 = 5
-
-const SWS_CS_SMPTE170M = 5
-
-const SWS_CS_SMPTE240M = 7
-
-const SWS_CS_DEFAULT = 5
-
-const SWS_CS_BT2020 = 9
-
-const LIBSWSCALE_VERSION_MAJOR = 5
-
-const LIBSWSCALE_VERSION_MINOR = 9
-
-const LIBSWSCALE_VERSION_MICRO = 100
-
-const LIBSWSCALE_VERSION_INT = AV_VERSION_INT(LIBSWSCALE_VERSION_MAJOR, LIBSWSCALE_VERSION_MINOR, LIBSWSCALE_VERSION_MICRO)
-
-const LIBSWSCALE_VERSION = AV_VERSION(LIBSWSCALE_VERSION_MAJOR, LIBSWSCALE_VERSION_MINOR, LIBSWSCALE_VERSION_MICRO)
-
-const LIBSWSCALE_BUILD = LIBSWSCALE_VERSION_INT
-
-const FF_API_SWS_VECTOR = LIBSWSCALE_VERSION_MAJOR < 6
-
-const LIBAVDEVICE_VERSION_MAJOR = 58
-
-const LIBAVDEVICE_VERSION_MINOR = 13
-
-const LIBAVDEVICE_VERSION_MICRO = 100
-
-const LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR, LIBAVDEVICE_VERSION_MINOR, LIBAVDEVICE_VERSION_MICRO)
-
-const LIBAVDEVICE_VERSION = AV_VERSION(LIBAVDEVICE_VERSION_MAJOR, LIBAVDEVICE_VERSION_MINOR, LIBAVDEVICE_VERSION_MICRO)
-
-const LIBAVDEVICE_BUILD = LIBAVDEVICE_VERSION_INT
-
-const FF_API_DEVICE_CAPABILITIES = LIBAVDEVICE_VERSION_MAJOR < 60
-
-const AVFILTER_FLAG_DYNAMIC_INPUTS = 1 << 0
-
-const AVFILTER_FLAG_DYNAMIC_OUTPUTS = 1 << 1
-
-const AVFILTER_FLAG_SLICE_THREADS = 1 << 2
-
-const AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC = 1 << 16
-
-const AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL = 1 << 17
-
-const AVFILTER_FLAG_SUPPORT_TIMELINE = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
-
-const AVFILTER_THREAD_SLICE = 1 << 0
-
-const AVFILTER_CMD_FLAG_ONE = 1
-
-const AVFILTER_CMD_FLAG_FAST = 2
-
-const AV_BUFFERSINK_FLAG_PEEK = 1
-
-const AV_BUFFERSINK_FLAG_NO_REQUEST = 2
-
-const LIBAVFILTER_VERSION_MAJOR = 7
-
-const LIBAVFILTER_VERSION_MINOR = 110
-
-const LIBAVFILTER_VERSION_MICRO = 100
-
-const LIBAVFILTER_VERSION_INT = AV_VERSION_INT(LIBAVFILTER_VERSION_MAJOR, LIBAVFILTER_VERSION_MINOR, LIBAVFILTER_VERSION_MICRO)
-
-const LIBAVFILTER_VERSION = AV_VERSION(LIBAVFILTER_VERSION_MAJOR, LIBAVFILTER_VERSION_MINOR, LIBAVFILTER_VERSION_MICRO)
-
-const LIBAVFILTER_BUILD = LIBAVFILTER_VERSION_INT
-
-const FF_API_OLD_FILTER_OPTS_ERROR = LIBAVFILTER_VERSION_MAJOR < 8
-
-const FF_API_LAVR_OPTS = LIBAVFILTER_VERSION_MAJOR < 8
-
-const FF_API_FILTER_GET_SET = LIBAVFILTER_VERSION_MAJOR < 8
-
-const FF_API_SWS_PARAM_OPTION = LIBAVFILTER_VERSION_MAJOR < 8
-
-const FF_API_NEXT = LIBAVFILTER_VERSION_MAJOR < 8
-
-const FF_API_FILTER_LINK_SET_CLOSED = LIBAVFILTER_VERSION_MAJOR < 8
-
-const FF_API_BUFFERSINK_ALLOC = LIBAVFILTER_VERSION_MAJOR < 9
-
-const AVPROBE_SCORE_RETRY = AVPROBE_SCORE_MAX ÷ 4
-
-const AVPROBE_SCORE_STREAM_RETRY = AVPROBE_SCORE_MAX ÷ 4 - 1
-
-const AVPROBE_SCORE_EXTENSION = 50
-
-const AVPROBE_SCORE_MIME = 75
-
-const AVPROBE_PADDING_SIZE = 32
-
-const AVFMT_NOFILE = 0x0001
-
-const AVFMT_NEEDNUMBER = 0x0002
-
-const AVFMT_SHOW_IDS = 0x0008
-
-const AVFMT_GLOBALHEADER = 0x0040
-
-const AVFMT_NOTIMESTAMPS = 0x0080
-
-const AVFMT_GENERIC_INDEX = 0x0100
-
-const AVFMT_TS_DISCONT = 0x0200
-
-const AVFMT_VARIABLE_FPS = 0x0400
-
-const AVFMT_NODIMENSIONS = 0x0800
-
-const AVFMT_NOSTREAMS = 0x1000
-
-const AVFMT_NOBINSEARCH = 0x2000
-
-const AVFMT_NOGENSEARCH = 0x4000
-
-const AVFMT_NO_BYTE_SEEK = 0x8000
-
-const AVFMT_ALLOW_FLUSH = 0x00010000
-
-const AVFMT_TS_NONSTRICT = 0x00020000
-
-const AVFMT_TS_NEGATIVE = 0x00040000
-
-const AVFMT_SEEK_TO_PTS = 0x04000000
-
-const AVINDEX_KEYFRAME = 0x0001
-
-const AVINDEX_DISCARD_FRAME = 0x0002
-
-const AV_DISPOSITION_DEFAULT = 0x0001
-
-const AV_DISPOSITION_DUB = 0x0002
-
-const AV_DISPOSITION_ORIGINAL = 0x0004
-
-const AV_DISPOSITION_COMMENT = 0x0008
-
-const AV_DISPOSITION_LYRICS = 0x0010
-
-const AV_DISPOSITION_KARAOKE = 0x0020
-
-const AV_DISPOSITION_FORCED = 0x0040
-
-const AV_DISPOSITION_HEARING_IMPAIRED = 0x0080
-
-const AV_DISPOSITION_VISUAL_IMPAIRED = 0x0100
-
-const AV_DISPOSITION_CLEAN_EFFECTS = 0x0200
-
-const AV_DISPOSITION_ATTACHED_PIC = 0x0400
-
-const AV_DISPOSITION_TIMED_THUMBNAILS = 0x0800
-
-const AV_DISPOSITION_CAPTIONS = 0x00010000
-
-const AV_DISPOSITION_DESCRIPTIONS = 0x00020000
-
-const AV_DISPOSITION_METADATA = 0x00040000
-
-const AV_DISPOSITION_DEPENDENT = 0x00080000
-
-const AV_DISPOSITION_STILL_IMAGE = 0x00100000
-
-const AV_PTS_WRAP_IGNORE = 0
-
-const AV_PTS_WRAP_ADD_OFFSET = 1
-
-const AV_PTS_WRAP_SUB_OFFSET = -1
-
-const AVSTREAM_EVENT_FLAG_METADATA_UPDATED = 0x0001
-
-const AVSTREAM_EVENT_FLAG_NEW_PACKETS = 1 << 1
-
-const AV_PROGRAM_RUNNING = 1
-
-const AVFMTCTX_NOHEADER = 0x0001
-
-const AVFMTCTX_UNSEEKABLE = 0x0002
-
-const AVFMT_FLAG_GENPTS = 0x0001
-
-const AVFMT_FLAG_IGNIDX = 0x0002
-
-const AVFMT_FLAG_NONBLOCK = 0x0004
-
-const AVFMT_FLAG_IGNDTS = 0x0008
-
-const AVFMT_FLAG_NOFILLIN = 0x0010
-
-const AVFMT_FLAG_NOPARSE = 0x0020
-
-const AVFMT_FLAG_NOBUFFER = 0x0040
-
-const AVFMT_FLAG_CUSTOM_IO = 0x0080
-
-const AVFMT_FLAG_DISCARD_CORRUPT = 0x0100
-
-const AVFMT_FLAG_FLUSH_PACKETS = 0x0200
-
-const AVFMT_FLAG_BITEXACT = 0x0400
-
-const AVFMT_FLAG_MP4A_LATM = 0x8000
-
-const AVFMT_FLAG_SORT_DTS = 0x00010000
-
-const AVFMT_FLAG_PRIV_OPT = 0x00020000
-
-const AVFMT_FLAG_KEEP_SIDE_DATA = 0x00040000
-
-const AVFMT_FLAG_FAST_SEEK = 0x00080000
-
-const AVFMT_FLAG_SHORTEST = 0x00100000
-
-const AVFMT_FLAG_AUTO_BSF = 0x00200000
-
-const FF_FDEBUG_TS = 0x0001
-
-const AVFMT_EVENT_FLAG_METADATA_UPDATED = 0x0001
-
-const AVFMT_AVOID_NEG_TS_AUTO = -1
-
-const AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE = 1
-
-const AVFMT_AVOID_NEG_TS_MAKE_ZERO = 2
-
-const AVSEEK_FLAG_BACKWARD = 1
-
-const AVSEEK_FLAG_BYTE = 2
-
-const AVSEEK_FLAG_ANY = 4
-
-const AVSEEK_FLAG_FRAME = 8
-
-const AVSTREAM_INIT_IN_WRITE_HEADER = 0
-
-const AVSTREAM_INIT_IN_INIT_OUTPUT = 1
-
-const AV_FRAME_FILENAME_FLAGS_MULTIPLE = 1
-
-const AVIO_SEEKABLE_NORMAL = 1 << 0
-
-const AVIO_SEEKABLE_TIME = 1 << 1
-
-const AVSEEK_SIZE = 0x00010000
-
-const AVSEEK_FORCE = 0x00020000
-
-const AVIO_FLAG_READ = 1
-
-const AVIO_FLAG_WRITE = 2
-
-const AVIO_FLAG_READ_WRITE = AVIO_FLAG_READ | AVIO_FLAG_WRITE
-
-const AVIO_FLAG_NONBLOCK = 8
-
-const AVIO_FLAG_DIRECT = 0x8000
-
-const LIBAVFORMAT_VERSION_MAJOR = 58
-
-const LIBAVFORMAT_VERSION_MINOR = 76
-
-const LIBAVFORMAT_VERSION_MICRO = 100
-
-const LIBAVFORMAT_VERSION_INT = AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, LIBAVFORMAT_VERSION_MINOR, LIBAVFORMAT_VERSION_MICRO)
-
-const LIBAVFORMAT_VERSION = AV_VERSION(LIBAVFORMAT_VERSION_MAJOR, LIBAVFORMAT_VERSION_MINOR, LIBAVFORMAT_VERSION_MICRO)
-
-const LIBAVFORMAT_BUILD = LIBAVFORMAT_VERSION_INT
-
-const FF_API_COMPUTE_PKT_FIELDS2 = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_OLD_OPEN_CALLBACKS = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_LAVF_AVCTX = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_HTTP_USER_AGENT = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_HLS_WRAP = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_HLS_USE_LOCALTIME = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_LAVF_KEEPSIDE_FLAG = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_OLD_ROTATE_API = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_FORMAT_GET_SET = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_OLD_AVIO_EOF_0 = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_LAVF_FFSERVER = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_FORMAT_FILENAME = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_OLD_RTSP_OPTIONS = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_DASH_MIN_SEG_DURATION = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_LAVF_MP4A_LATM = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_AVIOFORMAT = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_DEMUXER_OPEN = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_CHAPTER_ID_INT = LIBAVFORMAT_VERSION_MAJOR < 59
-
-const FF_API_LAVF_PRIV_OPT = LIBAVFORMAT_VERSION_MAJOR < 60
-
-const FF_API_R_FRAME_RATE = 1
 
 const AV_AAC_ADTS_HEADER_SIZE = 7
 
@@ -21181,6 +20814,8 @@ const FF_API_USER_VISIBLE_AVHWACCEL = LIBAVCODEC_VERSION_MAJOR < 59
 
 const FF_API_LOCKMGR = LIBAVCODEC_VERSION_MAJOR < 59
 
+const FF_API_NEXT = LIBAVCODEC_VERSION_MAJOR < 59
+
 const FF_API_UNSANITIZED_BITRATES = LIBAVCODEC_VERSION_MAJOR < 59
 
 const FF_API_OPENH264_SLICE_MODE = LIBAVCODEC_VERSION_MAJOR < 59
@@ -21216,6 +20851,294 @@ const VORBIS_FLAG_COMMENT = 0x00000002
 const VORBIS_FLAG_SETUP = 0x00000004
 
 const AV_XVMC_ID = 0x1dc711c0
+
+const LIBAVDEVICE_VERSION_MAJOR = 58
+
+const LIBAVDEVICE_VERSION_MINOR = 13
+
+const LIBAVDEVICE_VERSION_MICRO = 100
+
+const LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR, LIBAVDEVICE_VERSION_MINOR, LIBAVDEVICE_VERSION_MICRO)
+
+const LIBAVDEVICE_VERSION = AV_VERSION(LIBAVDEVICE_VERSION_MAJOR, LIBAVDEVICE_VERSION_MINOR, LIBAVDEVICE_VERSION_MICRO)
+
+const LIBAVDEVICE_BUILD = LIBAVDEVICE_VERSION_INT
+
+const FF_API_DEVICE_CAPABILITIES = LIBAVDEVICE_VERSION_MAJOR < 60
+
+const AVFILTER_FLAG_DYNAMIC_INPUTS = 1 << 0
+
+const AVFILTER_FLAG_DYNAMIC_OUTPUTS = 1 << 1
+
+const AVFILTER_FLAG_SLICE_THREADS = 1 << 2
+
+const AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC = 1 << 16
+
+const AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL = 1 << 17
+
+const AVFILTER_FLAG_SUPPORT_TIMELINE = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
+
+const AVFILTER_THREAD_SLICE = 1 << 0
+
+const AVFILTER_CMD_FLAG_ONE = 1
+
+const AVFILTER_CMD_FLAG_FAST = 2
+
+const AV_BUFFERSINK_FLAG_PEEK = 1
+
+const AV_BUFFERSINK_FLAG_NO_REQUEST = 2
+
+const LIBAVFILTER_VERSION_MAJOR = 7
+
+const LIBAVFILTER_VERSION_MINOR = 110
+
+const LIBAVFILTER_VERSION_MICRO = 100
+
+const LIBAVFILTER_VERSION_INT = AV_VERSION_INT(LIBAVFILTER_VERSION_MAJOR, LIBAVFILTER_VERSION_MINOR, LIBAVFILTER_VERSION_MICRO)
+
+const LIBAVFILTER_VERSION = AV_VERSION(LIBAVFILTER_VERSION_MAJOR, LIBAVFILTER_VERSION_MINOR, LIBAVFILTER_VERSION_MICRO)
+
+const LIBAVFILTER_BUILD = LIBAVFILTER_VERSION_INT
+
+const FF_API_OLD_FILTER_OPTS_ERROR = LIBAVFILTER_VERSION_MAJOR < 8
+
+const FF_API_LAVR_OPTS = LIBAVFILTER_VERSION_MAJOR < 8
+
+const FF_API_FILTER_GET_SET = LIBAVFILTER_VERSION_MAJOR < 8
+
+const FF_API_SWS_PARAM_OPTION = LIBAVFILTER_VERSION_MAJOR < 8
+
+const FF_API_FILTER_LINK_SET_CLOSED = LIBAVFILTER_VERSION_MAJOR < 8
+
+const FF_API_BUFFERSINK_ALLOC = LIBAVFILTER_VERSION_MAJOR < 9
+
+const AVPROBE_SCORE_RETRY = AVPROBE_SCORE_MAX ÷ 4
+
+const AVPROBE_SCORE_STREAM_RETRY = AVPROBE_SCORE_MAX ÷ 4 - 1
+
+const AVPROBE_SCORE_EXTENSION = 50
+
+const AVPROBE_SCORE_MIME = 75
+
+const AVPROBE_PADDING_SIZE = 32
+
+const AVFMT_NOFILE = 0x0001
+
+const AVFMT_NEEDNUMBER = 0x0002
+
+const AVFMT_SHOW_IDS = 0x0008
+
+const AVFMT_GLOBALHEADER = 0x0040
+
+const AVFMT_NOTIMESTAMPS = 0x0080
+
+const AVFMT_GENERIC_INDEX = 0x0100
+
+const AVFMT_TS_DISCONT = 0x0200
+
+const AVFMT_VARIABLE_FPS = 0x0400
+
+const AVFMT_NODIMENSIONS = 0x0800
+
+const AVFMT_NOSTREAMS = 0x1000
+
+const AVFMT_NOBINSEARCH = 0x2000
+
+const AVFMT_NOGENSEARCH = 0x4000
+
+const AVFMT_NO_BYTE_SEEK = 0x8000
+
+const AVFMT_ALLOW_FLUSH = 0x00010000
+
+const AVFMT_TS_NONSTRICT = 0x00020000
+
+const AVFMT_TS_NEGATIVE = 0x00040000
+
+const AVFMT_SEEK_TO_PTS = 0x04000000
+
+const AVINDEX_KEYFRAME = 0x0001
+
+const AVINDEX_DISCARD_FRAME = 0x0002
+
+const AV_DISPOSITION_DEFAULT = 0x0001
+
+const AV_DISPOSITION_DUB = 0x0002
+
+const AV_DISPOSITION_ORIGINAL = 0x0004
+
+const AV_DISPOSITION_COMMENT = 0x0008
+
+const AV_DISPOSITION_LYRICS = 0x0010
+
+const AV_DISPOSITION_KARAOKE = 0x0020
+
+const AV_DISPOSITION_FORCED = 0x0040
+
+const AV_DISPOSITION_HEARING_IMPAIRED = 0x0080
+
+const AV_DISPOSITION_VISUAL_IMPAIRED = 0x0100
+
+const AV_DISPOSITION_CLEAN_EFFECTS = 0x0200
+
+const AV_DISPOSITION_ATTACHED_PIC = 0x0400
+
+const AV_DISPOSITION_TIMED_THUMBNAILS = 0x0800
+
+const AV_DISPOSITION_CAPTIONS = 0x00010000
+
+const AV_DISPOSITION_DESCRIPTIONS = 0x00020000
+
+const AV_DISPOSITION_METADATA = 0x00040000
+
+const AV_DISPOSITION_DEPENDENT = 0x00080000
+
+const AV_DISPOSITION_STILL_IMAGE = 0x00100000
+
+const AV_PTS_WRAP_IGNORE = 0
+
+const AV_PTS_WRAP_ADD_OFFSET = 1
+
+const AV_PTS_WRAP_SUB_OFFSET = -1
+
+const AVSTREAM_EVENT_FLAG_METADATA_UPDATED = 0x0001
+
+const AVSTREAM_EVENT_FLAG_NEW_PACKETS = 1 << 1
+
+const AV_PROGRAM_RUNNING = 1
+
+const AVFMTCTX_NOHEADER = 0x0001
+
+const AVFMTCTX_UNSEEKABLE = 0x0002
+
+const AVFMT_FLAG_GENPTS = 0x0001
+
+const AVFMT_FLAG_IGNIDX = 0x0002
+
+const AVFMT_FLAG_NONBLOCK = 0x0004
+
+const AVFMT_FLAG_IGNDTS = 0x0008
+
+const AVFMT_FLAG_NOFILLIN = 0x0010
+
+const AVFMT_FLAG_NOPARSE = 0x0020
+
+const AVFMT_FLAG_NOBUFFER = 0x0040
+
+const AVFMT_FLAG_CUSTOM_IO = 0x0080
+
+const AVFMT_FLAG_DISCARD_CORRUPT = 0x0100
+
+const AVFMT_FLAG_FLUSH_PACKETS = 0x0200
+
+const AVFMT_FLAG_BITEXACT = 0x0400
+
+const AVFMT_FLAG_MP4A_LATM = 0x8000
+
+const AVFMT_FLAG_SORT_DTS = 0x00010000
+
+const AVFMT_FLAG_PRIV_OPT = 0x00020000
+
+const AVFMT_FLAG_KEEP_SIDE_DATA = 0x00040000
+
+const AVFMT_FLAG_FAST_SEEK = 0x00080000
+
+const AVFMT_FLAG_SHORTEST = 0x00100000
+
+const AVFMT_FLAG_AUTO_BSF = 0x00200000
+
+const FF_FDEBUG_TS = 0x0001
+
+const AVFMT_EVENT_FLAG_METADATA_UPDATED = 0x0001
+
+const AVFMT_AVOID_NEG_TS_AUTO = -1
+
+const AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE = 1
+
+const AVFMT_AVOID_NEG_TS_MAKE_ZERO = 2
+
+const AVSEEK_FLAG_BACKWARD = 1
+
+const AVSEEK_FLAG_BYTE = 2
+
+const AVSEEK_FLAG_ANY = 4
+
+const AVSEEK_FLAG_FRAME = 8
+
+const AVSTREAM_INIT_IN_WRITE_HEADER = 0
+
+const AVSTREAM_INIT_IN_INIT_OUTPUT = 1
+
+const AV_FRAME_FILENAME_FLAGS_MULTIPLE = 1
+
+const AVIO_SEEKABLE_NORMAL = 1 << 0
+
+const AVIO_SEEKABLE_TIME = 1 << 1
+
+const AVSEEK_SIZE = 0x00010000
+
+const AVSEEK_FORCE = 0x00020000
+
+const AVIO_FLAG_READ = 1
+
+const AVIO_FLAG_WRITE = 2
+
+const AVIO_FLAG_READ_WRITE = AVIO_FLAG_READ | AVIO_FLAG_WRITE
+
+const AVIO_FLAG_NONBLOCK = 8
+
+const AVIO_FLAG_DIRECT = 0x8000
+
+const LIBAVFORMAT_VERSION_MAJOR = 58
+
+const LIBAVFORMAT_VERSION_MINOR = 76
+
+const LIBAVFORMAT_VERSION_MICRO = 100
+
+const LIBAVFORMAT_VERSION_INT = AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, LIBAVFORMAT_VERSION_MINOR, LIBAVFORMAT_VERSION_MICRO)
+
+const LIBAVFORMAT_VERSION = AV_VERSION(LIBAVFORMAT_VERSION_MAJOR, LIBAVFORMAT_VERSION_MINOR, LIBAVFORMAT_VERSION_MICRO)
+
+const LIBAVFORMAT_BUILD = LIBAVFORMAT_VERSION_INT
+
+const FF_API_COMPUTE_PKT_FIELDS2 = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_OLD_OPEN_CALLBACKS = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_LAVF_AVCTX = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_HTTP_USER_AGENT = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_HLS_WRAP = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_HLS_USE_LOCALTIME = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_LAVF_KEEPSIDE_FLAG = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_OLD_ROTATE_API = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_FORMAT_GET_SET = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_OLD_AVIO_EOF_0 = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_LAVF_FFSERVER = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_FORMAT_FILENAME = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_OLD_RTSP_OPTIONS = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_DASH_MIN_SEG_DURATION = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_LAVF_MP4A_LATM = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_AVIOFORMAT = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_DEMUXER_OPEN = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_CHAPTER_ID_INT = LIBAVFORMAT_VERSION_MAJOR < 59
+
+const FF_API_LAVF_PRIV_OPT = LIBAVFORMAT_VERSION_MAJOR < 60
+
+const FF_API_R_FRAME_RATE = 1
 
 const AES_CTR_KEY_SIZE = 16
 
@@ -21926,6 +21849,80 @@ const FF_API_BUFFER_SIZE_T = LIBAVUTIL_VERSION_MAJOR < 57
 const FF_API_D2STR = LIBAVUTIL_VERSION_MAJOR < 58
 
 const FF_API_DECLARE_ALIGNED = LIBAVUTIL_VERSION_MAJOR < 58
+
+const SWS_FAST_BILINEAR = 1
+
+const SWS_BILINEAR = 2
+
+const SWS_BICUBIC = 4
+
+const SWS_X = 8
+
+const SWS_POINT = 0x10
+
+const SWS_AREA = 0x20
+
+const SWS_BICUBLIN = 0x40
+
+const SWS_GAUSS = 0x80
+
+const SWS_SINC = 0x0100
+
+const SWS_LANCZOS = 0x0200
+
+const SWS_SPLINE = 0x0400
+
+const SWS_SRC_V_CHR_DROP_MASK = 0x00030000
+
+const SWS_SRC_V_CHR_DROP_SHIFT = 16
+
+const SWS_PARAM_DEFAULT = 123456
+
+const SWS_PRINT_INFO = 0x1000
+
+const SWS_FULL_CHR_H_INT = 0x2000
+
+const SWS_FULL_CHR_H_INP = 0x4000
+
+const SWS_DIRECT_BGR = 0x8000
+
+const SWS_ACCURATE_RND = 0x00040000
+
+const SWS_BITEXACT = 0x00080000
+
+const SWS_ERROR_DIFFUSION = 0x00800000
+
+const SWS_MAX_REDUCE_CUTOFF = 0.002
+
+const SWS_CS_ITU709 = 1
+
+const SWS_CS_FCC = 4
+
+const SWS_CS_ITU601 = 5
+
+const SWS_CS_ITU624 = 5
+
+const SWS_CS_SMPTE170M = 5
+
+const SWS_CS_SMPTE240M = 7
+
+const SWS_CS_DEFAULT = 5
+
+const SWS_CS_BT2020 = 9
+
+const LIBSWSCALE_VERSION_MAJOR = 5
+
+const LIBSWSCALE_VERSION_MINOR = 9
+
+const LIBSWSCALE_VERSION_MICRO = 100
+
+const LIBSWSCALE_VERSION_INT = AV_VERSION_INT(LIBSWSCALE_VERSION_MAJOR, LIBSWSCALE_VERSION_MINOR, LIBSWSCALE_VERSION_MICRO)
+
+const LIBSWSCALE_VERSION = AV_VERSION(LIBSWSCALE_VERSION_MAJOR, LIBSWSCALE_VERSION_MINOR, LIBSWSCALE_VERSION_MICRO)
+
+const LIBSWSCALE_BUILD = LIBSWSCALE_VERSION_INT
+
+const FF_API_SWS_VECTOR = LIBSWSCALE_VERSION_MAJOR < 6
 
 struct_types = Type[]
 # Export everything

@@ -16,6 +16,7 @@ macro cenum(decl::Expr, body::Expr)
 end
 
 const intptr_t = UInt
+const time_t = Int
 
 const AV_NOPTS_VALUE = 0x8000000000000000 % Int64
 AV_VERSION_INT(a, b, c) = (a << 16 | b << 8) | c
