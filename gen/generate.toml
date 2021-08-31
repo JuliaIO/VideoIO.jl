@@ -7,6 +7,7 @@ prologue_file_path = "prologue.jl"
 epilogue_file_path = "epilogue.jl"
 use_julia_native_enum_type = false
 print_using_CEnum = false
+print_enum_as_integer = true
 use_deterministic_symbol = true
 is_local_header_only = true
 smart_de_anonymize = true

@@ -1,6 +1,31 @@
 using Match
 import Base.Meta.isexpr
 
+# argument such as int[2] were translated to NTuple{UInt8, 16}
+# but it seems they are never referenced so its fine
+const as_ntuple = [
+    :avcodec_align_dimensions2
+    :av_display_rotation_get
+    :av_display_rotation_set
+    :av_display_matrix_flip
+    :av_image_fill_max_pixsteps
+    :av_image_fill_linesizes
+    :av_image_fill_pointers
+    :av_image_alloc
+    :av_image_copy
+    :av_image_copy_uc_from
+    :av_image_fill_black
+    :av_read_image_line2
+    :av_read_image_line
+    :av_write_image_line2
+    :av_write_image_line
+    :av_tree_find
+    :av_xtea_init
+    :av_xtea_le_init
+    :avcodec_align_dimensions2
+]
+
+
 function rewrite(e::Expr)
     @match e begin
         Expr(:function, [fncall, body])  =>  rewrite_fn(e, fncall, body)
