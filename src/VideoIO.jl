@@ -206,7 +206,7 @@ open_video_out("video.mp4", framestack[1], framerate=24, encoder_options=encoder
         write(writer, frame)
     end
 end
-````
+```
 """
 VideoIO
 
