@@ -3,23 +3,6 @@ module libffmpeg
 using FFMPEG
 export FFMPEG
 
-
-# Custom @cenum to create enum as integer
-macro cenum(decl::Expr, body::Expr)
-    @assert Meta.isexpr(decl, :(::))
-    enumname, basetype = decl.args
-    esc(body)
-    res = quote
-        Base.@__doc__(const $enumname = $basetype)
-    end
-    for ex in body.args
-        ex isa Expr || continue
-        @assert Meta.isexpr(ex, :(=))
-        push!(res.args, :(const $(ex.args[1]) = $(enumname)($(ex.args[2]))))
-    end
-    esc(res)
-end
-
 const intptr_t = UInt
 const time_t = Int
 
