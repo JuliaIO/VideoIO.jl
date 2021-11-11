@@ -184,7 +184,7 @@ function open_avinput(avin::AVInput, io::IO, input_format=C_NULL, options=C_NULL
     # "Open" the input
     ret = avformat_open_input(avin.format_context, C_NULL, input_format, options)
     if ret != 0
-        error("Unable to open input. avformat_open_input error code #(ret)")
+        error("Unable to open input. avformat_open_input error code $(ret)")
     end
 
     nothing
@@ -193,7 +193,7 @@ end
 function open_avinput(avin::AVInput, source::AbstractString,
                       input_format=C_NULL, options=C_NULL)
     ret = avformat_open_input(avin.format_context, source, input_format, options)
-    ret != 0 && error("Could not open $source. avformat_open_input error code #(ret)")
+    ret != 0 && error("Could not open $source. avformat_open_input error code $(ret)")
     nothing
 end
 
