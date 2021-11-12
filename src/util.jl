@@ -40,15 +40,15 @@ function loglevel()
         "VideoIO.AVUtil.AV_LOG_TRACE"
     ]
     level_values = [
-        VideoIO.AVUtil.AV_LOG_QUIET,
-        VideoIO.AVUtil.AV_LOG_PANIC,
-        VideoIO.AVUtil.AV_LOG_FATAL,
-        VideoIO.AVUtil.AV_LOG_ERROR,
-        VideoIO.AVUtil.AV_LOG_WARNING,
-        VideoIO.AVUtil.AV_LOG_INFO,
-        VideoIO.AVUtil.AV_LOG_VERBOSE,
-        VideoIO.AVUtil.AV_LOG_DEBUG,
-        VideoIO.AVUtil.AV_LOG_TRACE
+        VideoIO.libffmpeg.AV_LOG_QUIET,
+        VideoIO.libffmpeg.AV_LOG_PANIC,
+        VideoIO.libffmpeg.AV_LOG_FATAL,
+        VideoIO.libffmpeg.AV_LOG_ERROR,
+        VideoIO.libffmpeg.AV_LOG_WARNING,
+        VideoIO.libffmpeg.AV_LOG_INFO,
+        VideoIO.libffmpeg.AV_LOG_VERBOSE,
+        VideoIO.libffmpeg.AV_LOG_DEBUG,
+        VideoIO.libffmpeg.AV_LOG_TRACE
     ]
     i = findfirst(level_values.==current_level)
     if i > 0
@@ -60,14 +60,11 @@ end
 
 @inline function field_ptr(::Type{S}, struct_pointer::Ptr{T}, field::Symbol,
                            index::Integer = 1) where {S,T}
-    fieldpos = fieldindex(T, field)
-    field_pointer = convert(Ptr{S}, struct_pointer) +
-        fieldoffset(T, fieldpos) + (index - 1) * sizeof(S)
-    return field_pointer
+    field_pointer = getproperty(struct_pointer, field) + (index - 1) * sizeof(S)
+    return convert(Ptr{S}, field_pointer)
 end
 
-@inline field_ptr(a::Ptr{T}, field::Symbol, args...) where T =
-    field_ptr(fieldtype(T, field), a, field, args...)
+@inline field_ptr(a::Ptr{T}, field::Symbol) where T = getproperty(a, field)
 
 function check_ptr_valid(p::Ptr, err::Bool = true)
     valid = p != C_NULL

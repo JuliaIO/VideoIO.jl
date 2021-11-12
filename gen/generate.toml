@@ -1,0 +1,35 @@
+[general]
+library_name = "libffmpeg"
+output_file_path = "../lib/libffmpeg.jl"
+module_name = "libffmpeg"
+jll_pkg_name = "FFMPEG"
+prologue_file_path = "prologue.jl"
+epilogue_file_path = "epilogue.jl"
+use_julia_native_enum_type = false
+print_using_CEnum = false
+print_enum_as_integer = true
+use_deterministic_symbol = true
+is_local_header_only = true
+smart_de_anonymize = true
+printer_blacklist = [
+    "AV_NOPTS_VALUE",
+    "av_builtin_constant_p",
+    "LIBSWSCALE_IDENT",
+    "LIBAVDEVICE_IDENT",
+    "LIBAVFILTER_IDENT",
+    "LIBAVFORMAT_IDENT",
+    "LIBAVCODEC_IDENT",
+    "LIBAVUTIL_IDENT",
+    "AVPROBE_SCORE_MAX",
+    "Picture",
+    "AV_BPRINT_SIZE_UNLIMITED",
+    "FF_CEIL_RSHIFT"
+]
+extract_c_comment_style = "doxygen"
+[codegen]
+use_julia_bool = true
+always_NUL_terminated_string = true
+is_function_strictly_typed = true
+opaque_func_arg_as_PtrCvoid = false
+opaque_as_mutable_struct = true
+use_ccall_macro = false

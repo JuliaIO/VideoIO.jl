@@ -290,7 +290,7 @@ function VideoWriter(filename::AbstractString, ::Type{T},
                                                       pix_fmt_loss_flags)
     if ! default_codec
         ret = avformat_query_codec(format_context.oformat, codec.id,
-                                   AVCodecs.FF_COMPLIANCE_NORMAL)
+                                   libffmpeg.FF_COMPLIANCE_NORMAL)
         ret == 1 || error("Format not compatible with codec $codec_name")
     end
     codec_context = AVCodecContextPtr(codec)

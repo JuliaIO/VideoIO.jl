@@ -17,6 +17,14 @@ struct TestParentStruct
     d::Ptr{TestChildStruct}
 end
 
+# Clang.jl generated structs already has this utility
+function Base.getproperty(x::Ptr{<:Union{TestChildStruct, TestParentStruct}}, f::Symbol)
+    T = eltype(x)
+    fieldpos = fieldindex(T, f)
+    field_pointer = convert(Ptr{fieldtype(T, fieldpos)}, x + fieldoffset(T, fieldpos))
+    return field_pointer
+end
+
 function make_TestChildStruct(;e::NTuple{4, Int} = (1, 2, 3, 4),
                                    f::Cint = Cint(-1),
                                    g::Ptr{Int} = Ptr{Int}())
