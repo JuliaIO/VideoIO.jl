@@ -1,5 +1,5 @@
 import .libffmpeg: AVDictionary
-import Base: getindex, setindex!, iterate, length, empty!, cconvert
+import Base: getindex, setindex!, iterate, length, empty!
 
 mutable struct AVDict <: AbstractDict{String, String}
     ref_ptr_dict::Ref{Ptr{AVDictionary}}
