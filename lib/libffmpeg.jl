@@ -8568,7 +8568,7 @@ Open an input stream and read the header. The codecs are not opened. The stream 
 0 on success, a negative [`AVERROR`](@ref) on failure.
 """
 function avformat_open_input(ps, url, fmt, options)
-    ccall((:avformat_open_input, libavformat), Cint, (Ptr{Ptr{AVFormatContext}}, Cstring, Ptr{AVInputFormat}, Ptr{Ptr{AVDictionary}}), ps, url, fmt, options)
+    ccall((:avformat_open_input, libavformat), Cint, (Ptr{Ptr{AVFormatContext}}, Cstring, Ptr{AVInputFormat}, Ref{Ptr{AVDictionary}}), ps, url, fmt, options)
 end
 
 """
