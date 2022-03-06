@@ -306,6 +306,14 @@ function VideoReader(avin::AVInput{I}, video_stream = 1;
         codec_context.pix_fmt == dst_pix_fmt && allow_vio_gray_transform &&
         dst_pix_fmt in VIO_GRAY_SCALE_TYPES &&
         colorspace_details.color_range != codec_context.color_range
+
+    @debug "use_vio_gray_transform" use_vio_gray_transform
+    @debug "transcode" transcode
+    @debug "pixel format" codec_context.pix_fmt dst_pix_fmt (codec_context.pix_fmt == dst_pix_fmt)
+    @debug "allow transform" allow_vio_gray_transform
+    @debug "allowed pix format" (dst_pix_fmt in VIO_GRAY_SCALE_TYPES)
+    @debug "color_range" colorspace_details.color_range codec_context.color_range (colorspace_details.color_range != codec_context.color_range)
+
     if use_vio_gray_transform
         frame_graph = GrayTransform()
         set_basic_frame_properties!(frame_graph.dstframe, width, height,
