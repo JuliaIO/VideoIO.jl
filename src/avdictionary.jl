@@ -28,7 +28,7 @@ end
 
 Base.empty!(d::AVDict) = libffmpeg.av_dict_free(d.ref_ptr_dict)
 
-Base.convert(::Type{Ref{Ptr{AVDictionary}}}, d::AVDict) = d.ref_ptr_dict
+Base.cconvert(::Type{Ptr{Ptr{AVDictionary}}}, d::AVDict) = d.ref_ptr_dict
 
 function setindex!(d::AVDict, value, key)
     libffmpeg.av_dict_set(d.ref_ptr_dict, string(key), string(value), 0)
