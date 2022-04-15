@@ -1015,12 +1015,23 @@ function get_camera_devices(ffmpeg, idev, idev_name)
 end
 
 function opencamera(
-        device=DEFAULT_CAMERA_DEVICE[],
-        format=DEFAULT_CAMERA_FORMAT[],
-        options = DEFAULT_CAMERA_OPTIONS,
+        device=nothing,
+        format=nothing,
+        options=nothing,
         args...;
         kwargs...
     )
+
+    if isnothing(device) || isnothing(format) || isnothing(options) || isempty(CAMERA_DEVICES)
+        # do this only if needed
+        init_camera_devices()
+        init_camera_settings()
+    end
+
+    device = something(device, DEFAULT_CAMERA_DEVICE[])
+    format = something(format, DEFAULT_CAMERA_FORMAT[])
+    options = something(options, DEFAULT_CAMERA_OPTIONS)
+
     camera = AVInput(device, format, options)
     VideoReader(camera, args...; kwargs...)
 end
