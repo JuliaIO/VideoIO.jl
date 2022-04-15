@@ -25,12 +25,11 @@ const as_ntuple = [
     :avcodec_align_dimensions2
 ]
 
-
 function rewrite(e::Expr)
     @match e begin
-        Expr(:function, [fncall, body])  =>  rewrite_fn(e, fncall, body)
-        Expr(:const, [arg])              =>  rewrite_const(e)
-        _                                =>  e
+        Expr(:function, [fncall, body]) => rewrite_fn(e, fncall, body)
+        Expr(:const, [arg]) => rewrite_const(e)
+        _ => e
     end
 end
 
@@ -44,13 +43,13 @@ function rewrite_const(e)
         rhs = Expr(:macrocall, Symbol("@AV_PIX_FMT_NE"), nothing, be, le)
         body.args[2] = rhs
     end
-    e
+    return e
 end
 
 # Rewrite function signatures to be more friendly
-function rewrite_fn(e, fncall, body, use_strpack=false)
+function rewrite_fn(e, fncall, body, use_strpack = false)
     fncall.args[1] isa Symbol || return e
-    
+
     parms = Any[]
     content = Any[]
 
@@ -87,4 +86,3 @@ function rewrite_fn(e, fncall, body, use_strpack=false)
 
     return new
 end
-

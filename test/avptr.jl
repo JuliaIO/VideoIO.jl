@@ -5,7 +5,7 @@ using Base.GC: @preserve
 using VideoIO: NestedCStruct, nested_wrap, field_ptr, check_ptr_valid, @avptr
 
 struct TestChildStruct
-    e::NTuple{4, Int}
+    e::NTuple{4,Int}
     f::Cint
     g::Ptr{Int}
 end
@@ -18,16 +18,14 @@ struct TestParentStruct
 end
 
 # Clang.jl generated structs already has this utility
-function Base.getproperty(x::Ptr{<:Union{TestChildStruct, TestParentStruct}}, f::Symbol)
+function Base.getproperty(x::Ptr{<:Union{TestChildStruct,TestParentStruct}}, f::Symbol)
     T = eltype(x)
     fieldpos = fieldindex(T, f)
     field_pointer = convert(Ptr{fieldtype(T, fieldpos)}, x + fieldoffset(T, fieldpos))
     return field_pointer
 end
 
-function make_TestChildStruct(;e::NTuple{4, Int} = (1, 2, 3, 4),
-                                   f::Cint = Cint(-1),
-                                   g::Ptr{Int} = Ptr{Int}())
+function make_TestChildStruct(; e::NTuple{4,Int} = (1, 2, 3, 4), f::Cint = Cint(-1), g::Ptr{Int} = Ptr{Int}())
     mem = Vector{UInt8}(undef, sizeof(TestChildStruct))
     mem_ptr = pointer(mem)
     @preserve mem begin
@@ -38,12 +36,15 @@ function make_TestChildStruct(;e::NTuple{4, Int} = (1, 2, 3, 4),
         g_ptr = convert(Ptr{Ptr{Int}}, mem_ptr + fieldoffset(TestChildStruct, 3))
         unsafe_store!(g_ptr, g)
     end
-    mem
+    return mem
 end
 
-function make_TestParentStruct(;a::Int = -1, b::Float64 = 0.0,
-                                    c::Ptr{Int} = Ptr{Int}(),
-                                    d::Ptr{TestChildStruct} = Ptr{TestChildStruct}())
+function make_TestParentStruct(;
+    a::Int = -1,
+    b::Float64 = 0.0,
+    c::Ptr{Int} = Ptr{Int}(),
+    d::Ptr{TestChildStruct} = Ptr{TestChildStruct}(),
+)
     mem = Vector{UInt8}(undef, sizeof(TestParentStruct))
     mem_ptr = pointer(mem)
     @preserve mem begin
@@ -56,14 +57,14 @@ function make_TestParentStruct(;a::Int = -1, b::Float64 = 0.0,
         d_ptr = convert(Ptr{Ptr{TestChildStruct}}, mem_ptr + fieldoffset(TestParentStruct, 4))
         unsafe_store!(d_ptr, d)
     end
-    mem
+    return mem
 end
 
 @testset "Pointer utilities" begin
     child_ptr_null = Ptr{TestChildStruct}()
     e_ptr = field_ptr(child_ptr_null, :e)
     @test e_ptr == child_ptr_null
-    @test e_ptr isa Ptr{NTuple{4, Int}}
+    @test e_ptr isa Ptr{NTuple{4,Int}}
     f_ptr_pos = child_ptr_null + fieldoffset(TestChildStruct, 2)
     f_ptr = field_ptr(child_ptr_null, :f)
     @test f_ptr == f_ptr_pos
@@ -84,10 +85,10 @@ end
         try
             g_arr = unsafe_wrap(Array, g, (4,))
             g_arr .= 1:4
-            child_mem = make_TestChildStruct(;g = g)
+            child_mem = make_TestChildStruct(; g = g)
             child_ptr = convert(Ptr{TestChildStruct}, pointer(child_mem))
             @preserve child_mem begin
-                parent_mem = make_TestParentStruct(;c = g, d = child_ptr)
+                parent_mem = make_TestParentStruct(; c = g, d = child_ptr)
                 parent_ptr = convert(Ptr{TestParentStruct}, pointer(parent_mem))
                 @preserve parent_mem begin
                     parent_nested_ptr = NestedCStruct(parent_ptr)

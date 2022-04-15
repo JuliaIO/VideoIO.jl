@@ -1,13 +1,13 @@
 import .libffmpeg: AVDictionary
 import Base: getindex, setindex!, iterate, length, empty!
 
-mutable struct AVDict <: AbstractDict{String, String}
+mutable struct AVDict <: AbstractDict{String,String}
     ref_ptr_dict::Ref{Ptr{AVDictionary}}
 end
 
 function AVDict()
     d = AVDict(Ref{Ptr{AVDictionary}}(C_NULL))
-    finalizer(empty!, d)
+    return finalizer(empty!, d)
 end
 
 function AVDict(ps::Pair...)
@@ -32,7 +32,7 @@ Base.cconvert(::Type{Ptr{Ptr{AVDictionary}}}, d::AVDict) = d.ref_ptr_dict
 
 function setindex!(d::AVDict, value, key)
     libffmpeg.av_dict_set(d.ref_ptr_dict, string(key), string(value), 0)
-    nothing
+    return nothing
 end
 
 function getindex(d::AVDict, key::AbstractString)
@@ -42,7 +42,7 @@ function getindex(d::AVDict, key::AbstractString)
     return value
 end
 
-function iterate(d::AVDict, state=C_NULL)
+function iterate(d::AVDict, state = C_NULL)
     pItem = libffmpeg.av_dict_get(d.ref_ptr_dict[], "", state, libffmpeg.AV_DICT_IGNORE_SUFFIX)
     pItem == C_NULL && return nothing
 

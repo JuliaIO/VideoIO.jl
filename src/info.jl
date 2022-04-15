@@ -56,10 +56,13 @@ frames in a video.
 """
 function get_number_frames(file::AbstractString, streamno::Integer = 0)
     streamno >= 0 || throw(ArgumentError("streamno must be non-negative"))
-    frame_strs = FFMPEG.exe(`-v error -select_streams v:$(streamno) -show_entries
-                            stream=nb_frames -of
-                            default=nokey=1:noprint_wrappers=1 $file`,
-                           command = FFMPEG.ffprobe, collect = true)
+    frame_strs = FFMPEG.exe(
+        `-v error -select_streams v:$(streamno) -show_entries
+        stream=nb_frames -of
+        default=nokey=1:noprint_wrappers=1 $file`,
+        command = FFMPEG.ffprobe,
+        collect = true,
+    )
     frame_str = frame_strs[1]
     if occursin("No such file or directory", frame_str)
         error("Could not find file $file")

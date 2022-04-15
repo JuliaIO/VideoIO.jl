@@ -33,17 +33,21 @@ function encode_mux!(writer::VideoWriter, flush = false)
     while pret >= 0
         pret = avcodec_receive_packet(writer.codec_context, pkt)
         if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
-             break
+            break
         elseif pret < 0
             error("Error $pret during encoding")
         end
         if pkt.duration == 0
-            codec_pts_duration = round(Int, 1 / (
-                convert(Rational, writer.codec_context.framerate) *
-                convert(Rational, writer.codec_context.time_base)))
+            codec_pts_duration = round(
+                Int,
+                1 / (
+                    convert(Rational, writer.codec_context.framerate) *
+                    convert(Rational, writer.codec_context.time_base)
+                ),
+            )
             pkt.duration = codec_pts_duration
         end
-        stream = writer.format_context.streams[writer.stream_index0 + 1]
+        stream = writer.format_context.streams[writer.stream_index0+1]
         av_packet_rescale_ts(pkt, writer.codec_context.time_base, stream.time_base)
         pkt.stream_index = writer.stream_index0
         ret = av_interleaved_write_frame(writer.format_context, pkt)
@@ -64,9 +68,8 @@ function prepare_video_frame!(writer::VideoWriter, img, index)
     ret = av_frame_make_writable(dstframe)
     ret < 0 && error("av_frame_make_writable() error")
     dstframe.pts = index
-    transfer_img_buf_to_frame!(graph_input_frame(writer), img,
-                               writer.scanline_major)
-    execute_graph!(writer)
+    transfer_img_buf_to_frame!(graph_input_frame(writer), img, writer.scanline_major)
+    return execute_graph!(writer)
 end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
@@ -84,7 +87,7 @@ function write(writer::VideoWriter, img, index::Int)
     isopen(writer) || error("VideoWriter is closed for writing")
     prepare_video_frame!(writer, img, index)
     encode_mux!(writer)
-    writer.next_index = index + 1
+    return writer.next_index = index + 1
 end
 write(writer::VideoWriter, img) = write(writer::VideoWriter, img, writer.next_index)
 
@@ -114,11 +117,10 @@ function close_video_out!(writer::VideoWriter)
     writer.frame_graph = null_graph(writer.frame_graph)
     writer.packet = AVPacketPtr(C_NULL)
     writer.stream_index0 = -1
-    writer
+    return writer
 end
 
-function get_array_from_avarray(ptr::Union{Ptr{T}, Ref{T}, NestedCStruct{T}},
-                                term; make_copy = true) where T
+function get_array_from_avarray(ptr::Union{Ptr{T},Ref{T},NestedCStruct{T}}, term; make_copy = true) where {T}
     check_ptr_valid(ptr, false) || return Vector{T}()
     i = 1
     el = ptr[i]
@@ -133,58 +135,63 @@ function get_array_from_avarray(ptr::Union{Ptr{T}, Ref{T}, NestedCStruct{T}},
     else
         dst = unsafe_wrap(Array, ptr, len)
     end
-    dst
+    return dst
 end
 
-function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt,
-                                        codec, loss_flags = 0)
+function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt, codec, loss_flags = 0)
     if target_pix_fmt === nothing
         @preserve codec begin
-            encoding_pix_fmt, losses = _vio_determine_best_pix_fmt(
-                transfer_pix_fmt, codec.pix_fmts; loss_flags = loss_flags
-            )
+            encoding_pix_fmt, losses =
+                _vio_determine_best_pix_fmt(transfer_pix_fmt, codec.pix_fmts; loss_flags = loss_flags)
         end
     else
         @preserve codec begin
-            codec_pix_fmts = get_array_from_avarray(codec.pix_fmts,
-                                                    AV_PIX_FMT_NONE;
-                                                    make_copy = false)
+            codec_pix_fmts = get_array_from_avarray(codec.pix_fmts, AV_PIX_FMT_NONE; make_copy = false)
             codec_name = unsafe_string(codec.name)
-            target_pix_fmt in codec_pix_fmts || throw(ArgumentError(
-                "Pixel format $target_pix_fmt not compatible with codec $codec_name"
-            ))
+            target_pix_fmt in codec_pix_fmts ||
+                throw(ArgumentError("Pixel format $target_pix_fmt not compatible with codec $codec_name"))
         end
         encoding_pix_fmt = target_pix_fmt
     end
-    encoding_pix_fmt
+    return encoding_pix_fmt
 end
 
-function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
-                                     height, transfer_colorspace_details,
-                                     dst_color_primaries, dst_color_trc,
-                                     dst_colorspace, dst_color_range,
-                                     use_vio_gray_transform, swscale_options;
-                                     sws_color_options::OptionsT = (;))
+function create_encoding_frame_graph(
+    transfer_pix_fmt,
+    encoding_pix_fmt,
+    width,
+    height,
+    transfer_colorspace_details,
+    dst_color_primaries,
+    dst_color_trc,
+    dst_colorspace,
+    dst_color_range,
+    use_vio_gray_transform,
+    swscale_options;
+    sws_color_options::OptionsT = (;),
+)
     if use_vio_gray_transform
         frame_graph = GrayTransform()
-        set_basic_frame_properties!(frame_graph.srcframe, width, height,
-                                    transfer_pix_fmt)
-        bit_depth, padded_bits_per_pixel =
-            pix_fmt_to_bits_per_pixel(encoding_pix_fmt)
+        set_basic_frame_properties!(frame_graph.srcframe, width, height, transfer_pix_fmt)
+        bit_depth, padded_bits_per_pixel = pix_fmt_to_bits_per_pixel(encoding_pix_fmt)
         frame_graph.src_depth = frame_graph.dst_depth = bit_depth
-        frame_graph.srcframe.color_range =
-            transfer_colorspace_details.color_range
+        frame_graph.srcframe.color_range = transfer_colorspace_details.color_range
     elseif transfer_pix_fmt == encoding_pix_fmt
         frame_graph = AVFramePtr()
     else
-        frame_graph = SwsTransform(width, height, transfer_pix_fmt,
-                                   transfer_colorspace_details.color_primaries,
-                                   transfer_colorspace_details.color_range,
-                                   encoding_pix_fmt, dst_color_primaries,
-                                   dst_color_range, sws_color_options,
-                                   swscale_options)
-        set_basic_frame_properties!(frame_graph.srcframe, width, height,
-                                    transfer_pix_fmt)
+        frame_graph = SwsTransform(
+            width,
+            height,
+            transfer_pix_fmt,
+            transfer_colorspace_details.color_primaries,
+            transfer_colorspace_details.color_range,
+            encoding_pix_fmt,
+            dst_color_primaries,
+            dst_color_range,
+            sws_color_options,
+            swscale_options,
+        )
+        set_basic_frame_properties!(frame_graph.srcframe, width, height, transfer_pix_fmt)
     end
     dstframe = graph_output_frame(frame_graph)
     dstframe.color_range = dst_color_range
@@ -192,11 +199,10 @@ function create_encoding_frame_graph(transfer_pix_fmt, encoding_pix_fmt, width,
     dstframe.color_trc = dst_color_trc
     dstframe.color_primaries = dst_color_primaries
     set_basic_frame_properties!(dstframe, width, height, encoding_pix_fmt)
-    frame_graph
+    return frame_graph
 end
 
-function maybe_configure_codec_context_colorspace_details!(codec_context,
-                                                     colorspace_details)
+function maybe_configure_codec_context_colorspace_details!(codec_context, colorspace_details)
     if codec_context.colorspace == AVCOL_SPC_UNSPECIFIED
         codec_context.colorspace = colorspace_details.colorspace
     end
@@ -209,7 +215,7 @@ function maybe_configure_codec_context_colorspace_details!(codec_context,
     if codec_context.color_range == AVCOL_RANGE_UNSPECIFIED
         codec_context.color_range = colorspace_details.color_range
     end
-    nothing
+    return nothing
 end
 
 """
@@ -218,36 +224,42 @@ end
 Get the name of the encoder used by `writer`.
 """
 function get_codec_name(w::VideoWriter)
-    if check_ptr_valid(w.codec_context, false) &&
-        check_ptr_valid(w.codec_context.codec, false)
+    if check_ptr_valid(w.codec_context, false) && check_ptr_valid(w.codec_context.codec, false)
         return unsafe_string(w.codec_context.codec.name)
     else
         return "None"
     end
 end
 
-function VideoWriter(filename::AbstractString, ::Type{T},
-                     sz::NTuple{2, Integer};
-                     codec_name::Union{AbstractString, Nothing} = nothing,
-                     framerate::Real = 24,
-                     scanline_major::Bool = false,
-                     container_options::OptionsT = (;),
-                     container_private_options::OptionsT = (;),
-                     encoder_options::OptionsT = (;),
-                     encoder_private_options::OptionsT = (;),
-                     swscale_options::OptionsT = (;),
-                     target_pix_fmt::Union{Nothing, Cint} = nothing,
-                     pix_fmt_loss_flags = 0,
-                     input_colorspace_details = nothing,
-                     allow_vio_gray_transform = true,
-                     sws_color_options::OptionsT = (;),
-                     thread_count::Union{Nothing, Int} = nothing) where T
+function VideoWriter(
+    filename::AbstractString,
+    ::Type{T},
+    sz::NTuple{2,Integer};
+    codec_name::Union{AbstractString,Nothing} = nothing,
+    framerate::Real = 24,
+    scanline_major::Bool = false,
+    container_options::OptionsT = (;),
+    container_private_options::OptionsT = (;),
+    encoder_options::OptionsT = (;),
+    encoder_private_options::OptionsT = (;),
+    swscale_options::OptionsT = (;),
+    target_pix_fmt::Union{Nothing,Cint} = nothing,
+    pix_fmt_loss_flags = 0,
+    input_colorspace_details = nothing,
+    allow_vio_gray_transform = true,
+    sws_color_options::OptionsT = (;),
+    thread_count::Union{Nothing,Int} = nothing,
+) where {T}
     framerate > 0 || error("Framerate must be strictly positive")
 
     if haskey(encoder_options, :priv_data)
-        throw(ArgumentError("""The field `priv_data` is no longer supported. Either reorganize as a flat NamedTuple or Dict,
-        e.g. `encoder_options=(color_range=2, crf=0, preset=\"medium\")` to rely on auto routing of generic and private
-        options, or pass the private options to `encoder_private_options` explicitly"""))
+        throw(
+            ArgumentError(
+                """The field `priv_data` is no longer supported. Either reorganize as a flat NamedTuple or Dict,
+e.g. `encoder_options=(color_range=2, crf=0, preset=\"medium\")` to rely on auto routing of generic and private
+options, or pass the private options to `encoder_private_options` explicitly""",
+            ),
+        )
     end
     if !is_eltype_transfer_supported(T)
         throw(ArgumentError("Encoding arrays with eltype $T not yet supported"))
@@ -263,9 +275,8 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     transfer_pix_fmt = get_transfer_pix_fmt(T)
 
     if input_colorspace_details === nothing
-        transfer_colorspace_details = get(VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS,
-                                          transfer_pix_fmt,
-                                          VIO_DEFAULT_COLORSPACE_DETAILS)
+        transfer_colorspace_details =
+            get(VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS, transfer_pix_fmt, VIO_DEFAULT_COLORSPACE_DETAILS)
     else
         transfer_colorspace_details = input_colorspace_details
     end
@@ -282,22 +293,19 @@ function VideoWriter(filename::AbstractString, ::Type{T},
         check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
     end
     codec = AVCodecPtr(codec_p)
-    if ! check_ptr_valid(codec.pix_fmts, false)
+    if !check_ptr_valid(codec.pix_fmts, false)
         error("Codec has no supported pixel formats")
     end
-    encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt,
-                                                      transfer_pix_fmt, codec,
-                                                      pix_fmt_loss_flags)
-    if ! default_codec
-        ret = avformat_query_codec(format_context.oformat, codec.id,
-                                   libffmpeg.FF_COMPLIANCE_NORMAL)
+    encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt, codec, pix_fmt_loss_flags)
+    if !default_codec
+        ret = avformat_query_codec(format_context.oformat, codec.id, libffmpeg.FF_COMPLIANCE_NORMAL)
         ret == 1 || error("Format not compatible with codec $codec_name")
     end
     codec_context = AVCodecContextPtr(codec)
     codec_context.width = width
     codec_context.height = height
     framerate_rat = Rational(framerate)
-    target_timebase = 1/framerate_rat
+    target_timebase = 1 / framerate_rat
     codec_context.time_base = target_timebase
     codec_context.framerate = framerate_rat
     codec_context.pix_fmt = encoding_pix_fmt
@@ -341,32 +349,34 @@ function VideoWriter(filename::AbstractString, ::Type{T},
     avformat_write_header(format_context, C_NULL)
     ret < 0 && error("Could not write header")
 
-    use_vio_gray_transform = transfer_pix_fmt == encoding_pix_fmt &&
-        allow_vio_gray_transform && transfer_pix_fmt in VIO_GRAY_SCALE_TYPES &&
+    use_vio_gray_transform =
+        transfer_pix_fmt == encoding_pix_fmt &&
+        allow_vio_gray_transform &&
+        transfer_pix_fmt in VIO_GRAY_SCALE_TYPES &&
         transfer_colorspace_details.color_range != codec_context.color_range
-    if ! use_vio_gray_transform && transfer_pix_fmt == encoding_pix_fmt
-        maybe_configure_codec_context_colorspace_details!(
-            codec_context, transfer_colorspace_details
-        )
+    if !use_vio_gray_transform && transfer_pix_fmt == encoding_pix_fmt
+        maybe_configure_codec_context_colorspace_details!(codec_context, transfer_colorspace_details)
     end
-    frame_graph = create_encoding_frame_graph(transfer_pix_fmt,
-                                              encoding_pix_fmt, width, height,
-                                              transfer_colorspace_details,
-                                              codec_context.color_primaries,
-                                              codec_context.color_trc,
-                                              codec_context.colorspace,
-                                              codec_context.color_range,
-                                              use_vio_gray_transform,
-                                              swscale_options;
-                                              sws_color_options =
-                                              sws_color_options)
+    frame_graph = create_encoding_frame_graph(
+        transfer_pix_fmt,
+        encoding_pix_fmt,
+        width,
+        height,
+        transfer_colorspace_details,
+        codec_context.color_primaries,
+        codec_context.color_trc,
+        codec_context.colorspace,
+        codec_context.color_range,
+        use_vio_gray_transform,
+        swscale_options;
+        sws_color_options = sws_color_options,
+    )
     packet = AVPacketPtr()
 
-    VideoWriter(format_context, codec_context, frame_graph, packet,
-                Int(stream_index0), scanline_major, 0)
+    return VideoWriter(format_context, codec_context, frame_graph, packet, Int(stream_index0), scanline_major, 0)
 end
 
-VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where T =
+VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where {T} =
     VideoWriter(filename, img_params(img)...; kwargs...)
 
 """
@@ -380,8 +390,7 @@ object `writer` that can be used to encode frames. The size and element type of
 the video can either be specified by passing the first frame of the movie
 `first_img`, which will not be encoded, or instead the element type `T` and
 2-tuple size `sz`. If the size is explicitly specified, the first element will
-be the height, and the second width, unless keyword argument `scanline_major =
-true`, in which case the order is reversed. Both height and width must be even.
+be the height, and the second width, unless keyword argument `scanline_major = true`, in which case the order is reversed. Both height and width must be even.
 The element type `T` must be one of the supported element types, which is any
 key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead the `Normed` or
 `Unsigned` type for a corresponding `Gray` element type. The container type will
@@ -398,12 +407,13 @@ will be closed once the call is complete, regardless of whether or not an error
 occurred.
 
 # Keyword arguments
-- `codec_name::Union{AbstractString, Nothing} = nothing`: Name of the codec to
+
+  - `codec_name::Union{AbstractString, Nothing} = nothing`: Name of the codec to
     use. Must be a name accepted by [FFmpeg](https://ffmpeg.org/), and
     compatible with the chosen container type, or `nothing`, in which case the
     codec will be automatically selected by FFmpeg based on the container.
-- `framerate::Real = 24`: Framerate of the resulting video.
-- `scanline_major::Bool = false`: If `false`, then Julia arrays are assumed to
+  - `framerate::Real = 24`: Framerate of the resulting video.
+  - `scanline_major::Bool = false`: If `false`, then Julia arrays are assumed to
     have frame height in the first dimension, and frame width on the second. If
     `true`, then pixels that adjacent to eachother in the same scanline (i.e.
     horizontal line of the video) are assumed to be adjacent to eachother in
@@ -411,37 +421,37 @@ occurred.
     stride in the first dimension. For normal arrays, this corresponds to a
     matrix where frame width is in the first dimension, and frame height is in
     the second.
-- `container_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
+  - `container_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}`
     of options for the container. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `container_private_options::OptionsT = (;)`: A `NamedTuple` or
+  - `container_private_options::OptionsT = (;)`: A `NamedTuple` or
     `Dict{Symbol, Any}` of private options for the container. Must correspond
     to private options names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen container type.
-- `encoder_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
+  - `encoder_options::OptionsT = (;)`: A `NamedTuple` or `Dict{Symbol, Any}` of
     options for the encoder context. Must correspond to option names and values
     accepted by [FFmpeg](https://ffmpeg.org/).
-- `encoder_private_options::OptionsT = (;)`: A `NamedTuple` or
+  - `encoder_private_options::OptionsT = (;)`: A `NamedTuple` or
     `Dict{Symbol, Any}` of private options for the encoder context. Must
     correspond to private option names and values accepted by
     [FFmpeg](https://ffmpeg.org/) for the chosen codec specified by `codec_name`.
-- `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
+  - `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
     options for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
     [scaler](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options) filter.
-- `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
+  - `target_pix_fmt::Union{Nothing, Cint} = nothing`: The pixel format that will
     be used to input data into the encoder. This can either by a
     `VideoIO.AV_PIX_FMT_*` value corresponding to a FFmpeg
     [`AVPixelFormat`]
     (https://ffmpeg.org/doxygen/4.1/pixfmt_8h.html#a9a8e335cf3be472042bc9f0cf80cd4c5),
     and must then be a format supported by the encoder, or instead `nothing`,
     in which case it will be chosen automatically by FFmpeg.
-- `pix_fmt_loss_flags = 0`: Loss flags to control how encoding pixel format is
+  - `pix_fmt_loss_flags = 0`: Loss flags to control how encoding pixel format is
     chosen. Only valid if `target_pix_fmt = nothing`. Flags must correspond to
     FFmpeg
     [loss flags]
     (http://ffmpeg.org/doxygen/2.5/pixdesc_8h.html#a445e6541dde2408332c216b8d0accb2d).
-- `input_colorspace_details = nothing`: Information about the color space
+  - `input_colorspace_details = nothing`: Information about the color space
     of input Julia arrays. If `nothing`, then this will correspond to a
     best-effort interpretation of `Colors.jl` for the corresponding element type.
     To override these defaults, create a `VideoIO.VioColorspaceDetails` object
@@ -449,19 +459,18 @@ occurred.
     `VideoIO.VioColorspaceDetails()` to use the FFmpeg defaults. If data in the
     input Julia arrays is already in the mpeg color range, then set this to
     `VideoIO.VioColorspaceDetails()` to avoid additional scaling by `sws_scale`.
-- `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
+  - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
     `allow_vio_gray_transform = true`. Otherwise, use `sws_scale`.
-- `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
+  - `sws_color_options::OptionsT = (;)`: Additional keyword arguments passed to
     [sws_setColorspaceDetails]
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
-- `thread_count::Union{Nothing, Int} = nothing`: The number of threads the codec is
+  - `thread_count::Union{Nothing, Int} = nothing`: The number of threads the codec is
     allowed to use, or `nothing` for default codec behavior. Defaults to `nothing`.
 
 See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
-open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...;
-                                                                    kwargs...)
+open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...; kwargs...)
 
 function open_video_out(f, s::AbstractString, args...; kwargs...)
     writer = open_video_out(s, args...; kwargs...)
@@ -472,7 +481,7 @@ function open_video_out(f, s::AbstractString, args...; kwargs...)
     end
 end
 
-img_params(img::AbstractMatrix{T}) where T = (T, size(img))
+img_params(img::AbstractMatrix{T}) where {T} = (T, size(img))
 
 """
     save(filename::String, imgstack; ...)
@@ -494,5 +503,5 @@ function save(filename::String, imgstack; kwargs...)
             write(writer, img)
         end
     end
-    nothing
+    return nothing
 end

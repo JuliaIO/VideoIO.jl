@@ -16,8 +16,7 @@
                 @test VideoIO.height(v) == height
                 @test VideoIO.out_frame_eltype(v) == RGB{N0f8}
                 if size(comparison_frame, 1) > height
-                    trimmed_comparison_frame =
-                        comparison_frame[1+size(comparison_frame,1)-height:end,:]
+                    trimmed_comparison_frame = comparison_frame[1+size(comparison_frame, 1)-height:end, :]
                 else
                     trimmed_comparison_frame = comparison_frame
                 end
@@ -35,7 +34,7 @@
                 # no scaling currently
                 @test VideoIO.out_frame_size(v) == VideoIO.raw_frame_size(v)
                 @test VideoIO.raw_pixel_format(v) == 0 # true for current test videos
-                i=1
+                i = 1
                 while i < test_frameno
                     read!(v, img)
                     i += 1
@@ -52,15 +51,14 @@
                     @test_throws ArgumentError read!(v, similar(img))
                     @test VideoIO.gettime(v) == test_time
                 end
-                @test_throws(ArgumentError,
-                             read!(v, similar(raw_img, size(raw_img) .- 1)))
+                @test_throws(ArgumentError, read!(v, similar(raw_img, size(raw_img) .- 1)))
                 @test_throws MethodError read!(v, similar(raw_img, Rational{Int}))
                 @test_throws ArgumentError read!(v, similar(raw_img, Gray{N0f8}))
                 @test VideoIO.gettime(v) == test_time
 
                 seekstart(v)
                 for i in 1:50
-                    read!(v,img)
+                    read!(v, img)
                 end
                 fiftieth_frame = copy(img)
                 fiftytime = VideoIO.gettime(v)
@@ -69,8 +67,8 @@
                     read!(v, img)
                 end
 
-                seek(v,fiftytime)
-                read!(v,img)
+                seek(v, fiftytime)
+                read!(v, img)
 
                 @test img == fiftieth_frame
 
@@ -85,12 +83,10 @@
                 VideoIO.read_raw!(v, buff, 1)
                 last_time = VideoIO.gettime(v)
                 @test buff == buff_bak
-                @test_throws(ArgumentError,
-                             VideoIO.read_raw!(v, similar(buff, size(buff) .- 1)))
+                @test_throws(ArgumentError, VideoIO.read_raw!(v, similar(buff, size(buff) .- 1)))
                 @test_throws MethodError VideoIO.read_raw!(v, similar(buff, Int))
                 @test VideoIO.gettime(v) == last_time
-                notranscode_buff = VideoIO.openvideo(read, testvid_path,
-                                                     transcode = false)
+                notranscode_buff = VideoIO.openvideo(read, testvid_path, transcode = false)
                 @test notranscode_buff == buff_bak
 
                 # read first frames again, and compare
@@ -118,8 +114,7 @@
                 VideoIO.seekstart(v)
                 VideoIO.skipframe(v)
                 VideoIO.skipframes(v, 10)
-                @test VideoIO.counttotalframes(v) ==
-                    VideoIO.TestVideos.videofiles[name].numframes
+                @test VideoIO.counttotalframes(v) == VideoIO.TestVideos.videofiles[name].numframes
             finally
                 close(f)
             end
@@ -155,16 +150,17 @@ end
 @testset "Reading monochrome videos" begin
     testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
     # Test that limited range YCbCr values are translated to "full range"
-    minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path,
-                                   target_format = VideoIO.AV_PIX_FMT_GRAY8)
+    minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path, target_format = VideoIO.AV_PIX_FMT_GRAY8)
     @test typeof(minp) == Gray{N0f8}
     @test minp.val.i < 16
     @test maxp.val.i > 235
     # Disable automatic rescaling
-    minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path,
-                                   target_format = VideoIO.AV_PIX_FMT_GRAY8,
-                                   target_colorspace_details =
-                                   VideoIO.VioColorspaceDetails())
+    minp, maxp = VideoIO.openvideo(
+        get_video_extrema,
+        testvid_path,
+        target_format = VideoIO.AV_PIX_FMT_GRAY8,
+        target_colorspace_details = VideoIO.VioColorspaceDetails(),
+    )
     @test minp.val.i >= 16
     @test maxp.val.i <= 235
 end
@@ -202,19 +198,17 @@ end
             try
                 width, height = VideoIO.out_frame_size(v)
                 if size(comparison_frame, 1) > height
-                    trimmed_comparison_frame =
-                        comparison_frame[1+size(comparison_frame,1)-height:end,:]
+                    trimmed_comparison_frame = comparison_frame[1+size(comparison_frame, 1)-height:end, :]
                 else
                     trimmed_comparison_frame = comparison_frame
                 end
                 img = read(v)
-                i=1
+                i = 1
                 while i < test_frameno
                     read!(v, img)
                     i += 1
                 end
-                test_compare_frames(img, trimmed_comparison_frame,
-                                    required_accuracy)
+                test_compare_frames(img, trimmed_comparison_frame, required_accuracy)
                 while !eof(v)
                     read!(v, img)
                 end
@@ -259,14 +253,14 @@ end
     @testset "Reading Storage Aspect Ratio: SAR" begin
         # currently, the SAR of all the test videos is 1, we should get another video with a valid SAR that is not equal to 1
         vids = Dict("ladybird.mp4" => 1, "black_hole.webm" => 1, "crescent-moon.ogv" => 1, "annie_oakley.ogg" => 1)
-        @test all(VideoIO.aspect_ratio(VideoIO.openvideo(joinpath(videodir, k))) == v for (k,v) in vids)
+        @test all(VideoIO.aspect_ratio(VideoIO.openvideo(joinpath(videodir, k))) == v for (k, v) in vids)
     end
     @testset "Reading video duration, start date, and duration" begin
         # tesing the duration and date & time functions:
         file = joinpath(videodir, "annie_oakley.ogg")
-        @test VideoIO.get_duration(file) == 24224200/1e6
+        @test VideoIO.get_duration(file) == 24224200 / 1e6
         @test VideoIO.get_start_time(file) == DateTime(1970, 1, 1)
-        @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), 24224200/1e6)
+        @test VideoIO.get_time_duration(file) == (DateTime(1970, 1, 1), 24224200 / 1e6)
         @test VideoIO.get_number_frames(file) === nothing
     end
     @testset "Reading the number of frames from container" begin

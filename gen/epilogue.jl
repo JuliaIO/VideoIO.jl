@@ -1,13 +1,12 @@
 struct_types = Type[]
 # Export everything
-for name in names(@__MODULE__, all=true)
+for name in names(@__MODULE__, all = true)
     name in [Symbol("#eval"), Symbol("#include"), :include, :eval] && continue
     @eval begin
         export $name
         $name isa Type && isstructtype($name) && push!(struct_types, $name)
     end
 end
-
 
 function Base.getproperty(x::Ptr{<:Union{struct_types...}}, f::Symbol)
     T = eltype(x)
