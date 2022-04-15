@@ -30,7 +30,7 @@ include("encoding.jl")
 include("testvideos.jl")
 using .TestVideos
 
-@static if Sys.islinux()
+if Sys.islinux()
     import Glob
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
