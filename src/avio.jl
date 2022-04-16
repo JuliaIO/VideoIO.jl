@@ -1028,9 +1028,9 @@ function opencamera(
         init_camera_settings()
     end
 
-    device = something(device, DEFAULT_CAMERA_DEVICE[])
-    format = something(format, DEFAULT_CAMERA_FORMAT[])
-    options = something(options, DEFAULT_CAMERA_OPTIONS)
+    device = @something(device, DEFAULT_CAMERA_DEVICE[])
+    format = @something(format, DEFAULT_CAMERA_FORMAT[])
+    options = @something(options, DEFAULT_CAMERA_OPTIONS)
 
     camera = AVInput(device, format, options)
     VideoReader(camera, args...; kwargs...)
