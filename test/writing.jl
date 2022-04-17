@@ -20,15 +20,17 @@ end
         for scanline_arg in [true, false]
             for sz in [100, 128] # 100 tests where julia<>ffmpeg imgbuf size doesn't match, 128 when it does
                 @testset "Encoding $el imagestack, scanline_major = $scanline_arg, size = $sz" begin
-                    img_stack = map(x -> rand(el, sz, sz), 1 : n)
+                    img_stack = map(x -> rand(el, sz, sz), 1:n)
                     encoder_private_options = (crf = 0, preset = "medium")
-                    VideoIO.save(tempvidpath,
-                                            img_stack;
-                                            codec_name = codec_name,
-                                            encoder_private_options = encoder_private_options,
-                                            encoder_options = encoder_options,
-                                            container_private_options = container_private_options,
-                                            scanline_major = scanline_arg)
+                    VideoIO.save(
+                        tempvidpath,
+                        img_stack;
+                        codec_name = codec_name,
+                        encoder_private_options = encoder_private_options,
+                        encoder_options = encoder_options,
+                        container_private_options = container_private_options,
+                        scanline_major = scanline_arg,
+                    )
                     @test stat(tempvidpath).size > 100
                     f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.get_transfer_pix_fmt(el))
                     try

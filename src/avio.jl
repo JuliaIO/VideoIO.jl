@@ -1034,14 +1034,7 @@ function get_camera_devices(ffmpeg, idev, idev_name)
     return camera_devices
 end
 
-function opencamera(
-    device = nothing,
-    format = nothing,
-    options = nothing,
-    args...;
-    kwargs...,
-)
-
+function opencamera(device = nothing, format = nothing, options = nothing, args...; kwargs...)
     if isnothing(device) || isnothing(format) || isnothing(options) || isempty(CAMERA_DEVICES)
         # do this only if needed
         init_camera_devices()
