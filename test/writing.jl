@@ -18,43 +18,45 @@ end
     for el in [Gray{N0f8}, Gray{N6f10}, RGB{N0f8}, RGB{N6f10}]
         codec_name = el <: RGB ? "libx264rgb" : "libx264" # the former is necessary for lossless RGB
         for scanline_arg in [true, false]
-            @testset "Encoding $el imagestack, scanline_major = $scanline_arg" begin
-                img_stack = map(x -> rand(el, 100, 100), 1 : n)
-                encoder_private_options = (crf = 0, preset = "medium")
-                VideoIO.save(tempvidpath,
-                                         img_stack;
-                                         codec_name = codec_name,
-                                         encoder_private_options = encoder_private_options,
-                                         encoder_options = encoder_options,
-                                         container_private_options = container_private_options,
-                                         scanline_major = scanline_arg)
-                @test stat(tempvidpath).size > 100
-                f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.get_transfer_pix_fmt(el))
-                try
-                    notempty = !eof(f)
-                    @test notempty
-                    if notempty
-                        img = read(f)
-                        test_img = scanline_arg ? parent(img) : img
-                        i = 1
-                        if el in [Gray{N0f8}, RGB{N0f8}]
-                            @test test_img == img_stack[i]
-                        else
-                            @test_broken test_img == img_stack[i]
-                        end
-                        while !eof(f) && i < n
-                            read!(f, img)
-                            i += 1
+            for sz in [100, 128] # 100 tests where julia<>ffmpeg imgbuf size doesn't match, 128 when it does
+                @testset "Encoding $el imagestack, scanline_major = $scanline_arg, size = $sz" begin
+                    img_stack = map(x -> rand(el, sz, sz), 1 : n)
+                    encoder_private_options = (crf = 0, preset = "medium")
+                    VideoIO.save(tempvidpath,
+                                            img_stack;
+                                            codec_name = codec_name,
+                                            encoder_private_options = encoder_private_options,
+                                            encoder_options = encoder_options,
+                                            container_private_options = container_private_options,
+                                            scanline_major = scanline_arg)
+                    @test stat(tempvidpath).size > 100
+                    f = VideoIO.openvideo(tempvidpath, target_format = VideoIO.get_transfer_pix_fmt(el))
+                    try
+                        notempty = !eof(f)
+                        @test notempty
+                        if notempty
+                            img = read(f)
+                            test_img = scanline_arg ? parent(img) : img
+                            i = 1
                             if el in [Gray{N0f8}, RGB{N0f8}]
                                 @test test_img == img_stack[i]
                             else
                                 @test_broken test_img == img_stack[i]
                             end
+                            while !eof(f) && i < n
+                                read!(f, img)
+                                i += 1
+                                if el in [Gray{N0f8}, RGB{N0f8}]
+                                    @test test_img == img_stack[i]
+                                else
+                                    @test_broken test_img == img_stack[i]
+                                end
+                            end
+                            @test i == n
                         end
-                        @test i == n
+                    finally
+                        close(f)
                     end
-                finally
-                    close(f)
                 end
             end
         end
