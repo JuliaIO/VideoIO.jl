@@ -53,9 +53,7 @@ if Sys.islinux()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         return DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "" : CAMERA_DEVICES[1]
     end
-end
-
-if Sys.iswindows()
+elseif Sys.iswindows()
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
         return DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("dshow")
@@ -64,9 +62,7 @@ if Sys.iswindows()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         return DEFAULT_CAMERA_DEVICE[] = string("video=", isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1])
     end
-end
-
-if Sys.isapple()
+elseif Sys.isapple()
     function init_camera_devices()
         try
             append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
@@ -135,8 +131,6 @@ function __init__()
     av_register_all()
 
     libffmpeg.avdevice_register_all()
-    init_camera_devices()
-    init_camera_settings()
 
     @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" begin
         # Define read and retrieve for Images

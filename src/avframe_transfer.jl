@@ -187,10 +187,15 @@ function transfer_img_bytes_to_frame_plane!(
 )
     stride(img, 1) == 1 || error("stride(img, 1) must be equal to one")
     img_line_nbytes = px_width * bytes_per_sample
-    @inbounds for r in 1:px_height
-        data_line_ptr = data_ptr + (r - 1) * data_linesize
-        img_line_ptr = pointer(img, img_line_nbytes * (r - 1) + 1)
-        unsafe_copyto!(data_line_ptr, img_line_ptr, img_line_nbytes)
+    if data_linesize == img_line_nbytes
+        # When both sizes match the buffers are both contiguous, so can be transferred in one go
+        unsafe_copyto!(data_ptr, pointer(img), length(img))
+    else
+        @inbounds for r in 1:px_height
+            data_line_ptr = data_ptr + (r - 1) * data_linesize
+            img_line_ptr = pointer(img, img_line_nbytes * (r - 1) + 1)
+            unsafe_copyto!(data_line_ptr, img_line_ptr, img_line_nbytes)
+        end
     end
 end
 
