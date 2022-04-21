@@ -151,9 +151,10 @@ Frames can be read iteratively
 ```julia
 using VideoIO
 cam = VideoIO.opencamera()
+fps = VideoIO.framerate(cam)
 for i in 1:100
     img = read(cam)
-    sleep(1/VideoIO.framerate(cam))
+    sleep(1/fps)
 end
 ```
 ### Webcam playback
