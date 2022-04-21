@@ -120,39 +120,42 @@ function __init__()
         # Define read and retrieve for Images
         function play(f; flipx=false, flipy=false, pixelaspectratio=nothing)
             eof(f) && error("VideoReader at end of file. Use `seekstart(f)` to rewind")
-            if pixelaspectratio ≡ nothing # if user did not specify the aspect ratio we'll try to use the one stored in the video file
-                pixelaspectratio = aspect_ratio(f)
-            end
+            # if user did not specify the aspect ratio we'll try to use the one stored in the video file
+            pixelaspectratio = @something pixelaspectratio aspect_ratio(f)
             h = height(f)
             w = round(typeof(h), width(f) * pixelaspectratio) # has to be an integer
             scene = GLMakie.Scene(resolution = (w, h))
-            buf = read(f)
-            makieimg = GLMakie.image!(scene, 1:h, 1:w, buf, show_axis = false, scale_plot = false)
-            GLMakie.rotate!(scene, -0.5pi)
-            if flipx && flipy
-                GLMakie.scale!(scene, -1, -1, 1)
-            else
-                flipx && GLMakie.scale!(scene, -1, 1, 1)
-                flipy && GLMakie.scale!(scene, 1, -1, 1)
-            end
+            img = read(f)
+            obs_img = GLMakie.Observable(GLMakie.rotr90(img))
+            scene = GLMakie.Scene(camera=GLMakie.campixel!, resolution=reverse(size(img)))
+            GLMakie.image!(scene, obs_img)
+            (flipx || flipy) && GLMakie.scale!(scene, flipx ? -1 : 1, flipy ? -1 : 1, 1)
             display(scene)
+            # issue 343: camera can't run at full speed on MacOS
+            fps = Sys.isapple() ? min(framerate(f), 24) : framerate(f)
             while isopen(scene) && !eof(f)
-                read!(f, buf)
-                makieimg.image = buf
-                sleep(1 / framerate(f))
+                read!(f, img)
+                obs_img[] = GLMakie.rotr90(img)
+                sleep(1 / fps)
             end
         end
 
         function playvideo(video;flipx=false,flipy=false,pixelaspectratio=nothing)
             f = VideoIO.openvideo(video)
-            play(f,flipx=flipx,flipy=flipy,pixelaspectratio=pixelaspectratio)
+            try
+                play(f, flipx=flipx, flipy=flipy, pixelaspectratio=pixelaspectratio)
+            finally
+                close(f)
+            end
         end
 
-        function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
-            init_camera_settings()
-            camera = opencamera(device[], format[])
-            play(camera; flipx=true, pixelaspectratio)
-            close(camera)
+        function viewcam(device=nothing, format=nothing, options=nothing, pixelaspectratio=nothing)
+            camera = opencamera(device, format, options)
+            try
+                play(camera; flipx=true, pixelaspectratio)
+            finally
+                close(camera)
+            end
         end
 
     end
