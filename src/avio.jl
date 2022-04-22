@@ -976,7 +976,6 @@ end
 
 ### Camera Functions
 
-# These are set in __init__()
 const DEFAULT_CAMERA_FORMAT = Ref{Any}()
 const CAMERA_DEVICES = String[]
 const DEFAULT_CAMERA_DEVICE = Ref{String}()
