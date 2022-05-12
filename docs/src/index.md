@@ -6,7 +6,7 @@ Functionality is based on a dedicated build of ffmpeg, provided via [JuliaPackag
 
 Explore the source at [github.com/JuliaIO/VideoIO.jl](https://github.com/JuliaIO/VideoIO.jl)
 
-### Platform Nodes:
+### Platform Notes:
 
 - ARM: For truly lossless reading & writing, there is a known issue on ARM that results in small precision differences when reading/writing some video files. As such, tests for frame comparison are currently skipped on ARM. Issues/PRs welcome for helping to get this fixed.
 
