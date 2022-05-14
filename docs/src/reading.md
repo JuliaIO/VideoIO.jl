@@ -153,6 +153,12 @@ for i in 1:100
     sleep(1/VideoIO.framerate(cam))
 end
 ```
+To change the frame rate and resolution of the captured frames, set the
+appropriate value in the `DEFAULT_CAMERA_OPTIONS` dictionary. For example:
+```julia
+VideoIO.DEFAULT_CAMERA_OPTIONS["video_size"] = "640x480"
+VideoIO.DEFAULT_CAMERA_OPTIONS["framerate"] = 30
+```
 ### Webcam playback
 The default system webcam can be viewed directly
 ```julia
