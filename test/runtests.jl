@@ -1,11 +1,11 @@
 using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
-import ColorVectorSpace
+using ColorVectorSpace: ColorVectorSpace
 using FileIO, ImageCore, Dates, Statistics, StatsBase
 
-import FFMPEG
+using FFMPEG: FFMPEG
 
-import VideoIO
+using VideoIO: VideoIO
 
 const testdir = dirname(@__FILE__)
 const videodir = joinpath(testdir, "..", "videos")

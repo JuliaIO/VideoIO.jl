@@ -3,82 +3,120 @@
 using VideoIO, ColorTypes, FixedPointNumbers, DataFrames
 
 function collectexecoutput(exec::Cmd)
-    out = Pipe(); err = Pipe()
-    p = Base.open(pipeline(ignorestatus(exec), stdout=out, stderr=err))
-    close(out.in); close(err.in)
-    err_s = readlines(err); out_s = readlines(out)
+    out = Pipe()
+    err = Pipe()
+    p = Base.open(pipeline(ignorestatus(exec), stdout = out, stderr = err))
+    close(out.in)
+    close(err.in)
+    err_s = readlines(err)
+    out_s = readlines(out)
     return (length(out_s) > length(err_s)) ? out_s : err_s
 end
 
-function createtestvideo(;filename::String="$(tempname()).mp4",duration::Real=5,
-    width::Int64=1280,height::Int64=720,framerate::Real=30,testtype::String="testsrc2",
-    encoder::String="libx264rgb")
+function createtestvideo(;
+    filename::String = "$(tempname()).mp4",
+    duration::Real = 5,
+    width::Int64 = 1280,
+    height::Int64 = 720,
+    framerate::Real = 30,
+    testtype::String = "testsrc2",
+    encoder::String = "libx264rgb",
+)
     withenv(VideoIO.execenv) do
-        collectexecoutput(`$(VideoIO.ffmpeg) -y -f lavfi -i
-            $testtype=duration=$duration:size=$(width)x$(height):rate=$framerate
-            -c:v $encoder -preset slow -crf 0 -c:a copy $filename`)
+        return collectexecoutput(`$(VideoIO.ffmpeg) -y -f lavfi -i
+                   $testtype=duration=$duration:size=$(width)x$(height):rate=$framerate
+                   -c:v $encoder -preset slow -crf 0 -c:a copy $filename`)
     end
     return filename
 end
 
-function testvideocomp!(df,preset,imgstack_gray)
-    t = @elapsed VideoIO.save("video.mp4",imgstack_gray,framerate=30,codec_name = "libx264",
-                                    encoder_options=(color_range=2, crf=0, "preset"=preset))
+function testvideocomp!(df, preset, imgstack_gray)
+    t = @elapsed VideoIO.save(
+        "video.mp4",
+        imgstack_gray,
+        framerate = 30,
+        codec_name = "libx264",
+        encoder_options = (color_range = 2, crf = 0, "preset" = preset),
+    )
     fs = filesize("video.mp4")
-    f = openvideo("video.mp4",target_format=VideoIO.AV_PIX_FMT_GRAY8)
+    f = openvideo("video.mp4", target_format = VideoIO.AV_PIX_FMT_GRAY8)
     imgstack_gray_copy = []
     while !eof(f)
-        push!(imgstack_gray_copy,read(f))
+        push!(imgstack_gray_copy, read(f))
     end
     identical = !any(.!(imgstack_gray .== imgstack_gray_copy))
-    push!(df,[preset,fs,t,identical])
+    return push!(df, [preset, fs, t, identical])
 end
 
-imgstack_gray_noise = map(x->rand(Gray{N0f8},1280,720),1:1000)
+imgstack_gray_noise = map(x -> rand(Gray{N0f8}, 1280, 720), 1:1000)
 
 f = openvideo(createtestvideo())
 imgstack = []
 while !eof(f)
-    push!(imgstack,read(f))
+    push!(imgstack, read(f))
 end
-imgstack_gray_testvid = map(x->convert.(Gray{N0f8},x),imgstack)
+imgstack_gray_testvid = map(x -> convert.(Gray{N0f8}, x), imgstack)
 
 f = openvideo("videos/ladybird.mp4")
 imgstack = []
 while !eof(f)
-    push!(imgstack,read(f))
+    push!(imgstack, read(f))
 end
-imgstack_gray_ladybird = map(x->convert.(Gray{N0f8},x),imgstack)
+imgstack_gray_ladybird = map(x -> convert.(Gray{N0f8}, x), imgstack)
 
-df_noise = DataFrame(preset=[],filesize=[],time=[],identical=[])
-df_testvid = DataFrame(preset=[],filesize=[],time=[],identical=[])
-df_ladybird = DataFrame(preset=[],filesize=[],time=[],identical=[])
-for preset in ["ultrafast","superfast","veryfast","faster","fast","medium","slow",
-"slower","veryslow"]
+df_noise = DataFrame(preset = [], filesize = [], time = [], identical = [])
+df_testvid = DataFrame(preset = [], filesize = [], time = [], identical = [])
+df_ladybird = DataFrame(preset = [], filesize = [], time = [], identical = [])
+for preset in ["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow"]
     @show preset
     for rep in 1:3
         @show rep
-        testvideocomp!(df_noise,preset,imgstack_gray_noise)
-        testvideocomp!(df_testvid,preset,imgstack_gray_testvid)
-        testvideocomp!(df_ladybird,preset,imgstack_gray_ladybird)
+        testvideocomp!(df_noise, preset, imgstack_gray_noise)
+        testvideocomp!(df_testvid, preset, imgstack_gray_testvid)
+        testvideocomp!(df_ladybird, preset, imgstack_gray_ladybird)
     end
 end
 
-noise_raw_size = size(imgstack_gray_noise[1],1) * size(imgstack_gray_noise[1],2) * length(imgstack_gray_noise)
-testvid_raw_size = size(imgstack_gray_testvid[1],1) * size(imgstack_gray_testvid[1],2) * length(imgstack_gray_testvid)
-ladybird_raw_size = size(imgstack_gray_ladybird[1],1) * size(imgstack_gray_ladybird[1],2) * length(imgstack_gray_ladybird)
+noise_raw_size = size(imgstack_gray_noise[1], 1) * size(imgstack_gray_noise[1], 2) * length(imgstack_gray_noise)
+testvid_raw_size = size(imgstack_gray_testvid[1], 1) * size(imgstack_gray_testvid[1], 2) * length(imgstack_gray_testvid)
+ladybird_raw_size =
+    size(imgstack_gray_ladybird[1], 1) * size(imgstack_gray_ladybird[1], 2) * length(imgstack_gray_ladybird)
 
-df_noise[:filesize_perc] = 100*(df_noise[:filesize]./noise_raw_size)
-df_testvid[:filesize_perc] = 100*(df_testvid[:filesize]./testvid_raw_size)
-df_ladybird[:filesize_perc] = 100*(df_ladybird[:filesize]./ladybird_raw_size)
-df_noise[:fps] = length(imgstack_gray_noise)./df_noise[:time]
-df_testvid[:fps] = length(imgstack_gray_testvid)./df_testvid[:time]
-df_ladybird[:fps] = length(imgstack_gray_ladybird)./df_ladybird[:time]
+df_noise[:filesize_perc] = 100 * (df_noise[:filesize] ./ noise_raw_size)
+df_testvid[:filesize_perc] = 100 * (df_testvid[:filesize] ./ testvid_raw_size)
+df_ladybird[:filesize_perc] = 100 * (df_ladybird[:filesize] ./ ladybird_raw_size)
+df_noise[:fps] = length(imgstack_gray_noise) ./ df_noise[:time]
+df_testvid[:fps] = length(imgstack_gray_testvid) ./ df_testvid[:time]
+df_ladybird[:fps] = length(imgstack_gray_ladybird) ./ df_ladybird[:time]
 
 using Statistics
-df_noise_summary = by(df_noise, :preset, identical = :identical => minimum, fps_mean = :fps => mean, fps_std = :fps => std, filesize_perc_mean = :filesize_perc => mean,filesize_perc_std = :filesize_perc => std)
-df_testvid_summary = by(df_testvid, :preset, identical = :identical => minimum, fps_mean = :fps => mean, fps_std = :fps => std, filesize_perc_mean = :filesize_perc => mean,filesize_perc_std = :filesize_perc => std)
-df_ladybird_summary = by(df_ladybird, :preset, identical = :identical => minimum, fps_mean = :fps => mean, fps_std = :fps => std, filesize_perc_mean = :filesize_perc => mean,filesize_perc_std = :filesize_perc => std)
+df_noise_summary = by(
+    df_noise,
+    :preset,
+    identical = :identical => minimum,
+    fps_mean = :fps => mean,
+    fps_std = :fps => std,
+    filesize_perc_mean = :filesize_perc => mean,
+    filesize_perc_std = :filesize_perc => std,
+)
+df_testvid_summary = by(
+    df_testvid,
+    :preset,
+    identical = :identical => minimum,
+    fps_mean = :fps => mean,
+    fps_std = :fps => std,
+    filesize_perc_mean = :filesize_perc => mean,
+    filesize_perc_std = :filesize_perc => std,
+)
+df_ladybird_summary = by(
+    df_ladybird,
+    :preset,
+    identical = :identical => minimum,
+    fps_mean = :fps => mean,
+    fps_std = :fps => std,
+    filesize_perc_mean = :filesize_perc => mean,
+    filesize_perc_std = :filesize_perc => std,
+)
 
 @show df_noise_summary
 @show df_testvid_summary
@@ -129,7 +167,6 @@ df_ladybird_summary = 9×6 DataFrame
 │ 8   │ slower    │ true      │ 20.1112  │ 1.04282  │ 9.25529            │ 0.0               │
 │ 9   │ veryslow  │ true      │ 10.0016  │ 0.473213 │ 9.24999            │ 0.0               │
 =#
-
 
 # HISTOGRAM COMPARISON - useful for diagnosing range compression
 # using PyPlot, ImageCore

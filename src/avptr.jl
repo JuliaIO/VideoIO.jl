@@ -1,7 +1,5 @@
 # Utilities for working with pointers to nested C structs
-const OptionsT = Union{AbstractDict{Symbol, <:Any},
-                        AbstractDict{Union{}, Union{}},
-                        NamedTuple}
+const OptionsT = Union{AbstractDict{Symbol,<:Any},AbstractDict{Union{},Union{}},NamedTuple}
 
 """
     mutable struct NestedCStruct{T}
@@ -11,86 +9,79 @@ Wraps a pointer to a C struct, and acts like a double pointer to that memory.
 mutable struct NestedCStruct{T}
     data::RefValue{Ptr{T}}
 end
-NestedCStruct{T}(a::Ptr) where T = NestedCStruct{T}(Ref(a))
-NestedCStruct{T}(a::Ptr{Nothing}) where T = NestedCStruct{T}(convert(Ptr{T}, a))
+NestedCStruct{T}(a::Ptr) where {T} = NestedCStruct{T}(Ref(a))
+NestedCStruct{T}(a::Ptr{Nothing}) where {T} = NestedCStruct{T}(convert(Ptr{T}, a))
 # Needed to resolve method ambiguity
 NestedCStruct{Nothing}(a::Ptr{Nothing}) = NestedCStruct{Nothing}(Ref(a))
-NestedCStruct(a::Ptr{T}) where T = NestedCStruct{T}(a)
+NestedCStruct(a::Ptr{T}) where {T} = NestedCStruct{T}(a)
 
-unsafe_convert(::Type{Ptr{T}}, ap::NestedCStruct{T}) where T =
-    getfield(ap, :data)[]
-unsafe_convert(::Type{Ptr{Ptr{T}}}, ap::NestedCStruct{T}) where T =
-    unsafe_convert(Ptr{Ptr{T}}, getfield(ap, :data))
-unsafe_convert(::Type{Ptr{Ptr{Nothing}}}, ap::NestedCStruct{T}) where T =
+unsafe_convert(::Type{Ptr{T}}, ap::NestedCStruct{T}) where {T} = getfield(ap, :data)[]
+unsafe_convert(::Type{Ptr{Ptr{T}}}, ap::NestedCStruct{T}) where {T} = unsafe_convert(Ptr{Ptr{T}}, getfield(ap, :data))
+unsafe_convert(::Type{Ptr{Ptr{Nothing}}}, ap::NestedCStruct{T}) where {T} =
     convert(Ptr{Ptr{Nothing}}, unsafe_convert(Ptr{Ptr{T}}, ap))
-unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{T}) where T =
-    convert(Ptr{Nothing}, unsafe_convert(Ptr{T}, ap))
+unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{T}) where {T} = convert(Ptr{Nothing}, unsafe_convert(Ptr{T}, ap))
 # Following two methods are needed to resolve method ambiguity
-unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{Nothing}) =
-    getfield(ap, :data)[]
+unsafe_convert(::Type{Ptr{Nothing}}, ap::NestedCStruct{Nothing}) = getfield(ap, :data)[]
 unsafe_convert(::Type{Ptr{Ptr{Nothing}}}, ap::NestedCStruct{Nothing}) =
     unsafe_convert(Ptr{Ptr{Nothing}}, getfield(ap, :data))
 
-function check_ptr_valid(a::NestedCStruct{T}, args...) where T
+function check_ptr_valid(a::NestedCStruct{T}, args...) where {T}
     p = unsafe_convert(Ptr{T}, a)
     @preserve a check_ptr_valid(p, args...)
 end
 
-nested_wrap(x::Ptr{T}) where T = NestedCStruct(x)
+nested_wrap(x::Ptr{T}) where {T} = NestedCStruct(x)
 nested_wrap(x) = x
 
-@inline function getproperty(ap::NestedCStruct{T}, s::Symbol) where T
+@inline function getproperty(ap::NestedCStruct{T}, s::Symbol) where {T}
     p = unsafe_convert(Ptr{T}, ap)
     res = @preserve ap unsafe_load(field_ptr(p, s))
-    nested_wrap(res)
+    return nested_wrap(res)
 end
 
-@inline function setproperty!(ap::NestedCStruct{T}, s::Symbol, x) where T
+@inline function setproperty!(ap::NestedCStruct{T}, s::Symbol, x) where {T}
     p = unsafe_convert(Ptr{T}, ap)
     fp = field_ptr(p, s)
     @preserve ap unsafe_store!(fp, x)
 end
 
-@inline function getindex(ap::NestedCStruct{T}, i::Integer) where T
+@inline function getindex(ap::NestedCStruct{T}, i::Integer) where {T}
     p = unsafe_convert(Ptr{T}, ap)
     res = @preserve ap unsafe_load(p, i)
-    nested_wrap(res)
+    return nested_wrap(res)
 end
 
-@inline function setindex!(ap::NestedCStruct{T}, i::Integer, x) where T
+@inline function setindex!(ap::NestedCStruct{T}, i::Integer, x) where {T}
     p = unsafe_convert(Ptr{T}, ap)
     @preserve ap unsafe_store!(p, x, i)
 end
 
-@inline function unsafe_wrap(::Type{T}, ap::NestedCStruct{S}, i) where {S, T}
+@inline function unsafe_wrap(::Type{T}, ap::NestedCStruct{S}, i) where {S,T}
     p = unsafe_convert(Ptr{S}, ap)
     @preserve ap unsafe_wrap(T, p, i)
 end
 
-@inline function unsafe_copyto!(dest::Ptr{T}, src::NestedCStruct{S}, N) where {S, T}
+@inline function unsafe_copyto!(dest::Ptr{T}, src::NestedCStruct{S}, N) where {S,T}
     p = unsafe_convert(Ptr{S}, src)
     @preserve src unsafe_copyto!(dest, p, N)
 end
 
-@inline function unsafe_copyto!(dest::NestedCStruct{S}, src::Ptr{T}, N) where {S, T}
+@inline function unsafe_copyto!(dest::NestedCStruct{S}, src::Ptr{T}, N) where {S,T}
     p = unsafe_convert(Ptr{S}, dest)
     @preserve dest unsafe_copyto!(p, src, N)
 end
 
-@inline function field_ptr(::Type{S}, a::NestedCStruct{T}, field::Symbol,
-                           args...) where {S, T}
+@inline function field_ptr(::Type{S}, a::NestedCStruct{T}, field::Symbol, args...) where {S,T}
     p = unsafe_convert(Ptr{T}, a)
     @preserve a field_ptr(S, p, field, args...)
 end
 
-@inline function field_ptr(a::NestedCStruct{T}, field::Symbol,
-                           args...) where {S, T}
+@inline function field_ptr(a::NestedCStruct{T}, field::Symbol, args...) where {S,T}
     p = unsafe_convert(Ptr{T}, a)
     @preserve a field_ptr(p, field, args...)
 end
 
-propertynames(ap::T) where {S, T<:NestedCStruct{S}} = (fieldnames(S)...,
-                                                       fieldnames(T)...)
+propertynames(ap::T) where {S,T<:NestedCStruct{S}} = (fieldnames(S)..., fieldnames(T)...)
 """
     @avptr(tname, tref, [allocf, deallocf])
 
@@ -117,7 +108,7 @@ macro avptr(tname, tref, args...)
                 check_ptr_valid(p, false) || error($errmsg)
                 obj = $(esc(tname))(p)
                 finalizer($(esc(deallocf)), obj)
-                obj
+                return obj
             end
         end
     elseif narg != 0
@@ -133,7 +124,7 @@ macro avptr(tname, tref, args...)
     end
 end
 
-@avptr AVFramePtr  AVFrame  av_frame_alloc  av_frame_free
+@avptr AVFramePtr AVFrame av_frame_alloc av_frame_free
 @avptr AVPacketPtr AVPacket av_packet_alloc av_packet_free
 @avptr SwsContextPtr SwsContext sws_alloc_context sws_freeContext
 @avptr AVIOContextPtr AVIOContext
@@ -150,7 +141,7 @@ function output_AVFormatContextPtr(fname)
     end
     obj = AVFormatContextPtr(dp)
     finalizer(avformat_free_context, obj)
-    obj
+    return obj
 end
 
 @avptr AVCodecContextPtr AVCodecContext
@@ -160,7 +151,7 @@ function AVCodecContextPtr(codec::Ptr{AVCodec})
     check_ptr_valid(p, false) || error("Could not allocate AVCodecContext")
     obj = AVCodecContextPtr(p)
     finalizer(avcodec_free_context, obj)
-    obj
+    return obj
 end
 
 AVCodecContextPtr(codec::AVCodecPtr) = AVCodecContextPtr(unsafe_convert(Ptr{AVCodec}, codec))
@@ -175,12 +166,11 @@ end
 
 function AVIOContextPtr(avio_ctx_buffer_size, opaque_p, read_p)
     avio_ctx_buffer = av_malloc(avio_ctx_buffer_size)
-    if ! check_ptr_valid(avio_ctx_buffer, false)
+    if !check_ptr_valid(avio_ctx_buffer, false)
         error("Unable to allocate avio buffer")
     end
-    p = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, opaque_p,
-                           read_p, C_NULL, C_NULL)
-    if ! check_ptr_valid(p, false)
+    p = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, opaque_p, read_p, C_NULL, C_NULL)
+    if !check_ptr_valid(p, false)
         av_freep(Ref(avio_ctx_buffer))
         error("Unable to allocate AVIOContext")
     end
@@ -189,10 +179,9 @@ function AVIOContextPtr(avio_ctx_buffer_size, opaque_p, read_p)
     return obj
 end
 
-@inline function set_class_option(ptr::NestedCStruct{T}, key, val,
-                                  search = AV_OPT_SEARCH_CHILDREN) where T
+@inline function set_class_option(ptr::NestedCStruct{T}, key, val, search = AV_OPT_SEARCH_CHILDREN) where {T}
     ret = av_opt_set(ptr, string(key), string(val), search)
-    ret < 0 && error("Could not set class option $key to $val: got error $ret")
+    return ret < 0 && error("Could not set class option $key to $val: got error $ret")
 end
 
 function set_class_options(ptr, options::OptionsT, args...)
