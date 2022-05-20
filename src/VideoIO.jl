@@ -8,16 +8,29 @@ using FileIO: File
 
 using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
 using Base.GC: @preserve
-import Base: iterate, IteratorSize, IteratorEltype, setproperty!, convert,
-    getproperty, unsafe_convert, propertynames, getindex, setindex!, parent,
-    position, unsafe_wrap, unsafe_copyto!, write
+import Base:
+    iterate,
+    IteratorSize,
+    IteratorEltype,
+    setproperty!,
+    convert,
+    getproperty,
+    unsafe_convert,
+    propertynames,
+    getindex,
+    setindex!,
+    parent,
+    position,
+    unsafe_wrap,
+    unsafe_copyto!,
+    write
 
 const VIO_LOCK = ReentrantLock()
 
 include("util.jl")
 include("../lib/libffmpeg.jl")
 using .libffmpeg
-using FFMPEG:ffmpeg
+using FFMPEG: ffmpeg
 
 include("avptr.jl")
 
@@ -31,26 +44,23 @@ include("testvideos.jl")
 using .TestVideos
 
 if Sys.islinux()
-    import Glob
+    using Glob: Glob
     function init_camera_devices()
         append!(CAMERA_DEVICES, Glob.glob("video*", "/dev"))
-        DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("video4linux2")
+        return DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("video4linux2")
     end
     function init_camera_settings()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
-        DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "" : CAMERA_DEVICES[1]
+        return DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "" : CAMERA_DEVICES[1]
     end
 elseif Sys.iswindows()
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
-        DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("dshow")
+        return DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("dshow")
     end
     function init_camera_settings()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
-        DEFAULT_CAMERA_DEVICE[] = string(
-            "video=",
-            isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
-        )
+        return DEFAULT_CAMERA_DEVICE[] = string("video=", isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1])
     end
 elseif Sys.isapple()
     function init_camera_devices()
@@ -69,30 +79,36 @@ elseif Sys.isapple()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         # Note: "Integrated" is another possible default value
         DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
-        DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+        return DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
     end
 elseif Sys.isbsd()
     # copied loosely from apple above - needs figuring out
     function init_camera_devices()
         append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
-        DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("avfoundation")
+        return DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("avfoundation")
     end
     function init_camera_settings()
         DEFAULT_CAMERA_OPTIONS["framerate"] = 30
         DEFAULT_CAMERA_OPTIONS["pixel_format"] = "uyvy422"
-        DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
+        return DEFAULT_CAMERA_DEVICE[] = isempty(CAMERA_DEVICES) ? "0" : CAMERA_DEVICES[1]
     end
 end
 
 #Helper functions to explain about GLMakie load order requirement
-function play(f; flipx=false, flipy=false)
-    error("GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`")
+function play(f; flipx = false, flipy = false)
+    return error(
+        "GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`",
+    )
 end
-function playvideo(video;flipx=false,flipy=false)
-    error("GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`")
+function playvideo(video; flipx = false, flipy = false)
+    return error(
+        "GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`",
+    )
 end
-function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT)
-    error("GLMakie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using GLMakie, VideoIO`")
+function viewcam(device = DEFAULT_CAMERA_DEVICE, format = DEFAULT_CAMERA_FORMAT)
+    return error(
+        "GLMakie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using GLMakie, VideoIO`",
+    )
 end
 
 ## FileIO interface
@@ -118,7 +134,7 @@ function __init__()
 
     @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" begin
         # Define read and retrieve for Images
-        function play(f; flipx=false, flipy=false, pixelaspectratio=nothing)
+        function play(f; flipx = false, flipy = false, pixelaspectratio = nothing)
             eof(f) && error("VideoReader at end of file. Use `seekstart(f)` to rewind")
             if pixelaspectratio ≡ nothing # if user did not specify the aspect ratio we'll try to use the one stored in the video file
                 pixelaspectratio = aspect_ratio(f)
@@ -143,31 +159,30 @@ function __init__()
             end
         end
 
-        function playvideo(video;flipx=false,flipy=false,pixelaspectratio=nothing)
+        function playvideo(video; flipx = false, flipy = false, pixelaspectratio = nothing)
             f = VideoIO.openvideo(video)
-            play(f,flipx=flipx,flipy=flipy,pixelaspectratio=pixelaspectratio)
+            return play(f, flipx = flipx, flipy = flipy, pixelaspectratio = pixelaspectratio)
         end
 
-        function viewcam(device=DEFAULT_CAMERA_DEVICE, format=DEFAULT_CAMERA_FORMAT, pixelaspectratio=nothing)
+        function viewcam(device = DEFAULT_CAMERA_DEVICE, format = DEFAULT_CAMERA_FORMAT, pixelaspectratio = nothing)
             init_camera_settings()
             camera = opencamera(device[], format[])
-            play(camera; flipx=true, pixelaspectratio)
-            close(camera)
+            play(camera; flipx = true, pixelaspectratio)
+            return close(camera)
         end
-
     end
 end
 
 """
 VideoIO supports reading and writing video files.
 
-- `VideoIO.load` to load an entire video into memory as a vector of images (a framestack)
-- `openvideo` and `opencamera` provide access to video files and livestreams
-- `read` and `read!` allow reading frames
-- `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
-- `VideoIO.save` for encoding an entire framestack in one step
-- `open_video_out`, `write` for writing frames sequentially to a file
-- `gettime` and `counttotalframes` provide information
+  - `VideoIO.load` to load an entire video into memory as a vector of images (a framestack)
+  - `openvideo` and `opencamera` provide access to video files and livestreams
+  - `read` and `read!` allow reading frames
+  - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
+  - `VideoIO.save` for encoding an entire framestack in one step
+  - `open_video_out`, `write` for writing frames sequentially to a file
+  - `gettime` and `counttotalframes` provide information
 
 Here's a brief demo reading through each frame of a video:
 
@@ -184,9 +199,9 @@ An example of encoding one frame at a time:
 
 ```julia
 using VideoIO
-framestack = map(x->rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
-encoder_options = (crf=23, preset="medium")
-open_video_out("video.mp4", framestack[1], framerate=24, encoder_options=encoder_options) do writer
+framestack = map(x -> rand(UInt8, 100, 100), 1:100) #vector of 2D arrays
+encoder_options = (crf = 23, preset = "medium")
+open_video_out("video.mp4", framestack[1], framerate = 24, encoder_options = encoder_options) do writer
     for frame in framestack
         write(writer, frame)
     end

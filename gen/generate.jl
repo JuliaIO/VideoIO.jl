@@ -33,7 +33,7 @@ const module_names = [
     "libswscale"
 ]
 
-library_names = Dict{String, String}()
+library_names = Dict{String,String}()
 headers = String[]
 for lib in module_names
     header_dir = joinpath(include_dir, lib)
