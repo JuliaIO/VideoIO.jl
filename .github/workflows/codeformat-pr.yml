@@ -1,0 +1,38 @@
+name: Code Formatting
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, edited, reopened, synchronize]
+    paths:
+      - 'docs/**'
+      - 'gen/**'
+      - 'src/**'
+      - 'test/**'
+      - 'util/**'
+      - '.JuliaFormatter.toml'
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.0
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: 1
+      - name: Install JuliaFormatter and format
+        run: julia -e 'import Pkg; Pkg.add("JuliaFormatter"); using JuliaFormatter; format(["docs", "gen", "src", "test", "util"])'
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Format files using JuliaFormatter
+          title: ${{ format('[AUTO] Format {0} using JuliaFormatter', github.event.pull_request.number) }}
+          body: ${{ format('[JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl) would suggest these formatting changes against \#{0}.', github.event.pull_request.number) }}
+          labels: no changelog
+          branch: ${{ format('code-format/{0}', github.event.pull_request.number) }}

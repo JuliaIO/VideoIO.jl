@@ -157,6 +157,33 @@ for i in 1:100
     sleep(1/fps)
 end
 ```
+To change settings such as the frame rate or resolution of the captured frames, set the
+appropriate value in the `options` positional argument.
+```julia
+julia> opts = VideoIO.DEFAULT_CAMERA_OPTIONS
+VideoIO.AVDict with 2 entries:
+  "framerate"    => "30"
+  "pixel_format" => "uyvy422"
+
+julia> opts["framerate"] = "24"
+"24"
+
+julia> opts["video_size"] = "640x480"
+"640x480"
+
+julia> opencamera(VideoIO.DEFAULT_CAMERA_DEVICE[], VideoIO.DEFAULT_CAMERA_FORMAT[], opts)
+VideoReader(...)
+```
+ 
+Or more simply, change the default. For example:
+```julia
+julia> VideoIO.DEFAULT_CAMERA_OPTIONS["video_size"] = "640x480"
+
+julia> VideoIO.DEFAULT_CAMERA_OPTIONS["framerate"] = 30
+
+julia> julia> opencamera()
+VideoReader(...)
+```
 ### Webcam playback
 The default system webcam can be viewed directly
 ```julia
