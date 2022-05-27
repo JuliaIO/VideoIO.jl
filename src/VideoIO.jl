@@ -124,18 +124,33 @@ function __init__()
             pixelaspectratio = @something pixelaspectratio aspect_ratio(f)
             h = height(f)
             w = round(typeof(h), width(f) * pixelaspectratio) # has to be an integer
-            scene = GLMakie.Scene(resolution = (w, h))
+            flips_to_dims = Dict(
+                (true, true) => (1, 2),
+                (true, false) => 1,
+                (false, true) => 2,
+                (false, false) => nothing,
+            )
+            flipping_dims = flips_to_dims[(flipx, flipy)]
+            flipping = i -> i
+            if flipping_dims !== nothing
+                flipping = i -> reverse(i, dims = flipping_dims)
+            end
+            flip_and_rotate = i -> begin
+                rotated = GLMakie.rotr90(i)
+                flipping(rotated)
+            end
             img = read(f)
-            obs_img = GLMakie.Observable(GLMakie.rotr90(img))
-            scene = GLMakie.Scene(camera=GLMakie.campixel!, resolution=reverse(size(img)))
+            obs_img = GLMakie.Observable(flip_and_rotate(img))
+            scene =
+                GLMakie.Scene(camera = GLMakie.campixel!, resolution = reverse(size(img)))
+
             GLMakie.image!(scene, obs_img)
-            (flipx || flipy) && GLMakie.scale!(scene, flipx ? -1 : 1, flipy ? -1 : 1, 1)
             display(scene)
             # issue 343: camera can't run at full speed on MacOS
             fps = Sys.isapple() ? min(framerate(f), 24) : framerate(f)
             while isopen(scene) && !eof(f)
                 read!(f, img)
-                obs_img[] = GLMakie.rotr90(img)
+                obs_img[] = flip_and_rotate(img)
                 sleep(1 / fps)
             end
         end
