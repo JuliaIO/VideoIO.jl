@@ -9,6 +9,7 @@ using FileIO: File
 using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
 using Base.GC: @preserve
 import Base:
+    @something,
     iterate,
     IteratorSize,
     IteratorEltype,
