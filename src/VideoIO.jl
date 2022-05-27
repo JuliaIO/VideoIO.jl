@@ -9,7 +9,6 @@ using FileIO: File
 using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
 using Base.GC: @preserve
 import Base:
-    @something,
     iterate,
     IteratorSize,
     IteratorEltype,
@@ -138,7 +137,9 @@ function __init__()
         function play(f; flipx = false, flipy = false, pixelaspectratio = nothing)
             eof(f) && error("VideoReader at end of file. Use `seekstart(f)` to rewind")
             # if user did not specify the aspect ratio we'll try to use the one stored in the video file
-            pixelaspectratio = @something pixelaspectratio aspect_ratio(f)
+            if pixelaspectratio === nothing
+                pixelaspectratio = aspect_ratio(f)
+            end
             h = height(f)
             w = round(typeof(h), width(f) * pixelaspectratio) # has to be an integer
             flips_to_dims = Dict(
