@@ -30,7 +30,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.DOCUMENTER_KEY }}
           commit-message: Format files using JuliaFormatter
           title: ${{ format('[AUTO] Format {0} using JuliaFormatter', github.event.pull_request.number) }}
           body: ${{ format('[JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl) would suggest these formatting changes against \#{0}.', github.event.pull_request.number) }}
