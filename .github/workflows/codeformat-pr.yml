@@ -1,10 +1,9 @@
 name: Code Formatting
 
 on:
-  pull_request:
+  push:
     branches:
-      - master
-    types: [opened, edited, reopened, synchronize]
+      - '**'
     paths:
       - 'docs/**'
       - 'gen/**'
