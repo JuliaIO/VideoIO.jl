@@ -128,16 +128,19 @@ io = VideoIO.testvideo("annie_oakley") # for testing purposes
 f = VideoIO.openvideo(io)
 
 img = read(f)
-scene = GLMakie.Scene(resolution = reverse(size(img)))
-makieimg = GLMakie.image!(scene, img, show_axis = false, scale_plot = true)
-GLMakie.rotate!(scene, -0.5pi)
+obs_img = GLMakie.Observable(GLMakie.rotr90(img))
+scene = GLMakie.Scene(camera=GLMakie.campixel!, resolution=reverse(size(img)))
+GLMakie.image!(scene, obs_img)
+
 display(scene)
 
-while !eof(f)
-    read!(f, img)
-    makieimg.image = img
-    sleep(1/VideoIO.framerate(f))
+fps = VideoIO.framerate(f)
+while !eof(f) && GLMakie.isopen(scene)
+  img = read(f)
+  obs_img[] = GLMakie.rotr90(img)
+  sleep(1 / fps)
 end
+
 ```
 This code is essentially the code in `playvideo`, and will read and
 (without the `sleep`) play a movie file as fast as possible.
@@ -148,9 +151,10 @@ Frames can be read iteratively
 ```julia
 using VideoIO
 cam = VideoIO.opencamera()
+fps = VideoIO.framerate(cam)
 for i in 1:100
     img = read(cam)
-    sleep(1/VideoIO.framerate(cam))
+    sleep(1/fps)
 end
 ```
 To change settings such as the frame rate or resolution of the captured frames, set the
@@ -193,20 +197,23 @@ An expanded version of this approach:
 import GLMakie, VideoIO
 
 cam = VideoIO.opencamera()
+try
+  img = read(cam)
+  obs_img = GLMakie.Observable(GLMakie.rotr90(img))
+  scene = GLMakie.Scene(camera=GLMakie.campixel!, resolution=reverse(size(img)))
+  GLMakie.image!(scene, obs_img)
 
-img = read(cam)
-scene = GLMakie.Scene(resolution = size(img'))
-makieimg = GLMakie.image!(scene, img, show_axis = false, scale_plot = false)
-GLMakie.rotate!(scene, -0.5pi)
-display(scene)
+  display(scene)
 
-while isopen(scene)
-    read!(cam, img)
-    makieimg.image = img
-    sleep(1/VideoIO.framerate(cam))
+  fps = VideoIO.framerate(cam)
+  while GLMakie.isopen(scene)
+    img = read(cam)
+    obs_img[] = GLMakie.rotr90(img)
+    sleep(1 / fps)
+  end
+finally
+  close(cam)
 end
-
-close(cam)
 ```
 
 ## Video Properties & Metadata
