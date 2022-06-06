@@ -100,4 +100,4 @@ If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `crf=0` should be s
 ```(color_range=2, crf=0, preset="medium")```
 
 ### Encoding Performance
-See [`examples/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/examples/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.
+See [`util/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/util/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.
