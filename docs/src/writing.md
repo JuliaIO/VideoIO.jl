@@ -88,7 +88,7 @@ Some example values for the `encoder_options` keyword argument are:
 |:----:|:------|
 | Perceptual compression, h264 default. Best for most cases | ```(crf=23, preset="medium")``` |
 | Lossless compression. Fastest, largest file size | ```(crf=0, preset="ultrafast")``` |
-| Lossless compression. Slowest, smallest file size | ```(crf=0, preset="ultraslow")``` |
+| Lossless compression. Slowest, smallest file size | ```(crf=0, preset="veryslow")``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```(bit_rate = 400000, gop_size = 10, max_b_frames = 1)``` |
 
 If a hyphenated parameter is needed, it can be added using `var"param-name" = value`.
