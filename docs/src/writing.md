@@ -91,6 +91,8 @@ Some example values for the `encoder_options` keyword argument are:
 | Lossless compression. Slowest, smallest file size | ```(crf=0, preset="ultraslow")``` |
 | Direct control of bitrate and frequency of intra frames (every 10) | ```(bit_rate = 400000, gop_size = 10, max_b_frames = 1)``` |
 
+If a hyphenated parameter is needed, it can be added using `var"param-name" = value`.
+
 ## Lossless Encoding
 ### Lossless RGB
 If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires using `codec_name = "libx264rgb"`, to avoid the lossy RGB->YUV420 conversion, and `crf=0`.
