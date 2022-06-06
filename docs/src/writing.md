@@ -93,7 +93,7 @@ Some example values for the `encoder_options` keyword argument are:
 
 ## Lossless Encoding
 ### Lossless RGB
-If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires using `codec_name = "libx264rgb"`, to avoid the lossy RGB->YUV420 conversion, and `crf=0`.
+If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires passing `codec_name = "libx264rgb"` to the function to avoid the lossy RGB->YUV420 conversion, as well as adding `crf=0` in `encoder_options`.
 
 ### Lossless Grayscale
 If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `crf=0` should be set, as well as `color_range=2` to ensure full 8-bit pixel color representation. i.e.
