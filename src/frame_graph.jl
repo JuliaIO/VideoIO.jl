@@ -134,18 +134,19 @@ function exec!(s::SwsTransform)
         dst_data_ptr = field_ptr(dst_ptr, :data)
         dst_linesize_ptr = field_ptr(dst_ptr, :linesize)
 
-        sigatomic_begin()
-        ret = sws_scale(
-            s.sws_context,
-            src_data_ptr,
-            src_linesize_ptr,
-            0,
-            s.dstframe.height,
-            dst_data_ptr,
-            dst_linesize_ptr,
-        )
-        sigatomic_end()
-        ret <= 0 && error("Could not scale frame")
+        ret = Ref{Int32}()
+        disable_sigint() do
+            ret[] = sws_scale(
+                s.sws_context,
+                src_data_ptr,
+                src_linesize_ptr,
+                0,
+                s.dstframe.height,
+                dst_data_ptr,
+                dst_linesize_ptr,
+            )
+        end
+        ret[] <= 0 && error("Could not scale frame")
     end
     return nothing
 end
