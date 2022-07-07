@@ -134,9 +134,8 @@ function exec!(s::SwsTransform)
         dst_data_ptr = field_ptr(dst_ptr, :data)
         dst_linesize_ptr = field_ptr(dst_ptr, :linesize)
 
-        ret = Ref{Int32}()
-        disable_sigint() do
-            ret[] = sws_scale(
+        ret = disable_sigint() do
+            sws_scale(
                 s.sws_context,
                 src_data_ptr,
                 src_linesize_ptr,
@@ -146,7 +145,7 @@ function exec!(s::SwsTransform)
                 dst_linesize_ptr,
             )
         end
-        ret[] <= 0 && error("Could not scale frame")
+        ret <= 0 && error("Could not scale frame")
     end
     return nothing
 end

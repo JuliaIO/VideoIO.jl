@@ -117,12 +117,11 @@ convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(
 function pump(avin::AVInput)
     while avin.isopen && !avin.finished
         # Need to declare ret outside the do block
-        ret = Ref{Int32}()
-        disable_sigint() do
-            ret[] = av_read_frame(avin.format_context, avin.packet)
+        ret = disable_sigint() do
+            av_read_frame(avin.format_context, avin.packet)
         end
 
-        if ret[] < 0
+        if ret < 0
             avin.finished = true
             break
         end
@@ -299,13 +298,12 @@ function VideoReader(
     codec_context.pix_fmt < 0 && error("Unknown pixel format")
 
     # Open the decoder
-    ret = Ref{Int32}()
-    disable_sigint() do
-        lock(VIO_LOCK)
-        ret[] = avcodec_open2(codec_context, codec, C_NULL)
-        unlock(VIO_LOCK)
+    ret = disable_sigint() do
+        lock(VIO_LOCK) do
+            avcodec_open2(codec_context, codec, C_NULL)
+        end
     end
-    ret[] < 0 && error("Could not open codec")
+    ret < 0 && error("Could not open codec")
 
     if target_format === nothing # automatically determine format
         dst_pix_fmt, pix_fmt_loss = _vio_determine_best_pix_fmt(codec_context.pix_fmt; loss_flags = pix_fmt_loss_flags)
