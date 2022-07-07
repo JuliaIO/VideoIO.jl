@@ -1,5 +1,5 @@
 # AVIcodec_type
-import Base: read, read!, show, close, eof, isopen, seek, seekstart, convert
+import Base: read, read!, show, close, eof, isopen, seek, seekstart
 
 export read,
     read!,

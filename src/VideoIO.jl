@@ -6,7 +6,7 @@ using ImageCore: channelview, rawview
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
 using FileIO: File
 
-using Base: fieldindex, RefValue, sigatomic_begin, sigatomic_end, cconvert
+using Base: fieldindex, RefValue, cconvert
 using Base.GC: @preserve
 import Base:
     iterate,
