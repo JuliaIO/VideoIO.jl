@@ -116,7 +116,6 @@ convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(
 # Pump input for data
 function pump(avin::AVInput)
     while avin.isopen && !avin.finished
-        # Need to declare ret outside the do block
         ret = disable_sigint() do
             av_read_frame(avin.format_context, avin.packet)
         end
