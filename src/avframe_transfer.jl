@@ -193,7 +193,12 @@ function transfer_img_bytes_to_frame_plane!(
     else
         for r in 1:px_height
             data_line_ptr = data_ptr + (r - 1) * data_linesize
-            img_line_ptr = pointer(img, img_line_nbytes * (r - 1) + 1)
+            img_line_ptr = try
+                pointer(img, img_line_nbytes * (r - 1) + 1)
+            catch
+                @show typeof(img) size(img) img_line_nbytes * (r - 1) + 1
+                rethrow()
+            end
             unsafe_copyto!(data_line_ptr, img_line_ptr, img_line_nbytes)
         end
     end
