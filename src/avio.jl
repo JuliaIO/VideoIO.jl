@@ -116,9 +116,10 @@ convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(
 # Pump input for data
 function pump(avin::AVInput)
     while avin.isopen && !avin.finished
-        sigatomic_begin()
-        ret = av_read_frame(avin.format_context, avin.packet)
-        sigatomic_end()
+        ret = disable_sigint() do
+            av_read_frame(avin.format_context, avin.packet)
+        end
+
         if ret < 0
             avin.finished = true
             break
@@ -296,11 +297,11 @@ function VideoReader(
     codec_context.pix_fmt < 0 && error("Unknown pixel format")
 
     # Open the decoder
-    sigatomic_begin()
-    lock(VIO_LOCK)
-    ret = avcodec_open2(codec_context, codec, C_NULL)
-    unlock(VIO_LOCK)
-    sigatomic_end()
+    ret = disable_sigint() do
+        lock(VIO_LOCK) do
+            avcodec_open2(codec_context, codec, C_NULL)
+        end
+    end
     ret < 0 && error("Could not open codec")
 
     if target_format === nothing # automatically determine format
@@ -960,20 +961,20 @@ function close(avin::AVInput)
     if check_ptr_valid(avin.format_context, false)
         # Replace the existing object in avin with a null pointer. The finalizer
         # for AVFormatContextPtr will close it and clean up its memory
-        sigatomic_begin()
-        avformat_close_input(avin.format_context) # This is also done in the finalizer,
-        # but closing the input here means users won't have to wait for the GC to run
-        # before trying to remove the file
-        avin.format_context = AVFormatContextPtr(Ptr{AVFormatContext}(C_NULL))
-        sigatomic_end()
+        disable_sigint() do
+            avformat_close_input(avin.format_context) # This is also done in the finalizer,
+            # but closing the input here means users won't have to wait for the GC to run
+            # before trying to remove the file
+            avin.format_context = AVFormatContextPtr(Ptr{AVFormatContext}(C_NULL))
+        end
     end
 
     if check_ptr_valid(avin.avio_context, false)
         # Replace the existing object in avin with a null pointer. The finalizer
         # will close it and clean up its memory
-        sigatomic_begin()
-        avin.avio_context = AVIOContextPtr(Ptr{AVIOContext}(C_NULL))
-        sigatomic_end()
+        disable_sigint() do
+            avin.avio_context = AVIOContextPtr(Ptr{AVIOContext}(C_NULL))
+        end
     end
     return nothing
 end

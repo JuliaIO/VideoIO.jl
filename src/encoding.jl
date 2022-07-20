@@ -324,11 +324,11 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     set_class_options(codec_context, encoder_options)
     set_class_options(codec_context.priv_data, encoder_private_options)
 
-    sigatomic_begin()
-    lock(VIO_LOCK)
-    ret = avcodec_open2(codec_context, codec, C_NULL)
-    unlock(VIO_LOCK)
-    sigatomic_end()
+    ret = disable_sigint() do
+        lock(VIO_LOCK) do
+            avcodec_open2(codec_context, codec, C_NULL)
+        end
+    end
     ret < 0 && error("Could not open codec: Return code $(ret)")
 
     stream_p = avformat_new_stream(format_context, C_NULL)
