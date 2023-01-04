@@ -1,9 +1,7 @@
 module VideoIO
 
-using Libdl
-using Requires, Dates, ProgressMeter
-using ImageCore: channelview, rawview
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
+using Dates
 using FileIO: File
 using PrecompileTools
 
@@ -98,23 +96,6 @@ elseif Sys.isbsd()
     end
 end
 
-#Helper functions to explain about GLMakie load order requirement
-function play(f; flipx = false, flipy = false)
-    return error(
-        "GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`",
-    )
-end
-function playvideo(video; flipx = false, flipy = false)
-    return error(
-        "GLMakie must be loaded before VideoIO to provide video playback functionality. Try a new session with `using GLMakie, VideoIO`",
-    )
-end
-function viewcam(device = DEFAULT_CAMERA_DEVICE, format = DEFAULT_CAMERA_FORMAT)
-    return error(
-        "GLMakie must be loaded before VideoIO to provide camera playback functionality. Try a new session with `using GLMakie, VideoIO`",
-    )
-end
-
 ## FileIO interface
 fileio_load(f::File; kwargs...) = load(f.filename; kwargs...)
 fileio_save(f::File, video; kwargs...) = save(f.filename, video; kwargs...)
@@ -135,69 +116,6 @@ function __init__()
     av_register_all()
 
     libffmpeg.avdevice_register_all()
-
-    @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" begin
-        # Define read and retrieve for Images
-        function play(f; flipx = false, flipy = false, pixelaspectratio = nothing)
-            @warn "This GLMakie-based `play` function is deprecated and will be removed in a future release." maxlog = 1
-            eof(f) && error("VideoReader at end of file. Use `seekstart(f)` to rewind")
-            # if user did not specify the aspect ratio we'll try to use the one stored in the video file
-            if pixelaspectratio === nothing
-                pixelaspectratio = aspect_ratio(f)
-            end
-            h = height(f)
-            w = round(typeof(h), width(f) * pixelaspectratio) # has to be an integer
-            flips_to_dims = Dict(
-                (true, true) => (1, 2),
-                (true, false) => 1,
-                (false, true) => 2,
-                (false, false) => nothing,
-            )
-            flipping_dims = flips_to_dims[(flipx, flipy)]
-            flipping = i -> i
-            if flipping_dims !== nothing
-                flipping = i -> reverse(i, dims = flipping_dims)
-            end
-            flip_and_rotate = i -> begin
-                rotated = GLMakie.rotr90(i)
-                flipping(rotated)
-            end
-            img = read(f)
-            obs_img = GLMakie.Observable(flip_and_rotate(img))
-            scene =
-                GLMakie.Scene(camera = GLMakie.campixel!, resolution = reverse(size(img)))
-
-            GLMakie.image!(scene, obs_img)
-            display(scene)
-            # issue 343: camera can't run at full speed on MacOS
-            fps = Sys.isapple() ? min(framerate(f), 24) : framerate(f)
-            while isopen(scene) && !eof(f)
-                read!(f, img)
-                obs_img[] = flip_and_rotate(img)
-                sleep(1 / fps)
-            end
-        end
-
-        function playvideo(video; flipx = false, flipy = false, pixelaspectratio = nothing)
-            @warn "This GLMakie-based `playvideo` function is deprecated and will be removed in a future release." maxlog = 1
-            f = VideoIO.openvideo(video)
-            try
-                play(f, flipx=flipx, flipy=flipy, pixelaspectratio=pixelaspectratio)
-            finally
-                close(f)
-            end
-        end
-
-        function viewcam(device=nothing, format=nothing, options=nothing, pixelaspectratio=nothing)
-            @warn "This GLMakie-based `viewcam` function is deprecated and will be removed in a future release." maxlog = 1
-            camera = opencamera(device, format, options)
-            try
-                play(camera; flipx=true, pixelaspectratio)
-            finally
-                close(camera)
-            end
-        end
-    end
 end
 
 @setup_workload begin

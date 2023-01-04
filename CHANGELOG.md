@@ -1,3 +1,11 @@
+VideoIO v1.1.0 Release Notes
+======================
+## Removal
+
+- The GLMakie-based video player that was accessed through Requires by loading GLMakie separately has been removed
+  after being deprecated in v1.0.7.
+
+
 VideoIO v0.9 Release Notes
 ======================
 ## New features

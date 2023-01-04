@@ -103,49 +103,6 @@ while !eof(f)
 end
 close(f)
 ```
-
-## Video Playback
-
-A trivial video player interface exists (no audio) through `GLMakie.jl`.
-Note: `GLMakie` must be imported first to enable playback functionality.
-
-```julia
-using GLMakie
-using VideoIO
-
-f = VideoIO.testvideo("annie_oakley")  # downloaded if not available
-VideoIO.playvideo(f)  # no sound
-```
-
-Customization of playback can be achieved by looking at the basic expanded version of this function:
-
-```julia
-import GLMakie
-import VideoIO
-
-#io = VideoIO.open(video_file)
-io = VideoIO.testvideo("annie_oakley") # for testing purposes
-f = VideoIO.openvideo(io)
-
-img = read(f)
-obs_img = GLMakie.Observable(GLMakie.rotr90(img))
-scene = GLMakie.Scene(camera=GLMakie.campixel!, resolution=reverse(size(img)))
-GLMakie.image!(scene, obs_img)
-
-display(scene)
-
-fps = VideoIO.framerate(f)
-while !eof(f) && GLMakie.isopen(scene)
-  img = read(f)
-  obs_img[] = GLMakie.rotr90(img)
-  sleep(1 / fps)
-end
-
-```
-This code is essentially the code in `playvideo`, and will read and
-(without the `sleep`) play a movie file as fast as possible.
-
-
 ## Reading Camera Output
 Frames can be read iteratively
 ```julia
@@ -174,7 +131,7 @@ julia> opts["video_size"] = "640x480"
 julia> opencamera(VideoIO.DEFAULT_CAMERA_DEVICE[], VideoIO.DEFAULT_CAMERA_FORMAT[], opts)
 VideoReader(...)
 ```
- 
+
 Or more simply, change the default. For example:
 ```julia
 julia> VideoIO.DEFAULT_CAMERA_OPTIONS["video_size"] = "640x480"
@@ -183,37 +140,6 @@ julia> VideoIO.DEFAULT_CAMERA_OPTIONS["framerate"] = 30
 
 julia> julia> opencamera()
 VideoReader(...)
-```
-### Webcam playback
-The default system webcam can be viewed directly
-```julia
-using GLMakie
-using VideoIO
-VideoIO.viewcam()
-```
-
-An expanded version of this approach:
-```julia
-import GLMakie, VideoIO
-
-cam = VideoIO.opencamera()
-try
-  img = read(cam)
-  obs_img = GLMakie.Observable(GLMakie.rotr90(img))
-  scene = GLMakie.Scene(camera=GLMakie.campixel!, resolution=reverse(size(img)))
-  GLMakie.image!(scene, obs_img)
-
-  display(scene)
-
-  fps = VideoIO.framerate(cam)
-  while GLMakie.isopen(scene)
-    img = read(cam)
-    obs_img[] = GLMakie.rotr90(img)
-    sleep(1 / fps)
-  end
-finally
-  close(cam)
-end
 ```
 
 ## Video Properties & Metadata
