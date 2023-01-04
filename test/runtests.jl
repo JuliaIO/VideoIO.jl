@@ -24,14 +24,20 @@ start_time = time()
 
 @memory_profile
 
-include("avptr.jl")
-include("reading.jl")
-include("writing.jl")
-include("accuracy.jl")
+@testset "VideoIO" verbose = true begin
+    include("avptr.jl")
+    @memory_profile
+    include("reading.jl")
+    @memory_profile
+    include("writing.jl")
+    @memory_profile
+    include("accuracy.jl")
+    @memory_profile
 
-GC.gc()
-rm(tempvidpath, force = true)
+    GC.gc()
+    rm(tempvidpath, force = true)
 
-include("bugs.jl")
-
+    include("bugs.jl")
+    @memory_profile
+end
 #VideoIO.TestVideos.remove_all()
