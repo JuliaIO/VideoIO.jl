@@ -21,7 +21,7 @@ task:
   install_script: |
     URL="https://raw.githubusercontent.com/ararslan/CirrusCI.jl/master/bin/install.sh"
     set -x
-    if command -v apt; then
+    if [ "$(uname -s)" = "Linux" ] && command -v apt; then
         apt update
         apt install -y curl
     fi
