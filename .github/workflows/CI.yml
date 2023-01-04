@@ -15,19 +15,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         julia-arch: [x64, x86]
-        julia-version: ['1.6','1','1.8-nightly','nightly']
+        julia-version: ['1.6','1','1.9-nightly','nightly']
         exclude:
           - os: macOS-latest
             julia-arch: x86
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
+      - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.julia-version }}
-      - uses: julia-actions/julia-runtest@master
-      - uses: julia-actions/julia-processcoverage@master
-      - uses: codecov/codecov-action@master
+      - uses: julia-actions/julia-runtest@v1
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v3
         with:
           file: lcov.info
 
