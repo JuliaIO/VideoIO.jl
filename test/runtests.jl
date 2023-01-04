@@ -2,6 +2,7 @@ using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
 using ColorVectorSpace: ColorVectorSpace
 using FileIO, ImageCore, Dates, Statistics, StatsBase
+using Profile
 
 using FFMPEG: FFMPEG
 
@@ -18,14 +19,25 @@ VideoIO.TestVideos.download_all()
 
 include("utils.jl") # Testing utility functions
 
-include("avptr.jl")
-include("reading.jl")
-include("writing.jl")
-include("accuracy.jl")
+memory_profiling = get(ENV, "VIDEOIO_MEMPROFILE", "false") === "true" && Base.thisminor(Base.VERSION) >= v"1.9"
+start_time = time()
 
-GC.gc()
-rm(tempvidpath, force = true)
+@memory_profile
 
-include("bugs.jl")
+@testset "VideoIO" verbose = true begin
+    include("avptr.jl")
+    @memory_profile
+    include("reading.jl")
+    @memory_profile
+    include("writing.jl")
+    @memory_profile
+    include("accuracy.jl")
+    @memory_profile
 
+    GC.gc()
+    rm(tempvidpath, force = true)
+
+    include("bugs.jl")
+    @memory_profile
+end
 #VideoIO.TestVideos.remove_all()

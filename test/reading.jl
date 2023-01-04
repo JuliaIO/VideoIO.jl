@@ -146,6 +146,7 @@
         end
     end
 end
+@memory_profile
 
 @testset "Reading monochrome videos" begin
     testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
@@ -163,25 +164,29 @@ end
     )
     @test minp.val.i >= 16
     @test maxp.val.i <= 235
+    GC.gc()
 end
+@memory_profile
 
 @testset "Reading RGB video as monochrome" begin
     @testset "Iterative" begin
         io = VideoIO.testvideo("ladybird")
-        f = VideoIO.openvideo(io, target_format = VideoIO.AV_PIX_FMT_GRAY8)
-        img = read(f)
-        for i in 1:10
-            read!(f, img)
+        VideoIO.openvideo(io, target_format = VideoIO.AV_PIX_FMT_GRAY8) do f
+            img = read(f)
+            for i in 1:10
+                read!(f, img)
+            end
+            @test eltype(img) == Gray{N0f8}
         end
-        @test eltype(img) == Gray{N0f8}
-        close(f)
     end
     @testset "Full load" begin
         testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
         vid = VideoIO.load(testvid_path, target_format = VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(first(vid)) == Gray{N0f8}
     end
+    GC.gc()
 end
+@memory_profile
 
 @testset "IO reading of various example file formats" begin
     swscale_options = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
@@ -194,8 +199,7 @@ end
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             filename = joinpath(videodir, name)
-            v = VideoIO.openvideo(filename; swscale_options = swscale_options)
-            try
+            VideoIO.openvideo(filename; swscale_options = swscale_options) do v
                 width, height = VideoIO.out_frame_size(v)
                 if size(comparison_frame, 1) > height
                     trimmed_comparison_frame = comparison_frame[1+size(comparison_frame, 1)-height:end, :]
@@ -238,16 +242,17 @@ end
                 ## Test that iterator is mutable, and continues where iteration last
                 ## stopped.
                 @test iterate(v) === nothing
-            finally
-                close(v)
             end
+            GC.gc()
         end
     end
 
     VideoIO.testvideo("ladybird") # coverage testing
     @test_throws ErrorException VideoIO.testvideo("rickroll")
     @test_throws ErrorException VideoIO.testvideo("")
+    GC.gc()
 end
+@memory_profile
 
 @testset "Reading video metadata" begin
     @testset "Reading Storage Aspect Ratio: SAR" begin
@@ -271,3 +276,4 @@ end
         @test_throws ErrorException VideoIO.get_number_frames("Not_a_file")
     end
 end
+@memory_profile

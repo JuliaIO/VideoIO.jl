@@ -1,5 +1,5 @@
-@testset "c api memory leak test" begin
-    if (Sys.islinux())
+if (Sys.islinux())
+    @testset "c api memory leak test" begin
         function get_memory_usage()
             open("/proc/$(getpid())/statm") do io
                 return split(read(io, String))[1]
@@ -20,9 +20,11 @@
                 usage_vec[i] = get_memory_usage()
             end
 
-            println(usage_vec)
-
+            @debug "open file test" usage_vec
             @test usage_vec[end-1] == usage_vec[end]
+            if usage_vec[end-1] != usage_vec[end]
+                @error "open file test" usage_vec
+            end
         end
 
         @testset "open and read file test" begin
@@ -38,9 +40,10 @@
                 usage_vec[i] = get_memory_usage()
             end
 
-            println(usage_vec)
-
             @test usage_vec[end-1] == usage_vec[end]
+            if usage_vec[end-1] != usage_vec[end]
+                @error "open and read file test" usage_vec
+            end
         end
     end
 end

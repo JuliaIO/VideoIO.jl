@@ -159,3 +159,17 @@ function copy_imgbuf_to_buf!(buf::StridedArray, fwidth::Integer, fheight::Intege
     bwidth = nbytesperpixel * fwidth
     return copy_imgbuf_to_buf!(reinterpret(UInt8, buf), bwidth, fheight, args...)
 end
+
+macro memory_profile()
+    if memory_profiling
+        _line = __source__.line
+        _file = string(__source__.file)
+        _mod = __module__
+        quote
+            local snap_fpath = Profile.take_heap_snapshot()
+            local free_mem = Base.format_bytes(Sys.free_memory())
+            local total_mem = Base.format_bytes(Sys.total_memory())
+            @warn "Memory profile @ $(time() - start_time)s" free_mem total_mem snap_fpath _module=$_mod _line=$_line _file=$(repr(_file))
+        end
+    end
+end
