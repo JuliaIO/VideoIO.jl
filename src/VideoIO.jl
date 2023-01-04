@@ -5,6 +5,7 @@ using Requires, Dates, ProgressMeter
 using ImageCore: channelview, rawview
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
 using FileIO: File
+using SnoopPrecompile
 
 using Base: fieldindex, RefValue, cconvert
 using Base.GC: @preserve
@@ -190,6 +191,26 @@ function __init__()
                 close(camera)
             end
         end
+    end
+end
+
+@precompile_setup begin
+    imgstack = map(_->rand(UInt8, 10, 10), 1:10)
+    @precompile_all_calls begin
+        fname = string(tempname(), ".mp4")
+        VideoIO.save(fname, imgstack)
+        VideoIO.save(fname, VideoIO.load(fname)) # the loaded video is RGB type
+        r = openvideo(fname)
+        img = read(r)
+        eof(r)
+        read!(r, img)
+        seekstart(r)
+        seek(r, 0.01)
+        skipframe(r)
+        skipframes(r, 3)
+        gettime(r)
+        counttotalframes(r)
+        close(r)
     end
 end
 
