@@ -3,20 +3,36 @@ task:
     - name: FreeBSD
       freebsd_instance:
         image_family: freebsd-13-1
+      env:
+        matrix:
+        - JULIA_VERSION: 1.6
+        - JULIA_VERSION: 1
+        # - JULIA_VERSION: nightly # not available
     - name: Linux ARMv8
       arm_container:
         image: ubuntu:latest
+      env:
+        matrix:
+        - JULIA_VERSION: 1.6
+        - JULIA_VERSION: 1
+        - JULIA_VERSION: nightly
     # - name: musl Linux # skip because of https://github.com/JuliaLang/julia/issues/40556
     #   container:
     #     image: alpine:3.14
+    #   env:
+    #     matrix:
+    #     - JULIA_VERSION: 1.6
+    #     - JULIA_VERSION: 1
+    #     - JULIA_VERSION: nightly
     - name: MacOS M1
       macos_instance:
         image: ghcr.io/cirruslabs/macos-monterey-base:latest
-  env:
-    matrix:
-      - JULIA_VERSION: 1.6
-      - JULIA_VERSION: 1
-      - JULIA_VERSION: nightly
+      env:
+        matrix:
+        # - JULIA_VERSION: 1.6 # not available
+        - JULIA_VERSION: 1
+        - JULIA_VERSION: nightly
+
   allow_failures: $JULIA_VERSION == 'nightly'
   install_script: |
     URL="https://raw.githubusercontent.com/ararslan/CirrusCI.jl/master/bin/install.sh"
@@ -25,9 +41,9 @@ task:
         apt update
         apt install -y curl
     fi
-    if [ ! -z "$(which curl)" ]; then
+    if command -v curl; then
         sh -c "$(curl ${URL})"
-    elif [ ! -z "$(which wget)" ]; then
+    elif command -v wget; then
         sh -c "$(wget ${URL} -O-)"
     elif command -v fetch; then
         sh -c "$(fetch ${URL} -o -)"
