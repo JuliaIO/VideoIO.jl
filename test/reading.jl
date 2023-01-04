@@ -146,6 +146,7 @@
         end
     end
 end
+@memory_profile
 
 @testset "Reading monochrome videos" begin
     testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
@@ -165,6 +166,7 @@ end
     @test maxp.val.i <= 235
     GC.gc()
 end
+@memory_profile
 
 @testset "Reading RGB video as monochrome" begin
     @testset "Iterative" begin
@@ -184,6 +186,7 @@ end
     end
     GC.gc()
 end
+@memory_profile
 
 @testset "IO reading of various example file formats" begin
     swscale_options = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
@@ -249,6 +252,7 @@ end
     @test_throws ErrorException VideoIO.testvideo("")
     GC.gc()
 end
+@memory_profile
 
 @testset "Reading video metadata" begin
     @testset "Reading Storage Aspect Ratio: SAR" begin
@@ -272,3 +276,4 @@ end
         @test_throws ErrorException VideoIO.get_number_frames("Not_a_file")
     end
 end
+@memory_profile

@@ -11,3 +11,4 @@ test/ordertest_gray_test.mp4
 docs/build/
 test/temp.stream
 .vscode/
+*.heapsnapshot

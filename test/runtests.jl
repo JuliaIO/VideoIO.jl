@@ -2,6 +2,7 @@ using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
 using ColorVectorSpace: ColorVectorSpace
 using FileIO, ImageCore, Dates, Statistics, StatsBase
+using Profile
 
 using FFMPEG: FFMPEG
 
@@ -17,6 +18,11 @@ const required_accuracy = 0.07
 VideoIO.TestVideos.download_all()
 
 include("utils.jl") # Testing utility functions
+
+memory_profiling = get(ENV, "VIDEOIO_MEMPROFILE", "false") === "true" && Base.thisminor(Base.VERSION) >= v"1.9"
+start_time = time()
+
+@memory_profile
 
 include("avptr.jl")
 include("reading.jl")
