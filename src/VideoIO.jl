@@ -202,9 +202,8 @@ end
         VideoIO.save(fname, VideoIO.load(fname)) # the loaded video is RGB type
         r = openvideo(fname)
         img = read(r)
-        while !eof(r)
-            read!(r, img)
-        end
+        eof(r)
+        read!(r, img)
         seekstart(r)
         seek(r, 0.01)
         skipframe(r)
