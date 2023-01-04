@@ -1,4 +1,4 @@
-@show ENV["LD_LIBRARY_PATH"]
+haskey(ENV, "LD_LIBRARY_PATH") && @show ENV["LD_LIBRARY_PATH"]
 
 using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
