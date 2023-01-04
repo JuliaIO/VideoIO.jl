@@ -1,3 +1,5 @@
+@show ENV["LD_LIBRARY_PATH"]
+
 using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
 using ColorVectorSpace: ColorVectorSpace
