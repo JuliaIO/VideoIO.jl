@@ -6,9 +6,9 @@ task:
     - name: Linux ARMv8
       arm_container:
         image: ubuntu:latest
-    - name: musl Linux
-      container:
-        image: alpine:3.14
+    # - name: musl Linux # skip because of https://github.com/JuliaLang/julia/issues/40556
+    #   container:
+    #     image: alpine:3.14
     - name: MacOS M1
       macos_instance:
         image: ghcr.io/cirruslabs/macos-monterey-base:latest
