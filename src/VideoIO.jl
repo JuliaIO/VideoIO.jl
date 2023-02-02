@@ -197,6 +197,7 @@ end
 @precompile_setup begin
     imgstack = map(_->rand(UInt8, 10, 10), 1:10)
     @precompile_all_calls begin
+        loglevel!(libffmpeg.AV_LOG_FATAL) # Silence precompilation process
         fname = string(tempname(), ".mp4")
         VideoIO.save(fname, imgstack)
         VideoIO.save(fname, VideoIO.load(fname)) # the loaded video is RGB type
