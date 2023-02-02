@@ -76,7 +76,7 @@ end
     @preserve a field_ptr(S, p, field, args...)
 end
 
-@inline function field_ptr(a::NestedCStruct{T}, field::Symbol, args...) where {S,T}
+@inline function field_ptr(a::NestedCStruct{T}, field::Symbol, args...) where {T}
     p = unsafe_convert(Ptr{T}, a)
     @preserve a field_ptr(p, field, args...)
 end
