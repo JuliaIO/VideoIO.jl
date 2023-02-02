@@ -21844,8 +21844,10 @@ const FF_API_SWS_VECTOR = LIBSWSCALE_VERSION_MAJOR < 6
 
 struct_types = Type[]
 # Export everything
-for name in names(@__MODULE__, all=true)
-    name in [Symbol("#eval"), Symbol("#include"), :include, :eval] && continue
+for name in names(@__MODULE__; all=true)
+    if name in (:include, :eval) || startswith(string(name), "#")
+        continue
+    end
     @eval begin
         export $name
         $name isa Type && isstructtype($name) && push!(struct_types, $name)
