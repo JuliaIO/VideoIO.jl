@@ -393,7 +393,13 @@ function aspect_ratio(f::VideoReader)
     return fixed_aspect
 end
 
+"""
+    framerate(f::VideoReader)
+
+Read the framerate of a VideoReader object.
+"""
 framerate(f::VideoReader) = f.codec_context.time_base.den // f.codec_context.time_base.num
+
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
 
