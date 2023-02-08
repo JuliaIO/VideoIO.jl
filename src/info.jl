@@ -92,5 +92,5 @@ function get_fps(file::AbstractString, streamno::Integer = 0)
         return nothing
     end
 	
-    return round(reduce(/, parse.(Float64, split(fps,'/')) ), digits=3)
+    return reduce(//, parse.(Int, split(fps,'/')) )
 end
