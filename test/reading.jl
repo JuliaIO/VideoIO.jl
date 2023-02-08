@@ -21,10 +21,16 @@
                     trimmed_comparison_frame = comparison_frame
                 end
 
-                @test VideoIO.framerate(v) != 0
+                fps1 = VideoIO.framerate(v)
+                @test fps1 != 0
 
                 # Find the first non-trivial image
                 first_img = read(v)
+
+                # fps should be the same before and after first read
+                fps2 = VideoIO.framerate(v)
+                @test fps1 == fps2
+
                 first_time = VideoIO.gettime(v)
                 seekstart(v)
                 img = read(v)
