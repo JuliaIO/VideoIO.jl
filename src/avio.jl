@@ -399,8 +399,8 @@ end
 Read the framerate of a VideoReader object.
 """
 function framerate(f::VideoReader)
-    eof(f)
-    return f.codec_context.time_base.den // f.codec_context.time_base.num
+    stream = get_stream(f)
+    return convert(Rational, stream.time_base)
 end
 
 height(f::VideoReader) = f.codec_context.height
