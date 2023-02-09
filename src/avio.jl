@@ -400,7 +400,7 @@ Read the framerate of a VideoReader object.
 """
 function framerate(f::VideoReader)
     stream = get_stream(f)
-    return convert(Rational, stream.time_base)
+    return stream.time_base.den // stream.time_base.num # fps is inverse of time_base
 end
 
 height(f::VideoReader) = f.codec_context.height

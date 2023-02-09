@@ -11,6 +11,8 @@
             try
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
+                @test VideoIO.framerate(v) == testvid.framerate
+                @test get_fps(testvid_path) == testvid.framerate # ffprobe sanity check
                 width, height = VideoIO.out_frame_size(v)
                 @test VideoIO.width(v) == width
                 @test VideoIO.height(v) == height
