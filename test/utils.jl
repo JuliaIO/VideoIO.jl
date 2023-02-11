@@ -183,7 +183,7 @@ Query the container `file` for the frame per second(fps) of the video stream
 function get_fps(file::AbstractString, streamno::Integer = 0)
     streamno >= 0 || throw(ArgumentError("streamno must be non-negative"))
     fps_strs = FFMPEG.exe(
-        `-v 0 -of compact=p=0 -select_streams 0 -show_entries stream=r_frame_rate $file`,
+        `-v 0 -of compact=p=0 -select_streams v:$(streamno) -show_entries stream=r_frame_rate $file`,
         command = FFMPEG.ffprobe,
         collect = true,
     )
