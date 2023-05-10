@@ -117,7 +117,7 @@ convert(::Type{AVRational}, r::Rational) = AVRational(numerator(r), denominator(
 function pump(avin::AVInput)
     while avin.isopen && !avin.finished
         ret = disable_sigint() do
-            av_read_frame(avin.format_context, avin.packet)
+            return av_read_frame(avin.format_context, avin.packet)
         end
 
         if ret < 0
@@ -299,7 +299,7 @@ function VideoReader(
     # Open the decoder
     ret = disable_sigint() do
         lock(VIO_LOCK) do
-            avcodec_open2(codec_context, codec, C_NULL)
+            return avcodec_open2(codec_context, codec, C_NULL)
         end
     end
     ret < 0 && error("Could not open codec")
@@ -393,7 +393,22 @@ function aspect_ratio(f::VideoReader)
     return fixed_aspect
 end
 
-framerate(f::VideoReader) = f.codec_context.time_base.den // f.codec_context.time_base.num
+# From https://www.ffmpeg.org/doxygen/trunk/structAVCodecContext.html
+#=
+# time_base
+
+This is the fundamental unit of time (in seconds) in terms of which frame timestamps are represented.
+For fixed-fps content, timebase should be 1/framerate and timestamp increments should be identically 1. This often, but not always is the inverse of the frame rate or field rate for video. 1/time_base is not the average frame rate if the frame rate is not constant.
+Like containers, elementary streams also can store timestamps, 1/time_base is the unit in which these timestamps are specified. As example of such codec time base see ISO/IEC 14496-2:2001(E) vop_time_increment_resolution and fixed_vop_rate (fixed_vop_rate == 0 implies that it is different from the framerate)
+
+# ticks_per_frame
+
+For some codecs, the time base is closer to the field rate than the frame rate.
+Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
+Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2. 
+=#
+framerate(f::VideoReader) =
+    f.codec_context.time_base.den // f.codec_context.time_base.num // f.codec_context.ticks_per_frame
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
 
@@ -965,7 +980,7 @@ function close(avin::AVInput)
             avformat_close_input(avin.format_context) # This is also done in the finalizer,
             # but closing the input here means users won't have to wait for the GC to run
             # before trying to remove the file
-            avin.format_context = AVFormatContextPtr(Ptr{AVFormatContext}(C_NULL))
+            return avin.format_context = AVFormatContextPtr(Ptr{AVFormatContext}(C_NULL))
         end
     end
 
@@ -973,7 +988,7 @@ function close(avin::AVInput)
         # Replace the existing object in avin with a null pointer. The finalizer
         # will close it and clean up its memory
         disable_sigint() do
-            avin.avio_context = AVIOContextPtr(Ptr{AVIOContext}(C_NULL))
+            return avin.avio_context = AVIOContextPtr(Ptr{AVIOContext}(C_NULL))
         end
     end
     return nothing
