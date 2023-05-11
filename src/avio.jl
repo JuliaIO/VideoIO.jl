@@ -414,16 +414,10 @@ Read the framerate of a VideoReader object.
 """
 function framerate(f::VideoReader)
     stream = get_stream(f)
-    return stream.time_base.den // stream.time_base.num // stream.ticks_per_frame
+    return stream.time_base.den // stream.time_base.num // f.codec_context.ticks_per_frame
 end
-function height(f::VideoReader)
-    stream = get_stream(f)
-    return stream.height
-end
-function width(f::VideoReader)
-    stream = get_stream(f)
-    return stream.width
-end
+height(f::VideoReader) = f.codec_context.height
+width(f::VideoReader) = f.codec_context.width
 
 # Does not check input size, meant for internal use only
 function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)
