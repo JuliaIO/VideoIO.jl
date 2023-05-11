@@ -21,22 +21,6 @@ mutable struct VideoFile{compression}
     testframe::Int
     summarysize::Int
 
-    fps::Union{Nothing,Rational}
-
-    VideoFile{compression}(
-        name::AbstractString,
-        description::AbstractString,
-        license::AbstractString,
-        credit::AbstractString,
-        source::AbstractString,
-        download_url::AbstractString,
-        numframes::Int,
-        testframe::Int,
-        summarysize::Int,
-        fps::Rational,
-    ) where {compression} =
-        new(name, description, license, credit, source, download_url, numframes, testframe, summarysize, fps)
-
     VideoFile{compression}(
         name::AbstractString,
         description::AbstractString,
@@ -131,10 +115,10 @@ const videofiles = Dict(
         "https://peach.blender.org/",
         "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
         300,
-        2,
-        207376840,
         # Can be also 30000/1001
         30 // 1,
+        2,
+        207376840,
     ),
 )
 
