@@ -29,10 +29,11 @@ mutable struct VideoFile{compression}
         source::AbstractString,
         download_url::AbstractString,
         numframes::Int,
+        framerate::Rational,
         testframe::Int,
         summarysize::Int,
     ) where {compression} =
-        new(name, description, license, credit, source, download_url, numframes, testframe, summarysize, nothing)
+        new(name, description, license, credit, source, download_url, numframes, framerate, testframe, summarysize)
 end
 
 show(io::IO, v::VideoFile) = print(
@@ -53,9 +54,6 @@ VideoFile:
 
 VideoFile(name, description, license, credit, source, download_url, numframes, framerate, testframe, summarysize) =
     VideoFile{:raw}(name, description, license, credit, source, download_url, numframes, framerate, testframe, summarysize)
-
-VideoFile(name, description, license, credit, source, download_url, numframes, testframe, summarysize, fps) =
-    VideoFile{:raw}(name, description, license, credit, source, download_url, numframes, testframe, summarysize, fps)
 
 # Standard test videos
 const videofiles = Dict(

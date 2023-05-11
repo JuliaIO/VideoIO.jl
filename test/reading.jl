@@ -24,14 +24,13 @@
                 end
 
                 fps1 = VideoIO.framerate(v)
-                @test fps1 != 0
 
                 # Find the first non-trivial image
                 first_img = read(v)
 
                 # fps should be the same before and after first read
                 fps2 = VideoIO.framerate(v)
-                @test_broken fps1 == fps2
+                @test fps1 == fps2
 
                 first_time = VideoIO.gettime(v)
                 seekstart(v)
