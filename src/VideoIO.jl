@@ -5,7 +5,7 @@ using Requires, Dates, ProgressMeter
 using ImageCore: channelview, rawview
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
 using FileIO: File
-using SnoopPrecompile
+using PrecompileTools
 
 using Base: fieldindex, RefValue, cconvert
 using Base.GC: @preserve
@@ -194,9 +194,9 @@ function __init__()
     end
 end
 
-@precompile_setup begin
+@setup_workload begin
     imgstack = map(_->rand(UInt8, 10, 10), 1:10)
-    @precompile_all_calls begin
+    @compile_workload begin
         loglevel!(libffmpeg.AV_LOG_FATAL) # Silence precompilation process
         fname = string(tempname(), ".mp4")
         VideoIO.save(fname, imgstack)
