@@ -1,5 +1,5 @@
 @testset "Reading of various example file formats" begin
-    swscale_options = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
+    swscale_options = (sws_flags="accurate_rnd+full_chroma_inp+full_chroma_int",)
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
         test_frameno = testvid.testframe
@@ -7,7 +7,7 @@
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             f = VideoIO.testvideo(testvid_path)
-            v = VideoIO.openvideo(f; swscale_options = swscale_options)
+            v = VideoIO.openvideo(f; swscale_options=swscale_options)
             try
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
@@ -21,8 +21,6 @@
                     trimmed_comparison_frame = comparison_frame
                 end
 
-                @test VideoIO.framerate(v) != 0
-
                 # Find the first non-trivial image
                 first_img = read(v)
                 first_time = VideoIO.gettime(v)
@@ -31,6 +29,16 @@
                 @test VideoIO.gettime(v) == first_time
                 @test img == first_img
                 @test size(img) == VideoIO.out_frame_size(v)[[2, 1]]
+
+
+                # First read(v) then framerate(v)
+                # https://github.com/JuliaIO/VideoIO.jl/issues/349
+                if !isnothing(testvid.fps)
+                    @test isapprox(VideoIO.framerate(v), testvid.fps, rtol=0.01)
+                else
+                    @test VideoIO.framerate(v) != 0
+                end
+
                 # no scaling currently
                 @test VideoIO.out_frame_size(v) == VideoIO.raw_frame_size(v)
                 @test VideoIO.raw_pixel_format(v) == 0 # true for current test videos
@@ -86,7 +94,7 @@
                 @test_throws(ArgumentError, VideoIO.read_raw!(v, similar(buff, size(buff) .- 1)))
                 @test_throws MethodError VideoIO.read_raw!(v, similar(buff, Int))
                 @test VideoIO.gettime(v) == last_time
-                notranscode_buff = VideoIO.openvideo(read, testvid_path, transcode = false)
+                notranscode_buff = VideoIO.openvideo(read, testvid_path, transcode=false)
                 @test notranscode_buff == buff_bak
 
                 # read first frames again, and compare
@@ -151,7 +159,7 @@ end
 @testset "Reading monochrome videos" begin
     testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
     # Test that limited range YCbCr values are translated to "full range"
-    minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path, target_format = VideoIO.AV_PIX_FMT_GRAY8)
+    minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path, target_format=VideoIO.AV_PIX_FMT_GRAY8)
     @test typeof(minp) == Gray{N0f8}
     @test minp.val.i < 16
     @test maxp.val.i > 235
@@ -159,8 +167,8 @@ end
     minp, maxp = VideoIO.openvideo(
         get_video_extrema,
         testvid_path,
-        target_format = VideoIO.AV_PIX_FMT_GRAY8,
-        target_colorspace_details = VideoIO.VioColorspaceDetails(),
+        target_format=VideoIO.AV_PIX_FMT_GRAY8,
+        target_colorspace_details=VideoIO.VioColorspaceDetails(),
     )
     @test minp.val.i >= 16
     @test maxp.val.i <= 235
@@ -171,7 +179,7 @@ end
 @testset "Reading RGB video as monochrome" begin
     @testset "Iterative" begin
         io = VideoIO.testvideo("ladybird")
-        VideoIO.openvideo(io, target_format = VideoIO.AV_PIX_FMT_GRAY8) do f
+        VideoIO.openvideo(io, target_format=VideoIO.AV_PIX_FMT_GRAY8) do f
             img = read(f)
             for i in 1:10
                 read!(f, img)
@@ -181,7 +189,7 @@ end
     end
     @testset "Full load" begin
         testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
-        vid = VideoIO.load(testvid_path, target_format = VideoIO.AV_PIX_FMT_GRAY8)
+        vid = VideoIO.load(testvid_path, target_format=VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(first(vid)) == Gray{N0f8}
     end
     GC.gc()
@@ -189,7 +197,7 @@ end
 @memory_profile
 
 @testset "IO reading of various example file formats" begin
-    swscale_options = (sws_flags = "accurate_rnd+full_chroma_inp+full_chroma_int",)
+    swscale_options = (sws_flags="accurate_rnd+full_chroma_inp+full_chroma_int",)
     for testvid in values(VideoIO.TestVideos.videofiles)
         name = testvid.name
         test_frameno = testvid.testframe
@@ -199,7 +207,7 @@ end
             testvid_path = joinpath(@__DIR__, "../videos", name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             filename = joinpath(videodir, name)
-            VideoIO.openvideo(filename; swscale_options = swscale_options) do v
+            VideoIO.openvideo(filename; swscale_options=swscale_options) do v
                 width, height = VideoIO.out_frame_size(v)
                 if size(comparison_frame, 1) > height
                     trimmed_comparison_frame = comparison_frame[1+size(comparison_frame, 1)-height:end, :]
