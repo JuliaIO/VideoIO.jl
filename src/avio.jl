@@ -405,17 +405,25 @@ Like containers, elementary streams also can store timestamps, 1/time_base is th
 
 For some codecs, the time base is closer to the field rate than the frame rate.
 Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
-Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2. 
+Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
 """
     framerate(f::VideoReader)
 
 Read the framerate of a VideoReader object.
 """
-framerate(f::VideoReader) =
-    f.codec_context.time_base.den // f.codec_context.time_base.num // f.codec_context.ticks_per_frame
-height(f::VideoReader) = f.codec_context.height
-width(f::VideoReader) = f.codec_context.width
+function framerate(f::VideoReader)
+    stream = get_stream(f)
+    return stream.time_base.den // stream.time_base.num // stream.ticks_per_frame
+end
+function height(f::VideoReader)
+    stream = get_stream(f)
+    return stream.height
+end
+function width(f::VideoReader)
+    stream = get_stream(f)
+    return stream.width
+end
 
 # Does not check input size, meant for internal use only
 function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)
