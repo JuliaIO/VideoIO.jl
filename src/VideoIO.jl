@@ -56,7 +56,7 @@ if Sys.islinux()
     end
 elseif Sys.iswindows()
     function init_camera_devices()
-        append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "dshow", "dummy"))
+        append!(CAMERA_DEVICES, get_camera_devices("dshow", "dummy"))
         return DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("dshow")
     end
     function init_camera_settings()
@@ -66,11 +66,11 @@ elseif Sys.iswindows()
 elseif Sys.isapple()
     function init_camera_devices()
         try
-            append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
+            append!(CAMERA_DEVICES, get_camera_devices("avfoundation", "\"\""))
             DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("avfoundation")
         catch
             try
-                append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "qtkit", "\"\""))
+                append!(CAMERA_DEVICES, get_camera_devices("qtkit", "\"\""))
                 DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("qtkit")
             catch
             end
@@ -85,7 +85,7 @@ elseif Sys.isapple()
 elseif Sys.isbsd()
     # copied loosely from apple above - needs figuring out
     function init_camera_devices()
-        append!(CAMERA_DEVICES, get_camera_devices(ffmpeg, "avfoundation", "\"\""))
+        append!(CAMERA_DEVICES, get_camera_devices("avfoundation", "\"\""))
         return DEFAULT_CAMERA_FORMAT[] = libffmpeg.av_find_input_format("avfoundation")
     end
     function init_camera_settings()
