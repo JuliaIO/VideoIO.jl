@@ -1017,7 +1017,7 @@ const CAMERA_DEVICES = String[]
 const DEFAULT_CAMERA_DEVICE = Ref{String}()
 const DEFAULT_CAMERA_OPTIONS = AVDict()
 
-function get_camera_devices(ffmpeg, idev, idev_name)
+function get_camera_devices(idev, idev_name)
     camera_devices = String[]
 
     read_vid_devs = false
