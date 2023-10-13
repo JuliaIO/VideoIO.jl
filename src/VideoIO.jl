@@ -42,6 +42,9 @@ include("frame_graph.jl")
 include("avio.jl")
 include("encoding.jl")
 include("testvideos.jl")
+
+include("deprecations.jl")
+
 using .TestVideos
 
 if Sys.islinux()
