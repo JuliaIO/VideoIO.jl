@@ -89,6 +89,11 @@ Total available frame count is available via `counttotalframes(f)`
 VideoIO.counttotalframes
 ```
 
+The video framerate can be read via `framerate(f)`
+```@docs
+VideoIO.framerate
+```
+
 !!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames
 available for reading.
 
@@ -174,7 +179,7 @@ julia> opts["video_size"] = "640x480"
 julia> opencamera(VideoIO.DEFAULT_CAMERA_DEVICE[], VideoIO.DEFAULT_CAMERA_FORMAT[], opts)
 VideoReader(...)
 ```
- 
+
 Or more simply, change the default. For example:
 ```julia
 julia> VideoIO.DEFAULT_CAMERA_OPTIONS["video_size"] = "640x480"

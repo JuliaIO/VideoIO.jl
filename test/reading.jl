@@ -11,6 +11,8 @@
             try
                 time_seconds = VideoIO.gettime(v)
                 @test time_seconds == 0
+                @test VideoIO.framerate(v) == testvid.framerate
+                @test get_fps(testvid_path) == testvid.framerate # ffprobe sanity check
                 width, height = VideoIO.out_frame_size(v)
                 @test VideoIO.width(v) == width
                 @test VideoIO.height(v) == height
@@ -21,23 +23,21 @@
                     trimmed_comparison_frame = comparison_frame
                 end
 
+                fps1 = VideoIO.framerate(v)
+
                 # Find the first non-trivial image
                 first_img = read(v)
+
+                # fps should be the same before and after first read
+                fps2 = VideoIO.framerate(v)
+                @test fps1 == fps2
+
                 first_time = VideoIO.gettime(v)
                 seekstart(v)
                 img = read(v)
                 @test VideoIO.gettime(v) == first_time
                 @test img == first_img
                 @test size(img) == VideoIO.out_frame_size(v)[[2, 1]]
-
-
-                # First read(v) then framerate(v)
-                # https://github.com/JuliaIO/VideoIO.jl/issues/349
-                if !isnothing(testvid.fps)
-                    @test isapprox(VideoIO.framerate(v), testvid.fps, rtol=0.01)
-                else
-                    @test VideoIO.framerate(v) != 0
-                end
 
                 # no scaling currently
                 @test VideoIO.out_frame_size(v) == VideoIO.raw_frame_size(v)

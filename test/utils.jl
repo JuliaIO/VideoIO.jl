@@ -173,3 +173,26 @@ macro memory_profile()
         end
     end
 end
+
+"""
+    get_fps(file [, streamno])
+
+Query the container `file` for the frame per second(fps) of the video stream
+`streamno` if applicable, instead returning `nothing`.
+"""
+function get_fps(file::AbstractString, streamno::Integer = 0)
+    streamno >= 0 || throw(ArgumentError("streamno must be non-negative"))
+    fps_strs = FFMPEG.exe(
+        `-v 0 -of compact=p=0 -select_streams v:$(streamno) -show_entries stream=r_frame_rate $file`,
+        command = FFMPEG.ffprobe,
+        collect = true,
+    )
+    fps = split(fps_strs[1], '=')[2]
+    if occursin("No such file or directory", fps)
+        error("Could not find file $file")
+    elseif occursin("N/A", fps)
+        return nothing
+    end
+
+    return reduce(//, parse.(Int, split(fps,'/')) )
+end
