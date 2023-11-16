@@ -52,7 +52,7 @@ function loglevel()
         VideoIO.libffmpeg.AV_LOG_TRACE,
     ]
     i = findfirst(level_values .== current_level)
-    if i > 0
+    if i !== nothing
         return level_strings[i]
     else
         return "Unknown log level: $current_level"

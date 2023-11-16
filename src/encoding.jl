@@ -131,6 +131,9 @@ function get_array_from_avarray(ptr::Union{Ptr{T},Ref{T},NestedCStruct{T}}, term
     len = i - 1
     if make_copy
         dst = Vector{T}(undef, len)
+        # ┌ get_array_from_avarray(ptr::Union{Ptr{T}, Ref{T}, VideoIO.NestedCStruct{T}}, term::Any; make_copy::Any) where T @ VideoIO /Users/ian/Documents/GitHub/VideoIO.jl/src/encoding.jl:134
+        # │ no matching method found `unsafe_copyto!(::Vector, ::Union{Ptr{T}, Ref{T}, VideoIO.NestedCStruct{T}} where T, ::Int64)`: VideoIO.unsafe_copyto!(dst, ptr::Union{Ptr{T}, Ref{T}, VideoIO.NestedCStruct{T}} where T, len::Int64)
+        # └────────────────────
         unsafe_copyto!(dst, ptr, len)
     else
         dst = unsafe_wrap(Array, ptr, len)

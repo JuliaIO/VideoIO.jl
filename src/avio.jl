@@ -405,7 +405,7 @@ Like containers, elementary streams also can store timestamps, 1/time_base is th
 
 For some codecs, the time base is closer to the field rate than the frame rate.
 Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
-Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2. 
+Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
 framerate(f::VideoReader) =
     f.codec_context.time_base.den // f.codec_context.time_base.num // f.codec_context.ticks_per_frame
@@ -432,6 +432,7 @@ stash_graph_input(r, align = VIO_ALIGN) = stash_graph_input!(Vector{UInt8}(undef
 
 function unpack_stashed_planes!(r::VideoReader, imgbuf)
     frame = graph_input_frame(r)
+    # `VideoIO.av_make_writable` is not defined:
     av_make_writable(frame)
     av_image_fill_arrays(
         frame,
@@ -558,6 +559,7 @@ end
 function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     pix_fmt = out_frame_format(r)
     if !is_pixel_type_supported(pix_fmt)
+        # `VideoIO.unsupported_retrieveal_format` is not defined:
         unsupported_retrieveal_format(pix_fmt)
     end
     elt = VIO_PIX_FMT_DEF_ELTYPE_LU[pix_fmt]
@@ -832,7 +834,7 @@ get_frame_presentation_time(stream, frame) = convert(Rational, stream.time_base)
 function get_frame_period_timebase(r::VideoReader)
     # This is probably not valid for many codecs, frame period in timebase
     # units
-    stream = get_stream(s)
+    stream = get_stream(r)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && return nothing
     frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
@@ -849,6 +851,9 @@ for `AVInput`.
 function seek(r::VideoReader, seconds::Number)
     !isopen(r) && throw(ErrorException("Video input stream is not open!"))
     video_stream_idx = get_video_stream_index(r)
+    # ┌ seek(r::VideoIO.VideoReader, seconds::Number) @ VideoIO /Users/ian/Documents/GitHub/VideoIO.jl/src/avio.jl:852
+    # │ no matching method found `seek(::VideoIO.AVInput, ::Number, ::Nothing)` (1/2 union split): VideoIO.seek((r::VideoIO.VideoReader).avin::VideoIO.AVInput, seconds::Number, video_stream_idx)
+    # └────────────────────
     seek(r.avin, seconds, video_stream_idx)
     return r
 end
