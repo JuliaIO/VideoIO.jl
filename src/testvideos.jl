@@ -5,9 +5,14 @@ module TestVideos
 using VideoIO: VideoIO
 import Base: show
 import Downloads: download
+using Scratch
 export testvideo
 
-videodir = joinpath(dirname(@__FILE__), "..", "videos")
+videodir = ""
+
+function __init__()
+    global videodir = @get_scratch!("videos")
+end
 
 mutable struct VideoFile{compression}
     name::AbstractString
