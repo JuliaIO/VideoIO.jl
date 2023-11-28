@@ -396,7 +396,7 @@ key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead the `Normed` or
 `Unsigned` type for a corresponding `Gray` element type. The container type will
 be inferred from `filename`.
 
-Frames are encoded with[ `write`](@ref), which must use frames with
+Frames are encoded with [`write`](@ref), which must use frames with
 the same size, element type, and obey the same value of `scanline_major`. The
 video must be closed once all frames are encoded with
 [`close_video_out!`](@ref).

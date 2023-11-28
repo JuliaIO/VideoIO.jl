@@ -9,7 +9,7 @@ using FFMPEG: FFMPEG
 using VideoIO: VideoIO
 
 const testdir = dirname(@__FILE__)
-const videodir = joinpath(testdir, "..", "videos")
+const videodir = VideoIO.TestVideos.videodir
 const tempvidname = "testvideo.mp4"
 const tempvidpath = joinpath(tempdir(), tempvidname)
 const required_accuracy = 0.07

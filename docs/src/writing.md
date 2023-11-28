@@ -61,7 +61,7 @@ VideoIO.open_video_out
 ```
 
 ```@docs
-VideoIO.write
+Base.write(writer::VideoIO.VideoWriter, img, index::Int)
 ```
 
 ```@docs

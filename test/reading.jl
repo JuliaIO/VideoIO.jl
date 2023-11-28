@@ -4,7 +4,7 @@
         name = testvid.name
         test_frameno = testvid.testframe
         @testset "Reading $(testvid.name)" begin
-            testvid_path = joinpath(@__DIR__, "../videos", name)
+            testvid_path = joinpath(VideoIO.TestVideos.videodir, name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             f = VideoIO.testvideo(testvid_path)
             v = VideoIO.openvideo(f; swscale_options=swscale_options)
@@ -157,7 +157,7 @@ end
 @memory_profile
 
 @testset "Reading monochrome videos" begin
-    testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
+    testvid_path = joinpath(VideoIO.TestVideos.videodir, "annie_oakley.ogg")
     # Test that limited range YCbCr values are translated to "full range"
     minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path, target_format=VideoIO.AV_PIX_FMT_GRAY8)
     @test typeof(minp) == Gray{N0f8}
@@ -188,7 +188,7 @@ end
         end
     end
     @testset "Full load" begin
-        testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
+        testvid_path = joinpath(VideoIO.TestVideos.videodir, "ladybird.mp4")
         vid = VideoIO.load(testvid_path, target_format=VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(first(vid)) == Gray{N0f8}
     end
@@ -204,7 +204,7 @@ end
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            testvid_path = joinpath(@__DIR__, "../videos", name)
+            testvid_path = joinpath(VideoIO.TestVideos.videodir, name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             filename = joinpath(videodir, name)
             VideoIO.openvideo(filename; swscale_options=swscale_options) do v

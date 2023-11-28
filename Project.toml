@@ -14,6 +14,7 @@ Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+Scratch = "6c6a2e73-6563-6170-7368-637461726353"
 
 [compat]
 ColorTypes = "0.9, 0.10, 0.11"
@@ -25,4 +26,5 @@ ImageCore = "0.8, 0.9, 0.10"
 PrecompileTools = "1"
 ProgressMeter = "1.2"
 Requires = "1.0"
+Scratch = "1"
 julia = "1.6"
