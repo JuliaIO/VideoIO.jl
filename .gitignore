@@ -3,7 +3,6 @@ deps/deps.jl
 deps/deps_codec.jl
 deps/build.log
 .DS_Store
-videos/*
 Manifest.toml
 deps/build_*
 test/precisiontest_gray_test.mp4
