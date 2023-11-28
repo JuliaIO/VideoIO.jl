@@ -122,19 +122,20 @@ const videofiles = Dict(
         1,
         4816,
     ),
-    "Big_Buck_Bunny_360_10s_1MB.mp4" => VideoFile(
-        "Big_Buck_Bunny_360_10s_1MB.mp4",
-        "Big Buck Bunny",
-        "Creative Commons: By Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/deed)",
-        "Credit: Blender Foundation | www.blender.org",
-        "https://peach.blender.org/",
-        "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
-        300,
-        2,
-        207376840,
-        # Can be also 30000/1001
-        30 // 1,
-    ),
+    # # This has started HTTP 526 erroring
+    # "Big_Buck_Bunny_360_10s_1MB.mp4" => VideoFile(
+    #     "Big_Buck_Bunny_360_10s_1MB.mp4",
+    #     "Big Buck Bunny",
+    #     "Creative Commons: By Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/deed)",
+    #     "Credit: Blender Foundation | www.blender.org",
+    #     "https://peach.blender.org/",
+    #     "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
+    #     300,
+    #     2,
+    #     207376840,
+    #     # Can be also 30000/1001
+    #     30 // 1,
+    # ),
 )
 
 """
