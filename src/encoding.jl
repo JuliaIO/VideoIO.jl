@@ -396,7 +396,7 @@ key of `VideoIO.VIO_DEF_ELTYPE_PIX_FMT_LU`, or instead the `Normed` or
 `Unsigned` type for a corresponding `Gray` element type. The container type will
 be inferred from `filename`.
 
-Frames are encoded with `write`, which must use frames with
+Frames are encoded with [`write`](@ref), which must use frames with
 the same size, element type, and obey the same value of `scanline_major`. The
 video must be closed once all frames are encoded with
 [`close_video_out!`](@ref).
@@ -468,7 +468,7 @@ occurred.
   - `thread_count::Union{Nothing, Int} = nothing`: The number of threads the codec is
     allowed to use, or `nothing` for default codec behavior. Defaults to `nothing`.
 
-See also: [`close_video_out!`](@ref)
+See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
 open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...; kwargs...)
 
@@ -494,7 +494,8 @@ Encoding options, restrictions on frame size and element type, and other
 details are described in [`open_video_out`](@ref). All keyword arguments are
 passed to `open_video_out`.
 
-See also: [`open_video_out`](@ref), [`close_video_out!`](@ref)
+See also: [`open_video_out`](@ref), [`write`](@ref),
+[`close_video_out!`](@ref)
 """
 function save(filename::String, imgstack; kwargs...)
     open_video_out(filename, first(imgstack); kwargs...) do writer
