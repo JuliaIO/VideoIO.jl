@@ -130,7 +130,8 @@
             if occursin("annie_oakley", name)
                 framestack = VideoIO.load(testvid_path)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                if VERSION < v"1.6.3"
+                # TODO: Replace this with a content check as summarysize is not stable across julia versions
+                if VERSION < v"1.6.3" || VERSION > v"1.11.0-0"
                     @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
                 else
                     @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
@@ -138,7 +139,8 @@
                 f = File{DataFormat{:OGG}}(testvid_path)
                 framestack = VideoIO.fileio_load(f)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                if VERSION < v"1.6.3"
+                # TODO: Replace this with a content check as summarysize is not stable across julia versions
+                if VERSION < v"1.6.3" || VERSION > v"1.11.0-0"
                     @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
                 else
                     @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
