@@ -1150,14 +1150,14 @@ end
 """
     av_adts_header_parse(buf, samples, frames)
 
-Extract the number of samples and frames from AAC data. 
+Extract the number of samples and frames from AAC data.
 
 ### Parameters
-* `buf`:\\[in\\] pointer to AAC data buffer 
+* `buf`:\\[in\\] pointer to AAC data buffer
 
-* `samples`:\\[out\\] Pointer to where number of samples is written 
+* `samples`:\\[out\\] Pointer to where number of samples is written
 
-* `frames`:\\[out\\] Pointer to where number of frames is written 
+* `frames`:\\[out\\] Pointer to where number of frames is written
 
 ### Returns
 Returns 0 on success, error code on failure.
@@ -1254,7 +1254,7 @@ This section describes how to add AVOptions capabilities to a struct.
 
 All AVOptions-related information is stored in an [`AVClass`](@ref). Therefore the first member of the struct should be a pointer to an [`AVClass`](@ref) describing it. The option field of the [`AVClass`](@ref) must be set to a NULL-terminated static array of AVOptions. Each [`AVOption`](@ref) must have a non-empty name, a type, a default value and for number-type AVOptions also a range of allowed values. It must also declare an offset in bytes from the start of the struct, where the field associated with this [`AVOption`](@ref) is located. Other fields in the [`AVOption`](@ref) struct should also be set when applicable, but are not required.
 
-The following example illustrates an AVOptions-enabled struct: 
+The following example illustrates an AVOptions-enabled struct:
 
 ```c++
  typedef struct test_struct {
@@ -1343,7 +1343,7 @@ From the above example it might not be clear why both child\\_next() and child\\
 
 ` avoptions_implement_named_constants Named constants`
 
-It is possible to create named constants for options. Simply set the unit field of the option the constants should apply to a string and create the constants themselves as options of type AV\\_OPT\\_TYPE\\_CONST with their unit field set to the same string. Their default\\_val field should contain the value of the named constant. For example, to add some named constants for the test\\_flags option above, put the following into the child\\_opts array: 
+It is possible to create named constants for options. Simply set the unit field of the option the constants should apply to a string and create the constants themselves as options of type AV\\_OPT\\_TYPE\\_CONST with their unit field set to the same string. Their default\\_val field should contain the value of the named constant. For example, to add some named constants for the test\\_flags option above, put the following into the child\\_opts array:
 
 ```c++
       { "test_flags", "This is a test option of flags type.",
@@ -1406,6 +1406,21 @@ function Base.getproperty(x::Ptr{__JL_Ctag_1122}, f::Symbol)
     f === :dbl && return Ptr{Cdouble}(x + 0)
     f === :str && return Ptr{Cstring}(x + 0)
     f === :q && return Ptr{AVRational}(x + 0)
+    # ┌ getproperty(x::Ptr{VideoIO.libffmpeg.__JL_Ctag_1122}, f::Symbol) @ VideoIO.libffmpeg /Users/ian/Documents/GitHub/VideoIO.jl/lib/libffmpeg.jl:1409
+    # │ invalid builtin function call: VideoIO.libffmpeg.getfield(x::Ptr{VideoIO.libffmpeg.__JL_Ctag_1122}, f::Symbol)
+    # └────────────────────
+    # ┌ getproperty(x::Ptr{VideoIO.libffmpeg.AVOption}, f::Symbol) @ VideoIO.libffmpeg /Users/ian/Documents/GitHub/VideoIO.jl/lib/libffmpeg.jl:1442
+    # │ invalid builtin function call: VideoIO.libffmpeg.getfield(x::Ptr{VideoIO.libffmpeg.AVOption}, f::Symbol)
+    # └────────────────────
+    # ┌ getproperty(x::Ptr{VideoIO.libffmpeg.AVClass}, f::Symbol) @ VideoIO.libffmpeg /Users/ian/Documents/GitHub/VideoIO.jl/lib/libffmpeg.jl:1498
+    # │ invalid builtin function call: VideoIO.libffmpeg.getfield(x::Ptr{VideoIO.libffmpeg.AVClass}, f::Symbol)
+    # └────────────────────
+    # ┌ getproperty(x::Ptr{VideoIO.libffmpeg.AVFrame}, f::Symbol) @ VideoIO.libffmpeg /Users/ian/Documents/GitHub/VideoIO.jl/lib/libffmpeg.jl:2615
+    # │ invalid builtin function call: VideoIO.libffmpeg.getfield(x::Ptr{VideoIO.libffmpeg.AVFrame}, f::Symbol)
+    # └────────────────────
+    # ┌ getproperty(x::Ptr{VideoIO.libffmpeg.AVCodecContext}, f::Symbol) @ VideoIO.libffmpeg /Users/ian/Documents/GitHub/VideoIO.jl/lib/libffmpeg.jl:2908
+    # │ invalid builtin function call: VideoIO.libffmpeg.getfield(x::Ptr{VideoIO.libffmpeg.AVCodecContext}, f::Symbol)
+    # └────────────────────
     return getfield(x, f)
 end
 
@@ -2453,7 +2468,7 @@ end
 """
     AVPictureType
 
-@} @} 
+@} @}
 
 ` lavu_picture Image related`
 
@@ -2639,7 +2654,7 @@ end
 """
     AVCodecDescriptor
 
-This struct describes the properties of a single codec described by an [`AVCodecID`](@ref). 
+This struct describes the properties of a single codec described by an [`AVCodecID`](@ref).
 
 ### See also
 [`avcodec_descriptor_get`](@ref)()
@@ -3028,7 +3043,7 @@ mutable struct MpegEncContext end
 
 [`Picture`](@ref) data structure.
 
-Up to four components can be stored into it, the last component is alpha. 
+Up to four components can be stored into it, the last component is alpha.
 
 \\deprecated use [`AVFrame`](@ref) or imgutils functions instead
 """
@@ -3227,9 +3242,9 @@ Copy the settings of the source [`AVCodecContext`](@ref) into the destination [`
 \\deprecated The semantics of this function are ill-defined and it should not be used. If you need to transfer the stream parameters from one codec context to another, use an intermediate [`AVCodecParameters`](@ref) instance and the [`avcodec_parameters_from_context`](@ref)() / [`avcodec_parameters_to_context`](@ref)() functions.
 
 ### Parameters
-* `dest`: target codec context, should be initialized with [`avcodec_alloc_context3`](@ref)(NULL), but otherwise uninitialized 
+* `dest`: target codec context, should be initialized with [`avcodec_alloc_context3`](@ref)(NULL), but otherwise uninitialized
 
-* `src`: source codec context 
+* `src`: source codec context
 
 ### Returns
 [`AVERROR`](@ref)() on error (e.g. memory allocation error), 0 on success
@@ -3327,14 +3342,14 @@ The functions [`avcodec_find_decoder_by_name`](@ref)(), [`avcodec_find_encoder_b
 ```
 
 ### Parameters
-* `avctx`: The context to initialize. 
+* `avctx`: The context to initialize.
 
-* `codec`: The codec to open this context for. If a non-NULL codec has been previously passed to [`avcodec_alloc_context3`](@ref)() or for this context, then this parameter MUST be either NULL or equal to the previously passed codec. 
+* `codec`: The codec to open this context for. If a non-NULL codec has been previously passed to [`avcodec_alloc_context3`](@ref)() or for this context, then this parameter MUST be either NULL or equal to the previously passed codec.
 
 * `options`: A dictionary filled with [`AVCodecContext`](@ref) and codec-private options. On return this object will be filled with options that were not found.
 
 ### Returns
-zero on success, a negative value on error 
+zero on success, a negative value on error
 
 ### See also
 [`avcodec_alloc_context3`](@ref)(), [`avcodec_find_decoder`](@ref)(), [`avcodec_find_encoder`](@ref)(), [`av_dict_set`](@ref)(), [`av_opt_find`](@ref)().
@@ -3467,7 +3482,7 @@ Converts [`AVChromaLocation`](@ref) to swscale x/y chroma position.
 The positions represent the chroma (0,0) position in a coordinates system with luma (0,0) representing the origin and luma(1,1) representing 256,256
 
 ### Parameters
-* `xpos`: horizontal chroma sample position 
+* `xpos`: horizontal chroma sample position
 
 * `ypos`: vertical chroma sample position
 """
@@ -3483,7 +3498,7 @@ Converts swscale x/y chroma position to [`AVChromaLocation`](@ref).
 The positions represent the chroma (0,0) position in a coordinates system with luma (0,0) representing the origin and luma(1,1) representing 256,256
 
 ### Parameters
-* `xpos`: horizontal chroma sample position 
+* `xpos`: horizontal chroma sample position
 
 * `ypos`: vertical chroma sample position
 """
@@ -3511,13 +3526,13 @@ Some decoders (those marked with [`AV_CODEC_CAP_DELAY`](@ref)) have a delay betw
 \\deprecated Use [`avcodec_send_packet`](@ref)() and [`avcodec_receive_frame`](@ref)().
 
 ### Parameters
-* `avctx`: the codec context 
+* `avctx`: the codec context
 
-* `frame`:\\[out\\] The [`AVFrame`](@ref) in which to store decoded audio samples. The decoder will allocate a buffer for the decoded frame by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it. 
+* `frame`:\\[out\\] The [`AVFrame`](@ref) in which to store decoded audio samples. The decoder will allocate a buffer for the decoded frame by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it.
 
-* `got_frame_ptr`:\\[out\\] Zero if no frame could be decoded, otherwise it is non-zero. Note that this field being set to zero does not mean that an error has occurred. For decoders with [`AV_CODEC_CAP_DELAY`](@ref) set, no given decode call is guaranteed to produce a frame. 
+* `got_frame_ptr`:\\[out\\] Zero if no frame could be decoded, otherwise it is non-zero. Note that this field being set to zero does not mean that an error has occurred. For decoders with [`AV_CODEC_CAP_DELAY`](@ref) set, no given decode call is guaranteed to produce a frame.
 
-* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. At least avpkt->data and avpkt->size should be set. Some decoders might also require additional fields to be set. 
+* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. At least avpkt->data and avpkt->size should be set. Some decoders might also require additional fields to be set.
 
 ### Returns
 A negative error code is returned if an error occurred during decoding, otherwise the number of bytes consumed from the input [`AVPacket`](@ref) is returned.
@@ -3550,13 +3565,13 @@ Decode the video frame of size avpkt->size from avpkt->data into picture. Some d
 \\deprecated Use [`avcodec_send_packet`](@ref)() and [`avcodec_receive_frame`](@ref)().
 
 ### Parameters
-* `avctx`: the codec context 
+* `avctx`: the codec context
 
 * `picture`:\\[out\\] The [`AVFrame`](@ref) in which the decoded video frame will be stored. Use [`av_frame_alloc`](@ref)() to get an [`AVFrame`](@ref). The codec will allocate memory for the actual bitmap by calling the [`AVCodecContext`](@ref).get\\_buffer2() callback. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 1, the frame is reference counted and the returned reference belongs to the caller. The caller must release the frame using [`av_frame_unref`](@ref)() when the frame is no longer needed. The caller may safely write to the frame if [`av_frame_is_writable`](@ref)() returns 1. When [`AVCodecContext`](@ref).refcounted\\_frames is set to 0, the returned reference belongs to the decoder and is valid only until the next call to this function or until closing or flushing the decoder. The caller may not write to it.
 
-* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. You can create such packet with [`av_init_packet`](@ref)() and by then setting data and size, some decoders might in addition need other fields like flags&AV\\_PKT\\_FLAG\\_KEY. All decoders are designed to use the least fields possible. 
+* `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer. You can create such packet with [`av_init_packet`](@ref)() and by then setting data and size, some decoders might in addition need other fields like flags&AV\\_PKT\\_FLAG\\_KEY. All decoders are designed to use the least fields possible.
 
-* `got_picture_ptr`:\\[in,out\\] Zero if no frame could be decompressed, otherwise, it is nonzero. 
+* `got_picture_ptr`:\\[in,out\\] Zero if no frame could be decompressed, otherwise, it is nonzero.
 
 ### Returns
 On error a negative value is returned, otherwise the number of bytes used or zero if no frame could be decompressed.
@@ -3577,11 +3592,11 @@ Some decoders (those marked with [`AV_CODEC_CAP_DELAY`](@ref)) have a delay betw
     The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
 
 ### Parameters
-* `avctx`: the codec context 
+* `avctx`: the codec context
 
-* `sub`:\\[out\\] The preallocated [`AVSubtitle`](@ref) in which the decoded subtitle will be stored, must be freed with [`avsubtitle_free`](@ref) if *got\\_sub\\_ptr is set. 
+* `sub`:\\[out\\] The preallocated [`AVSubtitle`](@ref) in which the decoded subtitle will be stored, must be freed with [`avsubtitle_free`](@ref) if *got\\_sub\\_ptr is set.
 
-* `got_sub_ptr`:\\[in,out\\] Zero if no subtitle could be decompressed, otherwise, it is nonzero. 
+* `got_sub_ptr`:\\[in,out\\] Zero if no subtitle could be decompressed, otherwise, it is nonzero.
 
 * `avpkt`:\\[in\\] The input [`AVPacket`](@ref) containing the input buffer.
 """
@@ -3609,7 +3624,7 @@ Internally, this call will copy relevant [`AVCodecContext`](@ref) fields, which 
     The [`AVCodecContext`](@ref) MUST have been opened with avcodec_open2() before packets may be fed to the decoder.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
 * `avpkt`:\\[in\\] The input [`AVPacket`](@ref). Usually, this will be a single video frame, or several complete audio frames. Ownership of the packet remains with the caller, and the decoder will not write to the packet. The decoder may create a reference to the packet data (or copy it if the packet is not reference-counted). Unlike with older APIs, the packet is always fully consumed, and if it contains multiple frames (e.g. some audio codecs), will require you to call [`avcodec_receive_frame`](@ref)() multiple times afterwards before you can send a new packet. It can be NULL (or an [`AVPacket`](@ref) with data set to NULL and size set to 0); in this case, it is considered a flush packet, which signals the end of the stream. Sending the first flush packet will return success. Subsequent ones are unnecessary and will return [`AVERROR_EOF`](@ref). If the decoder still has frames buffered, it will return them after sending a flush packet.
 
@@ -3626,7 +3641,7 @@ end
 Return decoded output data from a decoder.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
 * `frame`: This will be set to a reference-counted video or audio frame (depending on the decoder type) allocated by the decoder. Note that the function will always call [`av_frame_unref`](@ref)(frame) before doing anything else.
 
@@ -3642,10 +3657,10 @@ end
 
 Supply a raw video or audio frame to the encoder. Use [`avcodec_receive_packet`](@ref)() to retrieve buffered output packets.
 
-For audio: If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size. 
+For audio: If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
 * `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio or video frame to be encoded. Ownership of the frame remains with the caller, and the encoder will not write to the frame. The encoder may create a reference to the frame data (or copy it if the frame is not reference-counted). It can be NULL, in which case it is considered a flush packet. This signals the end of the stream. If the encoder still has packets buffered, it will return them after this call. Once flushing mode has been entered, additional flush packets are ignored, and sending frames will return [`AVERROR_EOF`](@ref).
 
@@ -3662,9 +3677,9 @@ end
 Read encoded data from the encoder.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
-* `avpkt`: This will be set to a reference-counted packet allocated by the encoder. Note that the function will always call [`av_packet_unref`](@ref)(avpkt) before doing anything else. 
+* `avpkt`: This will be set to a reference-counted packet allocated by the encoder. Note that the function will always call [`av_packet_unref`](@ref)(avpkt) before doing anything else.
 
 ### Returns
 0 on success, otherwise negative error code: [`AVERROR`](@ref)(EAGAIN): output is not available in the current state - user must try to send input [`AVERROR_EOF`](@ref): the encoder has been fully flushed, and there will be no more output packets [`AVERROR`](@ref)(EINVAL): codec not opened, or it is a decoder other errors: legitimate encoding errors
@@ -3697,13 +3712,13 @@ Essentially, out\\_frames\\_ref returns the same as [`av_hwframe_ctx_alloc`](@re
 The function is stateless, and does not change the [`AVCodecContext`](@ref) or the device\\_ref [`AVHWDeviceContext`](@ref).
 
 ### Parameters
-* `avctx`: The context which is currently calling get\\_format, and which implicitly contains all state needed for filling the returned [`AVHWFramesContext`](@ref) properly. 
+* `avctx`: The context which is currently calling get\\_format, and which implicitly contains all state needed for filling the returned [`AVHWFramesContext`](@ref) properly.
 
-* `device_ref`: A reference to the [`AVHWDeviceContext`](@ref) describing the device which will be used by the hardware decoder. 
+* `device_ref`: A reference to the [`AVHWDeviceContext`](@ref) describing the device which will be used by the hardware decoder.
 
-* `hw_pix_fmt`: The hwaccel format you are going to return from get\\_format. 
+* `hw_pix_fmt`: The hwaccel format you are going to return from get\\_format.
 
-* `out_frames_ref`: On success, set to a reference to an \\_uninitialized\\_ [`AVHWFramesContext`](@ref), created from the given device\\_ref. Fields will be set to values required for decoding. Not changed if an error is returned. 
+* `out_frames_ref`: On success, set to a reference to an \\_uninitialized\\_ [`AVHWFramesContext`](@ref), created from the given device\\_ref. Fields will be set to values required for decoding. Not changed if an error is returned.
 
 ### Returns
 zero on success, a negative value on error. The following error codes have special semantics: [`AVERROR`](@ref)(ENOENT): the decoder does not support this functionality. Setup is always manual, or it is a decoder which does not support setting [`AVCodecContext`](@ref).hw\\_frames\\_ctx at all, or it is a software format. [`AVERROR`](@ref)(EINVAL): it is known that hardware decoding is not supported for this configuration, or the device\\_ref is not supported for the hwaccel referenced by hw\\_pix\\_fmt.
@@ -3838,7 +3853,7 @@ end
 
 Parse a packet.
 
-Example: 
+Example:
 
 ```c++
    while(in_len){
@@ -3853,23 +3868,23 @@ Example:
 ```
 
 ### Parameters
-* `s`: parser context. 
+* `s`: parser context.
 
-* `avctx`: codec context. 
+* `avctx`: codec context.
 
-* `poutbuf`: set to pointer to parsed buffer or NULL if not yet finished. 
+* `poutbuf`: set to pointer to parsed buffer or NULL if not yet finished.
 
-* `poutbuf_size`: set to size of parsed buffer or zero if not yet finished. 
+* `poutbuf_size`: set to size of parsed buffer or zero if not yet finished.
 
-* `buf`: input buffer. 
+* `buf`: input buffer.
 
-* `buf_size`: buffer size in bytes without the padding. I.e. the full buffer size is assumed to be buf\\_size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref). To signal EOF, this should be 0 (so that the last frame can be output). 
+* `buf_size`: buffer size in bytes without the padding. I.e. the full buffer size is assumed to be buf\\_size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref). To signal EOF, this should be 0 (so that the last frame can be output).
 
-* `pts`: input presentation timestamp. 
+* `pts`: input presentation timestamp.
 
-* `dts`: input decoding timestamp. 
+* `dts`: input decoding timestamp.
 
-* `pos`: input byte position in stream. 
+* `pos`: input byte position in stream.
 
 ### Returns
 the number of bytes of the input bitstream used.
@@ -3884,7 +3899,7 @@ end
 \\deprecated Use dump\\_extradata, remove\\_extra or extract\\_extradata bitstream filters instead.
 
 ### Returns
-0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed 
+0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed
 """
 function av_parser_change(s, avctx, poutbuf, poutbuf_size, buf, buf_size::Integer, keyframe::Integer)
     ccall((:av_parser_change, libavcodec), Cint, (Ptr{AVCodecParserContext}, Ptr{AVCodecContext}, Ptr{Ptr{UInt8}}, Ptr{Cint}, Ptr{UInt8}, Cint, Cint), s, avctx, poutbuf, poutbuf_size, buf, buf_size, keyframe)
@@ -3901,18 +3916,18 @@ Encode a frame of audio.
 
 Takes input samples from frame and writes the next output packet, if available, to avpkt. The output packet does not necessarily contain data for the most recent frame, as encoders can delay, split, and combine input frames internally as needed.
 
-If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)(). 
+If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)().
 
 \\deprecated use [`avcodec_send_frame`](@ref)()/[`avcodec_receive_packet`](@ref)() instead. If allowed and required, set [`AVCodecContext`](@ref).get\\_encode\\_buffer to a custom function to pass user supplied output buffers.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
 * `avpkt`: output [`AVPacket`](@ref). The user can supply an output buffer by setting avpkt->data and avpkt->size prior to calling the function, but if the size of the user-provided data is not large enough, encoding will fail. If avpkt->data and avpkt->size are set, avpkt->destruct must also be set. All other [`AVPacket`](@ref) fields will be reset by the encoder using [`av_init_packet`](@ref)(). If avpkt->data is NULL, the encoder will allocate it. The encoder will set avpkt->size to the size of the output packet.
 
-* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size. 
+* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw audio data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. If [`AV_CODEC_CAP_VARIABLE_FRAME_SIZE`](@ref) is set, then each frame can have any number of samples. If it is not set, frame->nb\\_samples must be equal to avctx->frame\\_size for all frames except the last. The final frame may be smaller than avctx->frame\\_size.
 
-* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used. 
+* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used.
 
 ### Returns
 0 on success, negative error code on failure
@@ -3928,18 +3943,18 @@ Encode a frame of video.
 
 Takes input raw video data from frame and writes the next output packet, if available, to avpkt. The output packet does not necessarily contain data for the most recent frame, as encoders can delay and reorder input frames internally as needed.
 
-If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)(). 
+If this function fails or produces no output, avpkt will be freed using [`av_packet_unref`](@ref)().
 
 \\deprecated use [`avcodec_send_frame`](@ref)()/[`avcodec_receive_packet`](@ref)() instead. If allowed and required, set [`AVCodecContext`](@ref).get\\_encode\\_buffer to a custom function to pass user supplied output buffers.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
 * `avpkt`: output [`AVPacket`](@ref). The user can supply an output buffer by setting avpkt->data and avpkt->size prior to calling the function, but if the size of the user-provided data is not large enough, encoding will fail. All other [`AVPacket`](@ref) fields will be reset by the encoder using [`av_init_packet`](@ref)(). If avpkt->data is NULL, the encoder will allocate it. The encoder will set avpkt->size to the size of the output packet. The returned data (if any) belongs to the caller, he is responsible for freeing it.
 
-* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw video data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set. 
+* `frame`:\\[in\\] [`AVFrame`](@ref) containing the raw video data to be encoded. May be NULL when flushing an encoder that has the [`AV_CODEC_CAP_DELAY`](@ref) capability set.
 
-* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used. 
+* `got_packet_ptr`:\\[out\\] This field is set to 1 by libavcodec if the output packet is non-empty, and to 0 if it is empty. If the function returns an error, the packet can be assumed to be invalid, and the value of got\\_packet\\_ptr is undefined and should not be used.
 
 ### Returns
 0 on success, negative error code on failure
@@ -4048,13 +4063,13 @@ end
 Find the best pixel format to convert to given a certain source pixel format. When converting from one pixel format to another, information loss may occur. For example, when converting from RGB24 to GRAY, the color information will be lost. Similarly, other losses occur when converting from some formats to other formats. [`avcodec_find_best_pix_fmt_of_2`](@ref)() searches which of the given pixel formats should be used to suffer the least amount of loss. The pixel formats from which it chooses one, are determined by the pix\\_fmt\\_list parameter.
 
 ### Parameters
-* `pix_fmt_list`:\\[in\\] AV\\_PIX\\_FMT\\_NONE terminated array of pixel formats to choose from 
+* `pix_fmt_list`:\\[in\\] AV\\_PIX\\_FMT\\_NONE terminated array of pixel formats to choose from
 
-* `src_pix_fmt`:\\[in\\] source pixel format 
+* `src_pix_fmt`:\\[in\\] source pixel format
 
-* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used. 
+* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used.
 
-* `loss_ptr`:\\[out\\] Combination of flags informing you what kind of losses will occur. 
+* `loss_ptr`:\\[out\\] Combination of flags informing you what kind of losses will occur.
 
 ### Returns
 The best pixel format to convert to or -1 if none was found.
@@ -4097,11 +4112,11 @@ Put a string representing the codec tag codec\\_tag in buf.
 \\deprecated see [`av_fourcc_make_string`](@ref)() and [`av_fourcc2str`](@ref)().
 
 ### Parameters
-* `buf`: buffer to place codec tag in 
+* `buf`: buffer to place codec tag in
 
-* `buf_size`: size in bytes of buf 
+* `buf_size`: size in bytes of buf
 
-* `codec_tag`: codec tag to assign 
+* `codec_tag`: codec tag to assign
 
 ### Returns
 the length of the string that would have been generated if enough space had been available, excluding the trailing null
@@ -4120,9 +4135,9 @@ end
 Return a name for the specified profile, if available.
 
 ### Parameters
-* `codec`: the codec that is searched for the given profile 
+* `codec`: the codec that is searched for the given profile
 
-* `profile`: the profile value for which a name is requested 
+* `profile`: the profile value for which a name is requested
 
 ### Returns
 A name for the profile if found, NULL otherwise.
@@ -4141,9 +4156,9 @@ Return a name for the specified profile, if available.
     unlike [`av_get_profile_name`](@ref)(), which searches a list of profiles supported by a specific decoder or encoder implementation, this function searches the list of profiles from the [`AVCodecDescriptor`](@ref)
 
 ### Parameters
-* `codec_id`: the ID of the codec to which the requested profile belongs 
+* `codec_id`: the ID of the codec to which the requested profile belongs
 
-* `profile`: the profile value for which a name is requested 
+* `profile`: the profile value for which a name is requested
 
 ### Returns
 A name for the profile if found, NULL otherwise.
@@ -4172,20 +4187,20 @@ The buffer buf must be a preallocated buffer with a size big enough to contain t
 \\todo return the size in bytes required to store the samples in case of success, at the next libavutil bump
 
 ### Parameters
-* `frame`: the [`AVFrame`](@ref) frame->nb\\_samples must be set prior to calling the function. This function fills in frame->data, frame->extended\\_data, frame->linesize[0]. 
+* `frame`: the [`AVFrame`](@ref) frame->nb\\_samples must be set prior to calling the function. This function fills in frame->data, frame->extended\\_data, frame->linesize[0].
 
-* `nb_channels`: channel count 
+* `nb_channels`: channel count
 
-* `sample_fmt`: sample format 
+* `sample_fmt`: sample format
 
-* `buf`: buffer to use for frame data 
+* `buf`: buffer to use for frame data
 
-* `buf_size`: size of buffer 
+* `buf_size`: size of buffer
 
-* `align`: plane size sample alignment (0 = default) 
+* `align`: plane size sample alignment (0 = default)
 
 ### Returns
->=0 on success, negative error code on failure 
+>=0 on success, negative error code on failure
 """
 function avcodec_fill_audio_frame(frame, nb_channels::Integer, sample_fmt::AVSampleFormat, buf, buf_size::Integer, align::Integer)
     ccall((:avcodec_fill_audio_frame, libavcodec), Cint, (Ptr{AVFrame}, Cint, AVSampleFormat, Ptr{UInt8}, Cint, Cint), frame, nb_channels, sample_fmt, buf, buf_size, align)
@@ -4214,7 +4229,7 @@ end
 Return codec bits per sample.
 
 ### Parameters
-* `codec_id`:\\[in\\] the codec 
+* `codec_id`:\\[in\\] the codec
 
 ### Returns
 Number of bits per sample or zero if unknown for the given codec.
@@ -4226,10 +4241,10 @@ end
 """
     av_get_pcm_codec(fmt::AVSampleFormat, be::Integer)
 
-Return the PCM codec associated with a sample format. 
+Return the PCM codec associated with a sample format.
 
 ### Parameters
-* `be`: endianness, 0 for little, 1 for big, -1 (or anything else) for native 
+* `be`: endianness, 0 for little, 1 for big, -1 (or anything else) for native
 
 ### Returns
 AV\\_CODEC\\_ID\\_PCM\\_* or AV\\_CODEC\\_ID\\_NONE
@@ -4244,7 +4259,7 @@ end
 Return codec bits per sample. Only return non-zero if the bits per sample is exactly correct, not an approximation.
 
 ### Parameters
-* `codec_id`:\\[in\\] the codec 
+* `codec_id`:\\[in\\] the codec
 
 ### Returns
 Number of bits per sample or zero if unknown for the given codec.
@@ -4259,9 +4274,9 @@ end
 Return audio frame duration.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
-* `frame_bytes`: size of the frame, or 0 if unknown 
+* `frame_bytes`: size of the frame, or 0 if unknown
 
 ### Returns
 frame duration, in samples, if known. 0 if not able to determine.
@@ -4373,9 +4388,9 @@ end
 Encode extradata length to a buffer. Used by xiph codecs.
 
 ### Parameters
-* `s`: buffer to write to; must be at least (v/255+1) bytes long 
+* `s`: buffer to write to; must be at least (v/255+1) bytes long
 
-* `v`: size of extradata in bytes 
+* `v`: size of extradata in bytes
 
 ### Returns
 number of bytes written to the buffer.
@@ -4461,7 +4476,7 @@ end
 """
     AVDCT
 
-[`AVDCT`](@ref) context. 
+[`AVDCT`](@ref) context.
 
 !!! note
 
@@ -4517,10 +4532,10 @@ mutable struct FFTContext end
 """
     av_fft_init(nbits::Integer, inverse::Integer)
 
-Set up a complex FFT. 
+Set up a complex FFT.
 
 ### Parameters
-* `nbits`: log2 of the length of the input array 
+* `nbits`: log2 of the length of the input array
 
 * `inverse`: if 0 perform the forward transform, if 1 perform the inverse
 """
@@ -4581,10 +4596,10 @@ mutable struct RDFTContext end
 """
     av_rdft_init(nbits::Integer, trans::RDFTransformType)
 
-Set up a real FFT. 
+Set up a real FFT.
 
 ### Parameters
-* `nbits`: log2 of the length of the input array 
+* `nbits`: log2 of the length of the input array
 
 * `trans`: the type of transform
 """
@@ -4618,7 +4633,7 @@ Set up DCT.
     the first element of the input of DST-I is ignored
 
 ### Parameters
-* `nbits`: size of the input array: (1 << nbits) for DCT-II, DCT-III and DST-I (1 << nbits) + 1 for DCT-I 
+* `nbits`: size of the input array: (1 << nbits) for DCT-II, DCT-III and DST-I (1 << nbits) + 1 for DCT-I
 
 * `type`: the type of transform
 """
@@ -4687,7 +4702,7 @@ end
 Allocate a context for a given bitstream filter. The caller must fill in the context parameters as described in the documentation and then call [`av_bsf_init`](@ref)() before sending any data to the filter.
 
 ### Parameters
-* `filter`: the filter for which to allocate an instance. 
+* `filter`: the filter for which to allocate an instance.
 
 * `ctx`: a pointer into which the pointer to the newly-allocated context will be written. It must be freed with [`av_bsf_free`](@ref)() after the filtering is done.
 
@@ -4805,7 +4820,7 @@ end
 Append bitstream filter to the list of bitstream filters.
 
 ### Parameters
-* `lst`: List to append to 
+* `lst`: List to append to
 
 * `bsf`: Filter context to be appended
 
@@ -4822,9 +4837,9 @@ end
 Construct new bitstream filter context given it's name and options and append it to the list of bitstream filters.
 
 ### Parameters
-* `lst`: List to append to 
+* `lst`: List to append to
 
-* `bsf_name`: Name of the bitstream filter 
+* `bsf_name`: Name of the bitstream filter
 
 * `options`: Options for the bitstream filter, can be set to NULL
 
@@ -4843,7 +4858,7 @@ Finalize list of bitstream filters.
 This function will transform AVBSFList to single AVBSFContext, so the whole chain of bitstream filters can be treated as single filter freshly allocated by [`av_bsf_alloc`](@ref)(). If the call is successful, AVBSFList structure is freed and lst will be set to NULL. In case of failure, caller is responsible for freeing the structure by [`av_bsf_list_free`](@ref)()
 
 ### Parameters
-* `lst`: Filter list structure to be transformed 
+* `lst`: Filter list structure to be transformed
 
 * `bsf`:\\[out\\] Pointer to be set to newly created AVBSFContext structure representing the chain of bitstream filters
 
@@ -4860,7 +4875,7 @@ end
 Parse string describing list of bitstream filters and create single AVBSFContext describing the whole chain of bitstream filters. Resulting AVBSFContext can be treated as any other AVBSFContext freshly allocated by [`av_bsf_alloc`](@ref)().
 
 ### Parameters
-* `str`: String describing chain of bitstream filters in format `bsf1[=opt1=val1:opt2=val2][,bsf2]` 
+* `str`: String describing chain of bitstream filters in format `bsf1[=opt1=val1:opt2=val2][,bsf2]`
 
 * `bsf`:\\[out\\] Pointer to be set to newly created AVBSFContext structure representing the chain of bitstream filters
 
@@ -4907,7 +4922,7 @@ end
 Find a registered decoder with a matching codec ID.
 
 ### Parameters
-* `id`: [`AVCodecID`](@ref) of the requested decoder 
+* `id`: [`AVCodecID`](@ref) of the requested decoder
 
 ### Returns
 A decoder if one was found, NULL otherwise.
@@ -4922,7 +4937,7 @@ end
 Find a registered decoder with the specified name.
 
 ### Parameters
-* `name`: name of the requested decoder 
+* `name`: name of the requested decoder
 
 ### Returns
 A decoder if one was found, NULL otherwise.
@@ -4937,7 +4952,7 @@ end
 Find a registered encoder with a matching codec ID.
 
 ### Parameters
-* `id`: [`AVCodecID`](@ref) of the requested encoder 
+* `id`: [`AVCodecID`](@ref) of the requested encoder
 
 ### Returns
 An encoder if one was found, NULL otherwise.
@@ -4952,7 +4967,7 @@ end
 Find a registered encoder with the specified name.
 
 ### Parameters
-* `name`: name of the requested encoder 
+* `name`: name of the requested encoder
 
 ### Returns
 An encoder if one was found, NULL otherwise.
@@ -5065,7 +5080,7 @@ end
 """
     avcodec_get_name(id::AVCodecID)
 
-Get the name of a codec. 
+Get the name of a codec.
 
 ### Returns
 a static string identifying the codec; never NULL
@@ -5192,13 +5207,13 @@ end
 Parse a Dirac sequence header.
 
 ### Parameters
-* `dsh`: this function will allocate and fill an [`AVDiracSeqHeader`](@ref) struct and write it into this pointer. The caller must free it with [`av_free`](@ref)(). 
+* `dsh`: this function will allocate and fill an [`AVDiracSeqHeader`](@ref) struct and write it into this pointer. The caller must free it with [`av_free`](@ref)().
 
-* `buf`: the data buffer 
+* `buf`: the data buffer
 
-* `buf_size`: the size of the data buffer in bytes 
+* `buf_size`: the size of the data buffer in bytes
 
-* `log_ctx`: if non-NULL, this function will log errors here 
+* `log_ctx`: if non-NULL, this function will log errors here
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) code on failure
@@ -5233,11 +5248,11 @@ end
 Get a DV profile for the provided compressed frame.
 
 ### Parameters
-* `sys`: the profile used for the previous frame, may be NULL 
+* `sys`: the profile used for the previous frame, may be NULL
 
-* `frame`: the compressed data buffer 
+* `frame`: the compressed data buffer
 
-* `buf_size`: size of the buffer in bytes 
+* `buf_size`: size of the buffer in bytes
 
 ### Returns
 the DV profile for the supplied data or NULL on failure
@@ -5310,11 +5325,11 @@ end
 Convenience function that sets up the MediaCodec context.
 
 ### Parameters
-* `avctx`: codec context 
+* `avctx`: codec context
 
-* `ctx`: MediaCodec context to initialize 
+* `ctx`: MediaCodec context to initialize
 
-* `surface`: reference to an android/view/Surface 
+* `surface`: reference to an android/view/Surface
 
 ### Returns
 0 on success, < 0 otherwise
@@ -5348,9 +5363,9 @@ const AVMediaCodecBuffer = MediaCodecBuffer
 Release a MediaCodec buffer and render it to the surface that is associated with the decoder. This function should only be called once on a given buffer, once released the underlying buffer returns to the codec, thus subsequent calls to this function will have no effect.
 
 ### Parameters
-* `buffer`: the buffer to render 
+* `buffer`: the buffer to render
 
-* `render`: 1 to release and render the buffer to the surface or 0 to discard the buffer 
+* `render`: 1 to release and render the buffer to the surface or 0 to discard the buffer
 
 ### Returns
 0 on success, < 0 otherwise
@@ -5365,9 +5380,9 @@ end
 Release a MediaCodec buffer and render it at the given time to the surface that is associated with the decoder. The timestamp must be within one second of the current java/lang/System#nanoTime() (which is implemented using CLOCK\\_MONOTONIC on Android). See the Android MediaCodec documentation of android/media/MediaCodec#releaseOutputBuffer(int,long) for more details.
 
 ### Parameters
-* `buffer`: the buffer to render 
+* `buffer`: the buffer to render
 
-* `time`: timestamp in nanoseconds of when to render the buffer 
+* `time`: timestamp in nanoseconds of when to render the buffer
 
 ### Returns
 0 on success, < 0 otherwise
@@ -5433,7 +5448,7 @@ Free the packet, if the packet is reference counted, it will be unreferenced fir
     passing NULL is a no-op.
 
 ### Parameters
-* `pkt`: packet to be freed. The pointer will be set to NULL. 
+* `pkt`: packet to be freed. The pointer will be set to NULL.
 """
 function av_packet_free(pkt)
     ccall((:av_packet_free, libavcodec), Cvoid, (Ptr{Ptr{AVPacket}},), pkt)
@@ -5464,9 +5479,9 @@ end
 Allocate the payload of a packet and initialize its fields with default values.
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
-* `size`: wanted payload size 
+* `size`: wanted payload size
 
 ### Returns
 0 if OK, AVERROR\\_xxx otherwise
@@ -5481,7 +5496,7 @@ end
 Reduce packet size, correctly zeroing padding
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
 * `size`: new size
 """
@@ -5495,7 +5510,7 @@ end
 Increase packet size, correctly zeroing padding
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
 * `grow_by`: number of bytes by which to increase the size of the packet
 """
@@ -5509,9 +5524,9 @@ end
 Initialize a reference-counted packet from [`av_malloc`](@ref)()ed data.
 
 ### Parameters
-* `pkt`: packet to be initialized. This function will set the data, size, and buf fields, all others are left untouched. 
+* `pkt`: packet to be initialized. This function will set the data, size, and buf fields, all others are left untouched.
 
-* `data`: Data allocated by [`av_malloc`](@ref)() to be used as packet data. If this function returns successfully, the data is owned by the underlying [`AVBuffer`](@ref). The caller may not access the data through other means. 
+* `data`: Data allocated by [`av_malloc`](@ref)() to be used as packet data. If this function returns successfully, the data is owned by the underlying [`AVBuffer`](@ref). The caller may not access the data through other means.
 
 * `size`: size of data in bytes, without the padding. I.e. the full buffer size is assumed to be size + [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref).
 
@@ -5583,11 +5598,11 @@ end
 Allocate new information of a packet.
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
-* `type`: side information type 
+* `type`: side information type
 
-* `size`: side information size 
+* `size`: side information size
 
 ### Returns
 pointer to fresh allocated data or NULL otherwise
@@ -5602,13 +5617,13 @@ end
 Wrap an existing array as a packet side data.
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
-* `type`: side information type 
+* `type`: side information type
 
-* `data`: the side data array. It must be allocated with the [`av_malloc`](@ref)() family of functions. The ownership of the data is transferred to pkt. 
+* `data`: the side data array. It must be allocated with the [`av_malloc`](@ref)() family of functions. The ownership of the data is transferred to pkt.
 
-* `size`: side information size 
+* `size`: side information size
 
 ### Returns
 a non-negative number on success, a negative [`AVERROR`](@ref) code on failure. On failure, the packet is unchanged and the data remains owned by the caller.
@@ -5623,11 +5638,11 @@ end
 Shrink the already allocated side data buffer
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
-* `type`: side information type 
+* `type`: side information type
 
-* `size`: new side information size 
+* `size`: new side information size
 
 ### Returns
 0 on success, < 0 on failure
@@ -5642,11 +5657,11 @@ end
 Get side information from packet.
 
 ### Parameters
-* `pkt`: packet 
+* `pkt`: packet
 
-* `type`: desired side information type 
+* `type`: desired side information type
 
-* `size`: If supplied, *size will be set to the size of the side data or to zero if the desired side data is not present. 
+* `size`: If supplied, *size will be set to the size of the side data or to zero if the desired side data is not present.
 
 ### Returns
 pointer to data if present or NULL otherwise
@@ -5697,7 +5712,7 @@ If src is reference-counted, setup dst as a new reference to the buffer in src. 
 All the other fields are copied from src.
 
 ### Parameters
-* `dst`: Destination packet. Will be completely overwritten. 
+* `dst`: Destination packet. Will be completely overwritten.
 
 * `src`: Source packet
 
@@ -5731,7 +5746,7 @@ end
 Move every field in src to dst and reset src.
 
 ### Parameters
-* `src`: Source packet, will be reset 
+* `src`: Source packet, will be reset
 
 * `dst`: Destination packet
 
@@ -5750,7 +5765,7 @@ Copy only "properties" fields from src to dst.
 Properties for the purpose of this function are all the fields beside those related to the packet data (buf, data, size)
 
 ### Parameters
-* `dst`: Destination packet 
+* `dst`: Destination packet
 
 * `src`: Source packet
 
@@ -5804,9 +5819,9 @@ end
 Convert valid timing fields (timestamps / durations) in a packet from one timebase to another. Timestamps with unknown values ([`AV_NOPTS_VALUE`](@ref)) will be ignored.
 
 ### Parameters
-* `pkt`: packet on which the conversion will be performed 
+* `pkt`: packet on which the conversion will be performed
 
-* `tb_src`: source timebase, in which the timing fields in pkt are expressed 
+* `tb_src`: source timebase, in which the timing fields in pkt are expressed
 
 * `tb_dst`: destination timebase, to which the timing fields will be converted
 """
@@ -5910,11 +5925,11 @@ Associate a VDPAU device with a codec context for hardware acceleration. This fu
     get\\_format() must return AV\\_PIX\\_FMT\\_VDPAU if this function completes successfully.
 
 ### Parameters
-* `avctx`: decoding context whose get\\_format() callback is invoked 
+* `avctx`: decoding context whose get\\_format() callback is invoked
 
-* `device`: VDPAU device handle to use for hardware acceleration 
+* `device`: VDPAU device handle to use for hardware acceleration
 
-* `get_proc_address`: VDPAU device driver 
+* `get_proc_address`: VDPAU device driver
 
 * `flags`: zero of more OR'd AV\\_HWACCEL\\_FLAG\\_* flags
 
@@ -5935,11 +5950,11 @@ Gets the parameters to create an adequate VDPAU video surface for the codec cont
     Behavior is undefined if the context was not successfully bound to a VDPAU device using [`av_vdpau_bind_context`](@ref)().
 
 ### Parameters
-* `avctx`: the codec context being used for decoding the stream 
+* `avctx`: the codec context being used for decoding the stream
 
-* `type`: storage space for the VDPAU video surface chroma type (or NULL to ignore) 
+* `type`: storage space for the VDPAU video surface chroma type (or NULL to ignore)
 
-* `width`: storage space for the VDPAU video surface pixel width (or NULL to ignore) 
+* `width`: storage space for the VDPAU video surface pixel width (or NULL to ignore)
 
 * `height`: storage space for the VDPAU video surface pixel height (or NULL to ignore)
 
@@ -5970,7 +5985,7 @@ Get a decoder profile that should be used for initializing a VDPAU decoder. Shou
 \\deprecated Use [`av_vdpau_bind_context`](@ref)() instead.
 
 ### Parameters
-* `avctx`: the codec context being used for decoding the stream 
+* `avctx`: the codec context being used for decoding the stream
 
 * `profile`: a pointer into which the result will be written on success. The contents of profile are undefined if this function returns an error.
 
@@ -6026,7 +6041,7 @@ end
 This is a convenience function that creates and sets up the Videotoolbox context using an internal implementation.
 
 ### Parameters
-* `avctx`: the corresponding codec context 
+* `avctx`: the corresponding codec context
 
 * `vtctx`: the Videotoolbox context to use
 
@@ -6077,11 +6092,11 @@ Get the duration for a Vorbis packet.
 If `flags` is `NULL`, special frames are considered invalid.
 
 ### Parameters
-* `s`: Vorbis parser context 
+* `s`: Vorbis parser context
 
-* `buf`: buffer containing a Vorbis frame 
+* `buf`: buffer containing a Vorbis frame
 
-* `buf_size`: size of the buffer 
+* `buf_size`: size of the buffer
 
 * `flags`: flags for special frames
 """
@@ -6095,9 +6110,9 @@ end
 Get the duration for a Vorbis packet.
 
 ### Parameters
-* `s`: Vorbis parser context 
+* `s`: Vorbis parser context
 
-* `buf`: buffer containing a Vorbis frame 
+* `buf`: buffer containing a Vorbis frame
 
 * `buf_size`: size of the buffer
 """
@@ -6718,13 +6733,13 @@ end
 Send control message from application to device.
 
 ### Parameters
-* `s`: device context. 
+* `s`: device context.
 
-* `type`: message type. 
+* `type`: message type.
 
-* `data`: message data. Exact type depends on message type. 
+* `data`: message data. Exact type depends on message type.
 
-* `data_size`: size of message data. 
+* `data_size`: size of message data.
 
 ### Returns
 >= 0 on success, negative on error. [`AVERROR`](@ref)(ENOSYS) when device doesn't implement handler of the message.
@@ -6739,13 +6754,13 @@ end
 Send control message from device to application.
 
 ### Parameters
-* `s`: device context. 
+* `s`: device context.
 
-* `type`: message type. 
+* `type`: message type.
 
-* `data`: message data. Can be NULL. 
+* `data`: message data. Can be NULL.
 
-* `data_size`: size of message data. 
+* `data_size`: size of message data.
 
 ### Returns
 >= 0 on success, negative on error. [`AVERROR`](@ref)(ENOSYS) when application doesn't implement handler of the message.
@@ -6785,9 +6800,9 @@ Initialize capabilities probing API based on [`AVOption`](@ref) API.
 [`avdevice_capabilities_free`](@ref)() must be called when query capabilities API is not used anymore.
 
 ### Parameters
-* `caps`:\\[out\\] Device capabilities data. Pointer to a NULL pointer must be passed. 
+* `caps`:\\[out\\] Device capabilities data. Pointer to a NULL pointer must be passed.
 
-* `s`: Context of the device. 
+* `s`: Context of the device.
 
 * `device_options`: An [`AVDictionary`](@ref) filled with device-private options. On return this parameter will be destroyed and replaced with a dict containing options that were not found. May be NULL. The same options must be passed later to [`avformat_write_header`](@ref)() for output devices or [`avformat_open_input`](@ref)() for input devices, or at any other place that affects device-private options.
 
@@ -6804,7 +6819,7 @@ end
 Free resources created by [`avdevice_capabilities_create`](@ref)()
 
 ### Parameters
-* `caps`: Device capabilities data to be freed. 
+* `caps`: Device capabilities data to be freed.
 
 * `s`: Context of the device.
 """
@@ -6845,9 +6860,9 @@ Returns available device names and their parameters.
     : Some devices may accept system-dependent device names that cannot be autodetected. The list returned by this function cannot be assumed to be always completed.
 
 ### Parameters
-* `s`: device context. 
+* `s`: device context.
 
-* `device_list`:\\[out\\] list of autodetected devices. 
+* `device_list`:\\[out\\] list of autodetected devices.
 
 ### Returns
 count of autodetected devices, negative on error.
@@ -6880,16 +6895,16 @@ Returns available device names and their parameters. These are convinient wrappe
     device argument takes precedence over device\\_name when both are set.
 
 ### Parameters
-* `device`: device format. May be NULL if device name is set. 
+* `device`: device format. May be NULL if device name is set.
 
-* `device_name`: device name. May be NULL if device format is set. 
+* `device_name`: device name. May be NULL if device format is set.
 
-* `device_options`: An [`AVDictionary`](@ref) filled with device-private options. May be NULL. The same options must be passed later to [`avformat_write_header`](@ref)() for output devices or [`avformat_open_input`](@ref)() for input devices, or at any other place that affects device-private options. 
+* `device_options`: An [`AVDictionary`](@ref) filled with device-private options. May be NULL. The same options must be passed later to [`avformat_write_header`](@ref)() for output devices or [`avformat_open_input`](@ref)() for input devices, or at any other place that affects device-private options.
 
-* `device_list`:\\[out\\] list of autodetected devices 
+* `device_list`:\\[out\\] list of autodetected devices
 
 ### Returns
-count of autodetected devices, negative on error. 
+count of autodetected devices, negative on error.
 """
 function avdevice_list_input_sources(device, device_name, device_options, device_list)
     ccall((:avdevice_list_input_sources, libavdevice), Cint, (Ptr{AVInputFormat}, Cstring, Ptr{AVDictionary}, Ptr{Ptr{AVDeviceInfoList}}), device, device_name, device_options, device_list)
@@ -6935,7 +6950,7 @@ mutable struct AVFilterCommand end
 """
     AVFilterContext
 
-An instance of a filter 
+An instance of a filter
 """
 struct AVFilterContext
     av_class::Ptr{AVClass}
@@ -7061,7 +7076,7 @@ end
 Get the name of an [`AVFilterPad`](@ref).
 
 ### Parameters
-* `pads`: an array of AVFilterPads 
+* `pads`: an array of AVFilterPads
 
 * `pad_idx`: index of the pad in the array; it is the caller's responsibility to ensure the index is valid
 
@@ -7078,7 +7093,7 @@ end
 Get the type of an [`AVFilterPad`](@ref).
 
 ### Parameters
-* `pads`: an array of AVFilterPads 
+* `pads`: an array of AVFilterPads
 
 * `pad_idx`: index of the pad in the array; it is the caller's responsibility to ensure the index is valid
 
@@ -7120,13 +7135,13 @@ end
 Link two filters together.
 
 ### Parameters
-* `src`: the source filter 
+* `src`: the source filter
 
-* `srcpad`: index of the output pad on the source filter 
+* `srcpad`: index of the output pad on the source filter
 
-* `dst`: the destination filter 
+* `dst`: the destination filter
 
-* `dstpad`: index of the input pad on the destination filter 
+* `dstpad`: index of the input pad on the destination filter
 
 ### Returns
 zero on success
@@ -7147,7 +7162,7 @@ end
 """
     avfilter_link_get_channels(link)
 
-Get the number of channels of a link. 
+Get the number of channels of a link.
 
 \\deprecated Use [`av_buffersink_get_channels`](@ref)()
 """
@@ -7158,7 +7173,7 @@ end
 """
     avfilter_link_set_closed(link, closed::Integer)
 
-Set the closed field of a link. 
+Set the closed field of a link.
 
 \\deprecated applications are not supposed to mess with links, they should close the sinks.
 """
@@ -7172,7 +7187,7 @@ end
 Negotiate the media format, dimensions, etc of all inputs to a filter.
 
 ### Parameters
-* `filter`: the filter to negotiate the properties for its inputs 
+* `filter`: the filter to negotiate the properties for its inputs
 
 ### Returns
 zero on successful negotiation
@@ -7208,7 +7223,7 @@ end
 """
     avfilter_register_all()
 
-Initialize the filter system. Register all builtin filters. 
+Initialize the filter system. Register all builtin filters.
 """
 function avfilter_register_all()
     ccall((:avfilter_register_all, libavfilter), Cvoid, ())
@@ -7220,7 +7235,7 @@ end
 Register a filter. This is only needed if you plan to use [`avfilter_get_by_name`](@ref) later to lookup the [`AVFilter`](@ref) structure by name. A filter can still by instantiated with [`avfilter_graph_alloc_filter`](@ref) even if it is not registered.
 
 ### Parameters
-* `filter`: the filter to register 
+* `filter`: the filter to register
 
 ### Returns
 0 if the registration was successful, a negative value otherwise
@@ -7232,7 +7247,7 @@ end
 """
     avfilter_next(prev)
 
-Iterate over all registered filters. 
+Iterate over all registered filters.
 
 ### Returns
 If prev is non-NULL, next registered filter after prev or NULL if prev is the last filter. If prev is NULL, return the first registered filter.
@@ -7247,7 +7262,7 @@ end
 Get a filter definition matching the given name.
 
 ### Parameters
-* `name`: the filter name to find 
+* `name`: the filter name to find
 
 ### Returns
 the filter definition, if any matching one is registered. NULL if none found.
@@ -7262,9 +7277,9 @@ end
 Initialize a filter with the supplied parameters.
 
 ### Parameters
-* `ctx`: uninitialized filter context to initialize 
+* `ctx`: uninitialized filter context to initialize
 
-* `args`: Options to initialize the filter with. This must be a ':'-separated list of options in the 'key=value' form. May be NULL if the options have been set directly using the AVOptions API or there are no options that need to be set. 
+* `args`: Options to initialize the filter with. This must be a ':'-separated list of options in the 'key=value' form. May be NULL if the options have been set directly using the AVOptions API or there are no options that need to be set.
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) on failure
@@ -7283,9 +7298,9 @@ Initialize a filter with the supplied dictionary of options.
     This function and [`avfilter_init_str`](@ref)() do essentially the same thing, the difference is in manner in which the options are passed. It is up to the calling code to choose whichever is more preferable. The two functions also behave differently when some of the provided options are not declared as supported by the filter. In such a case, [`avfilter_init_str`](@ref)() will fail, but this function will leave those extra options in the options [`AVDictionary`](@ref) and continue as usual.
 
 ### Parameters
-* `ctx`: uninitialized filter context to initialize 
+* `ctx`: uninitialized filter context to initialize
 
-* `options`: An [`AVDictionary`](@ref) filled with options for this filter. On return this parameter will be destroyed and replaced with a dict containing options that were not found. This dictionary must be freed by the caller. May be NULL, then this function is equivalent to [`avfilter_init_str`](@ref)() with the second parameter set to NULL. 
+* `options`: An [`AVDictionary`](@ref) filled with options for this filter. On return this parameter will be destroyed and replaced with a dict containing options that were not found. This dictionary must be freed by the caller. May be NULL, then this function is equivalent to [`avfilter_init_str`](@ref)() with the second parameter set to NULL.
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) on failure
@@ -7312,13 +7327,13 @@ end
 Insert a filter in the middle of an existing link.
 
 ### Parameters
-* `link`: the link into which the filter should be inserted 
+* `link`: the link into which the filter should be inserted
 
-* `filt`: the filter to be inserted 
+* `filt`: the filter to be inserted
 
-* `filt_srcpad_idx`: the input pad on the filter to connect 
+* `filt_srcpad_idx`: the input pad on the filter to connect
 
-* `filt_dstpad_idx`: the output pad on the filter to connect 
+* `filt_dstpad_idx`: the output pad on the filter to connect
 
 ### Returns
 zero on success
@@ -7347,11 +7362,11 @@ mutable struct AVFilterGraphInternal end
 A function pointer passed to the AVFilterGraph.execute callback to be executed multiple times, possibly in parallel.
 
 ### Parameters
-* `ctx`: the filter context the job belongs to 
+* `ctx`: the filter context the job belongs to
 
-* `arg`: an opaque parameter passed through from AVFilterGraph.execute 
+* `arg`: an opaque parameter passed through from AVFilterGraph.execute
 
-* `jobnr`: the index of the job being executed 
+* `jobnr`: the index of the job being executed
 
 * `nb_jobs`: the total number of jobs
 
@@ -7365,13 +7380,13 @@ const avfilter_action_func = Cvoid
 A function executing multiple jobs, possibly in parallel.
 
 ### Parameters
-* `ctx`: the filter context to which the jobs belong 
+* `ctx`: the filter context to which the jobs belong
 
-* `func`: the function to be called multiple times 
+* `func`: the function to be called multiple times
 
-* `arg`: the argument to be passed to func 
+* `arg`: the argument to be passed to func
 
-* `ret`: a nb\\_jobs-sized array to be filled with return values from each invocation of func 
+* `ret`: a nb\\_jobs-sized array to be filled with return values from each invocation of func
 
 * `nb_jobs`: the number of jobs to execute
 
@@ -7431,9 +7446,9 @@ end
 Create a new filter instance in a filter graph.
 
 ### Parameters
-* `graph`: graph in which the new filter will be used 
+* `graph`: graph in which the new filter will be used
 
-* `filter`: the filter to create an instance of 
+* `filter`: the filter to create an instance of
 
 * `name`: Name to give to the new instance (will be copied to [`AVFilterContext`](@ref).name). This may be used by the caller to identify different filters, libavfilter itself assigns no semantics to this parameter. May be NULL.
 
@@ -7450,9 +7465,9 @@ end
 Get a filter instance identified by instance name from graph.
 
 ### Parameters
-* `graph`: filter graph to search through. 
+* `graph`: filter graph to search through.
 
-* `name`: filter instance name (should be unique in the graph). 
+* `name`: filter instance name (should be unique in the graph).
 
 ### Returns
 the pointer to the found filter instance or NULL if it cannot be found.
@@ -7469,9 +7484,9 @@ Create and add a filter instance into an existing graph. The filter instance is 
 In case of success put in *filt\\_ctx the pointer to the created filter instance, otherwise set *filt\\_ctx to NULL.
 
 ### Parameters
-* `name`: the instance name to give to the created filter instance 
+* `name`: the instance name to give to the created filter instance
 
-* `graph_ctx`: the filter graph 
+* `graph_ctx`: the filter graph
 
 ### Returns
 a negative [`AVERROR`](@ref) error code in case of failure, a non negative value otherwise
@@ -7504,9 +7519,9 @@ const AVFILTER_AUTO_CONVERT_NONE = -1 % Int32
 Check validity and configure all the links and formats in the graph.
 
 ### Parameters
-* `graphctx`: the filter graph 
+* `graphctx`: the filter graph
 
-* `log_ctx`: context used for logging 
+* `log_ctx`: context used for logging
 
 ### Returns
 >= 0 in case of success, a negative [`AVERROR`](@ref) code otherwise
@@ -7541,7 +7556,7 @@ end
 """
     avfilter_inout_alloc()
 
-Allocate a single [`AVFilterInOut`](@ref) entry. Must be freed with [`avfilter_inout_free`](@ref)(). 
+Allocate a single [`AVFilterInOut`](@ref) entry. Must be freed with [`avfilter_inout_free`](@ref)().
 
 ### Returns
 allocated [`AVFilterInOut`](@ref) on success, NULL on failure.
@@ -7573,13 +7588,13 @@ Add a graph described by a string to a graph.
     The inputs parameter describes inputs of the already existing part of the graph; i.e. from the point of view of the newly created part, they are outputs. Similarly the outputs parameter describes outputs of the already existing filters, which are provided as inputs to the parsed filters.
 
 ### Parameters
-* `graph`: the filter graph where to link the parsed graph context 
+* `graph`: the filter graph where to link the parsed graph context
 
-* `filters`: string to be parsed 
+* `filters`: string to be parsed
 
-* `inputs`: linked list to the inputs of the graph 
+* `inputs`: linked list to the inputs of the graph
 
-* `outputs`: linked list to the outputs of the graph 
+* `outputs`: linked list to the outputs of the graph
 
 ### Returns
 zero on success, a negative [`AVERROR`](@ref) code on error
@@ -7596,13 +7611,13 @@ Add a graph described by a string to a graph.
 In the graph filters description, if the input label of the first filter is not specified, "in" is assumed; if the output label of the last filter is not specified, "out" is assumed.
 
 ### Parameters
-* `graph`: the filter graph where to link the parsed graph context 
+* `graph`: the filter graph where to link the parsed graph context
 
-* `filters`: string to be parsed 
+* `filters`: string to be parsed
 
-* `inputs`: pointer to a linked list to the inputs of the graph, may be NULL. If non-NULL, *inputs is updated to contain the list of open inputs after the parsing, should be freed with [`avfilter_inout_free`](@ref)(). 
+* `inputs`: pointer to a linked list to the inputs of the graph, may be NULL. If non-NULL, *inputs is updated to contain the list of open inputs after the parsing, should be freed with [`avfilter_inout_free`](@ref)().
 
-* `outputs`: pointer to a linked list to the outputs of the graph, may be NULL. If non-NULL, *outputs is updated to contain the list of open outputs after the parsing, should be freed with [`avfilter_inout_free`](@ref)(). 
+* `outputs`: pointer to a linked list to the outputs of the graph, may be NULL. If non-NULL, *outputs is updated to contain the list of open outputs after the parsing, should be freed with [`avfilter_inout_free`](@ref)().
 
 ### Returns
 non negative on success, a negative [`AVERROR`](@ref) code on error
@@ -7618,20 +7633,20 @@ Add a graph described by a string to a graph.
 
 !!! note
 
-    This function returns the inputs and outputs that are left unlinked after parsing the graph and the caller then deals with them. 
+    This function returns the inputs and outputs that are left unlinked after parsing the graph and the caller then deals with them.
 
 !!! note
 
     This function makes no reference whatsoever to already existing parts of the graph and the inputs parameter will on return contain inputs of the newly parsed part of the graph. Analogously the outputs parameter will contain outputs of the newly created filters.
 
 ### Parameters
-* `graph`:\\[in\\] the filter graph where to link the parsed graph context 
+* `graph`:\\[in\\] the filter graph where to link the parsed graph context
 
-* `filters`:\\[in\\] string to be parsed 
+* `filters`:\\[in\\] string to be parsed
 
-* `inputs`:\\[out\\] a linked list of all free (unlinked) inputs of the parsed graph will be returned here. It is to be freed by the caller using [`avfilter_inout_free`](@ref)(). 
+* `inputs`:\\[out\\] a linked list of all free (unlinked) inputs of the parsed graph will be returned here. It is to be freed by the caller using [`avfilter_inout_free`](@ref)().
 
-* `outputs`:\\[out\\] a linked list of all free (unlinked) outputs of the parsed graph will be returned here. It is to be freed by the caller using [`avfilter_inout_free`](@ref)(). 
+* `outputs`:\\[out\\] a linked list of all free (unlinked) outputs of the parsed graph will be returned here. It is to be freed by the caller using [`avfilter_inout_free`](@ref)().
 
 ### Returns
 zero on success, a negative [`AVERROR`](@ref) code on error
@@ -7646,13 +7661,13 @@ end
 Send a command to one or more filter instances.
 
 ### Parameters
-* `graph`: the filter graph 
+* `graph`: the filter graph
 
-* `target`: the filter(s) to which the command should be sent "all" sends to all filters otherwise it can be a filter or filter instance name which will send the command to all matching filters. 
+* `target`: the filter(s) to which the command should be sent "all" sends to all filters otherwise it can be a filter or filter instance name which will send the command to all matching filters.
 
-* `cmd`: the command to send, for handling simplicity all commands must be alphanumeric only 
+* `cmd`: the command to send, for handling simplicity all commands must be alphanumeric only
 
-* `arg`: the argument for the command 
+* `arg`: the argument for the command
 
 * `res`: a buffer with size res\\_size where the filter(s) can return a response.
 
@@ -7673,13 +7688,13 @@ Queue a command for one or more filter instances.
     As this executes commands after this function returns, no return code from the filter is provided, also [`AVFILTER_CMD_FLAG_ONE`](@ref) is not supported.
 
 ### Parameters
-* `graph`: the filter graph 
+* `graph`: the filter graph
 
-* `target`: the filter(s) to which the command should be sent "all" sends to all filters otherwise it can be a filter or filter instance name which will send the command to all matching filters. 
+* `target`: the filter(s) to which the command should be sent "all" sends to all filters otherwise it can be a filter or filter instance name which will send the command to all matching filters.
 
-* `cmd`: the command to sent, for handling simplicity all commands must be alphanumeric only 
+* `cmd`: the command to sent, for handling simplicity all commands must be alphanumeric only
 
-* `arg`: the argument for the command 
+* `arg`: the argument for the command
 
 * `ts`: time at which the command should be sent to the filter
 """
@@ -7693,9 +7708,9 @@ end
 Dump a graph into a human-readable string representation.
 
 ### Parameters
-* `graph`: the graph to dump 
+* `graph`: the graph to dump
 
-* `options`: formatting options; currently ignored 
+* `options`: formatting options; currently ignored
 
 ### Returns
 a string, or NULL in case of memory allocation failure; the string must be freed using [`av_free`](@ref)
@@ -7728,9 +7743,9 @@ end
 Get a frame with filtered data from sink and put it in frame.
 
 ### Parameters
-* `ctx`: pointer to a buffersink or abuffersink filter context. 
+* `ctx`: pointer to a buffersink or abuffersink filter context.
 
-* `frame`: pointer to an allocated frame that will be filled with data. The data must be freed using [`av_frame_unref`](@ref)() / [`av_frame_free`](@ref)() 
+* `frame`: pointer to an allocated frame that will be filled with data. The data must be freed using [`av_frame_unref`](@ref)() / [`av_frame_free`](@ref)()
 
 * `flags`: a combination of AV\\_BUFFERSINK\\_FLAG\\_* flags
 
@@ -7853,7 +7868,7 @@ end
 Get a frame with filtered data from sink and put it in frame.
 
 ### Parameters
-* `ctx`: pointer to a context of a buffersink or abuffersink [`AVFilter`](@ref). 
+* `ctx`: pointer to a context of a buffersink or abuffersink [`AVFilter`](@ref).
 
 * `frame`: pointer to an allocated frame that will be filled with data. The data must be freed using [`av_frame_unref`](@ref)() / [`av_frame_free`](@ref)()
 
@@ -7874,7 +7889,7 @@ Same as [`av_buffersink_get_frame`](@ref)(), but with the ability to specify the
     do not mix this function with [`av_buffersink_get_frame`](@ref)(). Use only one or the other with a single sink, not both.
 
 ### Parameters
-* `ctx`: pointer to a context of the abuffersink [`AVFilter`](@ref). 
+* `ctx`: pointer to a context of the abuffersink [`AVFilter`](@ref).
 
 * `frame`: pointer to an allocated frame that will be filled with data. The data must be freed using [`av_frame_unref`](@ref)() / [`av_frame_free`](@ref)() frame will contain exactly nb\\_samples audio samples, except at the end of stream, when it can contain less than nb\\_samples.
 
@@ -7944,9 +7959,9 @@ end
 Initialize the buffersrc or abuffersrc filter with the provided parameters. This function may be called multiple times, the later calls override the previous ones. Some of the parameters may also be set through AVOptions, then whatever method is used last takes precedence.
 
 ### Parameters
-* `ctx`: an instance of the buffersrc or abuffersrc filter 
+* `ctx`: an instance of the buffersrc or abuffersrc filter
 
-* `param`: the stream parameters. The frames later passed to this filter must conform to those parameters. All the allocated fields in param remain owned by the caller, libavfilter will make internal copies or references when necessary. 
+* `param`: the stream parameters. The frames later passed to this filter must conform to those parameters. All the allocated fields in param remain owned by the caller, libavfilter will make internal copies or references when necessary.
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) code on failure.
@@ -7963,7 +7978,7 @@ Add a frame to the buffer source.
 This function is equivalent to [`av_buffersrc_add_frame_flags`](@ref)() with the AV\\_BUFFERSRC\\_FLAG\\_KEEP\\_REF flag.
 
 ### Parameters
-* `ctx`: an instance of the buffersrc filter 
+* `ctx`: an instance of the buffersrc filter
 
 * `frame`: frame to be added. If the frame is reference counted, this function will make a new reference to it. Otherwise the frame data will be copied.
 
@@ -7986,7 +8001,7 @@ Add a frame to the buffer source.
 This function is equivalent to [`av_buffersrc_add_frame_flags`](@ref)() without the AV\\_BUFFERSRC\\_FLAG\\_KEEP\\_REF flag.
 
 ### Parameters
-* `ctx`: an instance of the buffersrc filter 
+* `ctx`: an instance of the buffersrc filter
 
 * `frame`: frame to be added. If the frame is reference counted, this function will take ownership of the reference(s) and reset the frame. Otherwise the frame data will be copied. If this function returns an error, the input frame is not touched.
 
@@ -8007,11 +8022,11 @@ By default, if the frame is reference-counted, this function will take ownership
 If this function returns an error, the input frame is not touched.
 
 ### Parameters
-* `buffer_src`: pointer to a buffer source context 
+* `buffer_src`: pointer to a buffer source context
 
-* `frame`: a frame, or NULL to mark EOF 
+* `frame`: a frame, or NULL to mark EOF
 
-* `flags`: a combination of AV\\_BUFFERSRC\\_FLAG\\_* 
+* `flags`: a combination of AV\\_BUFFERSRC\\_FLAG\\_*
 
 ### Returns
 >= 0 in case of success, a negative [`AVERROR`](@ref) code in case of failure
@@ -8037,11 +8052,11 @@ end
 Allocate and read the payload of a packet and initialize its fields with default values.
 
 ### Parameters
-* `s`: associated IO context 
+* `s`: associated IO context
 
-* `pkt`: packet 
+* `pkt`: packet
 
-* `size`: desired payload size 
+* `size`: desired payload size
 
 ### Returns
 >0 (read size) if OK, AVERROR\\_xxx otherwise
@@ -8056,11 +8071,11 @@ end
 Read data and append it to the current content of the [`AVPacket`](@ref). If pkt->size is 0 this is identical to [`av_get_packet`](@ref). Note that this uses [`av_grow_packet`](@ref) and thus involves a realloc which is inefficient. Thus this function should only be used when there is no reasonable way to know (an upper bound of) the final size.
 
 ### Parameters
-* `s`: associated IO context 
+* `s`: associated IO context
 
-* `pkt`: packet 
+* `pkt`: packet
 
-* `size`: amount of data to read 
+* `size`: amount of data to read
 
 ### Returns
 >0 (read size) if OK, AVERROR\\_xxx otherwise, previous data will not be lost even if an error occurs.
@@ -8331,7 +8346,7 @@ end
 """
     avformat_free_context(s)
 
-Free an [`AVFormatContext`](@ref) and all its streams. 
+Free an [`AVFormatContext`](@ref) and all its streams.
 
 ### Parameters
 * `s`: context to free
@@ -8364,7 +8379,7 @@ When muxing, should be called by the user before [`avformat_write_header`](@ref)
 User is required to call [`avcodec_close`](@ref)() and [`avformat_free_context`](@ref)() to clean up the allocation by [`avformat_new_stream`](@ref)().
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
 * `c`: If non-NULL, the [`AVCodecContext`](@ref) corresponding to the new stream will be initialized to use this codec. This is needed for e.g. codec-specific defaults to be set, so codec should be provided if it is known.
 
@@ -8381,13 +8396,13 @@ end
 Wrap an existing array as stream side data.
 
 ### Parameters
-* `st`: stream 
+* `st`: stream
 
-* `type`: side information type 
+* `type`: side information type
 
-* `data`: the side data array. It must be allocated with the [`av_malloc`](@ref)() family of functions. The ownership of the data is transferred to st. 
+* `data`: the side data array. It must be allocated with the [`av_malloc`](@ref)() family of functions. The ownership of the data is transferred to st.
 
-* `size`: side information size 
+* `size`: side information size
 
 ### Returns
 zero on success, a negative [`AVERROR`](@ref) code on failure. On failure, the stream is unchanged and the data remains owned by the caller.
@@ -8402,11 +8417,11 @@ end
 Allocate new information from stream.
 
 ### Parameters
-* `stream`: stream 
+* `stream`: stream
 
-* `type`: desired side information type 
+* `type`: desired side information type
 
-* `size`: side information size 
+* `size`: side information size
 
 ### Returns
 pointer to fresh allocated data or NULL otherwise
@@ -8421,11 +8436,11 @@ end
 Get side information from stream.
 
 ### Parameters
-* `stream`: stream 
+* `stream`: stream
 
-* `type`: desired side information type 
+* `type`: desired side information type
 
-* `size`: If supplied, *size will be set to the size of the side data or to zero if the desired side data is not present. 
+* `size`: If supplied, *size will be set to the size of the side data or to zero if the desired side data is not present.
 
 ### Returns
 pointer to data if present or NULL otherwise
@@ -8444,13 +8459,13 @@ end
 Allocate an [`AVFormatContext`](@ref) for an output format. [`avformat_free_context`](@ref)() can be used to free the context and everything allocated by the framework within it.
 
 ### Parameters
-* `*ctx`: is set to the created format context, or to NULL in case of failure 
+* `*ctx`: is set to the created format context, or to NULL in case of failure
 
-* `oformat`: format to use for allocating the context, if NULL format\\_name and filename are used instead 
+* `oformat`: format to use for allocating the context, if NULL format\\_name and filename are used instead
 
-* `format_name`: the name of output format to use for allocating the context, if NULL filename is used instead 
+* `format_name`: the name of output format to use for allocating the context, if NULL filename is used instead
 
-* `filename`: the name of the filename to use for allocating the context, may be NULL 
+* `filename`: the name of the filename to use for allocating the context, may be NULL
 
 ### Returns
 >= 0 in case of success, a negative [`AVERROR`](@ref) code in case of failure
@@ -8474,7 +8489,7 @@ end
 Guess the file format.
 
 ### Parameters
-* `pd`: data to be probed 
+* `pd`: data to be probed
 
 * `is_opened`: Whether the file is already opened; determines whether demuxers with or without [`AVFMT_NOFILE`](@ref) are probed.
 """
@@ -8488,9 +8503,9 @@ end
 Guess the file format.
 
 ### Parameters
-* `pd`: data to be probed 
+* `pd`: data to be probed
 
-* `is_opened`: Whether the file is already opened; determines whether demuxers with or without [`AVFMT_NOFILE`](@ref) are probed. 
+* `is_opened`: Whether the file is already opened; determines whether demuxers with or without [`AVFMT_NOFILE`](@ref) are probed.
 
 * `score_max`: A probe score larger that this is required to accept a detection, the variable is set to the actual detection score afterwards. If the score is <= [`AVPROBE_SCORE_MAX`](@ref) / 4 it is recommended to retry with a larger probe buffer.
 """
@@ -8504,7 +8519,7 @@ end
 Guess the file format.
 
 ### Parameters
-* `is_opened`: Whether the file is already opened; determines whether demuxers with or without [`AVFMT_NOFILE`](@ref) are probed. 
+* `is_opened`: Whether the file is already opened; determines whether demuxers with or without [`AVFMT_NOFILE`](@ref) are probed.
 
 * `score_ret`: The score of the best detection.
 """
@@ -8518,17 +8533,17 @@ end
 Probe a bytestream to determine the input format. Each time a probe returns with a score that is too low, the probe buffer size is increased and another attempt is made. When the maximum probe size is reached, the input format with the highest score is returned.
 
 ### Parameters
-* `pb`: the bytestream to probe 
+* `pb`: the bytestream to probe
 
-* `fmt`: the input format is put here 
+* `fmt`: the input format is put here
 
-* `url`: the url of the stream 
+* `url`: the url of the stream
 
-* `logctx`: the log context 
+* `logctx`: the log context
 
-* `offset`: the offset within the bytestream to probe from 
+* `offset`: the offset within the bytestream to probe from
 
-* `max_probe_size`: the maximum probe buffer size (zero for default) 
+* `max_probe_size`: the maximum probe buffer size (zero for default)
 
 ### Returns
 the score in case of success, a negative value corresponding to an the maximal score is [`AVPROBE_SCORE_MAX`](@ref) [`AVERROR`](@ref) code otherwise
@@ -8556,11 +8571,11 @@ Open an input stream and read the header. The codecs are not opened. The stream 
     If you want to use custom IO, preallocate the format context and set its pb field.
 
 ### Parameters
-* `ps`: Pointer to user-supplied [`AVFormatContext`](@ref) (allocated by [`avformat_alloc_context`](@ref)). May be a pointer to NULL, in which case an [`AVFormatContext`](@ref) is allocated by this function and written into ps. Note that a user-supplied [`AVFormatContext`](@ref) will be freed on failure. 
+* `ps`: Pointer to user-supplied [`AVFormatContext`](@ref) (allocated by [`avformat_alloc_context`](@ref)). May be a pointer to NULL, in which case an [`AVFormatContext`](@ref) is allocated by this function and written into ps. Note that a user-supplied [`AVFormatContext`](@ref) will be freed on failure.
 
-* `url`: URL of the stream to open. 
+* `url`: URL of the stream to open.
 
-* `fmt`: If non-NULL, this parameter forces a specific input format. Otherwise the format is autodetected. 
+* `fmt`: If non-NULL, this parameter forces a specific input format. Otherwise the format is autodetected.
 
 * `options`: A dictionary filled with [`AVFormatContext`](@ref) and demuxer-private options. On return this parameter will be destroyed and replaced with a dict containing options that were not found. May be NULL.
 
@@ -8592,9 +8607,9 @@ Read packets of a media file to get stream information. This is useful for file 
 \\todo Let the user decide somehow what information is needed so that we do not waste time getting stuff the user does not need.
 
 ### Parameters
-* `ic`: media file handle 
+* `ic`: media file handle
 
-* `options`: If non-NULL, an ic.nb\\_streams long array of pointers to dictionaries, where i-th member contains options for codec corresponding to i-th stream. On return each dictionary will be filled with options that were not found. 
+* `options`: If non-NULL, an ic.nb\\_streams long array of pointers to dictionaries, where i-th member contains options for codec corresponding to i-th stream. On return each dictionary will be filled with options that were not found.
 
 ### Returns
 >=0 if OK, AVERROR\\_xxx on error
@@ -8609,11 +8624,11 @@ end
 Find the programs which belong to a given stream.
 
 ### Parameters
-* `ic`: media file handle 
+* `ic`: media file handle
 
-* `last`: the last found program, the search will start after this program, or from the beginning if it is NULL 
+* `last`: the last found program, the search will start after this program, or from the beginning if it is NULL
 
-* `s`: stream index 
+* `s`: stream index
 
 ### Returns
 the next program which belongs to s, NULL if no program is found or the last program is not among the programs of ic.
@@ -8636,20 +8651,20 @@ Find the "best" stream in the file. The best stream is determined according to v
     If [`av_find_best_stream`](@ref) returns successfully and decoder\\_ret is not NULL, then *decoder\\_ret is guaranteed to be set to a valid [`AVCodec`](@ref).
 
 ### Parameters
-* `ic`: media file handle 
+* `ic`: media file handle
 
-* `type`: stream type: video, audio, subtitles, etc. 
+* `type`: stream type: video, audio, subtitles, etc.
 
-* `wanted_stream_nb`: user-requested stream number, or -1 for automatic selection 
+* `wanted_stream_nb`: user-requested stream number, or -1 for automatic selection
 
-* `related_stream`: try to find a stream related (eg. in the same program) to this one, or -1 if none 
+* `related_stream`: try to find a stream related (eg. in the same program) to this one, or -1 if none
 
-* `decoder_ret`: if non-NULL, returns the decoder for the selected stream 
+* `decoder_ret`: if non-NULL, returns the decoder for the selected stream
 
-* `flags`: flags; none are currently defined 
+* `flags`: flags; none are currently defined
 
 ### Returns
-the non-negative stream number in case of success, [`AVERROR_STREAM_NOT_FOUND`](@ref) if no stream with the requested type could be found, [`AVERROR_DECODER_NOT_FOUND`](@ref) if streams were found but no decoder 
+the non-negative stream number in case of success, [`AVERROR_STREAM_NOT_FOUND`](@ref) if no stream with the requested type could be found, [`AVERROR_DECODER_NOT_FOUND`](@ref) if streams were found but no decoder
 """
 function av_find_best_stream(ic, type::AVMediaType, wanted_stream_nb::Integer, related_stream::Integer, decoder_ret, flags::Integer)
     ccall((:av_find_best_stream, libavformat), Cint, (Ptr{AVFormatContext}, AVMediaType, Cint, Cint, Ptr{Ptr{AVCodec}}, Cint), ic, type, wanted_stream_nb, related_stream, decoder_ret, flags)
@@ -8681,13 +8696,13 @@ end
 Seek to the keyframe at timestamp. 'timestamp' in 'stream\\_index'.
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
-* `stream_index`: If stream\\_index is (-1), a default stream is selected, and timestamp is automatically converted from [`AV_TIME_BASE`](@ref) units to the stream specific time\\_base. 
+* `stream_index`: If stream\\_index is (-1), a default stream is selected, and timestamp is automatically converted from [`AV_TIME_BASE`](@ref) units to the stream specific time\\_base.
 
-* `timestamp`: Timestamp in [`AVStream`](@ref).time\\_base units or, if no stream is specified, in [`AV_TIME_BASE`](@ref) units. 
+* `timestamp`: Timestamp in [`AVStream`](@ref).time\\_base units or, if no stream is specified, in [`AV_TIME_BASE`](@ref) units.
 
-* `flags`: flags which select direction and seeking mode 
+* `flags`: flags which select direction and seeking mode
 
 ### Returns
 >= 0 on success
@@ -8708,17 +8723,17 @@ If flags contain [`AVSEEK_FLAG_BYTE`](@ref), then all timestamps are in bytes an
     This is part of the new seek API which is still under construction.
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
-* `stream_index`: index of the stream which is used as time base reference 
+* `stream_index`: index of the stream which is used as time base reference
 
-* `min_ts`: smallest acceptable timestamp 
+* `min_ts`: smallest acceptable timestamp
 
-* `ts`: target timestamp 
+* `ts`: target timestamp
 
-* `max_ts`: largest acceptable timestamp 
+* `max_ts`: largest acceptable timestamp
 
-* `flags`: flags 
+* `flags`: flags
 
 ### Returns
 >=0 on success, error code otherwise
@@ -8737,7 +8752,7 @@ The set of streams, the detected duration, stream parameters and codecs do not c
 This does not flush the [`AVIOContext`](@ref) (s->pb). If necessary, call [`avio_flush`](@ref)(s->pb) before calling this function.
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
 ### Returns
 >=0 on success, error code otherwise
@@ -8781,7 +8796,7 @@ end
 Allocate the stream private data and write the stream header to an output media file.
 
 ### Parameters
-* `s`: Media file handle, must be allocated with [`avformat_alloc_context`](@ref)(). Its oformat field must be set to the desired output format; Its pb field must be set to an already opened [`AVIOContext`](@ref). 
+* `s`: Media file handle, must be allocated with [`avformat_alloc_context`](@ref)(). Its oformat field must be set to the desired output format; Its pb field must be set to an already opened [`AVIOContext`](@ref).
 
 * `options`: An [`AVDictionary`](@ref) filled with [`AVFormatContext`](@ref) and muxer-private options. On return this parameter will be destroyed and replaced with a dict containing options that were not found. May be NULL.
 
@@ -8801,7 +8816,7 @@ end
 Allocate the stream private data and initialize the codec, but do not write the header. May optionally be used before [`avformat_write_header`](@ref) to initialize stream parameters before actually writing the header. If using this function, do not pass the same options to [`avformat_write_header`](@ref).
 
 ### Parameters
-* `s`: Media file handle, must be allocated with [`avformat_alloc_context`](@ref)(). Its oformat field must be set to the desired output format; Its pb field must be set to an already opened [`AVIOContext`](@ref). 
+* `s`: Media file handle, must be allocated with [`avformat_alloc_context`](@ref)(). Its oformat field must be set to the desired output format; Its pb field must be set to an already opened [`AVIOContext`](@ref).
 
 * `options`: An [`AVDictionary`](@ref) filled with [`AVFormatContext`](@ref) and muxer-private options. On return this parameter will be destroyed and replaced with a dict containing options that were not found. May be NULL.
 
@@ -8823,9 +8838,9 @@ Write a packet to an output media file.
 This function passes the packet directly to the muxer, without any buffering or reordering. The caller is responsible for correctly interleaving the packets if the format requires it. Callers that want libavformat to handle the interleaving should call [`av_interleaved_write_frame`](@ref)() instead of this function.
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
-* `pkt`: The packet containing the data to be written. Note that unlike [`av_interleaved_write_frame`](@ref)(), this function does not take ownership of the packet passed to it (though some muxers may make an internal reference to the input packet). <br> This parameter can be NULL (at any time, not just at the end), in order to immediately flush data buffered within the muxer, for muxers that buffer up data internally before writing it to the output. <br> Packet's AVPacket.stream_index "stream\\_index" field must be set to the index of the corresponding stream in AVFormatContext.streams "s->streams". <br> The timestamps (AVPacket.pts "pts", AVPacket.dts "dts") must be set to correct values in the stream's timebase (unless the output format is flagged with the [`AVFMT_NOTIMESTAMPS`](@ref) flag, then they can be set to [`AV_NOPTS_VALUE`](@ref)). The dts for subsequent packets passed to this function must be strictly increasing when compared in their respective timebases (unless the output format is flagged with the [`AVFMT_TS_NONSTRICT`](@ref), then they merely have to be nondecreasing). AVPacket.duration "duration") should also be set if known. 
+* `pkt`: The packet containing the data to be written. Note that unlike [`av_interleaved_write_frame`](@ref)(), this function does not take ownership of the packet passed to it (though some muxers may make an internal reference to the input packet). <br> This parameter can be NULL (at any time, not just at the end), in order to immediately flush data buffered within the muxer, for muxers that buffer up data internally before writing it to the output. <br> Packet's AVPacket.stream_index "stream\\_index" field must be set to the index of the corresponding stream in AVFormatContext.streams "s->streams". <br> The timestamps (AVPacket.pts "pts", AVPacket.dts "dts") must be set to correct values in the stream's timebase (unless the output format is flagged with the [`AVFMT_NOTIMESTAMPS`](@ref) flag, then they can be set to [`AV_NOPTS_VALUE`](@ref)). The dts for subsequent packets passed to this function must be strictly increasing when compared in their respective timebases (unless the output format is flagged with the [`AVFMT_TS_NONSTRICT`](@ref), then they merely have to be nondecreasing). AVPacket.duration "duration") should also be set if known.
 
 ### Returns
 < 0 on error, = 0 if OK, 1 if flushed and there is no more data to flush
@@ -8847,7 +8862,7 @@ This function will buffer the packets internally as needed to make sure the pack
 Using this function instead of [`av_write_frame`](@ref)() can give muxers advance knowledge of future packets, improving e.g. the behaviour of the mp4 muxer for VFR content in fragmenting mode.
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
 * `pkt`: The packet containing the data to be written. <br> If the packet is reference-counted, this function will take ownership of this reference and unreference it later when it sees fit. The caller must not access the data through this reference after this function returns. If the packet is not reference-counted, libavformat will make a copy. <br> This parameter can be NULL (at any time, not just at the end), to flush the interleaving queues. <br> Packet's AVPacket.stream_index "stream\\_index" field must be set to the index of the corresponding stream in AVFormatContext.streams "s->streams". <br> The timestamps (AVPacket.pts "pts", AVPacket.dts "dts") must be set to correct values in the stream's timebase (unless the output format is flagged with the [`AVFMT_NOTIMESTAMPS`](@ref) flag, then they can be set to [`AV_NOPTS_VALUE`](@ref)). The dts for subsequent packets in one stream must be strictly increasing (unless the output format is flagged with the [`AVFMT_TS_NONSTRICT`](@ref), then they merely have to be nondecreasing). AVPacket.duration "duration") should also be set if known.
 
@@ -8912,7 +8927,7 @@ Write the stream trailer to an output media file and free the file private data.
 May only be called after a successful call to [`avformat_write_header`](@ref).
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
 ### Returns
 0 if OK, AVERROR\\_xxx on error
@@ -8927,9 +8942,9 @@ end
 Return the output format in the list of registered output formats which best matches the provided parameters, or return NULL if there is no match.
 
 ### Parameters
-* `short_name`: if non-NULL checks if short\\_name matches with the names of the registered formats 
+* `short_name`: if non-NULL checks if short\\_name matches with the names of the registered formats
 
-* `filename`: if non-NULL checks if filename terminates with the extensions of the registered formats 
+* `filename`: if non-NULL checks if filename terminates with the extensions of the registered formats
 
 * `mime_type`: if non-NULL checks if mime\\_type matches with the MIME type of the registered formats
 """
@@ -8949,16 +8964,16 @@ end
 """
     av_get_output_timestamp(s, stream::Integer, dts, wall)
 
-Get timing information for the data currently output. The exact meaning of "currently output" depends on the format. It is mostly relevant for devices that have an internal buffer and/or work in real time. 
+Get timing information for the data currently output. The exact meaning of "currently output" depends on the format. It is mostly relevant for devices that have an internal buffer and/or work in real time.
 
 ### Parameters
-* `s`: media file handle 
+* `s`: media file handle
 
-* `stream`: stream in the media file 
+* `stream`: stream in the media file
 
-* `dts`:\\[out\\] DTS of the last packet output for the stream, in stream time\\_base units 
+* `dts`:\\[out\\] DTS of the last packet output for the stream, in stream time\\_base units
 
-* `wall`:\\[out\\] absolute time when that packet whas output, in microsecond 
+* `wall`:\\[out\\] absolute time when that packet whas output, in microsecond
 
 ### Returns
 0 if OK, [`AVERROR`](@ref)(ENOSYS) if the format does not support it Note: some formats or devices may not allow to measure dts and wall atomically.
@@ -8973,9 +8988,9 @@ end
 Send a nice hexadecimal dump of a buffer to the specified file stream.
 
 ### Parameters
-* `f`: The file stream pointer where the dump should be sent to. 
+* `f`: The file stream pointer where the dump should be sent to.
 
-* `buf`: buffer 
+* `buf`: buffer
 
 * `size`: buffer size
 
@@ -8992,11 +9007,11 @@ end
 Send a nice hexadecimal dump of a buffer to the log.
 
 ### Parameters
-* `avcl`: A pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct. 
+* `avcl`: A pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct.
 
-* `level`: The importance level of the message, lower values signifying higher importance. 
+* `level`: The importance level of the message, lower values signifying higher importance.
 
-* `buf`: buffer 
+* `buf`: buffer
 
 * `size`: buffer size
 
@@ -9013,11 +9028,11 @@ end
 Send a nice dump of a packet to the specified file stream.
 
 ### Parameters
-* `f`: The file stream pointer where the dump should be sent to. 
+* `f`: The file stream pointer where the dump should be sent to.
 
-* `pkt`: packet to dump 
+* `pkt`: packet to dump
 
-* `dump_payload`: True if the payload must be displayed, too. 
+* `dump_payload`: True if the payload must be displayed, too.
 
 * `st`: [`AVStream`](@ref) that the packet belongs to
 """
@@ -9031,13 +9046,13 @@ end
 Send a nice dump of a packet to the log.
 
 ### Parameters
-* `avcl`: A pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct. 
+* `avcl`: A pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct.
 
-* `level`: The importance level of the message, lower values signifying higher importance. 
+* `level`: The importance level of the message, lower values signifying higher importance.
 
-* `pkt`: packet to dump 
+* `pkt`: packet to dump
 
-* `dump_payload`: True if the payload must be displayed, too. 
+* `dump_payload`: True if the payload must be displayed, too.
 
 * `st`: [`AVStream`](@ref) that the packet belongs to
 """
@@ -9051,7 +9066,7 @@ end
 Get the [`AVCodecID`](@ref) for the given codec tag tag. If no codec id is found returns AV\\_CODEC\\_ID\\_NONE.
 
 ### Parameters
-* `tags`: list of supported codec\\_id-codec\\_tag pairs, as stored in [`AVInputFormat`](@ref).codec\\_tag and [`AVOutputFormat`](@ref).codec\\_tag 
+* `tags`: list of supported codec\\_id-codec\\_tag pairs, as stored in [`AVInputFormat`](@ref).codec\\_tag and [`AVOutputFormat`](@ref).codec\\_tag
 
 * `tag`: codec tag to match to a codec ID
 """
@@ -9065,7 +9080,7 @@ end
 Get the codec tag for the given codec id id. If no codec tag is found returns 0.
 
 ### Parameters
-* `tags`: list of supported codec\\_id-codec\\_tag pairs, as stored in [`AVInputFormat`](@ref).codec\\_tag and [`AVOutputFormat`](@ref).codec\\_tag 
+* `tags`: list of supported codec\\_id-codec\\_tag pairs, as stored in [`AVInputFormat`](@ref).codec\\_tag and [`AVOutputFormat`](@ref).codec\\_tag
 
 * `id`: codec ID to match to a codec tag
 """
@@ -9079,11 +9094,11 @@ end
 Get the codec tag for the given codec id.
 
 ### Parameters
-* `tags`: list of supported codec\\_id - codec\\_tag pairs, as stored in [`AVInputFormat`](@ref).codec\\_tag and [`AVOutputFormat`](@ref).codec\\_tag 
+* `tags`: list of supported codec\\_id - codec\\_tag pairs, as stored in [`AVInputFormat`](@ref).codec\\_tag and [`AVOutputFormat`](@ref).codec\\_tag
 
-* `id`: codec id that should be searched for in the list 
+* `id`: codec id that should be searched for in the list
 
-* `tag`: A pointer to the found tag 
+* `tag`: A pointer to the found tag
 
 ### Returns
 0 if id was not found in tags, > 0 if it was found
@@ -9102,11 +9117,11 @@ end
 Get the index for a specific timestamp.
 
 ### Parameters
-* `st`: stream that the timestamp belongs to 
+* `st`: stream that the timestamp belongs to
 
-* `timestamp`: timestamp to retrieve the index for 
+* `timestamp`: timestamp to retrieve the index for
 
-* `flags`: if [`AVSEEK_FLAG_BACKWARD`](@ref) then the returned index will correspond to the timestamp which is <= the requested one, if backward is 0, then it will be >= if [`AVSEEK_FLAG_ANY`](@ref) seek to any frame, only keyframes otherwise 
+* `flags`: if [`AVSEEK_FLAG_BACKWARD`](@ref) then the returned index will correspond to the timestamp which is <= the requested one, if backward is 0, then it will be >= if [`AVSEEK_FLAG_ANY`](@ref) seek to any frame, only keyframes otherwise
 
 ### Returns
 < 0 if no such timestamp could be found
@@ -9135,23 +9150,23 @@ Split a URL string into components.
 The pointers to buffers for storing individual components may be null, in order to ignore that component. Buffers for components not found are set to empty strings. If the port is not found, it is set to a negative value.
 
 ### Parameters
-* `proto`: the buffer for the protocol 
+* `proto`: the buffer for the protocol
 
-* `proto_size`: the size of the proto buffer 
+* `proto_size`: the size of the proto buffer
 
-* `authorization`: the buffer for the authorization 
+* `authorization`: the buffer for the authorization
 
-* `authorization_size`: the size of the authorization buffer 
+* `authorization_size`: the size of the authorization buffer
 
-* `hostname`: the buffer for the host name 
+* `hostname`: the buffer for the host name
 
-* `hostname_size`: the size of the hostname buffer 
+* `hostname_size`: the size of the hostname buffer
 
-* `port_ptr`: a pointer to store the port number in 
+* `port_ptr`: a pointer to store the port number in
 
-* `path`: the buffer for the path 
+* `path`: the buffer for the path
 
-* `path_size`: the size of the path buffer 
+* `path_size`: the size of the path buffer
 
 * `url`: the URL to split
 """
@@ -9165,11 +9180,11 @@ end
 Print detailed information about the input or output format, such as duration, bitrate, streams, container, programs, metadata, side data, codec and time base.
 
 ### Parameters
-* `ic`: the context to analyze 
+* `ic`: the context to analyze
 
-* `index`: index of the stream to dump information about 
+* `index`: index of the stream to dump information about
 
-* `url`: the URL to print, such as source or destination file 
+* `url`: the URL to print, such as source or destination file
 
 * `is_output`: Select whether the specified context is an input(0) or output(1)
 """
@@ -9185,15 +9200,15 @@ Return in 'buf' the path with 'd' replaced by a number.
 Also handles the '0nd' format where 'n' is the total number of digits and '%%'.
 
 ### Parameters
-* `buf`: destination buffer 
+* `buf`: destination buffer
 
-* `buf_size`: destination buffer size 
+* `buf_size`: destination buffer size
 
-* `path`: numbered sequence string 
+* `path`: numbered sequence string
 
-* `number`: frame number 
+* `number`: frame number
 
-* `flags`: AV\\_FRAME\\_FILENAME\\_FLAGS\\_* 
+* `flags`: AV\\_FRAME\\_FILENAME\\_FLAGS\\_*
 
 ### Returns
 0 if OK, -1 on format error
@@ -9212,7 +9227,7 @@ end
 Check whether filename actually is a numbered sequence generator.
 
 ### Parameters
-* `filename`: possible numbered sequence string 
+* `filename`: possible numbered sequence string
 
 ### Returns
 1 if a valid numbered sequence string, 0 otherwise
@@ -9229,13 +9244,13 @@ Generate an SDP for an RTP session.
 Note, this overwrites the id values of AVStreams in the muxer contexts for getting unique dynamic payload types.
 
 ### Parameters
-* `ac`: array of AVFormatContexts describing the RTP streams. If the array is composed by only one context, such context can contain multiple AVStreams (one [`AVStream`](@ref) per RTP stream). Otherwise, all the contexts in the array (an [`AVCodecContext`](@ref) per RTP stream) must contain only one [`AVStream`](@ref). 
+* `ac`: array of AVFormatContexts describing the RTP streams. If the array is composed by only one context, such context can contain multiple AVStreams (one [`AVStream`](@ref) per RTP stream). Otherwise, all the contexts in the array (an [`AVCodecContext`](@ref) per RTP stream) must contain only one [`AVStream`](@ref).
 
-* `n_files`: number of AVCodecContexts contained in ac 
+* `n_files`: number of AVCodecContexts contained in ac
 
-* `buf`: buffer where the SDP will be stored (must be allocated by the caller) 
+* `buf`: buffer where the SDP will be stored (must be allocated by the caller)
 
-* `size`: the size of the buffer 
+* `size`: the size of the buffer
 
 ### Returns
 0 if OK, AVERROR\\_xxx on error
@@ -9250,7 +9265,7 @@ end
 Return a positive value if the given filename has one of the given extensions, 0 otherwise.
 
 ### Parameters
-* `filename`: file name to check against the given extensions 
+* `filename`: file name to check against the given extensions
 
 * `extensions`: a comma-separated list of filename extensions
 """
@@ -9264,9 +9279,9 @@ end
 Test if the given container can store a codec.
 
 ### Parameters
-* `ofmt`: container to check for compatibility 
+* `ofmt`: container to check for compatibility
 
-* `codec_id`: codec to potentially store in container 
+* `codec_id`: codec to potentially store in container
 
 * `std_compliance`: standards compliance level, one of FF\\_COMPLIANCE\\_*
 
@@ -9282,7 +9297,7 @@ end
 
 ` riff_fourcc RIFF FourCCs`
 
-@{ Get the tables mapping RIFF FourCCs to libavcodec AVCodecIDs. The tables are meant to be passed to [`av_codec_get_id`](@ref)()/[`av_codec_get_tag`](@ref)() as in the following code: 
+@{ Get the tables mapping RIFF FourCCs to libavcodec AVCodecIDs. The tables are meant to be passed to [`av_codec_get_id`](@ref)()/[`av_codec_get_tag`](@ref)() as in the following code:
 
 ```c++
  uint32_t tag = MKTAG('H', '2', '6', '4');
@@ -9337,11 +9352,11 @@ Since the frame aspect ratio is set by the codec but the stream aspect ratio is 
 Basic logic is to use the stream aspect ratio if it is set to something sane otherwise use the frame aspect ratio. This way a container setting, which is usually easy to modify can override the coded value in the frames.
 
 ### Parameters
-* `format`: the format context which the stream is part of 
+* `format`: the format context which the stream is part of
 
-* `stream`: the stream which the frame is part of 
+* `stream`: the stream which the frame is part of
 
-* `frame`: the frame with the aspect ratio to be determined 
+* `frame`: the frame with the aspect ratio to be determined
 
 ### Returns
 the guessed (valid) sample\\_aspect\\_ratio, 0/1 if no idea
@@ -9356,11 +9371,11 @@ end
 Guess the frame rate, based on both the container and codec information.
 
 ### Parameters
-* `ctx`: the format context which the stream is part of 
+* `ctx`: the format context which the stream is part of
 
-* `stream`: the stream which the frame is part of 
+* `stream`: the stream which the frame is part of
 
-* `frame`: the frame for which the frame rate should be determined, may be NULL 
+* `frame`: the frame for which the frame rate should be determined, may be NULL
 
 ### Returns
 the guessed (valid) frame rate, 0/1 if no idea
@@ -9397,11 +9412,11 @@ end
 Apply a list of bitstream filters to a packet.
 
 ### Parameters
-* `codec`: [`AVCodecContext`](@ref), usually from an [`AVStream`](@ref) 
+* `codec`: [`AVCodecContext`](@ref), usually from an [`AVStream`](@ref)
 
-* `pkt`: the packet to apply filters to. If, on success, the returned packet has size == 0 and side\\_data\\_elems == 0, it indicates that the packet should be dropped 
+* `pkt`: the packet to apply filters to. If, on success, the returned packet has size == 0 and side\\_data\\_elems == 0, it indicates that the packet should be dropped
 
-* `bsfc`: a NULL-terminated list of filters to apply 
+* `bsfc`: a NULL-terminated list of filters to apply
 
 ### Returns
 >=0 on success; [`AVERROR`](@ref) code on failure
@@ -9424,11 +9439,11 @@ Transfer internal timing information from one stream to another.
 This function is useful when doing stream copy.
 
 ### Parameters
-* `ofmt`: target output format for ost 
+* `ofmt`: target output format for ost
 
-* `ost`: output stream which needs timings copy and adjustments 
+* `ost`: output stream which needs timings copy and adjustments
 
-* `ist`: reference input stream to copy timings from 
+* `ist`: reference input stream to copy timings from
 
 * `copy_tb`: define from where the stream codec timebase needs to be imported
 """
@@ -9538,9 +9553,9 @@ Move or rename a resource.
     url\\_src and url\\_dst should share the same protocol and authority.
 
 ### Parameters
-* `url_src`: url to resource to be moved 
+* `url_src`: url to resource to be moved
 
-* `url_dst`: new url to resource if the operation succeeded 
+* `url_dst`: new url to resource if the operation succeeded
 
 ### Returns
 >=0 on success or negative on error.
@@ -9555,7 +9570,7 @@ end
 Delete a resource.
 
 ### Parameters
-* `url`: resource to be deleted. 
+* `url`: resource to be deleted.
 
 ### Returns
 >=0 on success or negative on error.
@@ -9570,11 +9585,11 @@ end
 Open directory for reading.
 
 ### Parameters
-* `s`: directory read context. Pointer to a NULL pointer must be passed. 
+* `s`: directory read context. Pointer to a NULL pointer must be passed.
 
-* `url`: directory to be listed. 
+* `url`: directory to be listed.
 
-* `options`: A dictionary filled with protocol-private options. On return this parameter will be destroyed and replaced with a dictionary containing options that were not found. May be NULL. 
+* `options`: A dictionary filled with protocol-private options. On return this parameter will be destroyed and replaced with a dictionary containing options that were not found. May be NULL.
 
 ### Returns
 >=0 on success or negative on error.
@@ -9591,9 +9606,9 @@ Get next directory entry.
 Returned entry must be freed with [`avio_free_directory_entry`](@ref)(). In particular it may outlive [`AVIODirContext`](@ref).
 
 ### Parameters
-* `s`: directory read context. 
+* `s`: directory read context.
 
-* `next`:\\[out\\] next entry or NULL when no more entries. 
+* `next`:\\[out\\] next entry or NULL when no more entries.
 
 ### Returns
 >=0 on success or negative on error. End of list is not considered an error.
@@ -9612,7 +9627,7 @@ Close directory.
     Entries created using [`avio_read_dir`](@ref)() are not deleted and must be freeded with [`avio_free_directory_entry`](@ref)().
 
 ### Parameters
-* `s`: directory read context. 
+* `s`: directory read context.
 
 ### Returns
 >=0 on success or negative on error.
@@ -9639,17 +9654,17 @@ end
 Allocate and initialize an [`AVIOContext`](@ref) for buffered I/O. It must be later freed with [`avio_context_free`](@ref)().
 
 ### Parameters
-* `buffer`: Memory block for input/output operations via [`AVIOContext`](@ref). The buffer must be allocated with [`av_malloc`](@ref)() and friends. It may be freed and replaced with a new buffer by libavformat. [`AVIOContext`](@ref).buffer holds the buffer currently in use, which must be later freed with [`av_free`](@ref)(). 
+* `buffer`: Memory block for input/output operations via [`AVIOContext`](@ref). The buffer must be allocated with [`av_malloc`](@ref)() and friends. It may be freed and replaced with a new buffer by libavformat. [`AVIOContext`](@ref).buffer holds the buffer currently in use, which must be later freed with [`av_free`](@ref)().
 
-* `buffer_size`: The buffer size is very important for performance. For protocols with fixed blocksize it should be set to this blocksize. For others a typical size is a cache page, e.g. 4kb. 
+* `buffer_size`: The buffer size is very important for performance. For protocols with fixed blocksize it should be set to this blocksize. For others a typical size is a cache page, e.g. 4kb.
 
-* `write_flag`: Set to 1 if the buffer should be writable, 0 otherwise. 
+* `write_flag`: Set to 1 if the buffer should be writable, 0 otherwise.
 
-* `opaque`: An opaque pointer to user-specific data. 
+* `opaque`: An opaque pointer to user-specific data.
 
-* `read_packet`: A function for refilling the buffer, may be NULL. For stream protocols, must never return 0 but rather a proper [`AVERROR`](@ref) code. 
+* `read_packet`: A function for refilling the buffer, may be NULL. For stream protocols, must never return 0 but rather a proper [`AVERROR`](@ref) code.
 
-* `write_packet`: A function for writing the buffer contents, may be NULL. The function may not change the input buffers content. 
+* `write_packet`: A function for writing the buffer contents, may be NULL. The function may not change the input buffers content.
 
 * `seek`: A function for seeking to specified byte position, may be NULL.
 
@@ -9715,7 +9730,7 @@ end
 """
     avio_put_str(s, str)
 
-Write a NULL-terminated string. 
+Write a NULL-terminated string.
 
 ### Returns
 number of bytes written.
@@ -9727,10 +9742,10 @@ end
 """
     avio_put_str16le(s, str)
 
-Convert an UTF-8 string to UTF-16LE and write it. 
+Convert an UTF-8 string to UTF-16LE and write it.
 
 ### Parameters
-* `s`: the [`AVIOContext`](@ref) 
+* `s`: the [`AVIOContext`](@ref)
 
 * `str`: NULL-terminated UTF-8 string
 
@@ -9744,10 +9759,10 @@ end
 """
     avio_put_str16be(s, str)
 
-Convert an UTF-8 string to UTF-16BE and write it. 
+Convert an UTF-8 string to UTF-16BE and write it.
 
 ### Parameters
-* `s`: the [`AVIOContext`](@ref) 
+* `s`: the [`AVIOContext`](@ref)
 
 * `str`: NULL-terminated UTF-8 string
 
@@ -9766,7 +9781,7 @@ Mark the written bytestream as a specific type.
 Zero-length ranges are omitted from the output.
 
 ### Parameters
-* `time`: the stream time the current bytestream pos corresponds to (in [`AV_TIME_BASE`](@ref) units), or [`AV_NOPTS_VALUE`](@ref) if unknown or not applicable 
+* `time`: the stream time the current bytestream pos corresponds to (in [`AV_TIME_BASE`](@ref) units), or [`AV_NOPTS_VALUE`](@ref) if unknown or not applicable
 
 * `type`: the kind of data written starting at the current pos
 """
@@ -9777,7 +9792,7 @@ end
 """
     avio_seek(s, offset::Int64, whence::Integer)
 
-fseek() equivalent for [`AVIOContext`](@ref). 
+fseek() equivalent for [`AVIOContext`](@ref).
 
 ### Returns
 new position or [`AVERROR`](@ref).
@@ -9789,7 +9804,7 @@ end
 """
     avio_skip(s, offset::Int64)
 
-Skip given number of bytes forward 
+Skip given number of bytes forward
 
 ### Returns
 new position or [`AVERROR`](@ref).
@@ -9801,7 +9816,7 @@ end
 """
     avio_tell(s)
 
-ftell() equivalent for [`AVIOContext`](@ref). 
+ftell() equivalent for [`AVIOContext`](@ref).
 
 ### Returns
 position or [`AVERROR`](@ref).
@@ -9813,7 +9828,7 @@ end
 """
     avio_size(s)
 
-Get the filesize. 
+Get the filesize.
 
 ### Returns
 filesize or [`AVERROR`](@ref)
@@ -9825,7 +9840,7 @@ end
 """
     avio_feof(s)
 
-Similar to feof() but also returns nonzero on read errors. 
+Similar to feof() but also returns nonzero on read errors.
 
 ### Returns
 non zero if and only if at end of file or a read error happened when reading.
@@ -9850,7 +9865,7 @@ end
 """
     avio_read(s, buf, size::Integer)
 
-Read size bytes from [`AVIOContext`](@ref) into buf. 
+Read size bytes from [`AVIOContext`](@ref) into buf.
 
 ### Returns
 number of bytes read or [`AVERROR`](@ref)
@@ -9862,7 +9877,7 @@ end
 """
     avio_read_partial(s, buf, size::Integer)
 
-Read size bytes from [`AVIOContext`](@ref) into buf. Unlike [`avio_read`](@ref)(), this is allowed to read fewer bytes than requested. The missing bytes can be read in the next call. This always tries to read at least 1 byte. Useful to reduce latency in certain cases. 
+Read size bytes from [`AVIOContext`](@ref) into buf. Unlike [`avio_read`](@ref)(), this is allowed to read fewer bytes than requested. The missing bytes can be read in the next call. This always tries to read at least 1 byte. Useful to reduce latency in certain cases.
 
 ### Returns
 number of bytes read or [`AVERROR`](@ref)
@@ -9933,7 +9948,7 @@ end
 """
     avio_get_str16le(pb, maxlen::Integer, buf, buflen::Integer)
 
-Read a UTF-16 string from pb and convert it to UTF-8. The reading will terminate when either a null or invalid character was encountered or maxlen bytes have been read. 
+Read a UTF-16 string from pb and convert it to UTF-8. The reading will terminate when either a null or invalid character was encountered or maxlen bytes have been read.
 
 ### Returns
 number of bytes read (is always <= maxlen)
@@ -9949,18 +9964,18 @@ end
 """
     avio_open(s, url, flags::Integer)
 
-Create and initialize a [`AVIOContext`](@ref) for accessing the resource indicated by url. 
+Create and initialize a [`AVIOContext`](@ref) for accessing the resource indicated by url.
 
 !!! note
 
     When the resource indicated by url has been opened in read+write mode, the [`AVIOContext`](@ref) can be used only for writing.
 
 ### Parameters
-* `s`: Used to return the pointer to the created [`AVIOContext`](@ref). In case of failure the pointed to value is set to NULL. 
+* `s`: Used to return the pointer to the created [`AVIOContext`](@ref). In case of failure the pointed to value is set to NULL.
 
-* `url`: resource to access 
+* `url`: resource to access
 
-* `flags`: flags which control how the resource indicated by url is to be opened 
+* `flags`: flags which control how the resource indicated by url is to be opened
 
 ### Returns
 >= 0 in case of success, a negative value corresponding to an [`AVERROR`](@ref) code in case of failure
@@ -9972,22 +9987,22 @@ end
 """
     avio_open2(s, url, flags::Integer, int_cb, options)
 
-Create and initialize a [`AVIOContext`](@ref) for accessing the resource indicated by url. 
+Create and initialize a [`AVIOContext`](@ref) for accessing the resource indicated by url.
 
 !!! note
 
     When the resource indicated by url has been opened in read+write mode, the [`AVIOContext`](@ref) can be used only for writing.
 
 ### Parameters
-* `s`: Used to return the pointer to the created [`AVIOContext`](@ref). In case of failure the pointed to value is set to NULL. 
+* `s`: Used to return the pointer to the created [`AVIOContext`](@ref). In case of failure the pointed to value is set to NULL.
 
-* `url`: resource to access 
+* `url`: resource to access
 
-* `flags`: flags which control how the resource indicated by url is to be opened 
+* `flags`: flags which control how the resource indicated by url is to be opened
 
-* `int_cb`: an interrupt callback to be used at the protocols level 
+* `int_cb`: an interrupt callback to be used at the protocols level
 
-* `options`: A dictionary filled with protocol-private options. On return this parameter will be destroyed and replaced with a dict containing options that were not found. May be NULL. 
+* `options`: A dictionary filled with protocol-private options. On return this parameter will be destroyed and replaced with a dict containing options that were not found. May be NULL.
 
 ### Returns
 >= 0 in case of success, a negative value corresponding to an [`AVERROR`](@ref) code in case of failure
@@ -10004,7 +10019,7 @@ Close the resource accessed by the [`AVIOContext`](@ref) s and free it. This fun
 The internal buffer is automatically flushed before closing the resource.
 
 ### Returns
-0 on success, an [`AVERROR`](@ref) < 0 on error. 
+0 on success, an [`AVERROR`](@ref) < 0 on error.
 
 ### See also
 [`avio_closep`](@ref)
@@ -10021,7 +10036,7 @@ Close the resource accessed by the [`AVIOContext`](@ref) *s, free it and set the
 The internal buffer is automatically flushed before closing the resource.
 
 ### Returns
-0 on success, an [`AVERROR`](@ref) < 0 on error. 
+0 on success, an [`AVERROR`](@ref) < 0 on error.
 
 ### See also
 [`avio_close`](@ref)
@@ -10036,7 +10051,7 @@ end
 Open a write only memory stream.
 
 ### Parameters
-* `s`: new IO context 
+* `s`: new IO context
 
 ### Returns
 zero if no error.
@@ -10051,9 +10066,9 @@ end
 Return the written size and a pointer to the buffer. The [`AVIOContext`](@ref) stream is left intact. The buffer must NOT be freed. No padding is added to the buffer.
 
 ### Parameters
-* `s`: IO context 
+* `s`: IO context
 
-* `pbuffer`: pointer to a byte buffer 
+* `pbuffer`: pointer to a byte buffer
 
 ### Returns
 the length of the byte buffer
@@ -10068,9 +10083,9 @@ end
 Return the written size and a pointer to the buffer. The buffer must be freed with [`av_free`](@ref)(). Padding of [`AV_INPUT_BUFFER_PADDING_SIZE`](@ref) is added to the buffer.
 
 ### Parameters
-* `s`: IO context 
+* `s`: IO context
 
-* `pbuffer`: pointer to a byte buffer 
+* `pbuffer`: pointer to a byte buffer
 
 ### Returns
 the length of the byte buffer
@@ -10085,7 +10100,7 @@ end
 Iterate through names of available protocols.
 
 ### Parameters
-* `opaque`: A private pointer representing current protocol. It must be a pointer to NULL on first iteration and will be updated by successive calls to [`avio_enum_protocols`](@ref). 
+* `opaque`: A private pointer representing current protocol. It must be a pointer to NULL on first iteration and will be updated by successive calls to [`avio_enum_protocols`](@ref).
 
 * `output`: If set to 1, iterate over output protocols, otherwise over input protocols.
 
@@ -10114,7 +10129,7 @@ end
 Pause and resume playing - only meaningful if using a network streaming protocol (e.g. MMS).
 
 ### Parameters
-* `h`: IO context from which to call the read\\_pause function pointer 
+* `h`: IO context from which to call the read\\_pause function pointer
 
 * `pause`: 1 for pause, 0 for resume
 """
@@ -10128,16 +10143,16 @@ end
 Seek to a given timestamp relative to some component stream. Only meaningful if using a network streaming protocol (e.g. MMS.).
 
 ### Parameters
-* `h`: IO context from which to call the seek function pointers 
+* `h`: IO context from which to call the seek function pointers
 
-* `stream_index`: The stream index that the timestamp is relative to. If stream\\_index is (-1) the timestamp should be in [`AV_TIME_BASE`](@ref) units from the beginning of the presentation. If a stream\\_index >= 0 is used and the protocol does not support seeking based on component streams, the call will fail. 
+* `stream_index`: The stream index that the timestamp is relative to. If stream\\_index is (-1) the timestamp should be in [`AV_TIME_BASE`](@ref) units from the beginning of the presentation. If a stream\\_index >= 0 is used and the protocol does not support seeking based on component streams, the call will fail.
 
-* `timestamp`: timestamp in [`AVStream`](@ref).time\\_base units or if there is no stream specified then in [`AV_TIME_BASE`](@ref) units. 
+* `timestamp`: timestamp in [`AVStream`](@ref).time\\_base units or if there is no stream specified then in [`AV_TIME_BASE`](@ref) units.
 
-* `flags`: Optional combination of [`AVSEEK_FLAG_BACKWARD`](@ref), [`AVSEEK_FLAG_BYTE`](@ref) and [`AVSEEK_FLAG_ANY`](@ref). The protocol may silently ignore [`AVSEEK_FLAG_BACKWARD`](@ref) and [`AVSEEK_FLAG_ANY`](@ref), but [`AVSEEK_FLAG_BYTE`](@ref) will fail if used and not supported. 
+* `flags`: Optional combination of [`AVSEEK_FLAG_BACKWARD`](@ref), [`AVSEEK_FLAG_BYTE`](@ref) and [`AVSEEK_FLAG_ANY`](@ref). The protocol may silently ignore [`AVSEEK_FLAG_BACKWARD`](@ref) and [`AVSEEK_FLAG_ANY`](@ref), but [`AVSEEK_FLAG_BYTE`](@ref) will fail if used and not supported.
 
 ### Returns
->= 0 on success 
+>= 0 on success
 
 ### See also
 [`AVInputFormat`](@ref)::read\\_seek
@@ -10193,12 +10208,12 @@ end
 """
     avio_accept(s, c)
 
-Accept and allocate a client context on a server context. 
+Accept and allocate a client context on a server context.
 
 ### Parameters
-* `s`: the server context 
+* `s`: the server context
 
-* `c`: the client context, must be unallocated 
+* `c`: the client context, must be unallocated
 
 ### Returns
 >= 0 on success or a negative value corresponding to an [`AVERROR`](@ref) on failure
@@ -10213,7 +10228,7 @@ end
 Perform one step of the protocol handshake to accept a new client. This function must be called on a client returned by [`avio_accept`](@ref)() before using it as a read/write context. It is separate from [`avio_accept`](@ref)() because it may block. A step of the handshake is defined by places where the application may decide to change the proceedings. For example, on a protocol with a request header and a reply header, each one can constitute a step because the application may use the parameters from the request to change parameters in the reply; or each individual chunk of the request can constitute a step. If the handshake is already finished, [`avio_handshake`](@ref)() does nothing and returns 0 immediately.
 
 ### Parameters
-* `c`: the client context to perform the handshake on 
+* `c`: the client context to perform the handshake on
 
 ### Returns
 0 on a complete and successful handshake > 0 if the handshake progressed, but is not complete < 0 for an [`AVERROR`](@ref) code
@@ -10232,11 +10247,11 @@ Calculate the Adler32 checksum of a buffer.
 Passing the return value to a subsequent [`av_adler32_update`](@ref)() call allows the checksum of multiple buffers to be calculated as though they were concatenated.
 
 ### Parameters
-* `adler`: initial checksum value 
+* `adler`: initial checksum value
 
-* `buf`: pointer to input buffer 
+* `buf`: pointer to input buffer
 
-* `len`: size of input buffer 
+* `len`: size of input buffer
 
 ### Returns
 updated checksum
@@ -10259,10 +10274,10 @@ end
 """
     av_aes_init(a, key, key_bits::Integer, decrypt::Integer)
 
-Initialize an [`AVAES`](@ref) context. 
+Initialize an [`AVAES`](@ref) context.
 
 ### Parameters
-* `key_bits`: 128, 192 or 256 
+* `key_bits`: 128, 192 or 256
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -10273,16 +10288,16 @@ end
 """
     av_aes_crypt(a, dst, src, count::Integer, iv, decrypt::Integer)
 
-Encrypt or decrypt a buffer using a previously initialized context. 
+Encrypt or decrypt a buffer using a previously initialized context.
 
 ### Parameters
-* `count`: number of 16 byte blocks 
+* `count`: number of 16 byte blocks
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `iv`: initialization vector for CBC mode, if NULL then ECB will be used 
+* `iv`: initialization vector for CBC mode, if NULL then ECB will be used
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -10304,7 +10319,7 @@ end
 """
     av_aes_ctr_init(a, key)
 
-Initialize an [`AVAESCTR`](@ref) context. 
+Initialize an [`AVAESCTR`](@ref) context.
 
 ### Parameters
 * `key`: encryption key, must have a length of [`AES_CTR_KEY_SIZE`](@ref)
@@ -10325,12 +10340,12 @@ end
 """
     av_aes_ctr_crypt(a, dst, src, size::Integer)
 
-Process a buffer using a previously initialized context. 
+Process a buffer using a previously initialized context.
 
 ### Parameters
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
 * `size`: the size of src and dst
 """
@@ -10403,11 +10418,11 @@ end
 Allocate an [`AVAudioFifo`](@ref).
 
 ### Parameters
-* `sample_fmt`: sample format 
+* `sample_fmt`: sample format
 
-* `channels`: number of channels 
+* `channels`: number of channels
 
-* `nb_samples`: initial allocation size, in samples 
+* `nb_samples`: initial allocation size, in samples
 
 ### Returns
 newly allocated [`AVAudioFifo`](@ref), or NULL on error
@@ -10422,9 +10437,9 @@ end
 Reallocate an [`AVAudioFifo`](@ref).
 
 ### Parameters
-* `af`: [`AVAudioFifo`](@ref) to reallocate 
+* `af`: [`AVAudioFifo`](@ref) to reallocate
 
-* `nb_samples`: new allocation size, in samples 
+* `nb_samples`: new allocation size, in samples
 
 ### Returns
 0 if OK, or negative [`AVERROR`](@ref) code on failure
@@ -10441,11 +10456,11 @@ Write data to an [`AVAudioFifo`](@ref).
 The [`AVAudioFifo`](@ref) will be reallocated automatically if the available space is less than nb\\_samples.
 
 ### Parameters
-* `af`: [`AVAudioFifo`](@ref) to write to 
+* `af`: [`AVAudioFifo`](@ref) to write to
 
-* `data`: audio data plane pointers 
+* `data`: audio data plane pointers
 
-* `nb_samples`: number of samples to write 
+* `nb_samples`: number of samples to write
 
 ### Returns
 number of samples actually written, or negative [`AVERROR`](@ref) code on failure. If successful, the number of samples actually written will always be nb\\_samples.
@@ -10463,11 +10478,11 @@ end
 Peek data from an [`AVAudioFifo`](@ref).
 
 ### Parameters
-* `af`: [`AVAudioFifo`](@ref) to read from 
+* `af`: [`AVAudioFifo`](@ref) to read from
 
-* `data`: audio data plane pointers 
+* `data`: audio data plane pointers
 
-* `nb_samples`: number of samples to peek 
+* `nb_samples`: number of samples to peek
 
 ### Returns
 number of samples actually peek, or negative [`AVERROR`](@ref) code on failure. The number of samples actually peek will not be greater than nb\\_samples, and will only be less than nb\\_samples if [`av_audio_fifo_size`](@ref) is less than nb\\_samples.
@@ -10485,13 +10500,13 @@ end
 Peek data from an [`AVAudioFifo`](@ref).
 
 ### Parameters
-* `af`: [`AVAudioFifo`](@ref) to read from 
+* `af`: [`AVAudioFifo`](@ref) to read from
 
-* `data`: audio data plane pointers 
+* `data`: audio data plane pointers
 
-* `nb_samples`: number of samples to peek 
+* `nb_samples`: number of samples to peek
 
-* `offset`: offset from current read position 
+* `offset`: offset from current read position
 
 ### Returns
 number of samples actually peek, or negative [`AVERROR`](@ref) code on failure. The number of samples actually peek will not be greater than nb\\_samples, and will only be less than nb\\_samples if [`av_audio_fifo_size`](@ref) is less than nb\\_samples.
@@ -10509,11 +10524,11 @@ end
 Read data from an [`AVAudioFifo`](@ref).
 
 ### Parameters
-* `af`: [`AVAudioFifo`](@ref) to read from 
+* `af`: [`AVAudioFifo`](@ref) to read from
 
-* `data`: audio data plane pointers 
+* `data`: audio data plane pointers
 
-* `nb_samples`: number of samples to read 
+* `nb_samples`: number of samples to read
 
 ### Returns
 number of samples actually read, or negative [`AVERROR`](@ref) code on failure. The number of samples actually read will not be greater than nb\\_samples, and will only be less than nb\\_samples if [`av_audio_fifo_size`](@ref) is less than nb\\_samples.
@@ -10533,9 +10548,9 @@ Drain data from an [`AVAudioFifo`](@ref).
 Removes the data without reading it.
 
 ### Parameters
-* `af`: [`AVAudioFifo`](@ref) to drain 
+* `af`: [`AVAudioFifo`](@ref) to drain
 
-* `nb_samples`: number of samples to drain 
+* `nb_samples`: number of samples to drain
 
 ### Returns
 0 if OK, or negative [`AVERROR`](@ref) code on failure
@@ -10564,7 +10579,7 @@ end
 Get the current number of samples in the [`AVAudioFifo`](@ref) available for reading.
 
 ### Parameters
-* `af`: the [`AVAudioFifo`](@ref) to query 
+* `af`: the [`AVAudioFifo`](@ref) to query
 
 ### Returns
 number of samples available for reading
@@ -10579,7 +10594,7 @@ end
 Get the current number of samples in the [`AVAudioFifo`](@ref) available for writing.
 
 ### Parameters
-* `af`: the [`AVAudioFifo`](@ref) to query 
+* `af`: the [`AVAudioFifo`](@ref) to query
 
 ### Returns
 number of samples available for writing
@@ -10605,11 +10620,11 @@ end
 Return non-zero if pfx is a prefix of str. If it is, *ptr is set to the address of the first character in str after the prefix.
 
 ### Parameters
-* `str`: input string 
+* `str`: input string
 
-* `pfx`: prefix to test 
+* `pfx`: prefix to test
 
-* `ptr`: updated if the prefix is matched inside str 
+* `ptr`: updated if the prefix is matched inside str
 
 ### Returns
 non-zero if the prefix matches, zero otherwise
@@ -10624,11 +10639,11 @@ end
 Return non-zero if pfx is a prefix of str independent of case. If it is, *ptr is set to the address of the first character in str after the prefix.
 
 ### Parameters
-* `str`: input string 
+* `str`: input string
 
-* `pfx`: prefix to test 
+* `pfx`: prefix to test
 
-* `ptr`: updated if the prefix is matched inside str 
+* `ptr`: updated if the prefix is matched inside str
 
 ### Returns
 non-zero if the prefix matches, zero otherwise
@@ -10645,9 +10660,9 @@ Locate the first case-independent occurrence in the string haystack of the strin
 This function is a case-insensitive version of the standard strstr().
 
 ### Parameters
-* `haystack`: string to search in 
+* `haystack`: string to search in
 
-* `needle`: string to search for 
+* `needle`: string to search for
 
 ### Returns
 pointer to the located match within haystack or a null pointer if no match
@@ -10664,11 +10679,11 @@ Locate the first occurrence of the string needle in the string haystack where no
 This function is a length-limited version of the standard strstr().
 
 ### Parameters
-* `haystack`: string to search in 
+* `haystack`: string to search in
 
-* `needle`: string to search for 
+* `needle`: string to search for
 
-* `hay_length`: length of string to search in 
+* `hay_length`: length of string to search in
 
 ### Returns
 pointer to the located match within haystack or a null pointer if no match
@@ -10689,11 +10704,11 @@ This function is the same as BSD strlcpy().
     since the return value is the length of src, src absolutely \\_must\\_ be a properly 0-terminated string, otherwise this will read beyond the end of the buffer and possibly crash.
 
 ### Parameters
-* `dst`: destination buffer 
+* `dst`: destination buffer
 
-* `src`: source string 
+* `src`: source string
 
-* `size`: size of destination buffer 
+* `size`: size of destination buffer
 
 ### Returns
 the length of src
@@ -10714,11 +10729,11 @@ This function is similar to BSD strlcat(), but differs when size <= strlen(dst).
     since the return value use the length of src and dst, these absolutely \\_must\\_ be a properly 0-terminated strings, otherwise this will read beyond the end of the buffer and possibly crash.
 
 ### Parameters
-* `dst`: destination buffer 
+* `dst`: destination buffer
 
-* `src`: source string 
+* `src`: source string
 
-* `size`: size of destination buffer 
+* `size`: size of destination buffer
 
 ### Returns
 the total length of src and dst
@@ -10742,7 +10757,7 @@ end
 """
     av_d2str(d::Cdouble)
 
-Convert a number to an av\\_malloced string. 
+Convert a number to an av\\_malloced string.
 
 \\deprecated use [`av_asprintf`](@ref)() with "f" or a more specific format
 """
@@ -10758,9 +10773,9 @@ Unescape the given string until a non escaped terminating char, and return the t
 The normal \\ and ' escaping is supported. Leading and trailing whitespaces are removed, unless they are escaped with '\\' or are enclosed between ''.
 
 ### Parameters
-* `buf`: the buffer to parse, buf will be updated to point to the terminating char 
+* `buf`: the buffer to parse, buf will be updated to point to the terminating char
 
-* `term`: a 0-terminated list of terminating chars 
+* `term`: a 0-terminated list of terminating chars
 
 ### Returns
 the malloced unescaped string, which must be av\\_freed by the user, NULL in case of allocation failure
@@ -10781,11 +10796,11 @@ On the first call to [`av_strtok`](@ref)(), s should point to the string to pars
 This function is similar to strtok\\_r() defined in POSIX.1.
 
 ### Parameters
-* `s`: the string to parse, may be NULL 
+* `s`: the string to parse, may be NULL
 
-* `delim`: 0-terminated list of token delimiters, must be non-NULL 
+* `delim`: 0-terminated list of token delimiters, must be non-NULL
 
-* `saveptr`: user-provided pointer which points to stored information necessary for [`av_strtok`](@ref)() to continue scanning the same string. saveptr is updated to point to the next character after the first delimiter found, or to NULL if the string was terminated 
+* `saveptr`: user-provided pointer which points to stored information necessary for [`av_strtok`](@ref)() to continue scanning the same string. saveptr is updated to point to the next character after the first delimiter found, or to NULL if the string was terminated
 
 ### Returns
 the found token, or NULL when no token is found
@@ -10851,7 +10866,7 @@ end
 """
     av_strcasecmp(a, b)
 
-Locale-independent case-insensitive compare. 
+Locale-independent case-insensitive compare.
 
 !!! note
 
@@ -10864,7 +10879,7 @@ end
 """
     av_strncasecmp(a, b, n::Csize_t)
 
-Locale-independent case-insensitive compare. 
+Locale-independent case-insensitive compare.
 
 !!! note
 
@@ -10877,7 +10892,7 @@ end
 """
     av_strireplace(str, from, to)
 
-Locale-independent strings replace. 
+Locale-independent strings replace.
 
 !!! note
 
@@ -10890,10 +10905,10 @@ end
 """
     av_basename(path)
 
-Thread safe basename. 
+Thread safe basename.
 
 ### Parameters
-* `path`: the string to parse, on DOS both \\ and / are considered separators. 
+* `path`: the string to parse, on DOS both \\ and / are considered separators.
 
 ### Returns
 pointer to the basename substring. If path does not contain a slash, the function returns a copy of path. If path is a NULL pointer or points to an empty string, a pointer to a string "." is returned.
@@ -10905,17 +10920,17 @@ end
 """
     av_dirname(path)
 
-Thread safe dirname. 
+Thread safe dirname.
 
 !!! note
 
     the function may modify the contents of the path, so copies should be passed.
 
 ### Parameters
-* `path`: the string to parse, on DOS both \\ and / are considered separators. 
+* `path`: the string to parse, on DOS both \\ and / are considered separators.
 
 ### Returns
-A pointer to a string that's the parent directory of path. If path is a NULL pointer or points to an empty string, a pointer to a string "." is returned. 
+A pointer to a string that's the parent directory of path. If path is a NULL pointer or points to an empty string, a pointer to a string "." is returned.
 """
 function av_dirname(path)
     ccall((:av_dirname, libavutil), Cstring, (Cstring,), path)
@@ -10927,9 +10942,9 @@ end
 Match instances of a name in a comma-separated list of names. List entries are checked from the start to the end of the names list, the first match ends further processing. If an entry prefixed with '-' matches, then 0 is returned. The "ALL" list entry is considered to match all names.
 
 ### Parameters
-* `name`: Name to look for. 
+* `name`: Name to look for.
 
-* `names`: List of names. 
+* `names`: List of names.
 
 ### Returns
 1 on match, 0 otherwise.
@@ -10941,12 +10956,12 @@ end
 """
     av_append_path_component(path, component)
 
-Append path component to the existing path. Path separator '/' is placed between when needed. Resulting string have to be freed with [`av_free`](@ref)(). 
+Append path component to the existing path. Path separator '/' is placed between when needed. Resulting string have to be freed with [`av_free`](@ref)().
 
 ### Parameters
-* `path`: base path 
+* `path`: base path
 
-* `component`: component to be appended 
+* `component`: component to be appended
 
 ### Returns
 new path or NULL on error.
@@ -10967,18 +10982,18 @@ const AV_ESCAPE_MODE_XML = 3 % UInt32
 Escape string in src, and put the escaped string in an allocated string in *dst, which must be freed with [`av_free`](@ref)().
 
 ### Parameters
-* `dst`: pointer where an allocated string is put 
+* `dst`: pointer where an allocated string is put
 
-* `src`: string to escape, must be non-NULL 
+* `src`: string to escape, must be non-NULL
 
-* `special_chars`: string containing the special characters which need to be escaped, can be NULL 
+* `special_chars`: string containing the special characters which need to be escaped, can be NULL
 
-* `mode`: escape mode to employ, see AV\\_ESCAPE\\_MODE\\_* macros. Any unknown value for mode will be considered equivalent to AV\\_ESCAPE\\_MODE\\_BACKSLASH, but this behaviour can change without notice. 
+* `mode`: escape mode to employ, see AV\\_ESCAPE\\_MODE\\_* macros. Any unknown value for mode will be considered equivalent to AV\\_ESCAPE\\_MODE\\_BACKSLASH, but this behaviour can change without notice.
 
-* `flags`: flags which control how to escape, see AV\\_ESCAPE\\_FLAG\\_ macros 
+* `flags`: flags which control how to escape, see AV\\_ESCAPE\\_FLAG\\_ macros
 
 ### Returns
-the length of the allocated string, or a negative error code in case of error 
+the length of the allocated string, or a negative error code in case of error
 
 ### See also
 [`av_bprint_escape`](@ref)()
@@ -11001,13 +11016,13 @@ Depending on the specified flags, the function will also fail in case the decode
     For speed-relevant code a carefully implemented use of [`GET_UTF8`](@ref)() may be preferred.
 
 ### Parameters
-* `codep`: pointer used to return the parsed code in case of success. The value in *codep is set even in case the range check fails. 
+* `codep`: pointer used to return the parsed code in case of success. The value in *codep is set even in case the range check fails.
 
-* `bufp`: pointer to the address the first byte of the sequence to decode, updated by the function to point to the byte next after the decoded sequence 
+* `bufp`: pointer to the address the first byte of the sequence to decode, updated by the function to point to the byte next after the decoded sequence
 
-* `buf_end`: pointer to the end of the buffer, points to the next byte past the last in the buffer. This is used to avoid buffer overreads (in case of an unfinished UTF-8 sequence towards the end of the buffer). 
+* `buf_end`: pointer to the end of the buffer, points to the next byte past the last in the buffer. This is used to avoid buffer overreads (in case of an unfinished UTF-8 sequence towards the end of the buffer).
 
-* `flags`: a collection of AV\\_UTF8\\_FLAG\\_* flags 
+* `flags`: a collection of AV\\_UTF8\\_FLAG\\_* flags
 
 ### Returns
 >= 0 in case a sequence was successfully read, a negative value in case of invalid sequence
@@ -11019,7 +11034,7 @@ end
 """
     av_match_list(name, list, separator::Cchar)
 
-Check if a name is in a list. 
+Check if a name is in a list.
 
 ### Returns
 0 if not found, or the 1 based index where it has been found in the list.
@@ -11034,11 +11049,11 @@ end
 Compute the length of an integer list.
 
 ### Parameters
-* `elsize`: size in bytes of each list element (only 1, 2, 4 or 8) 
+* `elsize`: size in bytes of each list element (only 1, 2, 4 or 8)
 
-* `term`: list terminator (usually 0 or -1) 
+* `term`: list terminator (usually 0 or -1)
 
-* `list`: pointer to the list 
+* `list`: pointer to the list
 
 ### Returns
 length of the list, in elements, not counting the terminator
@@ -11053,9 +11068,9 @@ end
 Fill the provided buffer with a string containing a FourCC (four-character code) representation.
 
 ### Parameters
-* `buf`: a buffer with size in bytes of at least [`AV_FOURCC_MAX_STRING_SIZE`](@ref) 
+* `buf`: a buffer with size in bytes of at least [`AV_FOURCC_MAX_STRING_SIZE`](@ref)
 
-* `fourcc`: the fourcc to represent 
+* `fourcc`: the fourcc to represent
 
 ### Returns
 the buffer in input
@@ -11115,7 +11130,7 @@ end
 Return a single letter to describe the given picture type pict\\_type.
 
 ### Parameters
-* `pict_type`:\\[in\\] the picture type 
+* `pict_type`:\\[in\\] the picture type
 
 ### Returns
 a single character representing the picture type, '?' if pict\\_type is unknown
@@ -11157,11 +11172,11 @@ end
 Decode a base64-encoded string.
 
 ### Parameters
-* `out`: buffer for decoded data 
+* `out`: buffer for decoded data
 
-* `in`: null-terminated input string 
+* `in`: null-terminated input string
 
-* `out_size`: size in bytes of the out buffer, must be at least 3/4 of the length of in, that is [`AV_BASE64_DECODE_SIZE`](@ref)(strlen(in)) 
+* `out_size`: size in bytes of the out buffer, must be at least 3/4 of the length of in, that is [`AV_BASE64_DECODE_SIZE`](@ref)(strlen(in))
 
 ### Returns
 number of bytes written, or a negative value in case of invalid input
@@ -11176,13 +11191,13 @@ end
 Encode data to base64 and null-terminate.
 
 ### Parameters
-* `out`: buffer for encoded data 
+* `out`: buffer for encoded data
 
-* `out_size`: size in bytes of the out buffer (including the null terminator), must be at least [`AV_BASE64_SIZE`](@ref)(in\\_size) 
+* `out_size`: size in bytes of the out buffer (including the null terminator), must be at least [`AV_BASE64_SIZE`](@ref)(in\\_size)
 
-* `in`: input buffer containing the data to encode 
+* `in`: input buffer containing the data to encode
 
-* `in_size`: size in bytes of the in buffer 
+* `in_size`: size in bytes of the in buffer
 
 ### Returns
 out or NULL in case of error
@@ -11211,9 +11226,9 @@ end
 Initialize an [`AVBlowfish`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVBlowfish`](@ref) context 
+* `ctx`: an [`AVBlowfish`](@ref) context
 
-* `key`: a key 
+* `key`: a key
 
 * `key_len`: length of the key
 """
@@ -11227,11 +11242,11 @@ end
 Encrypt or decrypt a buffer using a previously initialized context.
 
 ### Parameters
-* `ctx`: an [`AVBlowfish`](@ref) context 
+* `ctx`: an [`AVBlowfish`](@ref) context
 
-* `xl`: left four bytes halves of input to be encrypted 
+* `xl`: left four bytes halves of input to be encrypted
 
-* `xr`: right four bytes halves of input to be encrypted 
+* `xr`: right four bytes halves of input to be encrypted
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -11245,15 +11260,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context.
 
 ### Parameters
-* `ctx`: an [`AVBlowfish`](@ref) context 
+* `ctx`: an [`AVBlowfish`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `iv`: initialization vector for CBC mode, if NULL ECB will be used 
+* `iv`: initialization vector for CBC mode, if NULL ECB will be used
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -11275,9 +11290,9 @@ end
 Init a print buffer.
 
 ### Parameters
-* `buf`: buffer to init 
+* `buf`: buffer to init
 
-* `size_init`: initial size (including the final 0) 
+* `size_init`: initial size (including the final 0)
 
 * `size_max`: maximum size; 0 means do not write anything, just count the length; 1 is replaced by the maximum value for automatic storage; any large value means that the internal buffer will be reallocated as needed up to that limit; -1 is converted to UINT\\_MAX, the largest limit possible. Check also AV\\_BPRINT\\_SIZE\\_* macros.
 """
@@ -11293,9 +11308,9 @@ Init a print buffer using a pre-existing buffer.
 The buffer will not be reallocated.
 
 ### Parameters
-* `buf`: buffer structure to init 
+* `buf`: buffer structure to init
 
-* `buffer`: byte buffer to use for the string data 
+* `buffer`: byte buffer to use for the string data
 
 * `size`: size of buffer
 """
@@ -11346,11 +11361,11 @@ end
 Allocate bytes in the buffer for external use.
 
 ### Parameters
-* `buf`:\\[in\\] buffer structure 
+* `buf`:\\[in\\] buffer structure
 
-* `size`:\\[in\\] required size 
+* `size`:\\[in\\] required size
 
-* `mem`:\\[out\\] pointer to the memory area 
+* `mem`:\\[out\\] pointer to the memory area
 
 * `actual_size`:\\[out\\] size of the memory area after allocation; can be larger or smaller than size
 """
@@ -11385,7 +11400,7 @@ Finalize a print buffer.
 
 The print buffer can no longer be used afterwards, but the len and size fields are still valid.
 
-* [out] ret\\_str if not NULL, used to return a permanent copy of the buffer contents, or NULL if memory allocation fails; if NULL, the buffer is discarded and freed 
+* [out] ret\\_str if not NULL, used to return a permanent copy of the buffer contents, or NULL if memory allocation fails; if NULL, the buffer is discarded and freed
 
 ### Returns
 0 for success or error code (probably [`AVERROR`](@ref)(ENOMEM))
@@ -11400,13 +11415,13 @@ end
 Escape the content in src and append it to dstbuf.
 
 ### Parameters
-* `dstbuf`: already inited destination bprint buffer 
+* `dstbuf`: already inited destination bprint buffer
 
-* `src`: string containing the text to escape 
+* `src`: string containing the text to escape
 
-* `special_chars`: string containing the special characters which need to be escaped, can be NULL 
+* `special_chars`: string containing the special characters which need to be escaped, can be NULL
 
-* `mode`: escape mode to employ, see AV\\_ESCAPE\\_MODE\\_* macros. Any unknown value for mode will be considered equivalent to AV\\_ESCAPE\\_MODE\\_BACKSLASH, but this behaviour can change without notice. 
+* `mode`: escape mode to employ, see AV\\_ESCAPE\\_MODE\\_* macros. Any unknown value for mode will be considered equivalent to AV\\_ESCAPE\\_MODE\\_BACKSLASH, but this behaviour can change without notice.
 
 * `flags`: flags which control how to escape, see AV\\_ESCAPE\\_FLAG\\_* macros
 """
@@ -11501,7 +11516,7 @@ end
 Create a writable reference from a given buffer reference, avoiding data copy if possible.
 
 ### Parameters
-* `buf`: buffer reference to make writable. On success, buf is either left untouched, or it is unreferenced and a new writable [`AVBufferRef`](@ref) is written in its place. On failure, buf is left untouched. 
+* `buf`: buffer reference to make writable. On success, buf is either left untouched, or it is unreferenced and a new writable [`AVBufferRef`](@ref) is written in its place. On failure, buf is left untouched.
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) on failure.
@@ -11522,9 +11537,9 @@ Ensure dst refers to the same data as src.
 When *dst is already equivalent to src, do nothing. Otherwise unreference dst and replace it with a new reference to src.
 
 ### Parameters
-* `dst`: Pointer to either a valid buffer reference or NULL. On success, this will point to a buffer reference equivalent to src. On failure, dst will be left untouched. 
+* `dst`: Pointer to either a valid buffer reference or NULL. On success, this will point to a buffer reference equivalent to src. On failure, dst will be left untouched.
 
-* `src`: A buffer reference to replace dst with. May be NULL, then this function is equivalent to [`av_buffer_unref`](@ref)(dst). 
+* `src`: A buffer reference to replace dst with. May be NULL, then this function is equivalent to [`av_buffer_unref`](@ref)(dst).
 
 ### Returns
 0 on success [`AVERROR`](@ref)(ENOMEM) on memory allocation failure.
@@ -11577,7 +11592,7 @@ Query the original opaque parameter of an allocated buffer in the pool.
     the opaque parameter of ref is used by the buffer pool implementation, therefore you have to use this function to access the original opaque parameter of an allocated buffer.
 
 ### Parameters
-* `ref`: a buffer reference to a buffer returned by [`av_buffer_pool_get`](@ref). 
+* `ref`: a buffer reference to a buffer returned by [`av_buffer_pool_get`](@ref).
 
 ### Returns
 the opaque parameter set by the buffer allocator function of the buffer pool.
@@ -11603,9 +11618,9 @@ end
 Initialize an [`AVCAMELLIA`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVCAMELLIA`](@ref) context 
+* `ctx`: an [`AVCAMELLIA`](@ref) context
 
-* `key`: a key of 16, 24, 32 bytes used for encryption/decryption 
+* `key`: a key of 16, 24, 32 bytes used for encryption/decryption
 
 * `key_bits`: number of keybits: possible are 128, 192, 256
 """
@@ -11619,15 +11634,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context
 
 ### Parameters
-* `ctx`: an [`AVCAMELLIA`](@ref) context 
+* `ctx`: an [`AVCAMELLIA`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 16 byte blocks 
+* `count`: number of 16 byte blocks
 
-* `iv`: initialization vector for CBC mode, NULL for ECB mode 
+* `iv`: initialization vector for CBC mode, NULL for ECB mode
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -11652,11 +11667,11 @@ end
 Initialize an [`AVCAST5`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVCAST5`](@ref) context 
+* `ctx`: an [`AVCAST5`](@ref) context
 
-* `key`: a key of 5,6,...16 bytes used for encryption/decryption 
+* `key`: a key of 5,6,...16 bytes used for encryption/decryption
 
-* `key_bits`: number of keybits: possible are 40,48,...,128 
+* `key_bits`: number of keybits: possible are 40,48,...,128
 
 ### Returns
 0 on success, less than 0 on failure
@@ -11671,13 +11686,13 @@ end
 Encrypt or decrypt a buffer using a previously initialized context, ECB mode only
 
 ### Parameters
-* `ctx`: an [`AVCAST5`](@ref) context 
+* `ctx`: an [`AVCAST5`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -11691,15 +11706,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context
 
 ### Parameters
-* `ctx`: an [`AVCAST5`](@ref) context 
+* `ctx`: an [`AVCAST5`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `iv`: initialization vector for CBC mode, NULL for ECB mode 
+* `iv`: initialization vector for CBC mode, NULL for ECB mode
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -11741,9 +11756,9 @@ Return a channel layout and the number of channels based on the specified name.
 This function is similar to (
 
 ### Parameters
-* `name`:\\[in\\] channel layout specification string 
+* `name`:\\[in\\] channel layout specification string
 
-* `channel_layout`:\\[out\\] parsed channel layout (0 if unknown) 
+* `channel_layout`:\\[out\\] parsed channel layout (0 if unknown)
 
 * `nb_channels`:\\[out\\] number of channels
 
@@ -11763,7 +11778,7 @@ end
 Return a description of a channel layout. If nb\\_channels is <= 0, it is guessed from the channel\\_layout.
 
 ### Parameters
-* `buf`: put here the string containing the channel layout 
+* `buf`: put here the string containing the channel layout
 
 * `buf_size`: size in bytes of the buffer
 """
@@ -11840,7 +11855,7 @@ end
 Get the description of a given channel.
 
 ### Parameters
-* `channel`: a channel layout with a single channel 
+* `channel`: a channel layout with a single channel
 
 ### Returns
 channel description on success, NULL on error
@@ -11855,11 +11870,11 @@ end
 Get the value and name of a standard channel layout.
 
 ### Parameters
-* `index`:\\[in\\] index in an internal list, starting at 0 
+* `index`:\\[in\\] index in an internal list, starting at 0
 
-* `layout`:\\[out\\] channel layout mask 
+* `layout`:\\[out\\] channel layout mask
 
-* `name`:\\[out\\] name of the layout 
+* `name`:\\[out\\] name of the layout
 
 ### Returns
 0 if the layout exists, <0 if index is beyond the limits
@@ -11871,10 +11886,10 @@ end
 """
     av_ceil_log2_c(x::Integer)
 
-Compute ceil(log2(x)). 
+Compute ceil(log2(x)).
 
 ### Parameters
-* `x`: value used to compute ceil(log2(x)) 
+* `x`: value used to compute ceil(log2(x))
 
 ### Returns
 computed ceiling of log2(x)
@@ -11886,14 +11901,14 @@ end
 """
     av_clip_c(a::Integer, amin::Integer, amax::Integer)
 
-Clip a signed integer value into the amin-amax range. 
+Clip a signed integer value into the amin-amax range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `amin`: minimum value of the clip range 
+* `amin`: minimum value of the clip range
 
-* `amax`: maximum value of the clip range 
+* `amax`: maximum value of the clip range
 
 ### Returns
 clipped value
@@ -11905,14 +11920,14 @@ end
 """
     av_clip64_c(a::Int64, amin::Int64, amax::Int64)
 
-Clip a signed 64bit integer value into the amin-amax range. 
+Clip a signed 64bit integer value into the amin-amax range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `amin`: minimum value of the clip range 
+* `amin`: minimum value of the clip range
 
-* `amax`: maximum value of the clip range 
+* `amax`: maximum value of the clip range
 
 ### Returns
 clipped value
@@ -11924,10 +11939,10 @@ end
 """
     av_clip_uint8_c(a::Integer)
 
-Clip a signed integer value into the 0-255 range. 
+Clip a signed integer value into the 0-255 range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
 ### Returns
 clipped value
@@ -11939,10 +11954,10 @@ end
 """
     av_clip_int8_c(a::Integer)
 
-Clip a signed integer value into the -128,127 range. 
+Clip a signed integer value into the -128,127 range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
 ### Returns
 clipped value
@@ -11954,10 +11969,10 @@ end
 """
     av_clip_uint16_c(a::Integer)
 
-Clip a signed integer value into the 0-65535 range. 
+Clip a signed integer value into the 0-65535 range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
 ### Returns
 clipped value
@@ -11969,10 +11984,10 @@ end
 """
     av_clip_int16_c(a::Integer)
 
-Clip a signed integer value into the -32768,32767 range. 
+Clip a signed integer value into the -32768,32767 range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
 ### Returns
 clipped value
@@ -11984,10 +11999,10 @@ end
 """
     av_clipl_int32_c(a::Int64)
 
-Clip a signed 64-bit integer value into the -2147483648,2147483647 range. 
+Clip a signed 64-bit integer value into the -2147483648,2147483647 range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
 ### Returns
 clipped value
@@ -11999,12 +12014,12 @@ end
 """
     av_clip_intp2_c(a::Integer, p::Integer)
 
-Clip a signed integer into the -(2^p),(2^p-1) range. 
+Clip a signed integer into the -(2^p),(2^p-1) range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `p`: bit position to clip at 
+* `p`: bit position to clip at
 
 ### Returns
 clipped value
@@ -12016,12 +12031,12 @@ end
 """
     av_clip_uintp2_c(a::Integer, p::Integer)
 
-Clip a signed integer to an unsigned power of two range. 
+Clip a signed integer to an unsigned power of two range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `p`: bit position to clip at 
+* `p`: bit position to clip at
 
 ### Returns
 clipped value
@@ -12033,12 +12048,12 @@ end
 """
     av_mod_uintp2_c(a::Integer, p::Integer)
 
-Clear high bits from an unsigned integer starting with specific bit position 
+Clear high bits from an unsigned integer starting with specific bit position
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `p`: bit position to clip at 
+* `p`: bit position to clip at
 
 ### Returns
 clipped value
@@ -12053,9 +12068,9 @@ end
 Add two signed 32-bit values with saturation.
 
 ### Parameters
-* `a`: one value 
+* `a`: one value
 
-* `b`: another value 
+* `b`: another value
 
 ### Returns
 sum with signed saturation
@@ -12070,9 +12085,9 @@ end
 Add a doubled value to another value with saturation at both stages.
 
 ### Parameters
-* `a`: first value 
+* `a`: first value
 
-* `b`: value doubled and added to a 
+* `b`: value doubled and added to a
 
 ### Returns
 sum sat(a + sat(2*b)) with signed saturation
@@ -12087,9 +12102,9 @@ end
 Subtract two signed 32-bit values with saturation.
 
 ### Parameters
-* `a`: one value 
+* `a`: one value
 
-* `b`: another value 
+* `b`: another value
 
 ### Returns
 difference with signed saturation
@@ -12104,9 +12119,9 @@ end
 Subtract a doubled value from another value with saturation at both stages.
 
 ### Parameters
-* `a`: first value 
+* `a`: first value
 
-* `b`: value doubled and subtracted from a 
+* `b`: value doubled and subtracted from a
 
 ### Returns
 difference sat(a - sat(2*b)) with signed saturation
@@ -12121,9 +12136,9 @@ end
 Add two signed 64-bit values with saturation.
 
 ### Parameters
-* `a`: one value 
+* `a`: one value
 
-* `b`: another value 
+* `b`: another value
 
 ### Returns
 sum with signed saturation
@@ -12138,9 +12153,9 @@ end
 Subtract two signed 64-bit values with saturation.
 
 ### Parameters
-* `a`: one value 
+* `a`: one value
 
-* `b`: another value 
+* `b`: another value
 
 ### Returns
 difference with signed saturation
@@ -12152,14 +12167,14 @@ end
 """
     av_clipf_c(a::Cfloat, amin::Cfloat, amax::Cfloat)
 
-Clip a float value into the amin-amax range. 
+Clip a float value into the amin-amax range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `amin`: minimum value of the clip range 
+* `amin`: minimum value of the clip range
 
-* `amax`: maximum value of the clip range 
+* `amax`: maximum value of the clip range
 
 ### Returns
 clipped value
@@ -12171,14 +12186,14 @@ end
 """
     av_clipd_c(a::Cdouble, amin::Cdouble, amax::Cdouble)
 
-Clip a double value into the amin-amax range. 
+Clip a double value into the amin-amax range.
 
 ### Parameters
-* `a`: value to clip 
+* `a`: value to clip
 
-* `amin`: minimum value of the clip range 
+* `amin`: minimum value of the clip range
 
-* `amax`: maximum value of the clip range 
+* `amax`: maximum value of the clip range
 
 ### Returns
 clipped value
@@ -12190,10 +12205,10 @@ end
 """
     av_popcount_c(x::Integer)
 
-Count number of bits set to one in x 
+Count number of bits set to one in x
 
 ### Parameters
-* `x`: value to count bits of 
+* `x`: value to count bits of
 
 ### Returns
 the number of bits set to one in x
@@ -12205,10 +12220,10 @@ end
 """
     av_popcount64_c(x::UInt64)
 
-Count number of bits set to one in x 
+Count number of bits set to one in x
 
 ### Parameters
-* `x`: value to count bits of 
+* `x`: value to count bits of
 
 ### Returns
 the number of bits set to one in x
@@ -12263,7 +12278,7 @@ Parse CPU flags from a string.
 
 The returned flags contain the specified flags as well as related unspecified flags.
 
-This function exists only for compatibility with libav. Please use [`av_parse_cpu_caps`](@ref)() when possible. 
+This function exists only for compatibility with libav. Please use [`av_parse_cpu_caps`](@ref)() when possible.
 
 ### Returns
 a combination of AV\\_CPU\\_* flags, negative on error.
@@ -12332,18 +12347,18 @@ const AV_CRC_MAX = 8 % UInt32
 """
     av_crc_init(ctx, le::Integer, bits::Integer, poly::Integer, ctx_size::Integer)
 
-Initialize a CRC table. 
+Initialize a CRC table.
 
 ### Parameters
-* `ctx`: must be an array of size sizeof([`AVCRC`](@ref))*257 or sizeof([`AVCRC`](@ref))*1024 
+* `ctx`: must be an array of size sizeof([`AVCRC`](@ref))*257 or sizeof([`AVCRC`](@ref))*1024
 
-* `le`: If 1, the lowest bit represents the coefficient for the highest exponent of the corresponding polynomial (both for poly and actual CRC). If 0, you must swap the CRC parameter and the result of [`av_crc`](@ref) if you need the standard representation (can be simplified in most cases to e.g. bswap16): [`av_bswap32`](@ref)(crc << (32-bits)) 
+* `le`: If 1, the lowest bit represents the coefficient for the highest exponent of the corresponding polynomial (both for poly and actual CRC). If 0, you must swap the CRC parameter and the result of [`av_crc`](@ref) if you need the standard representation (can be simplified in most cases to e.g. bswap16): [`av_bswap32`](@ref)(crc << (32-bits))
 
-* `bits`: number of bits for the CRC 
+* `bits`: number of bits for the CRC
 
-* `poly`: generator polynomial without the x**bits coefficient, in the representation as specified by le 
+* `poly`: generator polynomial without the x**bits coefficient, in the representation as specified by le
 
-* `ctx_size`: size of ctx in bytes 
+* `ctx_size`: size of ctx in bytes
 
 ### Returns
 <0 on failure
@@ -12355,10 +12370,10 @@ end
 """
     av_crc_get_table(crc_id::AVCRCId)
 
-Get an initialized standard CRC table. 
+Get an initialized standard CRC table.
 
 ### Parameters
-* `crc_id`: ID of a standard CRC 
+* `crc_id`: ID of a standard CRC
 
 ### Returns
 a pointer to the CRC table or NULL on failure
@@ -12370,10 +12385,10 @@ end
 """
     av_crc(ctx, crc::Integer, buffer, length::Csize_t)
 
-Calculate the CRC of a block. 
+Calculate the CRC of a block.
 
 ### Parameters
-* `crc`: CRC of previous blocks if any or initial value for CRC 
+* `crc`: CRC of previous blocks if any or initial value for CRC
 
 ### Returns
 CRC updated with the data from the given block
@@ -12414,9 +12429,9 @@ end
 Initializes an [`AVDES`](@ref) context.
 
 ### Parameters
-* `key_bits`: must be 64 or 192 
+* `key_bits`: must be 64 or 192
 
-* `decrypt`: 0 for encryption/CBC-MAC, 1 for decryption 
+* `decrypt`: 0 for encryption/CBC-MAC, 1 for decryption
 
 ### Returns
 zero on success, negative value otherwise
@@ -12431,13 +12446,13 @@ end
 Encrypts / decrypts using the DES algorithm.
 
 ### Parameters
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `dst`: destination array, can be equal to src, must be 8-byte aligned 
+* `dst`: destination array, can be equal to src, must be 8-byte aligned
 
-* `src`: source array, can be equal to dst, must be 8-byte aligned, may be NULL 
+* `src`: source array, can be equal to dst, must be 8-byte aligned, may be NULL
 
-* `iv`: initialization vector for CBC mode, if NULL then ECB will be used, must be 8-byte aligned 
+* `iv`: initialization vector for CBC mode, if NULL then ECB will be used, must be 8-byte aligned
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -12451,9 +12466,9 @@ end
 Calculates CBC-MAC using the DES algorithm.
 
 ### Parameters
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `dst`: destination array, can be equal to src, must be 8-byte aligned 
+* `dst`: destination array, can be equal to src, must be 8-byte aligned
 
 * `src`: source array, can be equal to dst, must be 8-byte aligned, may be NULL
 """
@@ -12476,11 +12491,11 @@ The returned entry key or value must not be changed, or it will cause undefined 
 To iterate through all the dictionary entries, you can set the matching key to the null string "" and set the [`AV_DICT_IGNORE_SUFFIX`](@ref) flag.
 
 ### Parameters
-* `prev`: Set to the previous matching element to find the next. If set to NULL the first matching element is returned. 
+* `prev`: Set to the previous matching element to find the next. If set to NULL the first matching element is returned.
 
-* `key`: matching key 
+* `key`: matching key
 
-* `flags`: a collection of AV\\_DICT\\_* flags controlling how the entry is retrieved 
+* `flags`: a collection of AV\\_DICT\\_* flags controlling how the entry is retrieved
 
 ### Returns
 found entry or NULL in case no matching entry was found in the dictionary
@@ -12495,7 +12510,7 @@ end
 Get number of entries in dictionary.
 
 ### Parameters
-* `m`: dictionary 
+* `m`: dictionary
 
 ### Returns
 number of entries in dictionary
@@ -12514,11 +12529,11 @@ Note: If [`AV_DICT_DONT_STRDUP_KEY`](@ref) or [`AV_DICT_DONT_STRDUP_VAL`](@ref) 
 Warning: Adding a new entry to a dictionary invalidates all existing entries previously returned with [`av_dict_get`](@ref).
 
 ### Parameters
-* `pm`: pointer to a pointer to a dictionary struct. If *pm is NULL a dictionary struct is allocated and put in *pm. 
+* `pm`: pointer to a pointer to a dictionary struct. If *pm is NULL a dictionary struct is allocated and put in *pm.
 
-* `key`: entry key to add to *pm (will either be av\\_strduped or added as a new key depending on flags) 
+* `key`: entry key to add to *pm (will either be av\\_strduped or added as a new key depending on flags)
 
-* `value`: entry value to add to *pm (will be av\\_strduped or added as a new key depending on flags). Passing a NULL value will cause an existing entry to be deleted. 
+* `value`: entry value to add to *pm (will be av\\_strduped or added as a new key depending on flags). Passing a NULL value will cause an existing entry to be deleted.
 
 ### Returns
 >= 0 on success otherwise an error code <0
@@ -12546,11 +12561,11 @@ Parse the key/value pairs list and add the parsed entries to a dictionary.
 In case of failure, all the successfully set entries are stored in *pm. You may need to manually free the created dictionary.
 
 ### Parameters
-* `key_val_sep`: a 0-terminated list of characters used to separate key from value 
+* `key_val_sep`: a 0-terminated list of characters used to separate key from value
 
-* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other 
+* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other
 
-* `flags`: flags to use when adding to dictionary. [`AV_DICT_DONT_STRDUP_KEY`](@ref) and [`AV_DICT_DONT_STRDUP_VAL`](@ref) are ignored since the key/value tokens will always be duplicated. 
+* `flags`: flags to use when adding to dictionary. [`AV_DICT_DONT_STRDUP_KEY`](@ref) and [`AV_DICT_DONT_STRDUP_VAL`](@ref) are ignored since the key/value tokens will always be duplicated.
 
 ### Returns
 0 on success, negative [`AVERROR`](@ref) code on failure
@@ -12562,18 +12577,18 @@ end
 """
     av_dict_copy(dst, src, flags::Integer)
 
-Copy entries from one [`AVDictionary`](@ref) struct into another. 
+Copy entries from one [`AVDictionary`](@ref) struct into another.
 
 !!! note
 
-    metadata is read using the [`AV_DICT_IGNORE_SUFFIX`](@ref) flag 
+    metadata is read using the [`AV_DICT_IGNORE_SUFFIX`](@ref) flag
 
 ### Parameters
-* `dst`: pointer to a pointer to a [`AVDictionary`](@ref) struct. If *dst is NULL, this function will allocate a struct for you and put it in *dst 
+* `dst`: pointer to a pointer to a [`AVDictionary`](@ref) struct. If *dst is NULL, this function will allocate a struct for you and put it in *dst
 
-* `src`: pointer to source [`AVDictionary`](@ref) struct 
+* `src`: pointer to source [`AVDictionary`](@ref) struct
 
-* `flags`: flags to use when setting entries in *dst 
+* `flags`: flags to use when setting entries in *dst
 
 ### Returns
 0 on success, negative [`AVERROR`](@ref) code on failure. If dst was allocated by this function, callers should free the associated memory.
@@ -12596,7 +12611,7 @@ end
 
 Get dictionary entries as a string.
 
-Create a string containing dictionary's entries. Such string may be passed back to [`av_dict_parse_string`](@ref)(). 
+Create a string containing dictionary's entries. Such string may be passed back to [`av_dict_parse_string`](@ref)().
 
 !!! note
 
@@ -12607,16 +12622,16 @@ Create a string containing dictionary's entries. Such string may be passed back 
     Separators cannot be neither '\\' nor '\\0'. They also cannot be the same.
 
 ### Parameters
-* `m`:\\[in\\] dictionary 
+* `m`:\\[in\\] dictionary
 
-* `buffer`:\\[out\\] Pointer to buffer that will be allocated with string containg entries. Buffer must be freed by the caller when is no longer needed. 
+* `buffer`:\\[out\\] Pointer to buffer that will be allocated with string containg entries. Buffer must be freed by the caller when is no longer needed.
 
-* `key_val_sep`:\\[in\\] character used to separate key from value 
+* `key_val_sep`:\\[in\\] character used to separate key from value
 
-* `pairs_sep`:\\[in\\] character used to separate two pairs from each other 
+* `pairs_sep`:\\[in\\] character used to separate two pairs from each other
 
 ### Returns
->= 0 on success, negative on error 
+>= 0 on success, negative on error
 """
 function av_dict_get_string(m, buffer, key_val_sep::Cchar, pairs_sep::Cchar)
     ccall((:av_dict_get_string, libavutil), Cint, (Ptr{AVDictionary}, Ptr{Cstring}, Cchar, Cchar), m, buffer, key_val_sep, pairs_sep)
@@ -12632,7 +12647,7 @@ Extract the rotation component of the transformation matrix.
     floating point numbers are inherently inexact, so callers are recommended to round the return value to nearest integer before use.
 
 ### Parameters
-* `matrix`: the transformation matrix 
+* `matrix`: the transformation matrix
 
 ### Returns
 the angle (in degrees) by which the transformation rotates the frame counterclockwise. The angle will be in range [-180.0, 180.0], or NaN if the matrix is singular.
@@ -12647,7 +12662,7 @@ end
 Initialize a transformation matrix describing a pure counterclockwise rotation by the specified angle (in degrees).
 
 ### Parameters
-* `matrix`: an allocated transformation matrix (will be fully overwritten by this function) 
+* `matrix`: an allocated transformation matrix (will be fully overwritten by this function)
 
 * `angle`: rotation angle in degrees.
 """
@@ -12661,9 +12676,9 @@ end
 Flip the input matrix horizontally and/or vertically.
 
 ### Parameters
-* `matrix`: an allocated transformation matrix 
+* `matrix`: an allocated transformation matrix
 
-* `hflip`: whether the matrix should be flipped horizontally 
+* `hflip`: whether the matrix should be flipped horizontally
 
 * `vflip`: whether the matrix should be flipped vertically
 """
@@ -12794,9 +12809,9 @@ end
 Allocates an [`AVEncryptionInfo`](@ref) structure and sub-pointers to hold the given number of subsamples. This will allocate pointers for the key ID, IV, and subsample entries, set the size members, and zero-initialize the rest.
 
 ### Parameters
-* `subsample_count`: The number of subsamples. 
+* `subsample_count`: The number of subsamples.
 
-* `key_id_size`: The number of bytes in the key ID, should be 16. 
+* `key_id_size`: The number of bytes in the key ID, should be 16.
 
 * `iv_size`: The number of bytes in the IV, should be 16.
 
@@ -12810,7 +12825,7 @@ end
 """
     av_encryption_info_clone(info)
 
-Allocates an [`AVEncryptionInfo`](@ref) structure with a copy of the given data. 
+Allocates an [`AVEncryptionInfo`](@ref) structure with a copy of the given data.
 
 ### Returns
 The new [`AVEncryptionInfo`](@ref) structure, or NULL on error.
@@ -12903,14 +12918,14 @@ end
 Fill the provided buffer with a string containing an error string corresponding to the [`AVERROR`](@ref) code errnum.
 
 ### Parameters
-* `errbuf`: a buffer 
+* `errbuf`: a buffer
 
-* `errbuf_size`: size in bytes of errbuf 
+* `errbuf_size`: size in bytes of errbuf
 
-* `errnum`: error code to describe 
+* `errnum`: error code to describe
 
 ### Returns
-the buffer in input, filled with the error description 
+the buffer in input, filled with the error description
 
 ### See also
 [`av_strerror`](@ref)()
@@ -12925,11 +12940,11 @@ end
 Put a description of the [`AVERROR`](@ref) code errnum in errbuf. In case of failure the global variable errno is set to indicate the error. Even in case of failure [`av_strerror`](@ref)() will print a generic error message indicating the errnum provided to errbuf.
 
 ### Parameters
-* `errnum`: error code to describe 
+* `errnum`: error code to describe
 
-* `errbuf`: buffer to which description is written 
+* `errbuf`: buffer to which description is written
 
-* `errbuf_size`: the size in bytes of errbuf 
+* `errbuf_size`: the size in bytes of errbuf
 
 ### Returns
 0 on success, a negative value if a description for errnum cannot be found
@@ -12946,25 +12961,25 @@ mutable struct AVExpr end
 Parse and evaluate an expression. Note, this is significantly slower than [`av_expr_eval`](@ref)().
 
 ### Parameters
-* `res`: a pointer to a double where is put the result value of the expression, or NAN in case of error 
+* `res`: a pointer to a double where is put the result value of the expression, or NAN in case of error
 
-* `s`: expression as a zero terminated string, for example "1+2^3+5*5+sin(2/3)" 
+* `s`: expression as a zero terminated string, for example "1+2^3+5*5+sin(2/3)"
 
-* `const_names`: NULL terminated array of zero terminated strings of constant identifiers, for example {"PI", "E", 0} 
+* `const_names`: NULL terminated array of zero terminated strings of constant identifiers, for example {"PI", "E", 0}
 
-* `const_values`: a zero terminated array of values for the identifiers from const\\_names 
+* `const_values`: a zero terminated array of values for the identifiers from const\\_names
 
-* `func1_names`: NULL terminated array of zero terminated strings of funcs1 identifiers 
+* `func1_names`: NULL terminated array of zero terminated strings of funcs1 identifiers
 
-* `funcs1`: NULL terminated array of function pointers for functions which take 1 argument 
+* `funcs1`: NULL terminated array of function pointers for functions which take 1 argument
 
-* `func2_names`: NULL terminated array of zero terminated strings of funcs2 identifiers 
+* `func2_names`: NULL terminated array of zero terminated strings of funcs2 identifiers
 
-* `funcs2`: NULL terminated array of function pointers for functions which take 2 arguments 
+* `funcs2`: NULL terminated array of function pointers for functions which take 2 arguments
 
-* `opaque`: a pointer which will be passed to all functions from funcs1 and funcs2 
+* `opaque`: a pointer which will be passed to all functions from funcs1 and funcs2
 
-* `log_ctx`: parent logging context 
+* `log_ctx`: parent logging context
 
 ### Returns
 >= 0 in case of success, a negative value corresponding to an [`AVERROR`](@ref) code otherwise
@@ -12979,21 +12994,21 @@ end
 Parse an expression.
 
 ### Parameters
-* `expr`: a pointer where is put an [`AVExpr`](@ref) containing the parsed value in case of successful parsing, or NULL otherwise. The pointed to [`AVExpr`](@ref) must be freed with [`av_expr_free`](@ref)() by the user when it is not needed anymore. 
+* `expr`: a pointer where is put an [`AVExpr`](@ref) containing the parsed value in case of successful parsing, or NULL otherwise. The pointed to [`AVExpr`](@ref) must be freed with [`av_expr_free`](@ref)() by the user when it is not needed anymore.
 
-* `s`: expression as a zero terminated string, for example "1+2^3+5*5+sin(2/3)" 
+* `s`: expression as a zero terminated string, for example "1+2^3+5*5+sin(2/3)"
 
-* `const_names`: NULL terminated array of zero terminated strings of constant identifiers, for example {"PI", "E", 0} 
+* `const_names`: NULL terminated array of zero terminated strings of constant identifiers, for example {"PI", "E", 0}
 
-* `func1_names`: NULL terminated array of zero terminated strings of funcs1 identifiers 
+* `func1_names`: NULL terminated array of zero terminated strings of funcs1 identifiers
 
-* `funcs1`: NULL terminated array of function pointers for functions which take 1 argument 
+* `funcs1`: NULL terminated array of function pointers for functions which take 1 argument
 
-* `func2_names`: NULL terminated array of zero terminated strings of funcs2 identifiers 
+* `func2_names`: NULL terminated array of zero terminated strings of funcs2 identifiers
 
-* `funcs2`: NULL terminated array of function pointers for functions which take 2 arguments 
+* `funcs2`: NULL terminated array of function pointers for functions which take 2 arguments
 
-* `log_ctx`: parent logging context 
+* `log_ctx`: parent logging context
 
 ### Returns
 >= 0 in case of success, a negative value corresponding to an [`AVERROR`](@ref) code otherwise
@@ -13008,9 +13023,9 @@ end
 Evaluate a previously parsed expression.
 
 ### Parameters
-* `const_values`: a zero terminated array of values for the identifiers from [`av_expr_parse`](@ref)() const\\_names 
+* `const_values`: a zero terminated array of values for the identifiers from [`av_expr_parse`](@ref)() const\\_names
 
-* `opaque`: a pointer which will be passed to all functions from funcs1 and funcs2 
+* `opaque`: a pointer which will be passed to all functions from funcs1 and funcs2
 
 ### Returns
 the value of the expression
@@ -13025,9 +13040,9 @@ end
 Track the presence of variables and their number of occurrences in a parsed expression
 
 ### Parameters
-* `counter`: a zero-initialized array where the count of each variable will be stored 
+* `counter`: a zero-initialized array where the count of each variable will be stored
 
-* `size`: size of array 
+* `size`: size of array
 
 ### Returns
 0 on success, a negative value indicates that no expression or array was passed or size was zero
@@ -13042,11 +13057,11 @@ end
 Track the presence of user provided functions and their number of occurrences in a parsed expression.
 
 ### Parameters
-* `counter`: a zero-initialized array where the count of each function will be stored if you passed 5 functions with 2 arguments to [`av_expr_parse`](@ref)() then for arg=2 this will use upto 5 entries. 
+* `counter`: a zero-initialized array where the count of each function will be stored if you passed 5 functions with 2 arguments to [`av_expr_parse`](@ref)() then for arg=2 this will use upto 5 entries.
 
-* `size`: size of array 
+* `size`: size of array
 
-* `arg`: number of arguments the counted functions have 
+* `arg`: number of arguments the counted functions have
 
 ### Returns
 0 on success, a negative value indicates that no expression or array was passed or size was zero
@@ -13070,7 +13085,7 @@ end
 Parse the string in numstr and return its value as a double. If the string is empty, contains only whitespaces, or does not contain an initial substring that has the expected syntax for a floating-point number, no conversion is performed. In this case, returns a value of zero and the value returned in tail is the value of numstr.
 
 ### Parameters
-* `numstr`: a string representing a number, may contain one of the International System number postfixes, for example 'K', 'M', 'G'. If 'i' is appended after the postfix, powers of 2 are used instead of powers of 10. The 'B' postfix multiplies the value by 8, and can be appended after another postfix or used alone. This allows using for example 'KB', 'MiB', 'G' and 'B' as postfix. 
+* `numstr`: a string representing a number, may contain one of the International System number postfixes, for example 'K', 'M', 'G'. If 'i' is appended after the postfix, powers of 2 are used instead of powers of 10. The 'B' postfix multiplies the value by 8, and can be appended after another postfix or used alone. This allows using for example 'KB', 'MiB', 'G' and 'B' as postfix.
 
 * `tail`: if non-NULL puts here the pointer to the char next after the last parsed character
 """
@@ -13090,10 +13105,10 @@ end
 """
     av_fifo_alloc(size::Integer)
 
-Initialize an [`AVFifoBuffer`](@ref). 
+Initialize an [`AVFifoBuffer`](@ref).
 
 ### Parameters
-* `size`: of FIFO 
+* `size`: of FIFO
 
 ### Returns
 [`AVFifoBuffer`](@ref) or NULL in case of memory allocation failure
@@ -13105,12 +13120,12 @@ end
 """
     av_fifo_alloc_array(nmemb::Csize_t, size::Csize_t)
 
-Initialize an [`AVFifoBuffer`](@ref). 
+Initialize an [`AVFifoBuffer`](@ref).
 
 ### Parameters
-* `nmemb`: number of elements 
+* `nmemb`: number of elements
 
-* `size`: size of the single element 
+* `size`: size of the single element
 
 ### Returns
 [`AVFifoBuffer`](@ref) or NULL in case of memory allocation failure
@@ -13122,7 +13137,7 @@ end
 """
     av_fifo_free(f)
 
-Free an [`AVFifoBuffer`](@ref). 
+Free an [`AVFifoBuffer`](@ref).
 
 ### Parameters
 * `f`: [`AVFifoBuffer`](@ref) to free
@@ -13134,7 +13149,7 @@ end
 """
     av_fifo_freep(f)
 
-Free an [`AVFifoBuffer`](@ref) and reset pointer to NULL. 
+Free an [`AVFifoBuffer`](@ref) and reset pointer to NULL.
 
 ### Parameters
 * `f`: [`AVFifoBuffer`](@ref) to free
@@ -13146,7 +13161,7 @@ end
 """
     av_fifo_reset(f)
 
-Reset the [`AVFifoBuffer`](@ref) to the state right after [`av_fifo_alloc`](@ref), in particular it is emptied. 
+Reset the [`AVFifoBuffer`](@ref) to the state right after [`av_fifo_alloc`](@ref), in particular it is emptied.
 
 ### Parameters
 * `f`: [`AVFifoBuffer`](@ref) to reset
@@ -13158,10 +13173,10 @@ end
 """
     av_fifo_size(f)
 
-Return the amount of data in bytes in the [`AVFifoBuffer`](@ref), that is the amount of data you can read from it. 
+Return the amount of data in bytes in the [`AVFifoBuffer`](@ref), that is the amount of data you can read from it.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to read from 
+* `f`: [`AVFifoBuffer`](@ref) to read from
 
 ### Returns
 size
@@ -13173,10 +13188,10 @@ end
 """
     av_fifo_space(f)
 
-Return the amount of space in bytes in the [`AVFifoBuffer`](@ref), that is the amount of data you can write into it. 
+Return the amount of space in bytes in the [`AVFifoBuffer`](@ref), that is the amount of data you can write into it.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to write into 
+* `f`: [`AVFifoBuffer`](@ref) to write into
 
 ### Returns
 size
@@ -13188,16 +13203,16 @@ end
 """
     av_fifo_generic_peek_at(f, dest, offset::Integer, buf_size::Integer, func)
 
-Feed data at specific position from an [`AVFifoBuffer`](@ref) to a user-supplied callback. Similar as av\\_fifo\\_gereric\\_read but without discarding data. 
+Feed data at specific position from an [`AVFifoBuffer`](@ref) to a user-supplied callback. Similar as av\\_fifo\\_gereric\\_read but without discarding data.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to read from 
+* `f`: [`AVFifoBuffer`](@ref) to read from
 
-* `offset`: offset from current read position 
+* `offset`: offset from current read position
 
-* `buf_size`: number of bytes to read 
+* `buf_size`: number of bytes to read
 
-* `func`: generic read function 
+* `func`: generic read function
 
 * `dest`: data destination
 """
@@ -13208,14 +13223,14 @@ end
 """
     av_fifo_generic_peek(f, dest, buf_size::Integer, func)
 
-Feed data from an [`AVFifoBuffer`](@ref) to a user-supplied callback. Similar as av\\_fifo\\_gereric\\_read but without discarding data. 
+Feed data from an [`AVFifoBuffer`](@ref) to a user-supplied callback. Similar as av\\_fifo\\_gereric\\_read but without discarding data.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to read from 
+* `f`: [`AVFifoBuffer`](@ref) to read from
 
-* `buf_size`: number of bytes to read 
+* `buf_size`: number of bytes to read
 
-* `func`: generic read function 
+* `func`: generic read function
 
 * `dest`: data destination
 """
@@ -13226,14 +13241,14 @@ end
 """
     av_fifo_generic_read(f, dest, buf_size::Integer, func)
 
-Feed data from an [`AVFifoBuffer`](@ref) to a user-supplied callback. 
+Feed data from an [`AVFifoBuffer`](@ref) to a user-supplied callback.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to read from 
+* `f`: [`AVFifoBuffer`](@ref) to read from
 
-* `buf_size`: number of bytes to read 
+* `buf_size`: number of bytes to read
 
-* `func`: generic read function 
+* `func`: generic read function
 
 * `dest`: data destination
 """
@@ -13244,16 +13259,16 @@ end
 """
     av_fifo_generic_write(f, src, size::Integer, func)
 
-Feed data from a user-supplied callback to an [`AVFifoBuffer`](@ref). 
+Feed data from a user-supplied callback to an [`AVFifoBuffer`](@ref).
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to write to 
+* `f`: [`AVFifoBuffer`](@ref) to write to
 
-* `src`: data source; non-const since it may be used as a modifiable context by the function defined in func 
+* `src`: data source; non-const since it may be used as a modifiable context by the function defined in func
 
-* `size`: number of bytes to write 
+* `size`: number of bytes to write
 
-* `func`: generic write function; the first parameter is src, the second is dest\\_buf, the third is dest\\_buf\\_size. func must return the number of bytes written to dest\\_buf, or <= 0 to indicate no more data available to write. If func is NULL, src is interpreted as a simple byte array for source data. 
+* `func`: generic write function; the first parameter is src, the second is dest\\_buf, the third is dest\\_buf\\_size. func must return the number of bytes written to dest\\_buf, or <= 0 to indicate no more data available to write. If func is NULL, src is interpreted as a simple byte array for source data.
 
 ### Returns
 the number of bytes written to the FIFO
@@ -13268,9 +13283,9 @@ end
 Resize an [`AVFifoBuffer`](@ref). In case of reallocation failure, the old FIFO is kept unchanged.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to resize 
+* `f`: [`AVFifoBuffer`](@ref) to resize
 
-* `size`: new [`AVFifoBuffer`](@ref) size in bytes 
+* `size`: new [`AVFifoBuffer`](@ref) size in bytes
 
 ### Returns
 <0 for failure, >=0 otherwise
@@ -13285,9 +13300,9 @@ end
 Enlarge an [`AVFifoBuffer`](@ref). In case of reallocation failure, the old FIFO is kept unchanged. The new fifo size may be larger than the requested size.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to resize 
+* `f`: [`AVFifoBuffer`](@ref) to resize
 
-* `additional_space`: the amount of space in bytes to allocate in addition to [`av_fifo_size`](@ref)() 
+* `additional_space`: the amount of space in bytes to allocate in addition to [`av_fifo_size`](@ref)()
 
 ### Returns
 <0 for failure, >=0 otherwise
@@ -13299,10 +13314,10 @@ end
 """
     av_fifo_drain(f, size::Integer)
 
-Read and discard the specified amount of data from an [`AVFifoBuffer`](@ref). 
+Read and discard the specified amount of data from an [`AVFifoBuffer`](@ref).
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to read from 
+* `f`: [`AVFifoBuffer`](@ref) to read from
 
 * `size`: amount of data to read in bytes
 """
@@ -13316,7 +13331,7 @@ end
 Return a pointer to the data stored in a FIFO buffer at a certain offset. The FIFO buffer is not modified.
 
 ### Parameters
-* `f`: [`AVFifoBuffer`](@ref) to peek at, f must be non-NULL 
+* `f`: [`AVFifoBuffer`](@ref) to peek at, f must be non-NULL
 
 * `offs`: an offset in bytes, its absolute value must be less than the used buffer size or the returned pointer will point outside to the buffer data. The used buffer size can be checked with [`av_fifo_size`](@ref)().
 """
@@ -13330,9 +13345,9 @@ end
 Read the file with name filename, and put its content in a newly allocated buffer or map it with mmap() when available. In case of success set *bufptr to the read or mmapped buffer, and *size to the size in bytes of the buffer in *bufptr. Unlike mmap this function succeeds with zero sized files, in this case *bufptr will be set to NULL and *size will be set to 0. The returned buffer must be released with [`av_file_unmap`](@ref)().
 
 ### Parameters
-* `log_offset`: loglevel offset used for logging 
+* `log_offset`: loglevel offset used for logging
 
-* `log_ctx`: context used for logging 
+* `log_ctx`: context used for logging
 
 ### Returns
 a non negative number in case of success, a negative value corresponding to an [`AVERROR`](@ref) error code in case of failure
@@ -13356,16 +13371,16 @@ end
 """
     av_tempfile(prefix, filename, log_offset::Integer, log_ctx)
 
-Wrapper to work around the lack of mkstemp() on mingw. Also, tries to create file in /tmp first, if possible. *prefix can be a character constant; *filename will be allocated internally. 
+Wrapper to work around the lack of mkstemp() on mingw. Also, tries to create file in /tmp first, if possible. *prefix can be a character constant; *filename will be allocated internally.
 
 !!! note
 
-    On very old libcs it is necessary to set a secure umask before calling this, [`av_tempfile`](@ref)() can't call umask itself as it is used in libraries and could interfere with the calling application. 
+    On very old libcs it is necessary to set a secure umask before calling this, [`av_tempfile`](@ref)() can't call umask itself as it is used in libraries and could interfere with the calling application.
 
 \\deprecated as fd numbers cannot be passed saftely between libs on some platforms
 
 ### Returns
-file descriptor of opened file (or negative value corresponding to an [`AVERROR`](@ref) code on error) and opened file name in **filename. 
+file descriptor of opened file (or negative value corresponding to an [`AVERROR`](@ref) code on error) and opened file name in **filename.
 """
 function av_tempfile(prefix, filename, log_offset::Integer, log_ctx)
     ccall((:av_tempfile, libavutil), Cint, (Cstring, Ptr{Cstring}, Cint, Ptr{Cvoid}), prefix, filename, log_offset, log_ctx)
@@ -13617,7 +13632,7 @@ end
 """
     av_get_colorspace_name(val::AVColorSpace)
 
-Get the name of a colorspace. 
+Get the name of a colorspace.
 
 ### Returns
 a static string identifying the colorspace; can be NULL.
@@ -13724,7 +13739,7 @@ This function will fill [`AVFrame`](@ref).data and [`AVFrame`](@ref).buf arrays 
     : if frame already has been allocated, calling this function will leak memory. In addition, undefined behavior can occur in certain cases.
 
 ### Parameters
-* `frame`: frame in which to store the new buffers. 
+* `frame`: frame in which to store the new buffers.
 
 * `align`: Required buffer size alignment. If equal to 0, alignment will be chosen automatically for the current CPU. It is highly recommended to pass 0 here unless you know what you are doing.
 
@@ -13817,9 +13832,9 @@ end
 Add a new side data to a frame.
 
 ### Parameters
-* `frame`: a frame to which the side data should be added 
+* `frame`: a frame to which the side data should be added
 
-* `type`: type of the added side data 
+* `type`: type of the added side data
 
 * `size`: size of the side data
 
@@ -13836,9 +13851,9 @@ end
 Add a new side data to a frame from an existing [`AVBufferRef`](@ref)
 
 ### Parameters
-* `frame`: a frame to which the side data should be added 
+* `frame`: a frame to which the side data should be added
 
-* `type`: the type of the added side data 
+* `type`: the type of the added side data
 
 * `buf`: an [`AVBufferRef`](@ref) to add as side data. The ownership of the reference is transferred to the frame.
 
@@ -13884,7 +13899,7 @@ Crop the given video [`AVFrame`](@ref) according to its crop\\_left/crop\\_top/c
 In all cases, the cropping boundaries will be rounded to the inherent alignment of the pixel format. In some cases, such as for opaque hwaccel formats, the left/top cropping is ignored. The crop fields are set to 0 even if the cropping was rounded or ignored.
 
 ### Parameters
-* `frame`: the frame which should be cropped 
+* `frame`: the frame which should be cropped
 
 * `flags`: Some combination of AV\\_FRAME\\_CROP\\_* flags, or 0.
 
@@ -13934,7 +13949,7 @@ Get the names of available hash algorithms.
 This function can be used to enumerate the algorithms.
 
 ### Parameters
-* `i`:\\[in\\] Index of the hash algorithm, starting from 0 
+* `i`:\\[in\\] Index of the hash algorithm, starting from 0
 
 ### Returns
 Pointer to a static string or `NULL` if `i` is out of range
@@ -13960,7 +13975,7 @@ Get the size of the resulting hash value in bytes.
 The maximum value this function will currently return is available as macro #[`AV_HASH_MAX_SIZE`](@ref).
 
 ### Parameters
-* `ctx`:\\[in\\] Hash context 
+* `ctx`:\\[in\\] Hash context
 
 ### Returns
 Size of the hash value in bytes
@@ -13995,7 +14010,7 @@ The minimum size of `dst` buffer is given by [`av_hash_get_size`](@ref)() or #[`
 It is not safe to update or finalize a hash context again, if it has already been finalized.
 
 ### Parameters
-* `ctx`:\\[in,out\\] Hash context 
+* `ctx`:\\[in,out\\] Hash context
 
 * `dst`:\\[out\\] Where the final hash value will be stored
 
@@ -14016,9 +14031,9 @@ It is not safe to update or finalize a hash context again, if it has already bee
 If `size` is smaller than the hash size (given by [`av_hash_get_size`](@ref)()), the hash is truncated; if size is larger, the buffer is padded with 0.
 
 ### Parameters
-* `ctx`:\\[in,out\\] Hash context 
+* `ctx`:\\[in,out\\] Hash context
 
-* `dst`:\\[out\\] Where the final hash value will be stored 
+* `dst`:\\[out\\] Where the final hash value will be stored
 
 * `size`:\\[in\\] Number of bytes to write to `dst`
 """
@@ -14038,9 +14053,9 @@ The string is always 0-terminated.
 If `size` is smaller than `2 * hash\\_size + 1`, where `hash_size` is the value returned by [`av_hash_get_size`](@ref)(), the string will be truncated.
 
 ### Parameters
-* `ctx`:\\[in,out\\] Hash context 
+* `ctx`:\\[in,out\\] Hash context
 
-* `dst`:\\[out\\] Where the string will be stored 
+* `dst`:\\[out\\] Where the string will be stored
 
 * `size`:\\[in\\] Maximum number of bytes to write to `dst`
 """
@@ -14060,9 +14075,9 @@ The string is always 0-terminated.
 If `size` is smaller than [`AV_BASE64_SIZE`](@ref)(hash\\_size), where `hash_size` is the value returned by [`av_hash_get_size`](@ref)(), the string will be truncated.
 
 ### Parameters
-* `ctx`:\\[in,out\\] Hash context 
+* `ctx`:\\[in,out\\] Hash context
 
-* `dst`:\\[out\\] Where the final hash value will be stored 
+* `dst`:\\[out\\] Where the final hash value will be stored
 
 * `size`:\\[in\\] Maximum number of bytes to write to `dst`
 """
@@ -14174,7 +14189,7 @@ end
 """
     av_dynamic_hdr_plus_create_side_data(frame)
 
-Allocate a complete [`AVDynamicHDRPlus`](@ref) and add it to the frame. 
+Allocate a complete [`AVDynamicHDRPlus`](@ref) and add it to the frame.
 
 ### Parameters
 * `frame`: The frame which side data is added to.
@@ -14208,7 +14223,7 @@ mutable struct AVHMAC end
 """
     av_hmac_alloc(type::AVHMACType)
 
-Allocate an [`AVHMAC`](@ref) context. 
+Allocate an [`AVHMAC`](@ref) context.
 
 ### Parameters
 * `type`: The hash function used for the HMAC.
@@ -14220,7 +14235,7 @@ end
 """
     av_hmac_free(ctx)
 
-Free an [`AVHMAC`](@ref) context. 
+Free an [`AVHMAC`](@ref) context.
 
 ### Parameters
 * `ctx`: The context to free, may be NULL
@@ -14232,12 +14247,12 @@ end
 """
     av_hmac_init(ctx, key, keylen::Integer)
 
-Initialize an [`AVHMAC`](@ref) context with an authentication key. 
+Initialize an [`AVHMAC`](@ref) context with an authentication key.
 
 ### Parameters
-* `ctx`: The HMAC context 
+* `ctx`: The HMAC context
 
-* `key`: The authentication key 
+* `key`: The authentication key
 
 * `keylen`: The length of the key, in bytes
 """
@@ -14248,12 +14263,12 @@ end
 """
     av_hmac_update(ctx, data, len::Integer)
 
-Hash data with the HMAC. 
+Hash data with the HMAC.
 
 ### Parameters
-* `ctx`: The HMAC context 
+* `ctx`: The HMAC context
 
-* `data`: The data to hash 
+* `data`: The data to hash
 
 * `len`: The length of the data, in bytes
 """
@@ -14264,14 +14279,14 @@ end
 """
     av_hmac_final(ctx, out, outlen::Integer)
 
-Finish hashing and output the HMAC digest. 
+Finish hashing and output the HMAC digest.
 
 ### Parameters
-* `ctx`: The HMAC context 
+* `ctx`: The HMAC context
 
-* `out`: The output buffer to write the digest into 
+* `out`: The output buffer to write the digest into
 
-* `outlen`: The length of the out buffer, in bytes 
+* `outlen`: The length of the out buffer, in bytes
 
 ### Returns
 The number of bytes written to out, or a negative error code.
@@ -14283,22 +14298,22 @@ end
 """
     av_hmac_calc(ctx, data, len::Integer, key, keylen::Integer, out, outlen::Integer)
 
-Hash an array of data with a key. 
+Hash an array of data with a key.
 
 ### Parameters
-* `ctx`: The HMAC context 
+* `ctx`: The HMAC context
 
-* `data`: The data to hash 
+* `data`: The data to hash
 
-* `len`: The length of the data, in bytes 
+* `len`: The length of the data, in bytes
 
-* `key`: The authentication key 
+* `key`: The authentication key
 
-* `keylen`: The length of the key, in bytes 
+* `keylen`: The length of the key, in bytes
 
-* `out`: The output buffer to write the digest into 
+* `out`: The output buffer to write the digest into
 
-* `outlen`: The length of the out buffer, in bytes 
+* `outlen`: The length of the out buffer, in bytes
 
 ### Returns
 The number of bytes written to out, or a negative error code.
@@ -14356,7 +14371,7 @@ end
 Look up an [`AVHWDeviceType`](@ref) by name.
 
 ### Parameters
-* `name`: String name of the device type (case-insensitive). 
+* `name`: String name of the device type (case-insensitive).
 
 ### Returns
 The type from enum [`AVHWDeviceType`](@ref), or AV\\_HWDEVICE\\_TYPE\\_NONE if not found.
@@ -14371,7 +14386,7 @@ end
 Get the string name of an [`AVHWDeviceType`](@ref).
 
 ### Parameters
-* `type`: Type from enum [`AVHWDeviceType`](@ref). 
+* `type`: Type from enum [`AVHWDeviceType`](@ref).
 
 ### Returns
 Pointer to a static string containing the name, or NULL if the type is not valid.
@@ -14386,7 +14401,7 @@ end
 Iterate over supported device types.
 
 ### Parameters
-* `type`: AV\\_HWDEVICE\\_TYPE\\_NONE initially, then the previous type returned by this function in subsequent iterations. 
+* `type`: AV\\_HWDEVICE\\_TYPE\\_NONE initially, then the previous type returned by this function in subsequent iterations.
 
 ### Returns
 The next usable device type from enum [`AVHWDeviceType`](@ref), or AV\\_HWDEVICE\\_TYPE\\_NONE if there are no more.
@@ -14401,7 +14416,7 @@ end
 Allocate an [`AVHWDeviceContext`](@ref) for a given hardware type.
 
 ### Parameters
-* `type`: the type of the hardware device to allocate. 
+* `type`: the type of the hardware device to allocate.
 
 ### Returns
 a reference to the newly created [`AVHWDeviceContext`](@ref) on success or NULL on failure.
@@ -14416,7 +14431,7 @@ end
 Finalize the device context before use. This function must be called after the context is filled with all the required information and before it is used in any way.
 
 ### Parameters
-* `ref`: a reference to the [`AVHWDeviceContext`](@ref) 
+* `ref`: a reference to the [`AVHWDeviceContext`](@ref)
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) code on failure
@@ -14435,13 +14450,13 @@ This is a convenience function intended to cover the simple cases. Callers who n
 The returned context is already initialized and ready for use, the caller should not call [`av_hwdevice_ctx_init`](@ref)() on it. The user\\_opaque/free fields of the created [`AVHWDeviceContext`](@ref) are set by this function and should not be touched by the caller.
 
 ### Parameters
-* `device_ctx`: On success, a reference to the newly-created device context will be written here. The reference is owned by the caller and must be released with [`av_buffer_unref`](@ref)() when no longer needed. On failure, NULL will be written to this pointer. 
+* `device_ctx`: On success, a reference to the newly-created device context will be written here. The reference is owned by the caller and must be released with [`av_buffer_unref`](@ref)() when no longer needed. On failure, NULL will be written to this pointer.
 
-* `type`: The type of the device to create. 
+* `type`: The type of the device to create.
 
-* `device`: A type-specific string identifying the device to open. 
+* `device`: A type-specific string identifying the device to open.
 
-* `opts`: A dictionary of additional (type-specific) options to use in opening the device. The dictionary remains owned by the caller. 
+* `opts`: A dictionary of additional (type-specific) options to use in opening the device. The dictionary remains owned by the caller.
 
 * `flags`: currently unused
 
@@ -14462,13 +14477,13 @@ If the source device is a device of the target type or was originally derived fr
 Otherwise, it will attempt to derive a new device from the given source device. If direct derivation to the new type is not implemented, it will attempt the same derivation from each ancestor of the source device in turn looking for an implemented derivation method.
 
 ### Parameters
-* `dst_ctx`: On success, a reference to the newly-created [`AVHWDeviceContext`](@ref). 
+* `dst_ctx`: On success, a reference to the newly-created [`AVHWDeviceContext`](@ref).
 
-* `type`: The type of the new device to create. 
+* `type`: The type of the new device to create.
 
-* `src_ctx`: A reference to an existing [`AVHWDeviceContext`](@ref) which will be used to create the new device. 
+* `src_ctx`: A reference to an existing [`AVHWDeviceContext`](@ref) which will be used to create the new device.
 
-* `flags`: Currently unused; should be set to zero. 
+* `flags`: Currently unused; should be set to zero.
 
 ### Returns
 Zero on success, a negative [`AVERROR`](@ref) code on failure.
@@ -14485,15 +14500,15 @@ Create a new device of the specified type from an existing device.
 This function performs the same action as [`av_hwdevice_ctx_create_derived`](@ref), however, it is able to set options for the new device to be derived.
 
 ### Parameters
-* `dst_ctx`: On success, a reference to the newly-created [`AVHWDeviceContext`](@ref). 
+* `dst_ctx`: On success, a reference to the newly-created [`AVHWDeviceContext`](@ref).
 
-* `type`: The type of the new device to create. 
+* `type`: The type of the new device to create.
 
-* `src_ctx`: A reference to an existing [`AVHWDeviceContext`](@ref) which will be used to create the new device. 
+* `src_ctx`: A reference to an existing [`AVHWDeviceContext`](@ref) which will be used to create the new device.
 
-* `options`: Options for the new device to create, same format as in [`av_hwdevice_ctx_create`](@ref). 
+* `options`: Options for the new device to create, same format as in [`av_hwdevice_ctx_create`](@ref).
 
-* `flags`: Currently unused; should be set to zero. 
+* `flags`: Currently unused; should be set to zero.
 
 ### Returns
 Zero on success, a negative [`AVERROR`](@ref) code on failure.
@@ -14508,7 +14523,7 @@ end
 Allocate an [`AVHWFramesContext`](@ref) tied to a given device context.
 
 ### Parameters
-* `device_ctx`: a reference to a [`AVHWDeviceContext`](@ref). This function will make a new reference for internal use, the one passed to the function remains owned by the caller. 
+* `device_ctx`: a reference to a [`AVHWDeviceContext`](@ref). This function will make a new reference for internal use, the one passed to the function remains owned by the caller.
 
 ### Returns
 a reference to the newly created [`AVHWFramesContext`](@ref) on success or NULL on failure.
@@ -14523,7 +14538,7 @@ end
 Finalize the context before use. This function must be called after the context is filled with all the required information and before it is attached to any frames.
 
 ### Parameters
-* `ref`: a reference to the [`AVHWFramesContext`](@ref) 
+* `ref`: a reference to the [`AVHWFramesContext`](@ref)
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) code on failure
@@ -14538,11 +14553,11 @@ end
 Allocate a new frame attached to the given [`AVHWFramesContext`](@ref).
 
 ### Parameters
-* `hwframe_ctx`: a reference to an [`AVHWFramesContext`](@ref) 
+* `hwframe_ctx`: a reference to an [`AVHWFramesContext`](@ref)
 
-* `frame`: an empty (freshly allocated or unreffed) frame to be filled with newly allocated buffers. 
+* `frame`: an empty (freshly allocated or unreffed) frame to be filled with newly allocated buffers.
 
-* `flags`: currently unused, should be set to zero 
+* `flags`: currently unused, should be set to zero
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) code on failure
@@ -14563,11 +14578,11 @@ dst may be "clean" (i.e. with data/buf pointers unset), in which case the data b
 The two frames must have matching allocated dimensions (i.e. equal to [`AVHWFramesContext`](@ref).width/height), since not all device types support transferring a sub-rectangle of the whole surface. The display dimensions (i.e. [`AVFrame`](@ref).width/height) may be smaller than the allocated dimensions, but also have to be equal for both frames. When the display dimensions are smaller than the allocated dimensions, the content of the padding in the destination frame is unspecified.
 
 ### Parameters
-* `dst`: the destination frame. dst is not touched on failure. 
+* `dst`: the destination frame. dst is not touched on failure.
 
-* `src`: the source frame. 
+* `src`: the source frame.
 
-* `flags`: currently unused, should be set to zero 
+* `flags`: currently unused, should be set to zero
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) error code on failure.
@@ -14586,13 +14601,13 @@ const AV_HWFRAME_TRANSFER_DIRECTION_TO = 1 % UInt32
 Get a list of possible source or target formats usable in [`av_hwframe_transfer_data`](@ref)().
 
 ### Parameters
-* `hwframe_ctx`: the frame context to obtain the information for 
+* `hwframe_ctx`: the frame context to obtain the information for
 
-* `dir`: the direction of the transfer 
+* `dir`: the direction of the transfer
 
-* `formats`: the pointer to the output format list will be written here. The list is terminated with AV\\_PIX\\_FMT\\_NONE and must be freed by the caller when no longer needed using [`av_free`](@ref)(). If this function returns successfully, the format list will have at least one item (not counting the terminator). On failure, the contents of this pointer are unspecified. 
+* `formats`: the pointer to the output format list will be written here. The list is terminated with AV\\_PIX\\_FMT\\_NONE and must be freed by the caller when no longer needed using [`av_free`](@ref)(). If this function returns successfully, the format list will have at least one item (not counting the terminator). On failure, the contents of this pointer are unspecified.
 
-* `flags`: currently unused, should be set to zero 
+* `flags`: currently unused, should be set to zero
 
 ### Returns
 0 on success, a negative [`AVERROR`](@ref) code on failure.
@@ -14621,7 +14636,7 @@ end
 Allocate a HW-specific configuration structure for a given HW device. After use, the user must free all members as required by the specific hardware structure being used, then free the structure itself with [`av_free`](@ref)().
 
 ### Parameters
-* `device_ctx`: a reference to the associated [`AVHWDeviceContext`](@ref). 
+* `device_ctx`: a reference to the associated [`AVHWDeviceContext`](@ref).
 
 ### Returns
 The newly created HW-specific configuration structure on success or NULL on failure.
@@ -14636,9 +14651,9 @@ end
 Get the constraints on HW frames given a device and the HW-specific configuration to be used with that device. If no HW-specific configuration is provided, returns the maximum possible capabilities of the device.
 
 ### Parameters
-* `ref`: a reference to the associated [`AVHWDeviceContext`](@ref). 
+* `ref`: a reference to the associated [`AVHWDeviceContext`](@ref).
 
-* `hwconfig`: a filled HW-specific configuration structure, or NULL to return the maximum possible capabilities of the device. 
+* `hwconfig`: a filled HW-specific configuration structure, or NULL to return the maximum possible capabilities of the device.
 
 ### Returns
 [`AVHWFramesConstraints`](@ref) structure describing the constraints on the device, or NULL if not available.
@@ -14686,11 +14701,11 @@ If src has a hwframe context but dst does not, then the src frame is mapped to n
 A return value of [`AVERROR`](@ref)(ENOSYS) indicates that the mapping is not possible with the given arguments and hwframe setup, while other return values indicate that it failed somehow.
 
 ### Parameters
-* `dst`: Destination frame, to contain the mapping. 
+* `dst`: Destination frame, to contain the mapping.
 
-* `src`: Source frame, to be mapped. 
+* `src`: Source frame, to be mapped.
 
-* `flags`: Some combination of AV\\_HWFRAME\\_MAP\\_* flags. 
+* `flags`: Some combination of AV\\_HWFRAME\\_MAP\\_* flags.
 
 ### Returns
 Zero on success, negative [`AVERROR`](@ref) code on failure.
@@ -14707,13 +14722,13 @@ Create and initialise an [`AVHWFramesContext`](@ref) as a mapping of another exi
 [`av_hwframe_ctx_init`](@ref)() should not be called after this.
 
 ### Parameters
-* `derived_frame_ctx`: On success, a reference to the newly created [`AVHWFramesContext`](@ref). 
+* `derived_frame_ctx`: On success, a reference to the newly created [`AVHWFramesContext`](@ref).
 
-* `derived_device_ctx`: A reference to the device to create the new [`AVHWFramesContext`](@ref) on. 
+* `derived_device_ctx`: A reference to the device to create the new [`AVHWFramesContext`](@ref) on.
 
-* `source_frame_ctx`: A reference to an existing [`AVHWFramesContext`](@ref) which will be mapped to the derived context. 
+* `source_frame_ctx`: A reference to an existing [`AVHWFramesContext`](@ref) which will be mapped to the derived context.
 
-* `flags`: Some combination of AV\\_HWFRAME\\_MAP\\_* flags, defining the mapping parameters to apply to frames which are allocated in the derived device. 
+* `flags`: Some combination of AV\\_HWFRAME\\_MAP\\_* flags, defining the mapping parameters to apply to frames which are allocated in the derived device.
 
 ### Returns
 Zero on success, negative [`AVERROR`](@ref) code on failure.
@@ -14991,7 +15006,7 @@ end
 """
     av_vk_frame_alloc()
 
-Allocates a single [`AVVkFrame`](@ref) and initializes everything as 0. 
+Allocates a single [`AVVkFrame`](@ref) and initializes everything as 0.
 
 !!! note
 
@@ -15064,7 +15079,7 @@ Compute the max pixel step for each plane of an image with a format described by
 The pixel step is the distance in bytes between the first byte of the group of bytes which describe a pixel component and the first byte of the successive group in the same plane for the same component.
 
 ### Parameters
-* `max_pixsteps`: an array which is filled with the max pixel step for each plane. Since a plane may contain different pixel components, the computed max\\_pixsteps[plane] is relative to the component in the plane with the max pixel step. 
+* `max_pixsteps`: an array which is filled with the max pixel step for each plane. Since a plane may contain different pixel components, the computed max\\_pixsteps[plane] is relative to the component in the plane with the max pixel step.
 
 * `max_pixstep_comps`: an array which is filled with the component for each plane which has the max pixel step. May be NULL.
 """
@@ -15090,7 +15105,7 @@ end
 Fill plane linesizes for an image with pixel format pix\\_fmt and width width.
 
 ### Parameters
-* `linesizes`: array to be filled with the linesize for each plane 
+* `linesizes`: array to be filled with the linesize for each plane
 
 ### Returns
 >= 0 in case of success, a negative error code otherwise
@@ -15109,9 +15124,9 @@ Fill plane sizes for an image with pixel format pix\\_fmt and height height.
     The linesize parameters have the type ptrdiff\\_t here, while they are int for [`av_image_fill_linesizes`](@ref)().
 
 ### Parameters
-* `size`: the array to be filled with the size of each image plane 
+* `size`: the array to be filled with the size of each image plane
 
-* `linesizes`: the array containing the linesize for each plane, should be filled by [`av_image_fill_linesizes`](@ref)() 
+* `linesizes`: the array containing the linesize for each plane, should be filled by [`av_image_fill_linesizes`](@ref)()
 
 ### Returns
 >= 0 in case of success, a negative error code otherwise
@@ -15126,11 +15141,11 @@ end
 Fill plane data pointers for an image with pixel format pix\\_fmt and height height.
 
 ### Parameters
-* `data`: pointers array to be filled with the pointer for each image plane 
+* `data`: pointers array to be filled with the pointer for each image plane
 
-* `ptr`: the pointer to a buffer which will contain the image 
+* `ptr`: the pointer to a buffer which will contain the image
 
-* `linesizes`: the array containing the linesize for each plane, should be filled by [`av_image_fill_linesizes`](@ref)() 
+* `linesizes`: the array containing the linesize for each plane, should be filled by [`av_image_fill_linesizes`](@ref)()
 
 ### Returns
 the size in bytes required for the image buffer, a negative error code in case of failure
@@ -15145,7 +15160,7 @@ end
 Allocate an image with size w and h and pixel format pix\\_fmt, and fill pointers and linesizes accordingly. The allocated image buffer has to be freed by using [`av_freep`](@ref)(&pointers[0]).
 
 ### Parameters
-* `align`: the value to use for buffer size alignment 
+* `align`: the value to use for buffer size alignment
 
 ### Returns
 the size in bytes required for the image buffer, a negative error code in case of failure
@@ -15162,7 +15177,7 @@ Copy image plane from src to dst. That is, copy "height" number of lines of "byt
 bytewidth must be contained by both absolute values of dst\\_linesize and src\\_linesize, otherwise the function behavior is undefined.
 
 ### Parameters
-* `dst_linesize`: linesize for the image plane in dst 
+* `dst_linesize`: linesize for the image plane in dst
 
 * `src_linesize`: linesize for the image plane in src
 """
@@ -15176,7 +15191,7 @@ end
 Copy image in src\\_data to dst\\_data.
 
 ### Parameters
-* `dst_linesizes`: linesizes for the image in dst\\_data 
+* `dst_linesizes`: linesizes for the image in dst\\_data
 
 * `src_linesizes`: linesizes for the image in src\\_data
 """
@@ -15193,7 +15208,7 @@ The data pointers and the linesizes must be aligned to the maximum required by t
 
 !!! note
 
-    The linesize parameters have the type ptrdiff\\_t here, while they are int for [`av_image_copy`](@ref)(). 
+    The linesize parameters have the type ptrdiff\\_t here, while they are int for [`av_image_copy`](@ref)().
 
 !!! note
 
@@ -15213,19 +15228,19 @@ The fields of the given image are filled in by using the src address which point
 To allocate the buffer and fill in the dst\\_data and dst\\_linesize in one call, use [`av_image_alloc`](@ref)().
 
 ### Parameters
-* `dst_data`: data pointers to be filled in 
+* `dst_data`: data pointers to be filled in
 
-* `dst_linesize`: linesizes for the image in dst\\_data to be filled in 
+* `dst_linesize`: linesizes for the image in dst\\_data to be filled in
 
-* `src`: buffer which will contain or contains the actual image data, can be NULL 
+* `src`: buffer which will contain or contains the actual image data, can be NULL
 
-* `pix_fmt`: the pixel format of the image 
+* `pix_fmt`: the pixel format of the image
 
-* `width`: the width of the image in pixels 
+* `width`: the width of the image in pixels
 
-* `height`: the height of the image in pixels 
+* `height`: the height of the image in pixels
 
-* `align`: the value used in src for linesize alignment 
+* `align`: the value used in src for linesize alignment
 
 ### Returns
 the size in bytes required for src, a negative error code in case of failure
@@ -15240,13 +15255,13 @@ end
 Return the size in bytes of the amount of data required to store an image with the given parameters.
 
 ### Parameters
-* `pix_fmt`: the pixel format of the image 
+* `pix_fmt`: the pixel format of the image
 
-* `width`: the width of the image in pixels 
+* `width`: the width of the image in pixels
 
-* `height`: the height of the image in pixels 
+* `height`: the height of the image in pixels
 
-* `align`: the assumed linesize alignment 
+* `align`: the assumed linesize alignment
 
 ### Returns
 the buffer size in bytes, a negative error code in case of failure
@@ -15263,21 +15278,21 @@ Copy image data from an image into a buffer.
 [`av_image_get_buffer_size`](@ref)() can be used to compute the required size for the buffer to fill.
 
 ### Parameters
-* `dst`: a buffer into which picture data will be copied 
+* `dst`: a buffer into which picture data will be copied
 
-* `dst_size`: the size in bytes of dst 
+* `dst_size`: the size in bytes of dst
 
-* `src_data`: pointers containing the source image data 
+* `src_data`: pointers containing the source image data
 
-* `src_linesize`: linesizes for the image in src\\_data 
+* `src_linesize`: linesizes for the image in src\\_data
 
-* `pix_fmt`: the pixel format of the source image 
+* `pix_fmt`: the pixel format of the source image
 
-* `width`: the width of the source image in pixels 
+* `width`: the width of the source image in pixels
 
-* `height`: the height of the source image in pixels 
+* `height`: the height of the source image in pixels
 
-* `align`: the assumed linesize alignment for dst 
+* `align`: the assumed linesize alignment for dst
 
 ### Returns
 the number of bytes written to dst, or a negative value (error code) on error
@@ -15292,13 +15307,13 @@ end
 Check if the given dimension of an image is valid, meaning that all bytes of the image can be addressed with a signed int.
 
 ### Parameters
-* `w`: the width of the picture 
+* `w`: the width of the picture
 
-* `h`: the height of the picture 
+* `h`: the height of the picture
 
-* `log_offset`: the offset to sum to the log level for logging with log\\_ctx 
+* `log_offset`: the offset to sum to the log level for logging with log\\_ctx
 
-* `log_ctx`: the parent logging context, it may be NULL 
+* `log_ctx`: the parent logging context, it may be NULL
 
 ### Returns
 >= 0 if valid, a negative error code otherwise
@@ -15313,17 +15328,17 @@ end
 Check if the given dimension of an image is valid, meaning that all bytes of a plane of an image with the specified pix\\_fmt can be addressed with a signed int.
 
 ### Parameters
-* `w`: the width of the picture 
+* `w`: the width of the picture
 
-* `h`: the height of the picture 
+* `h`: the height of the picture
 
-* `max_pixels`: the maximum number of pixels the user wants to accept 
+* `max_pixels`: the maximum number of pixels the user wants to accept
 
-* `pix_fmt`: the pixel format, can be AV\\_PIX\\_FMT\\_NONE if unknown. 
+* `pix_fmt`: the pixel format, can be AV\\_PIX\\_FMT\\_NONE if unknown.
 
-* `log_offset`: the offset to sum to the log level for logging with log\\_ctx 
+* `log_offset`: the offset to sum to the log level for logging with log\\_ctx
 
-* `log_ctx`: the parent logging context, it may be NULL 
+* `log_ctx`: the parent logging context, it may be NULL
 
 ### Returns
 >= 0 if valid, a negative error code otherwise
@@ -15340,11 +15355,11 @@ Check if the given sample aspect ratio of an image is valid.
 It is considered invalid if the denominator is 0 or if applying the ratio to the image size would make the smaller dimension less than 1. If the sar numerator is 0, it is considered unknown and will return as valid.
 
 ### Parameters
-* `w`: width of the image 
+* `w`: width of the image
 
-* `h`: height of the image 
+* `h`: height of the image
 
-* `sar`: sample aspect ratio of the image 
+* `sar`: sample aspect ratio of the image
 
 ### Returns
 0 if valid, a negative [`AVERROR`](@ref) code otherwise
@@ -15365,17 +15380,17 @@ This can return an error if the pixel format is not supported. Normally, all non
 Passing NULL for dst\\_data is allowed. Then the function returns whether the operation would have succeeded. (It can return an error if the pix\\_fmt is not supported.)
 
 ### Parameters
-* `dst_data`: data pointers to destination image 
+* `dst_data`: data pointers to destination image
 
-* `dst_linesize`: linesizes for the destination image 
+* `dst_linesize`: linesizes for the destination image
 
-* `pix_fmt`: the pixel format of the image 
+* `pix_fmt`: the pixel format of the image
 
-* `range`: the color range of the image (important for colorspaces such as YUV) 
+* `range`: the color range of the image (important for colorspaces such as YUV)
 
-* `width`: the width of the image in pixels 
+* `width`: the width of the image in pixels
 
-* `height`: the height of the image in pixels 
+* `height`: the height of the image in pixels
 
 ### Returns
 0 if the image data was cleared, a negative [`AVERROR`](@ref) code otherwise
@@ -15729,18 +15744,18 @@ end
 """
     av_lzo1x_decode(out, outlen, in, inlen)
 
-Decodes LZO 1x compressed data. 
+Decodes LZO 1x compressed data.
 
 Make sure all buffers are appropriately padded, in must provide [`AV_LZO_INPUT_PADDING`](@ref), out must provide [`AV_LZO_OUTPUT_PADDING`](@ref) additional bytes.
 
 ### Parameters
-* `out`: output buffer 
+* `out`: output buffer
 
-* `outlen`: size of output buffer, number of bytes left are returned here 
+* `outlen`: size of output buffer, number of bytes left are returned here
 
-* `in`: input buffer 
+* `in`: input buffer
 
-* `inlen`: size of input buffer, number of bytes left are returned here 
+* `inlen`: size of input buffer, number of bytes left are returned here
 
 ### Returns
 0 on success, otherwise a combination of the error flags above
@@ -15858,7 +15873,7 @@ const AV_ROUND_PASS_MINMAX = 8192 % UInt32
 Compute the greatest common divisor of two integer operands.
 
 ### Parameters
-* `a,b`: Operands 
+* `a,b`: Operands
 
 ### Returns
 GCD of a and b up to sign; if a >= 0 and b >= 0, return value is >= 0; if a == 0 and b == 0, returns 0.
@@ -15957,9 +15972,9 @@ In other words, compare the least significant `log2(mod)` bits of integers `a` a
 ```
 
 ### Parameters
-* `a,b`: Operands 
+* `a,b`: Operands
 
-* `mod`: Divisor; must be a power of 2 
+* `mod`: Divisor; must be a power of 2
 
 ### Returns
 - a negative value if `a % mod < b % mod` - a positive value if `a % mod > b % mod` - zero if `a % mod == b % mod`
@@ -15982,17 +15997,17 @@ The `last` parameter is a state variable that must be preserved for all subseque
     In the context of this function, "duration" is in term of samples, not seconds.
 
 ### Parameters
-* `in_tb`:\\[in\\] Input time base 
+* `in_tb`:\\[in\\] Input time base
 
-* `in_ts`:\\[in\\] Input timestamp 
+* `in_ts`:\\[in\\] Input timestamp
 
-* `fs_tb`:\\[in\\] Duration time base; typically this is finer-grained (greater) than `in_tb` and `out_tb` 
+* `fs_tb`:\\[in\\] Duration time base; typically this is finer-grained (greater) than `in_tb` and `out_tb`
 
-* `duration`:\\[in\\] Duration till the next call to this function (i.e. duration of the current packet/frame) 
+* `duration`:\\[in\\] Duration till the next call to this function (i.e. duration of the current packet/frame)
 
-* `last`:\\[in,out\\] Pointer to a timestamp expressed in terms of `fs_tb`, acting as a state variable 
+* `last`:\\[in,out\\] Pointer to a timestamp expressed in terms of `fs_tb`, acting as a state variable
 
-* `out_tb`:\\[in\\] Output timebase 
+* `out_tb`:\\[in\\] Output timebase
 
 ### Returns
 Timestamp expressed in terms of `out_tb`
@@ -16009,11 +16024,11 @@ Add a value to a timestamp.
 This function guarantees that when the same value is repeatly added that no accumulation of rounding errors occurs.
 
 ### Parameters
-* `ts`:\\[in\\] Input timestamp 
+* `ts`:\\[in\\] Input timestamp
 
-* `ts_tb`:\\[in\\] Input timestamp time base 
+* `ts_tb`:\\[in\\] Input timestamp time base
 
-* `inc`:\\[in\\] Value to be added 
+* `inc`:\\[in\\] Value to be added
 
 * `inc_tb`:\\[in\\] Time base of `inc`
 """
@@ -16054,7 +16069,7 @@ end
 Finish hashing and output digest value.
 
 ### Parameters
-* `ctx`: hash function context 
+* `ctx`: hash function context
 
 * `dst`: buffer where output digest value is stored
 """
@@ -16072,10 +16087,10 @@ end
 Allocate a memory block with alignment suitable for all memory accesses (including vectors if available on the CPU).
 
 ### Parameters
-* `size`: Size in bytes for the memory block to be allocated 
+* `size`: Size in bytes for the memory block to be allocated
 
 ### Returns
-Pointer to the allocated block, or `NULL` if the block cannot be allocated 
+Pointer to the allocated block, or `NULL` if the block cannot be allocated
 
 ### See also
 [`av_mallocz`](@ref)()
@@ -16090,10 +16105,10 @@ end
 Allocate a memory block with alignment suitable for all memory accesses (including vectors if available on the CPU) and zero all the bytes of the block.
 
 ### Parameters
-* `size`: Size in bytes for the memory block to be allocated 
+* `size`: Size in bytes for the memory block to be allocated
 
 ### Returns
-Pointer to the allocated block, or `NULL` if it cannot be allocated 
+Pointer to the allocated block, or `NULL` if it cannot be allocated
 
 ### See also
 [`av_malloc`](@ref)()
@@ -16110,12 +16125,12 @@ Allocate a memory block for an array with [`av_malloc`](@ref)().
 The allocated memory will have size `size * nmemb` bytes.
 
 ### Parameters
-* `nmemb`: Number of element 
+* `nmemb`: Number of element
 
-* `size`: Size of a single element 
+* `size`: Size of a single element
 
 ### Returns
-Pointer to the allocated block, or `NULL` if the block cannot be allocated 
+Pointer to the allocated block, or `NULL` if the block cannot be allocated
 
 ### See also
 [`av_malloc`](@ref)()
@@ -16132,9 +16147,9 @@ Allocate a memory block for an array with [`av_mallocz`](@ref)().
 The allocated memory will have size `size * nmemb` bytes.
 
 ### Parameters
-* `nmemb`: Number of elements 
+* `nmemb`: Number of elements
 
-* `size`: Size of the single element 
+* `size`: Size of the single element
 
 ### Returns
 Pointer to the allocated block, or `NULL` if the block cannot be allocated
@@ -16166,10 +16181,10 @@ If `ptr` is `NULL` and `size` > 0, allocate a new block. If `size` is zero, free
 
 !!! warning
 
-    Unlike [`av_malloc`](@ref)(), the returned pointer is not guaranteed to be correctly aligned. 
+    Unlike [`av_malloc`](@ref)(), the returned pointer is not guaranteed to be correctly aligned.
 
 ### Parameters
-* `ptr`: Pointer to a memory block already allocated with [`av_realloc`](@ref)() or `NULL` 
+* `ptr`: Pointer to a memory block already allocated with [`av_realloc`](@ref)() or `NULL`
 
 * `size`: Size in bytes of the memory block to be allocated or reallocated
 
@@ -16195,7 +16210,7 @@ If `*ptr` is `NULL` and `size` > 0, allocate a new block. If `size` is zero, fre
     Unlike [`av_malloc`](@ref)(), the allocated memory is not guaranteed to be correctly aligned.
 
 ### Parameters
-* `ptr`:\\[in,out\\] Pointer to a pointer to a memory block already allocated with [`av_realloc`](@ref)(), or a pointer to `NULL`. The pointer is updated on success, or freed on failure. 
+* `ptr`:\\[in,out\\] Pointer to a pointer to a memory block already allocated with [`av_realloc`](@ref)(), or a pointer to `NULL`. The pointer is updated on success, or freed on failure.
 
 * `size`:\\[in\\] Size in bytes for the memory block to be allocated or reallocated
 
@@ -16211,7 +16226,7 @@ end
 
 Allocate, reallocate, or free a block of memory.
 
-This function does the same thing as [`av_realloc`](@ref)(), except: - It takes two size arguments and allocates `nelem * elsize` bytes, after checking the result of the multiplication for integer overflow. - It frees the input block in case of failure, thus avoiding the memory leak with the classic 
+This function does the same thing as [`av_realloc`](@ref)(), except: - It takes two size arguments and allocates `nelem * elsize` bytes, after checking the result of the multiplication for integer overflow. - It frees the input block in case of failure, thus avoiding the memory leak with the classic
 
 ```c++
 {.c}
@@ -16235,12 +16250,12 @@ If `ptr` is `NULL` and `nmemb` > 0, allocate a new block. If `nmemb` is zero, fr
 
 !!! warning
 
-    Unlike [`av_malloc`](@ref)(), the allocated memory is not guaranteed to be correctly aligned. 
+    Unlike [`av_malloc`](@ref)(), the allocated memory is not guaranteed to be correctly aligned.
 
 ### Parameters
-* `ptr`: Pointer to a memory block already allocated with [`av_realloc`](@ref)() or `NULL` 
+* `ptr`: Pointer to a memory block already allocated with [`av_realloc`](@ref)() or `NULL`
 
-* `nmemb`: Number of elements in the array 
+* `nmemb`: Number of elements in the array
 
 * `size`: Size of the single element of the array
 
@@ -16266,9 +16281,9 @@ If `*ptr` is `NULL` and `nmemb` > 0, allocate a new block. If `nmemb` is zero, f
     Unlike [`av_malloc`](@ref)(), the allocated memory is not guaranteed to be correctly aligned.
 
 ### Parameters
-* `ptr`:\\[in,out\\] Pointer to a pointer to a memory block already allocated with [`av_realloc`](@ref)(), or a pointer to `NULL`. The pointer is updated on success, or freed on failure. 
+* `ptr`:\\[in,out\\] Pointer to a pointer to a memory block already allocated with [`av_realloc`](@ref)(), or a pointer to `NULL`. The pointer is updated on success, or freed on failure.
 
-* `nmemb`:\\[in\\] Number of elements 
+* `nmemb`:\\[in\\] Number of elements
 
 * `size`:\\[in\\] Size of the single element
 
@@ -16302,14 +16317,14 @@ A typical use pattern follows:
 ```
 
 ### Parameters
-* `ptr`:\\[in,out\\] Already allocated buffer, or `NULL` 
+* `ptr`:\\[in,out\\] Already allocated buffer, or `NULL`
 
-* `size`:\\[in,out\\] Pointer to the size of buffer `ptr`. `*size` is updated to the new allocated size, in particular 0 in case of failure. 
+* `size`:\\[in,out\\] Pointer to the size of buffer `ptr`. `*size` is updated to the new allocated size, in particular 0 in case of failure.
 
-* `min_size`:\\[in\\] Desired minimal size of buffer `ptr` 
+* `min_size`:\\[in\\] Desired minimal size of buffer `ptr`
 
 ### Returns
-`ptr` if the buffer is large enough, a pointer to newly reallocated buffer if the buffer was not large enough, or `NULL` in case of error 
+`ptr` if the buffer is large enough, a pointer to newly reallocated buffer if the buffer was not large enough, or `NULL` in case of error
 
 ### See also
 [`av_realloc`](@ref)(), [`av_fast_malloc`](@ref)()
@@ -16338,11 +16353,11 @@ Contrary to [`av_fast_realloc`](@ref)(), the current buffer contents might not b
 ```
 
 ### Parameters
-* `ptr`:\\[in,out\\] Pointer to pointer to an already allocated buffer. `*ptr` will be overwritten with pointer to new buffer on success or `NULL` on failure 
+* `ptr`:\\[in,out\\] Pointer to pointer to an already allocated buffer. `*ptr` will be overwritten with pointer to new buffer on success or `NULL` on failure
 
-* `size`:\\[in,out\\] Pointer to the size of buffer `*ptr`. `*size` is updated to the new allocated size, in particular 0 in case of failure. 
+* `size`:\\[in,out\\] Pointer to the size of buffer `*ptr`. `*size` is updated to the new allocated size, in particular 0 in case of failure.
 
-* `min_size`:\\[in\\] Desired minimal size of buffer `*ptr` 
+* `min_size`:\\[in\\] Desired minimal size of buffer `*ptr`
 
 ### See also
 [`av_realloc`](@ref)(), [`av_fast_mallocz`](@ref)()
@@ -16361,11 +16376,11 @@ Like [`av_fast_malloc`](@ref)(), but all newly allocated space is initially clea
 `*ptr` is allowed to be `NULL`, in which case allocation always happens if `size_needed` is greater than 0.
 
 ### Parameters
-* `ptr`:\\[in,out\\] Pointer to pointer to an already allocated buffer. `*ptr` will be overwritten with pointer to new buffer on success or `NULL` on failure 
+* `ptr`:\\[in,out\\] Pointer to pointer to an already allocated buffer. `*ptr` will be overwritten with pointer to new buffer on success or `NULL` on failure
 
-* `size`:\\[in,out\\] Pointer to the size of buffer `*ptr`. `*size` is updated to the new allocated size, in particular 0 in case of failure. 
+* `size`:\\[in,out\\] Pointer to the size of buffer `*ptr`. `*size` is updated to the new allocated size, in particular 0 in case of failure.
 
-* `min_size`:\\[in\\] Desired minimal size of buffer `*ptr` 
+* `min_size`:\\[in\\] Desired minimal size of buffer `*ptr`
 
 ### See also
 [`av_fast_malloc`](@ref)()
@@ -16381,11 +16396,11 @@ Free a memory block which has been allocated with a function of [`av_malloc`](@r
 
 !!! note
 
-    `ptr = NULL` is explicitly allowed. 
+    `ptr = NULL` is explicitly allowed.
 
 !!! note
 
-    It is recommended that you use [`av_freep`](@ref)() instead, to prevent leaving behind dangling pointers. 
+    It is recommended that you use [`av_freep`](@ref)() instead, to prevent leaving behind dangling pointers.
 
 ### Parameters
 * `ptr`: Pointer to the memory block which should be freed.
@@ -16417,10 +16432,10 @@ Free a memory block which has been allocated with a function of [`av_malloc`](@r
 
 !!! note
 
-    `*ptr = NULL` is safe and leads to no action. 
+    `*ptr = NULL` is safe and leads to no action.
 
 ### Parameters
-* `ptr`: Pointer to the pointer to the memory block which should be freed 
+* `ptr`: Pointer to the pointer to the memory block which should be freed
 
 ### See also
 [`av_free`](@ref)()
@@ -16435,10 +16450,10 @@ end
 Duplicate a string.
 
 ### Parameters
-* `s`: String to be duplicated 
+* `s`: String to be duplicated
 
 ### Returns
-Pointer to a newly-allocated string containing a copy of `s` or `NULL` if the string cannot be allocated 
+Pointer to a newly-allocated string containing a copy of `s` or `NULL` if the string cannot be allocated
 
 ### See also
 [`av_strndup`](@ref)()
@@ -16453,9 +16468,9 @@ end
 Duplicate a substring of a string.
 
 ### Parameters
-* `s`: String to be duplicated 
+* `s`: String to be duplicated
 
-* `len`: Maximum length of the resulting string (not counting the terminating byte) 
+* `len`: Maximum length of the resulting string (not counting the terminating byte)
 
 ### Returns
 Pointer to a newly-allocated string containing a substring of `s` or `NULL` if the string cannot be allocated
@@ -16470,9 +16485,9 @@ end
 Duplicate a buffer with [`av_malloc`](@ref)().
 
 ### Parameters
-* `p`: Buffer to be duplicated 
+* `p`: Buffer to be duplicated
 
-* `size`: Size in bytes of the buffer copied 
+* `size`: Size in bytes of the buffer copied
 
 ### Returns
 Pointer to a newly allocated buffer containing a copy of `p` or `NULL` if the buffer cannot be allocated
@@ -16491,9 +16506,9 @@ Overlapping memcpy() implementation.
     `cnt > back` is valid, this will copy the bytes we just copied, thus creating a repeating pattern with a period length of `back`.
 
 ### Parameters
-* `dst`: Destination buffer 
+* `dst`: Destination buffer
 
-* `back`: Number of bytes back to start copying (i.e. the initial size of the overlapping window); must be > 0 
+* `back`: Number of bytes back to start copying (i.e. the initial size of the overlapping window); must be > 0
 
 * `cnt`: Number of bytes to copy; must be >= 0
 """
@@ -16513,11 +16528,11 @@ The array is reallocated when its size reaches powers of 2. Therefore, the amort
 In case of success, the pointer to the array is updated in order to point to the new grown array, and the number pointed to by `nb_ptr` is incremented. In case of failure, the array is freed, `*tab\\_ptr` is set to `NULL` and `*nb\\_ptr` is set to 0.
 
 ### Parameters
-* `tab_ptr`:\\[in,out\\] Pointer to the array to grow 
+* `tab_ptr`:\\[in,out\\] Pointer to the array to grow
 
-* `nb_ptr`:\\[in,out\\] Pointer to the number of elements in the array 
+* `nb_ptr`:\\[in,out\\] Pointer to the number of elements in the array
 
-* `elem`:\\[in\\] Element to add 
+* `elem`:\\[in\\] Element to add
 
 ### See also
 [`av_dynarray_add_nofree`](@ref)(), [`av_dynarray2_add`](@ref)()
@@ -16534,7 +16549,7 @@ Add an element to a dynamic array.
 Function has the same functionality as [`av_dynarray_add`](@ref)(), but it doesn't free memory on fails. It returns error code instead and leave current buffer untouched.
 
 ### Returns
->=0 on success, negative otherwise 
+>=0 on success, negative otherwise
 
 ### See also
 [`av_dynarray_add`](@ref)(), [`av_dynarray2_add`](@ref)()
@@ -16553,16 +16568,16 @@ The array is reallocated when its number of elements reaches powers of 2. Theref
 In case of success, the pointer to the array is updated in order to point to the new grown array, and the number pointed to by `nb_ptr` is incremented. In case of failure, the array is freed, `*tab\\_ptr` is set to `NULL` and `*nb\\_ptr` is set to 0.
 
 ### Parameters
-* `tab_ptr`:\\[in,out\\] Pointer to the array to grow 
+* `tab_ptr`:\\[in,out\\] Pointer to the array to grow
 
-* `nb_ptr`:\\[in,out\\] Pointer to the number of elements in the array 
+* `nb_ptr`:\\[in,out\\] Pointer to the number of elements in the array
 
-* `elem_size`:\\[in\\] Size in bytes of an element in the array 
+* `elem_size`:\\[in\\] Size in bytes of an element in the array
 
 * `elem_data`:\\[in\\] Pointer to the data of the element to add. If `NULL`, the space of the newly added element is allocated but left uninitialized.
 
 ### Returns
-Pointer to the data of the element to copy in the newly allocated space 
+Pointer to the data of the element to copy in the newly allocated space
 
 ### See also
 [`av_dynarray_add`](@ref)(), [`av_dynarray_add_nofree`](@ref)()
@@ -16577,9 +16592,9 @@ end
 Multiply two `size_t` values checking for overflow.
 
 ### Parameters
-* `a,b`:\\[in\\] Operands of multiplication 
+* `a,b`:\\[in\\] Operands of multiplication
 
-* `r`:\\[out\\] Pointer to the result of the operation 
+* `r`:\\[out\\] Pointer to the result of the operation
 
 ### Returns
 0 on success, [`AVERROR`](@ref)(EINVAL) on overflow
@@ -16642,7 +16657,7 @@ end
 Initialize or reinitialize an [`AVMurMur3`](@ref) hash context with a seed.
 
 ### Parameters
-* `c`:\\[out\\] Hash context 
+* `c`:\\[out\\] Hash context
 
 * `seed`:\\[in\\] Random seed
 
@@ -16680,7 +16695,7 @@ end
 Finish hashing and output digest value.
 
 ### Parameters
-* `c`:\\[in,out\\] Hash context 
+* `c`:\\[in,out\\] Hash context
 
 * `dst`:\\[out\\] Buffer where output digest value is stored
 """
@@ -16723,9 +16738,9 @@ end
 Show the obj options.
 
 ### Parameters
-* `req_flags`: requested flags for the options to show. Show only the options for which it is opt->flags & req\\_flags. 
+* `req_flags`: requested flags for the options to show. Show only the options for which it is opt->flags & req\\_flags.
 
-* `rej_flags`: rejected flags for the options to show. Show only the options for which it is !(opt->flags & req\\_flags). 
+* `rej_flags`: rejected flags for the options to show. Show only the options for which it is !(opt->flags & req\\_flags).
 
 * `av_log_obj`: log context to use for showing the options
 """
@@ -16751,9 +16766,9 @@ end
 Set the values of all [`AVOption`](@ref) fields to their default values. Only these [`AVOption`](@ref) fields for which (opt->flags & mask) == flags will have their default applied to s.
 
 ### Parameters
-* `s`: an [`AVOption`](@ref)-enabled struct (its first member must be a pointer to [`AVClass`](@ref)) 
+* `s`: an [`AVOption`](@ref)-enabled struct (its first member must be a pointer to [`AVClass`](@ref))
 
-* `mask`: combination of AV\\_OPT\\_FLAG\\_* 
+* `mask`: combination of AV\\_OPT\\_FLAG\\_*
 
 * `flags`: combination of AV\\_OPT\\_FLAG\\_*
 """
@@ -16767,11 +16782,11 @@ end
 Parse the key/value pairs list in opts. For each key/value pair found, stores the value in the field in ctx that is named like the key. ctx must be an [`AVClass`](@ref) context, storing is done using AVOptions.
 
 ### Parameters
-* `opts`: options string to parse, may be NULL 
+* `opts`: options string to parse, may be NULL
 
-* `key_val_sep`: a 0-terminated list of characters used to separate key from value 
+* `key_val_sep`: a 0-terminated list of characters used to separate key from value
 
-* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other 
+* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other
 
 ### Returns
 the number of successfully set key/value pairs, or a negative value corresponding to an [`AVERROR`](@ref) code in case of error: [`AVERROR`](@ref)(EINVAL) if opts cannot be parsed, the error code issued by [`av_opt_set`](@ref)() if a key/value pair cannot be set
@@ -16788,15 +16803,15 @@ Parse the key-value pairs list in opts. For each key=value pair found, set the v
 Options names must use only the following characters: a-z A-Z 0-9 - . / \\_ Separators must use characters distinct from option names and from each other.
 
 ### Parameters
-* `ctx`: the [`AVClass`](@ref) object to set options on 
+* `ctx`: the [`AVClass`](@ref) object to set options on
 
-* `opts`: the options string, key-value pairs separated by a delimiter 
+* `opts`: the options string, key-value pairs separated by a delimiter
 
-* `shorthand`: a NULL-terminated array of options names for shorthand notation: if the first field in opts has no key part, the key is taken from the first element of shorthand; then again for the second, etc., until either opts is finished, shorthand is finished or a named option is found; after that, all options must be named 
+* `shorthand`: a NULL-terminated array of options names for shorthand notation: if the first field in opts has no key part, the key is taken from the first element of shorthand; then again for the second, etc., until either opts is finished, shorthand is finished or a named option is found; after that, all options must be named
 
-* `key_val_sep`: a 0-terminated list of characters used to separate key from value, for example '=' 
+* `key_val_sep`: a 0-terminated list of characters used to separate key from value, for example '='
 
-* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other, for example ':' or ',' 
+* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other, for example ':' or ','
 
 ### Returns
 the number of successfully set key=value pairs, or a negative value corresponding to an [`AVERROR`](@ref) code in case of error: [`AVERROR`](@ref)(EINVAL) if opts cannot be parsed, the error code issued by av\\_set\\_string3() if a key/value pair cannot be set
@@ -16820,9 +16835,9 @@ end
 Check whether a particular flag is set in a flags field.
 
 ### Parameters
-* `field_name`: the name of the flag field option 
+* `field_name`: the name of the flag field option
 
-* `flag_name`: the name of the flag to check 
+* `flag_name`: the name of the flag to check
 
 ### Returns
 non-zero if the flag is set, zero if the flag isn't set, isn't of the right type, or the flags field doesn't exist.
@@ -16837,7 +16852,7 @@ end
 Set all the options from a given dictionary on an object.
 
 ### Parameters
-* `obj`: a struct whose first element is a pointer to [`AVClass`](@ref) 
+* `obj`: a struct whose first element is a pointer to [`AVClass`](@ref)
 
 * `options`: options to process. This dictionary will be freed and replaced by a new one containing all options not found in obj. Of course this new dictionary needs to be freed by caller with [`av_dict_free`](@ref)().
 
@@ -16857,9 +16872,9 @@ end
 Set all the options from a given dictionary on an object.
 
 ### Parameters
-* `obj`: a struct whose first element is a pointer to [`AVClass`](@ref) 
+* `obj`: a struct whose first element is a pointer to [`AVClass`](@ref)
 
-* `options`: options to process. This dictionary will be freed and replaced by a new one containing all options not found in obj. Of course this new dictionary needs to be freed by caller with [`av_dict_free`](@ref)(). 
+* `options`: options to process. This dictionary will be freed and replaced by a new one containing all options not found in obj. Of course this new dictionary needs to be freed by caller with [`av_dict_free`](@ref)().
 
 * `search_flags`: A combination of AV\\_OPT\\_SEARCH\\_*.
 
@@ -16879,15 +16894,15 @@ end
 Extract a key-value pair from the beginning of a string.
 
 ### Parameters
-* `ropts`: pointer to the options string, will be updated to point to the rest of the string (one of the pairs\\_sep or the final NUL) 
+* `ropts`: pointer to the options string, will be updated to point to the rest of the string (one of the pairs\\_sep or the final NUL)
 
-* `key_val_sep`: a 0-terminated list of characters used to separate key from value, for example '=' 
+* `key_val_sep`: a 0-terminated list of characters used to separate key from value, for example '='
 
-* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other, for example ':' or ',' 
+* `pairs_sep`: a 0-terminated list of characters used to separate two pairs from each other, for example ':' or ','
 
-* `flags`: flags; see the AV\\_OPT\\_FLAG\\_* values below 
+* `flags`: flags; see the AV\\_OPT\\_FLAG\\_* values below
 
-* `rkey`: parsed key; must be freed using [`av_free`](@ref)() 
+* `rkey`: parsed key; must be freed using [`av_free`](@ref)()
 
 * `rval`: parsed value; must be freed using [`av_free`](@ref)()
 
@@ -16909,11 +16924,11 @@ const AV_OPT_FLAG_IMPLICIT_KEY = 1 % UInt32
 @{ This group of functions can be used to evaluate option strings and get numbers out of them. They do the same thing as [`av_opt_set`](@ref)(), except the result is written into the caller-supplied pointer.
 
 ### Parameters
-* `obj`: a struct whose first element is a pointer to [`AVClass`](@ref). 
+* `obj`: a struct whose first element is a pointer to [`AVClass`](@ref).
 
-* `o`: an option for which the string is to be evaluated. 
+* `o`: an option for which the string is to be evaluated.
 
-* `val`: string to be evaluated. 
+* `val`: string to be evaluated.
 
 * `*_out`: value of the string will be written here.
 
@@ -16954,13 +16969,13 @@ Look for an option in an object. Consider only options which have all the specif
     Options found with [`AV_OPT_SEARCH_CHILDREN`](@ref) flag may not be settable directly with [`av_opt_set`](@ref)(). Use special calls which take an options [`AVDictionary`](@ref) (e.g. [`avformat_open_input`](@ref)()) to set options found with this flag.
 
 ### Parameters
-* `obj`:\\[in\\] A pointer to a struct whose first element is a pointer to an [`AVClass`](@ref). Alternatively a double pointer to an [`AVClass`](@ref), if [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) search flag is set. 
+* `obj`:\\[in\\] A pointer to a struct whose first element is a pointer to an [`AVClass`](@ref). Alternatively a double pointer to an [`AVClass`](@ref), if [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) search flag is set.
 
-* `name`:\\[in\\] The name of the option to look for. 
+* `name`:\\[in\\] The name of the option to look for.
 
-* `unit`:\\[in\\] When searching for named constants, name of the unit it belongs to. 
+* `unit`:\\[in\\] When searching for named constants, name of the unit it belongs to.
 
-* `opt_flags`: Find only options with all the specified flags set (AV\\_OPT\\_FLAG). 
+* `opt_flags`: Find only options with all the specified flags set (AV\\_OPT\\_FLAG).
 
 * `search_flags`: A combination of AV\\_OPT\\_SEARCH\\_*.
 
@@ -16977,15 +16992,15 @@ end
 Look for an option in an object. Consider only options which have all the specified flags set.
 
 ### Parameters
-* `obj`:\\[in\\] A pointer to a struct whose first element is a pointer to an [`AVClass`](@ref). Alternatively a double pointer to an [`AVClass`](@ref), if [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) search flag is set. 
+* `obj`:\\[in\\] A pointer to a struct whose first element is a pointer to an [`AVClass`](@ref). Alternatively a double pointer to an [`AVClass`](@ref), if [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) search flag is set.
 
-* `name`:\\[in\\] The name of the option to look for. 
+* `name`:\\[in\\] The name of the option to look for.
 
-* `unit`:\\[in\\] When searching for named constants, name of the unit it belongs to. 
+* `unit`:\\[in\\] When searching for named constants, name of the unit it belongs to.
 
-* `opt_flags`: Find only options with all the specified flags set (AV\\_OPT\\_FLAG). 
+* `opt_flags`: Find only options with all the specified flags set (AV\\_OPT\\_FLAG).
 
-* `search_flags`: A combination of AV\\_OPT\\_SEARCH\\_*. 
+* `search_flags`: A combination of AV\\_OPT\\_SEARCH\\_*.
 
 * `target_obj`:\\[out\\] if non-NULL, an object to which the option belongs will be written here. It may be different from obj if [`AV_OPT_SEARCH_CHILDREN`](@ref) is present in search\\_flags. This parameter is ignored if search\\_flags contain [`AV_OPT_SEARCH_FAKE_OBJ`](@ref).
 
@@ -17002,9 +17017,9 @@ end
 Iterate over all AVOptions belonging to obj.
 
 ### Parameters
-* `obj`: an AVOptions-enabled struct or a double pointer to an [`AVClass`](@ref) describing it. 
+* `obj`: an AVOptions-enabled struct or a double pointer to an [`AVClass`](@ref) describing it.
 
-* `prev`: result of the previous call to [`av_opt_next`](@ref)() on this object or NULL 
+* `prev`: result of the previous call to [`av_opt_next`](@ref)() on this object or NULL
 
 ### Returns
 next [`AVOption`](@ref) or NULL
@@ -17019,7 +17034,7 @@ end
 Iterate over AVOptions-enabled children of obj.
 
 ### Parameters
-* `prev`: result of a previous call to this function or NULL 
+* `prev`: result of a previous call to this function or NULL
 
 ### Returns
 next AVOptions-enabled child or NULL
@@ -17036,7 +17051,7 @@ Iterate over potential AVOptions-enabled children of parent.
 \\deprecated use [`av_opt_child_class_iterate`](@ref)
 
 ### Parameters
-* `prev`: result of a previous call to this function or NULL 
+* `prev`: result of a previous call to this function or NULL
 
 ### Returns
 [`AVClass`](@ref) corresponding to next potential child or NULL
@@ -17051,7 +17066,7 @@ end
 Iterate over potential AVOptions-enabled children of parent.
 
 ### Parameters
-* `iter`: a pointer where iteration state is stored. 
+* `iter`: a pointer where iteration state is stored.
 
 ### Returns
 [`AVClass`](@ref) corresponding to next potential child or NULL
@@ -17068,11 +17083,11 @@ end
 @{ Those functions set the field of obj with the given name to value.
 
 ### Parameters
-* `obj`:\\[in\\] A struct whose first element is a pointer to an [`AVClass`](@ref). 
+* `obj`:\\[in\\] A struct whose first element is a pointer to an [`AVClass`](@ref).
 
-* `name`:\\[in\\] the name of the field to set 
+* `name`:\\[in\\] the name of the field to set
 
-* `val`:\\[in\\] The value to set. In case of [`av_opt_set`](@ref)() if the field is not of a string type, then the given string is parsed. SI postfixes and some named scalars are supported. If the field is of a numeric type, it has to be a numeric or named scalar. Behavior with more than one scalar and +- infix operators is undefined. If the field is of a flags type, it has to be a sequence of numeric scalars or named flags separated by '+' or '-'. Prefixing a flag with '+' causes it to be set without affecting the other flags; similarly, '-' unsets a flag. If the field is of a dictionary type, it has to be a ':' separated list of key=value parameters. Values containing ':' special characters must be escaped. 
+* `val`:\\[in\\] The value to set. In case of [`av_opt_set`](@ref)() if the field is not of a string type, then the given string is parsed. SI postfixes and some named scalars are supported. If the field is of a numeric type, it has to be a numeric or named scalar. Behavior with more than one scalar and +- infix operators is undefined. If the field is of a flags type, it has to be a sequence of numeric scalars or named flags separated by '+' or '-'. Prefixing a flag with '+' causes it to be set without affecting the other flags; similarly, '-' unsets a flag. If the field is of a dictionary type, it has to be a ':' separated list of key=value parameters. Values containing ':' special characters must be escaped.
 
 * `search_flags`: flags passed to [`av_opt_find2`](@ref). I.e. if [`AV_OPT_SEARCH_CHILDREN`](@ref) is passed here, then the option may be set on a child of obj.
 
@@ -17142,13 +17157,13 @@ end
     if [`AV_OPT_ALLOW_NULL`](@ref) is set in search\\_flags in [`av_opt_get`](@ref), and the option is of type AV\\_OPT\\_TYPE\\_STRING, AV\\_OPT\\_TYPE\\_BINARY or AV\\_OPT\\_TYPE\\_DICT and is set to NULL, *out\\_val will be set to NULL instead of an allocated empty string.
 
 ### Parameters
-* `obj`:\\[in\\] a struct whose first element is a pointer to an [`AVClass`](@ref). 
+* `obj`:\\[in\\] a struct whose first element is a pointer to an [`AVClass`](@ref).
 
-* `name`:\\[in\\] name of the option to get. 
+* `name`:\\[in\\] name of the option to get.
 
-* `search_flags`:\\[in\\] flags passed to [`av_opt_find2`](@ref). I.e. if [`AV_OPT_SEARCH_CHILDREN`](@ref) is passed here, then the option may be found in a child of obj. 
+* `search_flags`:\\[in\\] flags passed to [`av_opt_find2`](@ref). I.e. if [`AV_OPT_SEARCH_CHILDREN`](@ref) is passed here, then the option may be found in a child of obj.
 
-* `out_val`:\\[out\\] value of the option will be written here 
+* `out_val`:\\[out\\] value of the option will be written here
 
 ### Returns
 >=0 on success, a negative error code otherwise
@@ -17232,7 +17247,7 @@ The returned list may depend on other fields in obj like for example profile.
 The result must be freed with [`av_opt_freep_ranges`](@ref).
 
 ### Parameters
-* `flags`: is a bitmask of flags, undefined flags should not be set and should be ignored [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) indicates that the obj is a double pointer to a [`AVClass`](@ref) instead of a full instance [`AV_OPT_MULTI_COMPONENT_RANGE`](@ref) indicates that function may return more than one component, 
+* `flags`: is a bitmask of flags, undefined flags should not be set and should be ignored [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) indicates that the obj is a double pointer to a [`AVClass`](@ref) instead of a full instance [`AV_OPT_MULTI_COMPONENT_RANGE`](@ref) indicates that function may return more than one component,
 
 ### Returns
 number of compontents returned on success, a negative errro code otherwise
@@ -17252,9 +17267,9 @@ Copy options from src object into dest object.
 Options that require memory allocation (e.g. string or binary) are malloc'ed in dest object. Original memory allocated for such options is freed unless both src and dest options points to the same memory.
 
 ### Parameters
-* `dest`: Object to copy from 
+* `dest`: Object to copy from
 
-* `src`: Object to copy into 
+* `src`: Object to copy into
 
 ### Returns
 0 on success, negative on error
@@ -17273,7 +17288,7 @@ This list is constructed without using the [`AVClass`](@ref).query\\_ranges() ca
 The result must be freed with av\\_opt\\_free\\_ranges.
 
 ### Parameters
-* `flags`: is a bitmask of flags, undefined flags should not be set and should be ignored [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) indicates that the obj is a double pointer to a [`AVClass`](@ref) instead of a full instance [`AV_OPT_MULTI_COMPONENT_RANGE`](@ref) indicates that function may return more than one component, 
+* `flags`: is a bitmask of flags, undefined flags should not be set and should be ignored [`AV_OPT_SEARCH_FAKE_OBJ`](@ref) indicates that the obj is a double pointer to a [`AVClass`](@ref) instead of a full instance [`AV_OPT_MULTI_COMPONENT_RANGE`](@ref) indicates that function may return more than one component,
 
 ### Returns
 number of compontents returned on success, a negative errro code otherwise
@@ -17290,12 +17305,12 @@ end
 
 Check if given option is set to its default value.
 
-Options o must belong to the obj. This function must not be called to check child's options state. 
+Options o must belong to the obj. This function must not be called to check child's options state.
 
 ### Parameters
-* `obj`: [`AVClass`](@ref) object to check option on 
+* `obj`: [`AVClass`](@ref) object to check option on
 
-* `o`: option to be checked 
+* `o`: option to be checked
 
 ### Returns
 >0 when option is set to its default, 0 when option is not set its default, <0 on error
@@ -17313,11 +17328,11 @@ end
 Check if given option is set to its default value.
 
 ### Parameters
-* `obj`: [`AVClass`](@ref) object to check option on 
+* `obj`: [`AVClass`](@ref) object to check option on
 
-* `name`: option name 
+* `name`: option name
 
-* `search_flags`: combination of AV\\_OPT\\_SEARCH\\_* 
+* `search_flags`: combination of AV\\_OPT\\_SEARCH\\_*
 
 ### Returns
 >0 when option is set to its default, 0 when option is not set its default, <0 on error
@@ -17338,20 +17353,20 @@ Create a string containing object's serialized options. Such string may be passe
     Separators cannot be neither '\\' nor '\\0'. They also cannot be the same.
 
 ### Parameters
-* `obj`:\\[in\\] [`AVClass`](@ref) object to serialize 
+* `obj`:\\[in\\] [`AVClass`](@ref) object to serialize
 
-* `opt_flags`:\\[in\\] serialize options with all the specified flags set (AV\\_OPT\\_FLAG) 
+* `opt_flags`:\\[in\\] serialize options with all the specified flags set (AV\\_OPT\\_FLAG)
 
-* `flags`:\\[in\\] combination of AV\\_OPT\\_SERIALIZE\\_* flags 
+* `flags`:\\[in\\] combination of AV\\_OPT\\_SERIALIZE\\_* flags
 
-* `buffer`:\\[out\\] Pointer to buffer that will be allocated with string containg serialized options. Buffer must be freed by the caller when is no longer needed. 
+* `buffer`:\\[out\\] Pointer to buffer that will be allocated with string containg serialized options. Buffer must be freed by the caller when is no longer needed.
 
-* `key_val_sep`:\\[in\\] character used to separate key from value 
+* `key_val_sep`:\\[in\\] character used to separate key from value
 
-* `pairs_sep`:\\[in\\] character used to separate two pairs from each other 
+* `pairs_sep`:\\[in\\] character used to separate two pairs from each other
 
 ### Returns
->= 0 on success, negative on error 
+>= 0 on success, negative on error
 """
 function av_opt_serialize(obj, opt_flags::Integer, flags::Integer, buffer, key_val_sep::Cchar, pairs_sep::Cchar)
     ccall((:av_opt_serialize, libavutil), Cint, (Ptr{Cvoid}, Cint, Cint, Ptr{Cstring}, Cchar, Cchar), obj, opt_flags, flags, buffer, key_val_sep, pairs_sep)
@@ -17367,15 +17382,15 @@ Note that a ratio with infinite (1/0) or negative value is considered valid, so 
 The undefined value can be expressed using the "0:0" string.
 
 ### Parameters
-* `q`:\\[in,out\\] pointer to the [`AVRational`](@ref) which will contain the ratio 
+* `q`:\\[in,out\\] pointer to the [`AVRational`](@ref) which will contain the ratio
 
-* `str`:\\[in\\] the string to parse: it has to be a string in the format num:den, a float number or an expression 
+* `str`:\\[in\\] the string to parse: it has to be a string in the format num:den, a float number or an expression
 
-* `max`:\\[in\\] the maximum allowed numerator and denominator 
+* `max`:\\[in\\] the maximum allowed numerator and denominator
 
-* `log_offset`:\\[in\\] log level offset which is applied to the log level of log\\_ctx 
+* `log_offset`:\\[in\\] log level offset which is applied to the log level of log\\_ctx
 
-* `log_ctx`:\\[in\\] parent logging context 
+* `log_ctx`:\\[in\\] parent logging context
 
 ### Returns
 >= 0 on success, a negative error code otherwise
@@ -17390,11 +17405,11 @@ end
 Parse str and put in width\\_ptr and height\\_ptr the detected values.
 
 ### Parameters
-* `width_ptr`:\\[in,out\\] pointer to the variable which will contain the detected width value 
+* `width_ptr`:\\[in,out\\] pointer to the variable which will contain the detected width value
 
-* `height_ptr`:\\[in,out\\] pointer to the variable which will contain the detected height value 
+* `height_ptr`:\\[in,out\\] pointer to the variable which will contain the detected height value
 
-* `str`:\\[in\\] the string to parse: it has to be a string in the format width x height or a valid video size abbreviation. 
+* `str`:\\[in\\] the string to parse: it has to be a string in the format width x height or a valid video size abbreviation.
 
 ### Returns
 >= 0 on success, a negative error code otherwise
@@ -17409,9 +17424,9 @@ end
 Parse str and store the detected values in *rate.
 
 ### Parameters
-* `rate`:\\[in,out\\] pointer to the [`AVRational`](@ref) which will contain the detected frame rate 
+* `rate`:\\[in,out\\] pointer to the [`AVRational`](@ref) which will contain the detected frame rate
 
-* `str`:\\[in\\] the string to parse: it has to be a string in the format rate\\_num / rate\\_den, a float number or a valid video rate abbreviation 
+* `str`:\\[in\\] the string to parse: it has to be a string in the format rate\\_num / rate\\_den, a float number or a valid video rate abbreviation
 
 ### Returns
 >= 0 on success, a negative error code otherwise
@@ -17426,9 +17441,9 @@ end
 Put the RGBA values that correspond to color\\_string in rgba\\_color.
 
 ### Parameters
-* `color_string`: a string specifying a color. It can be the name of a color (case insensitive match) or a [0x|#]RRGGBB[AA] sequence, possibly followed by "" and a string representing the alpha component. The alpha component may be a string composed by "0x" followed by an hexadecimal number or a decimal number between 0.0 and 1.0, which represents the opacity value (0x00/0.0 means completely transparent, 0xff/1.0 completely opaque). If the alpha component is not specified then 0xff is assumed. The string "random" will result in a random color. 
+* `color_string`: a string specifying a color. It can be the name of a color (case insensitive match) or a [0x|#]RRGGBB[AA] sequence, possibly followed by "" and a string representing the alpha component. The alpha component may be a string composed by "0x" followed by an hexadecimal number or a decimal number between 0.0 and 1.0, which represents the opacity value (0x00/0.0 means completely transparent, 0xff/1.0 completely opaque). If the alpha component is not specified then 0xff is assumed. The string "random" will result in a random color.
 
-* `slen`: length of the initial part of color\\_string containing the color. It can be set to -1 if color\\_string is a null terminated string containing nothing else than the color. 
+* `slen`: length of the initial part of color\\_string containing the color. It can be set to -1 if color\\_string is a null terminated string containing nothing else than the color.
 
 ### Returns
 >= 0 in case of success, a negative value in case of failure (for example if color\\_string cannot be parsed).
@@ -17445,9 +17460,9 @@ Get the name of a color from the internal table of hard-coded named colors.
 This function is meant to enumerate the color names recognized by [`av_parse_color`](@ref)().
 
 ### Parameters
-* `color_idx`: index of the requested color, starting from 0 
+* `color_idx`: index of the requested color, starting from 0
 
-* `rgbp`: if not NULL, will point to a 3-elements array with the color value in RGB 
+* `rgbp`: if not NULL, will point to a 3-elements array with the color value in RGB
 
 ### Returns
 the color name string or NULL if color\\_idx is not in the array
@@ -17466,7 +17481,7 @@ Parse timestr and return in *time a corresponding number of microseconds.
  now
 ```
 
-If the value is "now" it takes the current time. Time is local time unless Z is appended, in which case it is interpreted as UTC. If the year-month-day part is not specified it takes the current year-month-day. - If a duration the syntax is: 
+If the value is "now" it takes the current time. Time is local time unless Z is appended, in which case it is interpreted as UTC. If the year-month-day part is not specified it takes the current year-month-day. - If a duration the syntax is:
 
 ```c++
  [-][HH:]MM:SS[.m...]
@@ -17476,9 +17491,9 @@ If the value is "now" it takes the current time. Time is local time unless Z is 
 ### Parameters
 * `timeval`: puts here the number of microseconds corresponding to the string in timestr. If the string represents a duration, it is the number of microseconds contained in the time interval. If the string is a date, is the number of microseconds since 1st of January, 1970 up to the time of the parsed date. If timestr cannot be successfully parsed, set *time to INT64\\_MIN.
 
-* `timestr`: a string representing a date or a duration. - If a date the syntax is: 
+* `timestr`: a string representing a date or a duration. - If a date the syntax is:
 
-* `duration`: flag which tells how to interpret timestr, if not zero timestr is interpreted as a duration, otherwise as a date 
+* `duration`: flag which tells how to interpret timestr, if not zero timestr is interpreted as a duration, otherwise as a date
 
 ### Returns
 >= 0 in case of success, a negative value corresponding to an [`AVERROR`](@ref) code otherwise
@@ -17584,9 +17599,9 @@ end
 Utility function to access log2\\_chroma\\_w log2\\_chroma\\_h from the pixel format [`AVPixFmtDescriptor`](@ref).
 
 ### Parameters
-* `pix_fmt`:\\[in\\] the pixel format 
+* `pix_fmt`:\\[in\\] the pixel format
 
-* `h_shift`:\\[out\\] store log2\\_chroma\\_w (horizontal/width shift) 
+* `h_shift`:\\[out\\] store log2\\_chroma\\_w (horizontal/width shift)
 
 * `v_shift`:\\[out\\] store log2\\_chroma\\_h (vertical/height shift)
 
@@ -17738,9 +17753,9 @@ end
 Print in buf the string corresponding to the pixel format with number pix\\_fmt, or a header if pix\\_fmt is negative.
 
 ### Parameters
-* `buf`: the buffer where to write the string 
+* `buf`: the buffer where to write the string
 
-* `buf_size`: the size of buf 
+* `buf_size`: the size of buf
 
 * `pix_fmt`: the number of the pixel format to print the corresponding info string, or a negative value to print the corresponding header.
 """
@@ -17754,19 +17769,19 @@ end
 Read a line from an image, and write the values of the pixel format component c to dst.
 
 ### Parameters
-* `data`: the array containing the pointers to the planes of the image 
+* `data`: the array containing the pointers to the planes of the image
 
-* `linesize`: the array containing the linesizes of the image 
+* `linesize`: the array containing the linesizes of the image
 
-* `desc`: the pixel format descriptor for the image 
+* `desc`: the pixel format descriptor for the image
 
-* `x`: the horizontal coordinate of the first pixel to read 
+* `x`: the horizontal coordinate of the first pixel to read
 
-* `y`: the vertical coordinate of the first pixel to read 
+* `y`: the vertical coordinate of the first pixel to read
 
-* `w`: the width of the line to read, that is the number of values to write to dst 
+* `w`: the width of the line to read, that is the number of values to write to dst
 
-* `read_pal_component`: if not zero and the format is a paletted format writes the values corresponding to the palette component c in data[1] to dst, rather than the palette indexes in data[0]. The behavior is undefined if the format is not paletted. 
+* `read_pal_component`: if not zero and the format is a paletted format writes the values corresponding to the palette component c in data[1] to dst, rather than the palette indexes in data[0]. The behavior is undefined if the format is not paletted.
 
 * `dst_element_size`: size of elements in dst array (2 or 4 byte)
 """
@@ -17784,19 +17799,19 @@ end
 Write the values from src to the pixel format component c of an image line.
 
 ### Parameters
-* `src`: array containing the values to write 
+* `src`: array containing the values to write
 
-* `data`: the array containing the pointers to the planes of the image to write into. It is supposed to be zeroed. 
+* `data`: the array containing the pointers to the planes of the image to write into. It is supposed to be zeroed.
 
-* `linesize`: the array containing the linesizes of the image 
+* `linesize`: the array containing the linesizes of the image
 
-* `desc`: the pixel format descriptor for the image 
+* `desc`: the pixel format descriptor for the image
 
-* `x`: the horizontal coordinate of the first pixel to write 
+* `x`: the horizontal coordinate of the first pixel to write
 
-* `y`: the vertical coordinate of the first pixel to write 
+* `y`: the vertical coordinate of the first pixel to write
 
-* `w`: the width of the line to write, that is the number of values to write to the image line 
+* `w`: the width of the line to write, that is the number of values to write to the image line
 
 * `src_element_size`: size of elements in src array (2 or 4 byte)
 """
@@ -17829,11 +17844,11 @@ end
 Compute what kind of losses will occur when converting from one specific pixel format to another. When converting from one pixel format to another, information loss may occur. For example, when converting from RGB24 to GRAY, the color information will be lost. Similarly, other losses occur when converting from some formats to other formats. These losses can involve loss of chroma, but also loss of resolution, loss of color depth, loss due to the color space conversion, loss of the alpha bits or loss due to color quantization. av\\_get\\_fix\\_fmt\\_loss() informs you about the various types of losses which will occur when converting from one pixel format to another.
 
 ### Parameters
-* `dst_pix_fmt`:\\[in\\] destination pixel format 
+* `dst_pix_fmt`:\\[in\\] destination pixel format
 
-* `src_pix_fmt`:\\[in\\] source pixel format 
+* `src_pix_fmt`:\\[in\\] source pixel format
 
-* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used. 
+* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used.
 
 ### Returns
 Combination of flags informing you what kind of losses will occur (maximum loss for an invalid dst\\_pix\\_fmt).
@@ -17848,11 +17863,11 @@ end
 Compute what kind of losses will occur when converting from one specific pixel format to another. When converting from one pixel format to another, information loss may occur. For example, when converting from RGB24 to GRAY, the color information will be lost. Similarly, other losses occur when converting from some formats to other formats. These losses can involve loss of chroma, but also loss of resolution, loss of color depth, loss due to the color space conversion, loss of the alpha bits or loss due to color quantization. av\\_get\\_fix\\_fmt\\_loss() informs you about the various types of losses which will occur when converting from one pixel format to another.
 
 ### Parameters
-* `dst_pix_fmt`:\\[in\\] destination pixel format 
+* `dst_pix_fmt`:\\[in\\] destination pixel format
 
-* `src_pix_fmt`:\\[in\\] source pixel format 
+* `src_pix_fmt`:\\[in\\] source pixel format
 
-* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used. 
+* `has_alpha`:\\[in\\] Whether the source pixel format alpha channel is used.
 
 ### Returns
 Combination of flags informing you what kind of losses will occur (maximum loss for an invalid dst\\_pix\\_fmt).
@@ -17873,11 +17888,11 @@ const av_pixelutils_sad_fn = Ptr{Cvoid}
 Get a potentially optimized pointer to a Sum-of-absolute-differences function (see the [`av_pixelutils_sad_fn`](@ref) prototype).
 
 ### Parameters
-* `w_bits`: 1<<w\\_bits is the requested width of the block size 
+* `w_bits`: 1<<w\\_bits is the requested width of the block size
 
-* `h_bits`: 1<<h\\_bits is the requested height of the block size 
+* `h_bits`: 1<<h\\_bits is the requested height of the block size
 
-* `aligned`: If set to 2, the returned sad function will assume src1 and src2 addresses are aligned on the block size. If set to 1, the returned sad function will assume src1 is aligned on the block size. If set to 0, the returned sad function assume no particular alignment. 
+* `aligned`: If set to 2, the returned sad function will assume src1 and src2 addresses are aligned on the block size. If set to 1, the returned sad function will assume src1 is aligned on the block size. If set to 0, the returned sad function assume no particular alignment.
 
 * `log_ctx`: context used for logging, can be NULL
 
@@ -17906,7 +17921,7 @@ Useful for compilers that do not support compound literals.
 
 !!! note
 
-    The return value is not reduced. 
+    The return value is not reduced.
 
 ### See also
 [`av_reduce`](@ref)()
@@ -17921,7 +17936,7 @@ end
 Compare two rationals.
 
 ### Parameters
-* `a`: First rational 
+* `a`: First rational
 
 * `b`: Second rational
 
@@ -17935,13 +17950,13 @@ end
 """
     av_q2d(a::AVRational)
 
-Convert an [`AVRational`](@ref) to a `double`. 
+Convert an [`AVRational`](@ref) to a `double`.
 
 ### Parameters
-* `a`: [`AVRational`](@ref) to convert 
+* `a`: [`AVRational`](@ref) to convert
 
 ### Returns
-`a` in floating-point form 
+`a` in floating-point form
 
 ### See also
 [`av_d2q`](@ref)()
@@ -17958,15 +17973,15 @@ Reduce a fraction.
 This is useful for framerate calculations.
 
 ### Parameters
-* `dst_num`:\\[out\\] Destination numerator 
+* `dst_num`:\\[out\\] Destination numerator
 
-* `dst_den`:\\[out\\] Destination denominator 
+* `dst_den`:\\[out\\] Destination denominator
 
-* `num`:\\[in\\] Source numerator 
+* `num`:\\[in\\] Source numerator
 
-* `den`:\\[in\\] Source denominator 
+* `den`:\\[in\\] Source denominator
 
-* `max`:\\[in\\] Maximum allowed values for `dst_num` & `dst_den` 
+* `max`:\\[in\\] Maximum allowed values for `dst_num` & `dst_den`
 
 ### Returns
 1 if the operation is exact, 0 otherwise
@@ -17978,12 +17993,12 @@ end
 """
     av_mul_q(b::AVRational, c::AVRational)
 
-Multiply two rationals. 
+Multiply two rationals.
 
 ### Parameters
-* `b`: First rational 
+* `b`: First rational
 
-* `c`: Second rational 
+* `c`: Second rational
 
 ### Returns
 b*c
@@ -17995,12 +18010,12 @@ end
 """
     av_div_q(b::AVRational, c::AVRational)
 
-Divide one rational by another. 
+Divide one rational by another.
 
 ### Parameters
-* `b`: First rational 
+* `b`: First rational
 
-* `c`: Second rational 
+* `c`: Second rational
 
 ### Returns
 b/c
@@ -18012,12 +18027,12 @@ end
 """
     av_add_q(b::AVRational, c::AVRational)
 
-Add two rationals. 
+Add two rationals.
 
 ### Parameters
-* `b`: First rational 
+* `b`: First rational
 
-* `c`: Second rational 
+* `c`: Second rational
 
 ### Returns
 b+c
@@ -18029,12 +18044,12 @@ end
 """
     av_sub_q(b::AVRational, c::AVRational)
 
-Subtract one rational from another. 
+Subtract one rational from another.
 
 ### Parameters
-* `b`: First rational 
+* `b`: First rational
 
-* `c`: Second rational 
+* `c`: Second rational
 
 ### Returns
 b-c
@@ -18046,10 +18061,10 @@ end
 """
     av_inv_q(q::AVRational)
 
-Invert a rational. 
+Invert a rational.
 
 ### Parameters
-* `q`: value 
+* `q`: value
 
 ### Returns
 1 / q
@@ -18066,12 +18081,12 @@ Convert a double precision floating point number to a rational.
 In case of infinity, the returned value is expressed as `{1, 0}` or `{-1, 0}` depending on the sign.
 
 ### Parameters
-* `d`: `double` to convert 
+* `d`: `double` to convert
 
-* `max`: Maximum allowed numerator and denominator 
+* `max`: Maximum allowed numerator and denominator
 
 ### Returns
-`d` in [`AVRational`](@ref) form 
+`d` in [`AVRational`](@ref) form
 
 ### See also
 [`av_q2d`](@ref)()
@@ -18086,9 +18101,9 @@ end
 Find which of the two rationals is closer to another rational.
 
 ### Parameters
-* `q`: Rational to be compared against 
+* `q`: Rational to be compared against
 
-* `q1,q2`: Rationals to be tested 
+* `q1,q2`: Rationals to be tested
 
 ### Returns
 One of the following values: - 1 if `q1` is nearer to `q` than `q2` - -1 if `q2` is nearer to `q` than `q1` - 0 if they have the same distance
@@ -18103,9 +18118,9 @@ end
 Find the value in a list of rationals nearest a given reference rational.
 
 ### Parameters
-* `q`: Reference rational 
+* `q`: Reference rational
 
-* `q_list`: Array of rationals terminated by `{0, 0}` 
+* `q_list`: Array of rationals terminated by `{0, 0}`
 
 ### Returns
 Index of the nearest value found in the array
@@ -18124,10 +18139,10 @@ Convert an [`AVRational`](@ref) to a IEEE 32-bit `float` expressed in fixed-poin
     The returned value is platform-indepedant.
 
 ### Parameters
-* `q`: Rational to be converted 
+* `q`: Rational to be converted
 
 ### Returns
-Equivalent floating-point value, expressed as an unsigned 32-bit integer. 
+Equivalent floating-point value, expressed as an unsigned 32-bit integer.
 """
 function av_q2intfloat(q::AVRational)
     ccall((:av_q2intfloat, libavutil), UInt32, (AVRational,), q)
@@ -18172,9 +18187,9 @@ end
 Initializes an [`AVRC4`](@ref) context.
 
 ### Parameters
-* `key_bits`: must be a multiple of 8 
+* `key_bits`: must be a multiple of 8
 
-* `decrypt`: 0 for encryption, 1 for decryption, currently has no effect 
+* `decrypt`: 0 for encryption, 1 for decryption, currently has no effect
 
 ### Returns
 zero on success, negative value otherwise
@@ -18189,13 +18204,13 @@ end
 Encrypts / decrypts using the RC4 algorithm.
 
 ### Parameters
-* `count`: number of bytes 
+* `count`: number of bytes
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst, may be NULL 
+* `src`: source array, can be equal to dst, may be NULL
 
-* `iv`: not (yet) used for RC4, should be NULL 
+* `iv`: not (yet) used for RC4, should be NULL
 
 * `decrypt`: 0 for encryption, 1 for decryption, not (yet) used
 """
@@ -18232,9 +18247,9 @@ end
 Initialize RIPEMD hashing.
 
 ### Parameters
-* `context`: pointer to the function context (of size av\\_ripemd\\_size) 
+* `context`: pointer to the function context (of size av\\_ripemd\\_size)
 
-* `bits`: number of bits in digest (128, 160, 256 or 320 bits) 
+* `bits`: number of bits in digest (128, 160, 256 or 320 bits)
 
 ### Returns
 zero if initialization succeeded, -1 otherwise
@@ -18253,7 +18268,7 @@ end
 Finish hashing and output digest value.
 
 ### Parameters
-* `context`: hash function context 
+* `context`: hash function context
 
 * `digest`: buffer where output digest value is stored
 """
@@ -18322,11 +18337,11 @@ end
 Generate a string corresponding to the sample format with sample\\_fmt, or a header if sample\\_fmt is negative.
 
 ### Parameters
-* `buf`: the buffer where to write the string 
+* `buf`: the buffer where to write the string
 
-* `buf_size`: the size of buf 
+* `buf_size`: the size of buf
 
-* `sample_fmt`: the number of the sample format to print the corresponding info string, or a negative value to print the corresponding header. 
+* `sample_fmt`: the number of the sample format to print the corresponding info string, or a negative value to print the corresponding header.
 
 ### Returns
 the pointer to the filled buffer or NULL if sample\\_fmt is unknown or in case of other errors
@@ -18341,7 +18356,7 @@ end
 Return number of bytes per sample.
 
 ### Parameters
-* `sample_fmt`: the sample format 
+* `sample_fmt`: the sample format
 
 ### Returns
 number of bytes per sample or zero if unknown for the given sample format
@@ -18356,7 +18371,7 @@ end
 Check if the sample format is planar.
 
 ### Parameters
-* `sample_fmt`: the sample format to inspect 
+* `sample_fmt`: the sample format to inspect
 
 ### Returns
 1 if the sample format is planar, 0 if it is interleaved
@@ -18371,15 +18386,15 @@ end
 Get the required buffer size for the given audio parameters.
 
 ### Parameters
-* `linesize`:\\[out\\] calculated linesize, may be NULL 
+* `linesize`:\\[out\\] calculated linesize, may be NULL
 
-* `nb_channels`: the number of channels 
+* `nb_channels`: the number of channels
 
-* `nb_samples`: the number of samples in a single channel 
+* `nb_samples`: the number of samples in a single channel
 
-* `sample_fmt`: the sample format 
+* `sample_fmt`: the sample format
 
-* `align`: buffer size alignment (0 = default, 1 = no alignment) 
+* `align`: buffer size alignment (0 = default, 1 = no alignment)
 
 ### Returns
 required buffer size, or negative error code on failure
@@ -18402,22 +18417,22 @@ The buffer in buf must be big enough to contain all the samples (use [`av_sample
 \\todo return minimum size in bytes required for the buffer in case of success at the next bump
 
 ### Parameters
-* `audio_data`:\\[out\\] array to be filled with the pointer for each channel 
+* `audio_data`:\\[out\\] array to be filled with the pointer for each channel
 
-* `linesize`:\\[out\\] calculated linesize, may be NULL 
+* `linesize`:\\[out\\] calculated linesize, may be NULL
 
-* `buf`: the pointer to a buffer containing the samples 
+* `buf`: the pointer to a buffer containing the samples
 
-* `nb_channels`: the number of channels 
+* `nb_channels`: the number of channels
 
-* `nb_samples`: the number of samples in a single channel 
+* `nb_samples`: the number of samples in a single channel
 
-* `sample_fmt`: the sample format 
+* `sample_fmt`: the sample format
 
-* `align`: buffer size alignment (0 = default, 1 = no alignment) 
+* `align`: buffer size alignment (0 = default, 1 = no alignment)
 
 ### Returns
->=0 on success or a negative error code on failure 
+>=0 on success or a negative error code on failure
 
 ### See also
 enum [`AVSampleFormat`](@ref) The documentation for [`AVSampleFormat`](@ref) describes the data layout.
@@ -18431,21 +18446,21 @@ end
 
 Allocate a samples buffer for nb\\_samples samples, and fill data pointers and linesize accordingly. The allocated samples buffer can be freed by using [`av_freep`](@ref)(&audio\\_data[0]) Allocated data will be initialized to silence.
 
-\\todo return the size of the allocated buffer in case of success at the next bump 
+\\todo return the size of the allocated buffer in case of success at the next bump
 
 ### Parameters
-* `audio_data`:\\[out\\] array to be filled with the pointer for each channel 
+* `audio_data`:\\[out\\] array to be filled with the pointer for each channel
 
-* `linesize`:\\[out\\] aligned size for audio buffer(s), may be NULL 
+* `linesize`:\\[out\\] aligned size for audio buffer(s), may be NULL
 
-* `nb_channels`: number of audio channels 
+* `nb_channels`: number of audio channels
 
-* `nb_samples`: number of samples per channel 
+* `nb_samples`: number of samples per channel
 
-* `align`: buffer size alignment (0 = default, 1 = no alignment) 
+* `align`: buffer size alignment (0 = default, 1 = no alignment)
 
 ### Returns
->=0 on success or a negative error code on failure 
+>=0 on success or a negative error code on failure
 
 ### See also
 enum [`AVSampleFormat`](@ref) The documentation for [`AVSampleFormat`](@ref) describes the data layout., [`av_samples_fill_arrays`](@ref)(), [`av_samples_alloc_array_and_samples`](@ref)()
@@ -18474,17 +18489,17 @@ end
 Copy samples from src to dst.
 
 ### Parameters
-* `dst`: destination array of pointers to data planes 
+* `dst`: destination array of pointers to data planes
 
-* `src`: source array of pointers to data planes 
+* `src`: source array of pointers to data planes
 
-* `dst_offset`: offset in samples at which the data will be written to dst 
+* `dst_offset`: offset in samples at which the data will be written to dst
 
-* `src_offset`: offset in samples at which the data will be read from src 
+* `src_offset`: offset in samples at which the data will be read from src
 
-* `nb_samples`: number of samples to be copied 
+* `nb_samples`: number of samples to be copied
 
-* `nb_channels`: number of audio channels 
+* `nb_channels`: number of audio channels
 
 * `sample_fmt`: audio sample format
 """
@@ -18498,13 +18513,13 @@ end
 Fill an audio buffer with silence.
 
 ### Parameters
-* `audio_data`: array of pointers to data planes 
+* `audio_data`: array of pointers to data planes
 
-* `offset`: offset in samples at which to start filling 
+* `offset`: offset in samples at which to start filling
 
-* `nb_samples`: number of samples to fill 
+* `nb_samples`: number of samples to fill
 
-* `nb_channels`: number of audio channels 
+* `nb_channels`: number of audio channels
 
 * `sample_fmt`: audio sample format
 """
@@ -18529,9 +18544,9 @@ end
 Initialize SHA-1 or SHA-2 hashing.
 
 ### Parameters
-* `context`: pointer to the function context (of size av\\_sha\\_size) 
+* `context`: pointer to the function context (of size av\\_sha\\_size)
 
-* `bits`: number of bits in digest (SHA-1 - 160 bits, SHA-2 224 or 256 bits) 
+* `bits`: number of bits in digest (SHA-1 - 160 bits, SHA-2 224 or 256 bits)
 
 ### Returns
 zero if initialization succeeded, -1 otherwise
@@ -18550,7 +18565,7 @@ end
 Finish hashing and output digest value.
 
 ### Parameters
-* `context`: hash function context 
+* `context`: hash function context
 
 * `digest`: buffer where output digest value is stored
 """
@@ -18575,9 +18590,9 @@ end
 Initialize SHA-2 512 hashing.
 
 ### Parameters
-* `context`: pointer to the function context (of size av\\_sha512\\_size) 
+* `context`: pointer to the function context (of size av\\_sha512\\_size)
 
-* `bits`: number of bits in digest (224, 256, 384 or 512 bits) 
+* `bits`: number of bits in digest (224, 256, 384 or 512 bits)
 
 ### Returns
 zero if initialization succeeded, -1 otherwise
@@ -18596,7 +18611,7 @@ end
 Finish hashing and output digest value.
 
 ### Parameters
-* `context`: hash function context 
+* `context`: hash function context
 
 * `digest`: buffer where output digest value is stored
 """
@@ -18653,17 +18668,17 @@ end
 Convert the bounding fields from an AVSphericalVideo from 0.32 fixed point to pixels.
 
 ### Parameters
-* `map`: The AVSphericalVideo map to read bound values from. 
+* `map`: The AVSphericalVideo map to read bound values from.
 
-* `width`: Width of the current frame or stream. 
+* `width`: Width of the current frame or stream.
 
-* `height`: Height of the current frame or stream. 
+* `height`: Height of the current frame or stream.
 
-* `left`: Pixels from the left edge. 
+* `left`: Pixels from the left edge.
 
-* `top`: Pixels from the top edge. 
+* `top`: Pixels from the top edge.
 
-* `right`: Pixels from the right edge. 
+* `right`: Pixels from the right edge.
 
 * `bottom`: Pixels from the bottom edge.
 """
@@ -18815,9 +18830,9 @@ end
 Initialize an [`AVTEA`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVTEA`](@ref) context 
+* `ctx`: an [`AVTEA`](@ref) context
 
-* `key`: a key of 16 bytes used for encryption/decryption 
+* `key`: a key of 16 bytes used for encryption/decryption
 
 * `rounds`: the number of rounds in TEA (64 is the "standard")
 """
@@ -18831,15 +18846,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context.
 
 ### Parameters
-* `ctx`: an [`AVTEA`](@ref) context 
+* `ctx`: an [`AVTEA`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `iv`: initialization vector for CBC mode, if NULL then ECB will be used 
+* `iv`: initialization vector for CBC mode, if NULL then ECB will be used
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -18858,11 +18873,11 @@ const AV_THREAD_MESSAGE_NONBLOCK = 1 % UInt32
 Allocate a new message queue.
 
 ### Parameters
-* `mq`: pointer to the message queue 
+* `mq`: pointer to the message queue
 
-* `nelem`: maximum number of elements in the queue 
+* `nelem`: maximum number of elements in the queue
 
-* `elsize`: size of each element in the queue 
+* `elsize`: size of each element in the queue
 
 ### Returns
 >=0 for success; <0 for error, in particular [`AVERROR`](@ref)(ENOSYS) if lavu was built without thread support
@@ -18987,7 +19002,7 @@ end
 Sleep for a period of time. Although the duration is expressed in microseconds, the actual delay may be rounded to the precision of the system timer.
 
 ### Parameters
-* `usec`: Number of microseconds to sleep. 
+* `usec`: Number of microseconds to sleep.
 
 ### Returns
 zero on success or (negative) error code.
@@ -19018,12 +19033,12 @@ Adjust frame number for NTSC drop frame time code.
     adjustment is only valid for multiples of NTSC 29.97
 
 ### Parameters
-* `framenum`: frame number to adjust 
+* `framenum`: frame number to adjust
 
-* `fps`: frame per second, multiples of 30 
+* `fps`: frame per second, multiples of 30
 
 ### Returns
-adjusted frame number 
+adjusted frame number
 """
 function av_timecode_adjust_ntsc_framenum2(framenum::Integer, fps::Integer)
     ccall((:av_timecode_adjust_ntsc_framenum2, libavutil), Cint, (Cint, Cint), framenum, fps)
@@ -19034,28 +19049,28 @@ end
 
 Convert frame number to SMPTE 12M binary representation.
 
-See SMPTE ST 314M-2005 Sec 4.4.2.2.1 "Time code pack (TC)" the format description as follows: bits 0-5: hours, in BCD(6bits) bits 6: BGF1 bits 7: BGF2 (NTSC) or FIELD (PAL) bits 8-14: minutes, in BCD(7bits) bits 15: BGF0 (NTSC) or BGF2 (PAL) bits 16-22: seconds, in BCD(7bits) bits 23: FIELD (NTSC) or BGF0 (PAL) bits 24-29: frames, in BCD(6bits) bits 30: drop frame flag (0: non drop, 1: drop) bits 31: color frame flag (0: unsync mode, 1: sync mode) 
+See SMPTE ST 314M-2005 Sec 4.4.2.2.1 "Time code pack (TC)" the format description as follows: bits 0-5: hours, in BCD(6bits) bits 6: BGF1 bits 7: BGF2 (NTSC) or FIELD (PAL) bits 8-14: minutes, in BCD(7bits) bits 15: BGF0 (NTSC) or BGF2 (PAL) bits 16-22: seconds, in BCD(7bits) bits 23: FIELD (NTSC) or BGF0 (PAL) bits 24-29: frames, in BCD(6bits) bits 30: drop frame flag (0: non drop, 1: drop) bits 31: color frame flag (0: unsync mode, 1: sync mode)
 
 !!! note
 
-    BCD numbers (6 or 7 bits): 4 or 5 lower bits for units, 2 higher bits for tens. 
+    BCD numbers (6 or 7 bits): 4 or 5 lower bits for units, 2 higher bits for tens.
 
 !!! note
 
-    Frame number adjustment is automatically done in case of drop timecode, you do NOT have to call [`av_timecode_adjust_ntsc_framenum2`](@ref)(). 
+    Frame number adjustment is automatically done in case of drop timecode, you do NOT have to call [`av_timecode_adjust_ntsc_framenum2`](@ref)().
 
 !!! note
 
-    The frame number is relative to tc->start. 
+    The frame number is relative to tc->start.
 
 !!! note
 
     Color frame (CF) and binary group flags (BGF) bits are set to zero.
 
 ### Parameters
-* `tc`: timecode data correctly initialized 
+* `tc`: timecode data correctly initialized
 
-* `framenum`: frame number 
+* `framenum`: frame number
 
 ### Returns
 the SMPTE binary representation
@@ -19070,17 +19085,17 @@ end
 Convert sei info to SMPTE 12M binary representation.
 
 ### Parameters
-* `rate`: frame rate in rational form 
+* `rate`: frame rate in rational form
 
-* `drop`: drop flag 
+* `drop`: drop flag
 
-* `hh`: hour 
+* `hh`: hour
 
-* `mm`: minute 
+* `mm`: minute
 
-* `ss`: second 
+* `ss`: second
 
-* `ff`: frame number 
+* `ff`: frame number
 
 ### Returns
 the SMPTE binary representation
@@ -19096,18 +19111,18 @@ Load timecode string in buf.
 
 !!! note
 
-    Timecode representation can be a negative timecode and have more than 24 hours, but will only be honored if the flags are correctly set. 
+    Timecode representation can be a negative timecode and have more than 24 hours, but will only be honored if the flags are correctly set.
 
 !!! note
 
     The frame number is relative to tc->start.
 
 ### Parameters
-* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long 
+* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long
 
-* `tc`: timecode data correctly initialized 
+* `tc`: timecode data correctly initialized
 
-* `framenum`: frame number 
+* `framenum`: frame number
 
 ### Returns
 the buf parameter
@@ -19124,15 +19139,15 @@ Get the timecode string from the SMPTE timecode format.
 In contrast to [`av_timecode_make_smpte_tc_string`](@ref) this function supports 50/60 fps timecodes by using the field bit.
 
 ### Parameters
-* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long 
+* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long
 
-* `rate`: frame rate of the timecode 
+* `rate`: frame rate of the timecode
 
-* `tcsmpte`: the 32-bit SMPTE timecode 
+* `tcsmpte`: the 32-bit SMPTE timecode
 
-* `prevent_df`: prevent the use of a drop flag when it is known the DF bit is arbitrary 
+* `prevent_df`: prevent the use of a drop flag when it is known the DF bit is arbitrary
 
-* `skip_field`: prevent the use of a field flag when it is known the field bit is arbitrary (e.g. because it is used as PC flag) 
+* `skip_field`: prevent the use of a field flag when it is known the field bit is arbitrary (e.g. because it is used as PC flag)
 
 ### Returns
 the buf parameter
@@ -19147,11 +19162,11 @@ end
 Get the timecode string from the SMPTE timecode format.
 
 ### Parameters
-* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long 
+* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long
 
-* `tcsmpte`: the 32-bit SMPTE timecode 
+* `tcsmpte`: the 32-bit SMPTE timecode
 
-* `prevent_df`: prevent the use of a drop flag when it is known the DF bit is arbitrary 
+* `prevent_df`: prevent the use of a drop flag when it is known the DF bit is arbitrary
 
 ### Returns
 the buf parameter
@@ -19166,9 +19181,9 @@ end
 Get the timecode string from the 25-bit timecode format (MPEG GOP format).
 
 ### Parameters
-* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long 
+* `buf`: destination buffer, must be at least [`AV_TIMECODE_STR_SIZE`](@ref) long
 
-* `tc25bit`: the 25-bits timecode 
+* `tc25bit`: the 25-bits timecode
 
 ### Returns
 the buf parameter
@@ -19183,15 +19198,15 @@ end
 Init a timecode struct with the passed parameters.
 
 ### Parameters
-* `log_ctx`: a pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct (used for [`av_log`](@ref)) 
+* `log_ctx`: a pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct (used for [`av_log`](@ref))
 
-* `tc`: pointer to an allocated [`AVTimecode`](@ref) 
+* `tc`: pointer to an allocated [`AVTimecode`](@ref)
 
-* `rate`: frame rate in rational form 
+* `rate`: frame rate in rational form
 
-* `flags`: miscellaneous flags such as drop frame, +24 hours, ... (see [`AVTimecodeFlag`](@ref)) 
+* `flags`: miscellaneous flags such as drop frame, +24 hours, ... (see [`AVTimecodeFlag`](@ref))
 
-* `frame_start`: the first frame number 
+* `frame_start`: the first frame number
 
 ### Returns
 0 on success, [`AVERROR`](@ref) otherwise
@@ -19206,21 +19221,21 @@ end
 Init a timecode struct from the passed timecode components.
 
 ### Parameters
-* `log_ctx`: a pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct (used for [`av_log`](@ref)) 
+* `log_ctx`: a pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct (used for [`av_log`](@ref))
 
-* `tc`: pointer to an allocated [`AVTimecode`](@ref) 
+* `tc`: pointer to an allocated [`AVTimecode`](@ref)
 
-* `rate`: frame rate in rational form 
+* `rate`: frame rate in rational form
 
-* `flags`: miscellaneous flags such as drop frame, +24 hours, ... (see [`AVTimecodeFlag`](@ref)) 
+* `flags`: miscellaneous flags such as drop frame, +24 hours, ... (see [`AVTimecodeFlag`](@ref))
 
-* `hh`: hours 
+* `hh`: hours
 
-* `mm`: minutes 
+* `mm`: minutes
 
-* `ss`: seconds 
+* `ss`: seconds
 
-* `ff`: frames 
+* `ff`: frames
 
 ### Returns
 0 on success, [`AVERROR`](@ref) otherwise
@@ -19235,13 +19250,13 @@ end
 Parse timecode representation (hh:mm:ss[:;.]ff).
 
 ### Parameters
-* `log_ctx`: a pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct (used for [`av_log`](@ref)). 
+* `log_ctx`: a pointer to an arbitrary struct of which the first field is a pointer to an [`AVClass`](@ref) struct (used for [`av_log`](@ref)).
 
-* `tc`: pointer to an allocated [`AVTimecode`](@ref) 
+* `tc`: pointer to an allocated [`AVTimecode`](@ref)
 
-* `rate`: frame rate in rational form 
+* `rate`: frame rate in rational form
 
-* `str`: timecode string which will determine the frame start 
+* `str`: timecode string which will determine the frame start
 
 ### Returns
 0 on success, [`AVERROR`](@ref) otherwise
@@ -19268,9 +19283,9 @@ end
 Fill the provided buffer with a string containing a timestamp representation.
 
 ### Parameters
-* `buf`: a buffer with size in bytes of at least [`AV_TS_MAX_STRING_SIZE`](@ref) 
+* `buf`: a buffer with size in bytes of at least [`AV_TS_MAX_STRING_SIZE`](@ref)
 
-* `ts`: the timestamp to represent 
+* `ts`: the timestamp to represent
 
 ### Returns
 the buffer in input
@@ -19285,11 +19300,11 @@ end
 Fill the provided buffer with a string containing a timestamp time representation.
 
 ### Parameters
-* `buf`: a buffer with size in bytes of at least [`AV_TS_MAX_STRING_SIZE`](@ref) 
+* `buf`: a buffer with size in bytes of at least [`AV_TS_MAX_STRING_SIZE`](@ref)
 
-* `ts`: the timestamp to represent 
+* `ts`: the timestamp to represent
 
-* `tb`: the timebase of the timestamp 
+* `tb`: the timebase of the timestamp
 
 ### Returns
 the buffer in input
@@ -19321,14 +19336,14 @@ end
 """
     av_tree_find(root, key, cmp, next)
 
-Find an element. 
+Find an element.
 
 ### Parameters
-* `root`: a pointer to the root node of the tree 
+* `root`: a pointer to the root node of the tree
 
-* `next`: If next is not NULL, then next[0] will contain the previous element and next[1] the next element. If either does not exist, then the corresponding entry in next is unchanged. 
+* `next`: If next is not NULL, then next[0] will contain the previous element and next[1] the next element. If either does not exist, then the corresponding entry in next is unchanged.
 
-* `cmp`: compare function used to compare elements in the tree, API identical to that of Standard C's qsort It is guaranteed that the first and only the first argument to cmp() will be the key parameter to [`av_tree_find`](@ref)(), thus it could if the user wants, be a different type (like an opaque context). 
+* `cmp`: compare function used to compare elements in the tree, API identical to that of Standard C's qsort It is guaranteed that the first and only the first argument to cmp() will be the key parameter to [`av_tree_find`](@ref)(), thus it could if the user wants, be a different type (like an opaque context).
 
 ### Returns
 An element with cmp(key, elem) == 0 or NULL if no such element exists in the tree.
@@ -19362,13 +19377,13 @@ If *next is NULL, then the supplied element will be removed if it exists. If *ne
 ```
 
 ### Parameters
-* `rootp`: A pointer to a pointer to the root node of the tree; note that the root node can change during insertions, this is required to keep the tree balanced. 
+* `rootp`: A pointer to a pointer to the root node of the tree; note that the root node can change during insertions, this is required to keep the tree balanced.
 
-* `key`: pointer to the element key to insert in the tree 
+* `key`: pointer to the element key to insert in the tree
 
-* `next`: Used to allocate and free AVTreeNodes. For insertion the user must set it to an allocated and zeroed object of at least av\\_tree\\_node\\_size bytes size. [`av_tree_insert`](@ref)() will set it to NULL if it has been consumed. For deleting elements *next is set to NULL by the user and [`av_tree_insert`](@ref)() will set it to the [`AVTreeNode`](@ref) which was used for the removed element. This allows the use of flat arrays, which have lower overhead compared to many malloced elements. You might want to define a function like: 
+* `next`: Used to allocate and free AVTreeNodes. For insertion the user must set it to an allocated and zeroed object of at least av\\_tree\\_node\\_size bytes size. [`av_tree_insert`](@ref)() will set it to NULL if it has been consumed. For deleting elements *next is set to NULL by the user and [`av_tree_insert`](@ref)() will set it to the [`AVTreeNode`](@ref) which was used for the removed element. This allows the use of flat arrays, which have lower overhead compared to many malloced elements. You might want to define a function like:
 
-* `cmp`: compare function used to compare elements in the tree, API identical to that of Standard C's qsort 
+* `cmp`: compare function used to compare elements in the tree, API identical to that of Standard C's qsort
 
 ### Returns
 If no insertion happened, the found element; if an insertion or removal happened, then either key or NULL will be returned. Which one it is depends on the tree state and the implementation. You should make no assumptions that it's one or the other in the code.
@@ -19414,9 +19429,9 @@ end
 Initialize an [`AVTWOFISH`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVTWOFISH`](@ref) context 
+* `ctx`: an [`AVTWOFISH`](@ref) context
 
-* `key`: a key of size ranging from 1 to 32 bytes used for encryption/decryption 
+* `key`: a key of size ranging from 1 to 32 bytes used for encryption/decryption
 
 * `key_bits`: number of keybits: 128, 192, 256 If less than the required, padded with zeroes to nearest valid value; return value is 0 if key\\_bits is 128/192/256, -1 if less than 0, 1 otherwise
 """
@@ -19430,15 +19445,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context
 
 ### Parameters
-* `ctx`: an [`AVTWOFISH`](@ref) context 
+* `ctx`: an [`AVTWOFISH`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 16 byte blocks 
+* `count`: number of 16 byte blocks
 
-* `iv`: initialization vector for CBC mode, NULL for ECB mode 
+* `iv`: initialization vector for CBC mode, NULL for ECB mode
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -19482,11 +19497,11 @@ Function pointer to a function to perform the transform.
 The out and in arrays must be aligned to the maximum required by the CPU architecture. The stride must follow the constraints the transform type has specified.
 
 ### Parameters
-* `s`: the transform context 
+* `s`: the transform context
 
-* `out`: the output array 
+* `out`: the output array
 
-* `in`: the input array 
+* `in`: the input array
 
 * `stride`: the input or output stride in bytes
 """
@@ -19506,17 +19521,17 @@ const AV_TX_INPLACE = 1 % UInt32
 Initialize a transform context with the given configuration (i)MDCTs with an odd length are currently not supported.
 
 ### Parameters
-* `ctx`: the context to allocate, will be NULL on error 
+* `ctx`: the context to allocate, will be NULL on error
 
-* `tx`: pointer to the transform function pointer to set 
+* `tx`: pointer to the transform function pointer to set
 
-* `type`: type the type of transform 
+* `type`: type the type of transform
 
-* `inv`: whether to do an inverse or a forward transform 
+* `inv`: whether to do an inverse or a forward transform
 
-* `len`: the size of the transform in samples 
+* `len`: the size of the transform in samples
 
-* `scale`: pointer to the value to scale the output if supported by type 
+* `scale`: pointer to the value to scale the output if supported by type
 
 * `flags`: a bitmask of [`AVTXFlags`](@ref) or 0
 
@@ -19585,7 +19600,7 @@ Allocates memory for [`AVVideoEncParams`](@ref) of the given type, plus an array
  freed with a normal av_free() call.
  @param out_size if non-NULL, the size in bytes of the resulting data array is
  written here.
- 
+
 
 ```
 """
@@ -19602,7 +19617,7 @@ Allocates memory for AVEncodeInfoFrame plus an array of {
  nb_blocks} AVEncodeInfoBlock in the given AVFrame {@code frame}
  as AVFrameSideData of type AV_FRAME_DATA_VIDEO_ENC_PARAMS
  and initializes the variables.
- 
+
 
 ```
 """
@@ -19615,7 +19630,7 @@ end
 
 
 
-Public header for libavutil XTEA algorithm 
+Public header for libavutil XTEA algorithm
 
 ` lavu_xtea XTEA`
 
@@ -19642,7 +19657,7 @@ end
 Initialize an [`AVXTEA`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVXTEA`](@ref) context 
+* `ctx`: an [`AVXTEA`](@ref) context
 
 * `key`: a key of 16 bytes used for encryption/decryption, interpreted as big endian 32 bit numbers
 """
@@ -19656,7 +19671,7 @@ end
 Initialize an [`AVXTEA`](@ref) context.
 
 ### Parameters
-* `ctx`: an [`AVXTEA`](@ref) context 
+* `ctx`: an [`AVXTEA`](@ref) context
 
 * `key`: a key of 16 bytes used for encryption/decryption, interpreted as little endian 32 bit numbers
 """
@@ -19670,15 +19685,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context, in big endian format.
 
 ### Parameters
-* `ctx`: an [`AVXTEA`](@ref) context 
+* `ctx`: an [`AVXTEA`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `iv`: initialization vector for CBC mode, if NULL then ECB will be used 
+* `iv`: initialization vector for CBC mode, if NULL then ECB will be used
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -19692,15 +19707,15 @@ end
 Encrypt or decrypt a buffer using a previously initialized context, in little endian format.
 
 ### Parameters
-* `ctx`: an [`AVXTEA`](@ref) context 
+* `ctx`: an [`AVXTEA`](@ref) context
 
-* `dst`: destination array, can be equal to src 
+* `dst`: destination array, can be equal to src
 
-* `src`: source array, can be equal to dst 
+* `src`: source array, can be equal to dst
 
-* `count`: number of 8 byte blocks 
+* `count`: number of 8 byte blocks
 
-* `iv`: initialization vector for CBC mode, if NULL then ECB will be used 
+* `iv`: initialization vector for CBC mode, if NULL then ECB will be used
 
 * `decrypt`: 0 for encryption, 1 for decryption
 """
@@ -19789,7 +19804,7 @@ end
     sws_isSupportedEndiannessConversion(pix_fmt::AVPixelFormat)
 
 ### Parameters
-* `pix_fmt`:\\[in\\] the pixel format 
+* `pix_fmt`:\\[in\\] the pixel format
 
 ### Returns
 a positive value if an endianness conversion for pix\\_fmt is supported, 0 otherwise.
@@ -19838,24 +19853,24 @@ Allocate and return an [`SwsContext`](@ref). You need it to perform scaling/conv
     this function is to be removed after a saner alternative is written
 
 ### Parameters
-* `srcW`: the width of the source image 
+* `srcW`: the width of the source image
 
-* `srcH`: the height of the source image 
+* `srcH`: the height of the source image
 
-* `srcFormat`: the source image format 
+* `srcFormat`: the source image format
 
-* `dstW`: the width of the destination image 
+* `dstW`: the width of the destination image
 
-* `dstH`: the height of the destination image 
+* `dstH`: the height of the destination image
 
-* `dstFormat`: the destination image format 
+* `dstFormat`: the destination image format
 
-* `flags`: specify which algorithm and options to use for rescaling 
+* `flags`: specify which algorithm and options to use for rescaling
 
-* `param`: extra parameters to tune the used scaler For [`SWS_BICUBIC`](@ref) param[0] and [1] tune the shape of the basis function, param[0] tunes f(1) and param[1] f´(1) For [`SWS_GAUSS`](@ref) param[0] tunes the exponent and thus cutoff frequency For [`SWS_LANCZOS`](@ref) param[0] tunes the width of the window function 
+* `param`: extra parameters to tune the used scaler For [`SWS_BICUBIC`](@ref) param[0] and [1] tune the shape of the basis function, param[0] tunes f(1) and param[1] f´(1) For [`SWS_GAUSS`](@ref) param[0] tunes the exponent and thus cutoff frequency For [`SWS_LANCZOS`](@ref) param[0] tunes the width of the window function
 
 ### Returns
-a pointer to an allocated context, or NULL in case of error 
+a pointer to an allocated context, or NULL in case of error
 """
 function sws_getContext(srcW::Integer, srcH::Integer, srcFormat::AVPixelFormat, dstW::Integer, dstH::Integer, dstFormat::AVPixelFormat, flags::Integer, srcFilter, dstFilter, param)
     ccall((:sws_getContext, libswscale), Ptr{SwsContext}, (Cint, Cint, AVPixelFormat, Cint, Cint, AVPixelFormat, Cint, Ptr{SwsFilter}, Ptr{SwsFilter}, Ptr{Cdouble}), srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
@@ -19869,19 +19884,19 @@ Scale the image slice in srcSlice and put the resulting scaled slice in the imag
 Slices have to be provided in sequential order, either in top-bottom or bottom-top order. If slices are provided in non-sequential order the behavior of the function is undefined.
 
 ### Parameters
-* `c`: the scaling context previously created with [`sws_getContext`](@ref)() 
+* `c`: the scaling context previously created with [`sws_getContext`](@ref)()
 
-* `srcSlice`: the array containing the pointers to the planes of the source slice 
+* `srcSlice`: the array containing the pointers to the planes of the source slice
 
-* `srcStride`: the array containing the strides for each plane of the source image 
+* `srcStride`: the array containing the strides for each plane of the source image
 
-* `srcSliceY`: the position in the source image of the slice to process, that is the number (counted starting from zero) in the image of the first row of the slice 
+* `srcSliceY`: the position in the source image of the slice to process, that is the number (counted starting from zero) in the image of the first row of the slice
 
-* `srcSliceH`: the height of the source slice, that is the number of rows in the slice 
+* `srcSliceH`: the height of the source slice, that is the number of rows in the slice
 
-* `dst`: the array containing the pointers to the planes of the destination image 
+* `dst`: the array containing the pointers to the planes of the destination image
 
-* `dstStride`: the array containing the strides for each plane of the destination image 
+* `dstStride`: the array containing the strides for each plane of the destination image
 
 ### Returns
 the height of the output slice
@@ -19894,19 +19909,19 @@ end
     sws_setColorspaceDetails(c, inv_table, srcRange::Integer, table, dstRange::Integer, brightness::Integer, contrast::Integer, saturation::Integer)
 
 ### Parameters
-* `dstRange`: flag indicating the while-black range of the output (1=jpeg / 0=mpeg) 
+* `dstRange`: flag indicating the while-black range of the output (1=jpeg / 0=mpeg)
 
-* `srcRange`: flag indicating the while-black range of the input (1=jpeg / 0=mpeg) 
+* `srcRange`: flag indicating the while-black range of the input (1=jpeg / 0=mpeg)
 
-* `table`: the yuv2rgb coefficients describing the output yuv space, normally ff\\_yuv2rgb\\_coeffs[x] 
+* `table`: the yuv2rgb coefficients describing the output yuv space, normally ff\\_yuv2rgb\\_coeffs[x]
 
-* `inv_table`: the yuv2rgb coefficients describing the input yuv space, normally ff\\_yuv2rgb\\_coeffs[x] 
+* `inv_table`: the yuv2rgb coefficients describing the input yuv space, normally ff\\_yuv2rgb\\_coeffs[x]
 
-* `brightness`: 16.16 fixed point brightness correction 
+* `brightness`: 16.16 fixed point brightness correction
 
-* `contrast`: 16.16 fixed point contrast correction 
+* `contrast`: 16.16 fixed point contrast correction
 
-* `saturation`: 16.16 fixed point saturation correction 
+* `saturation`: 16.16 fixed point saturation correction
 
 ### Returns
 -1 if not supported
@@ -20026,11 +20041,11 @@ Convert an 8-bit paletted frame into a frame with a color depth of 32 bits.
 The output frame will have the same packed format as the palette.
 
 ### Parameters
-* `src`: source frame buffer 
+* `src`: source frame buffer
 
-* `dst`: destination frame buffer 
+* `dst`: destination frame buffer
 
-* `num_pixels`: number of pixels to convert 
+* `num_pixels`: number of pixels to convert
 
 * `palette`: array with [256] entries, which must match color arrangement (RGB or BGR) of src
 """
@@ -20046,11 +20061,11 @@ Convert an 8-bit paletted frame into a frame with a color depth of 24 bits.
 With the palette format "ABCD", the destination frame ends up with the format "ABC".
 
 ### Parameters
-* `src`: source frame buffer 
+* `src`: source frame buffer
 
-* `dst`: destination frame buffer 
+* `dst`: destination frame buffer
 
-* `num_pixels`: number of pixels to convert 
+* `num_pixels`: number of pixels to convert
 
 * `palette`: array with [256] entries, which must match color arrangement (RGB or BGR) of src
 """

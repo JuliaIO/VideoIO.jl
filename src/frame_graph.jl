@@ -279,7 +279,7 @@ end
 
 function pix_fmt_to_bits_per_pixel(pix_fmt)
     fmt_desc = av_pix_fmt_desc_get(pix_fmt)
-    check_ptr_valid(fmt_desc, false) || error("Unknown pixel format $dst_pix_fmt")
+    check_ptr_valid(fmt_desc, false) || error("Unknown pixel format $pix_fmt")
     padded_bits = av_get_padded_bits_per_pixel(fmt_desc)
     bits = av_get_bits_per_pixel(fmt_desc)
     return bits, padded_bits
