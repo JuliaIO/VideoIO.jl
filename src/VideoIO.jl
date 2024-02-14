@@ -139,6 +139,7 @@ function __init__()
     @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" begin
         # Define read and retrieve for Images
         function play(f; flipx = false, flipy = false, pixelaspectratio = nothing)
+            @warn "This GLMakie-based `play` function is deprecated and will be removed in a future release." maxlog = 1
             eof(f) && error("VideoReader at end of file. Use `seekstart(f)` to rewind")
             # if user did not specify the aspect ratio we'll try to use the one stored in the video file
             if pixelaspectratio === nothing
@@ -178,6 +179,7 @@ function __init__()
         end
 
         function playvideo(video; flipx = false, flipy = false, pixelaspectratio = nothing)
+            @warn "This GLMakie-based `playvideo` function is deprecated and will be removed in a future release." maxlog = 1
             f = VideoIO.openvideo(video)
             try
                 play(f, flipx=flipx, flipy=flipy, pixelaspectratio=pixelaspectratio)
@@ -187,6 +189,7 @@ function __init__()
         end
 
         function viewcam(device=nothing, format=nothing, options=nothing, pixelaspectratio=nothing)
+            @warn "This GLMakie-based `viewcam` function is deprecated and will be removed in a future release." maxlog = 1
             camera = opencamera(device, format, options)
             try
                 play(camera; flipx=true, pixelaspectratio)
