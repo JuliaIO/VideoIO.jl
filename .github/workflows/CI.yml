@@ -17,12 +17,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        julia-arch: [x64, x86]
-        julia-version: ['1.6','1','1.10-nightly','nightly']
+        os:
+          - ubuntu-latest
+          - macOS-14 # arm
+          - windows-latest
+        julia-arch:
+          - 'x64'
+          - 'x86'
+          - 'aarch64'
+        julia-version:
+          - '1.6'
+          - '1'
+          - 'nightly'
         exclude:
-          - os: macOS-latest
+          - os: ubuntu-latest
+            julia-arch: aarch64
+          - os: windows-latest
+            julia-arch: aarch64
+          - os: macOS-14
             julia-arch: x86
+          - os: macOS-14
+            julia-arch: x64
 
     steps:
       - uses: actions/checkout@v4
