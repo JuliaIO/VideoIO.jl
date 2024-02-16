@@ -3,6 +3,7 @@ module VideoIO
 using ColorTypes: RGB, Gray, N0f8, N6f10, YCbCr, Normed, red, green, blue
 using Dates
 using FileIO: File
+using ImageCore: channelview, rawview
 using PrecompileTools
 
 using Base: fieldindex, RefValue, cconvert
