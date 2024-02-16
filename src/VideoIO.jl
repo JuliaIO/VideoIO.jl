@@ -102,20 +102,10 @@ fileio_load(f::File; kwargs...) = load(f.filename; kwargs...)
 fileio_save(f::File, video; kwargs...) = save(f.filename, video; kwargs...)
 
 function __init__()
-    # Always check your dependencies from `deps.jl`
-    # TODO remove uncessary ENV["LD_LIBRARY_PATH"] from check_deps, so that
-    # it doesn't mess with LD_LIBRARY_PATH, which was causing CI download issues due to issues with julia's curl
-    # since check_deps is optional, I hope this is ok for now
-
-    #check_deps()
-
     loglevel!(libffmpeg.AV_LOG_FATAL)
     # @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `? VideoIO.loglevel!` for options"
-
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
-
     av_register_all()
-
     libffmpeg.avdevice_register_all()
 end
 
