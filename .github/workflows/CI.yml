@@ -52,14 +52,13 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
       - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-runtest@v1
-      - uses: julia
       - name: Configure new FFMPEG version environment
         shell: julia --project="." --color=yes {0}
         run: |
           using Pkg
           Pkg.add(PackageSpec(url="https://github.com/theogf/FFMPEG.jl/tree/tgf/update-FFMPEG"))
           Pkg.instantiate()
+      - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v4
         with:
