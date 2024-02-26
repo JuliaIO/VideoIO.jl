@@ -1,8 +1,8 @@
 [deps]
 Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
-FFMPEG = "c87230d0-a227-11e9-1b43-d7ebe4e7570a"
+FFMPEG_jll = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 Match = "7eb4fadd-790c-5f42-8a69-bfa0b872bfbf"
 Vulkan_Headers_jll = "8d446b21-f3ad-5576-a034-752265b9b6f9"
 
 [compat]
-Clang = "0.14.0"
+Clang = "0.14, 0.15, 0.16, 0.17"
