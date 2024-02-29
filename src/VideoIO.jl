@@ -132,8 +132,6 @@ function __init__()
 
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
 
-    av_register_all()
-
     libffmpeg.avdevice_register_all()
 
     @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" begin
