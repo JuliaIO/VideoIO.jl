@@ -6,3 +6,4 @@ Vulkan_Headers_jll = "8d446b21-f3ad-5576-a034-752265b9b6f9"
 
 [compat]
 Clang = "0.14, 0.15, 0.16, 0.17"
+FFMPEG_jll = "0.6.1"
