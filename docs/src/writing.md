@@ -37,7 +37,7 @@ end
 An example saving a series of png files as a video:
 
 ```julia
-using VideoIO, ProgressMeter
+using VideoIO, ProgressMeter, FileIO
 
 dir = "" #path to directory holding images
 imgnames = filter(x->occursin(".png",x), readdir(dir)) # Populate list of all .pngs
