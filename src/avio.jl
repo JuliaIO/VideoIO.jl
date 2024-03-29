@@ -832,10 +832,10 @@ get_frame_presentation_time(stream, frame) = convert(Rational, stream.time_base)
 function get_frame_period_timebase(r::VideoReader)
     # This is probably not valid for many codecs, frame period in timebase
     # units
-    stream = get_stream(s)
+    stream = get_stream(r)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && return nothing
-    frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
+    frame_rate = convert(Rational, stream.r_frame_rate)
     frame_period_timebase = round(Int64, 1 / (frame_rate * time_base))
     return frame_period_timebase
 end
@@ -858,7 +858,7 @@ function seek_trim(r::VideoReader, seconds::Number)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && error("No time base")
     target_pts = seconds_to_timestamp(seconds, time_base)
-    frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
+    frame_rate = convert(Rational, stream.r_frame_rate)
     frame_period_timebase = round(Int64, 1 / (frame_rate * time_base))
     gotframe = pump_until_frame(r, false)
     # If advancing another frame would still leave us before the target
@@ -1005,7 +1005,7 @@ function position(r::VideoReader)
     time_base == 0 && return nothing
     nqueued = n_queued_frames(r)
     nqueued == 0 && return last_pts * time_base
-    frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
+    frame_rate = convert(Rational, stream.r_frame_rate)
     last_returned_pts = last_pts - round(Int, nqueued / (frame_rate * time_base))
     return last_returned_pts * time_base
 end

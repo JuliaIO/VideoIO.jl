@@ -23,7 +23,8 @@ printer_blacklist = [
     "AVPROBE_SCORE_MAX",
     "Picture",
     "AV_BPRINT_SIZE_UNLIMITED",
-    "FF_CEIL_RSHIFT"
+    "FF_CEIL_RSHIFT",
+    "AV_CHANNEL_LAYOUT_.*"
 ]
 extract_c_comment_style = "doxygen"
 [codegen]
