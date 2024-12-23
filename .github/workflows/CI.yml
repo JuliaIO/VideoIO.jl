@@ -19,7 +19,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macOS-13 # intel
           - macOS-14 # arm
           - windows-latest
         julia-arch:
@@ -29,15 +28,11 @@ jobs:
         julia-version:
           - '1.6'
           - '1'
-          - 'nightly'
+          - 'pre'
         exclude:
           - os: ubuntu-latest
             julia-arch: aarch64
           - os: windows-latest
-            julia-arch: aarch64
-          - os: macOS-13
-            julia-arch: x86
-          - os: macOS-13
             julia-arch: aarch64
           - os: macOS-14
             julia-arch: x86
@@ -48,10 +43,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia-version }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - name: Configure new FFMPEG version environment
         shell: julia --project="." --color=yes {0}
         run: |
