@@ -182,7 +182,7 @@ end
 @testset "Encoding video with rational frame rates" begin
     n = 100
     fr = 59 // 2 # 29.5
-    target_dur = 3.39
+    target_dur = 3.389831
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x -> rand(UInt8, 100, 100), 1:n)
         encoder_options = (color_range = 2, crf = 0, preset = "medium")
@@ -193,14 +193,14 @@ end
             command = VideoIO.FFMPEG.ffprobe,
             collect = true,
         )
-        @test parse(Float64, measured_dur_str[1]) == target_dur
+        @test parse(Float64, measured_dur_str[1]) ≈ target_dur
     end
 end
 
 @testset "Encoding video with float frame rates" begin
     n = 100
     fr = 29.5 # 59 // 2
-    target_dur = 3.39
+    target_dur = 3.389831
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x -> rand(UInt8, 100, 100), 1:n)
         encoder_options = (color_range = 2, crf = 0, preset = "medium")
@@ -211,6 +211,6 @@ end
             command = VideoIO.FFMPEG.ffprobe,
             collect = true,
         )
-        @test parse(Float64, measured_dur_str[1]) == target_dur
+        @test parse(Float64, measured_dur_str[1]) ≈ target_dur
     end
 end
