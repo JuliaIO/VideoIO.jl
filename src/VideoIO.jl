@@ -30,7 +30,7 @@ const VIO_LOCK = ReentrantLock()
 include("util.jl")
 include("../lib/libffmpeg.jl")
 using .libffmpeg
-using FFMPEG: ffmpeg
+using FFMPEG: ffmpeg, FFMPEG
 
 include("avptr.jl")
 

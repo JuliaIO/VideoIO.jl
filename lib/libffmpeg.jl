@@ -1,7 +1,6 @@
 module libffmpeg
 
 using FFMPEG
-export FFMPEG
 
 const intptr_t = UInt
 const time_t = Int
@@ -12696,7 +12695,7 @@ Allocates memory for [`AVDetectionBBoxHeader`](@ref), plus an array of {
  @param nb_bboxes number of AVDetectionBBox structures to allocate
  @param out_size if non-NULL, the size in bytes of the resulting data array is
  written here.
- 
+
 
 ```
 """
@@ -12713,7 +12712,7 @@ Allocates memory for [`AVDetectionBBoxHeader`](@ref), plus an array of {
  nb_bboxes}
  AVDetectionBBox, in the given AVFrame {@code frame} as AVFrameSideData of type
  AV_FRAME_DATA_DETECTION_BBOXES and initializes the variables.
- 
+
 
 ```
 """
@@ -16027,7 +16026,7 @@ Allocates memory for [`AVIAMFParamDefinition`](@ref), plus an array of {
  freed with a normal av_free() call.
 
  @param size if non-NULL, the size in bytes of the resulting data array is written here.
- 
+
 
 ```
 """
@@ -16045,7 +16044,7 @@ Get the subblock at the specified {
 
  The @ref AVIAMFParamDefinition.type "param definition type" defines
  the struct type of the returned pointer.
- 
+
 
 ```
 """
@@ -20938,7 +20937,7 @@ Get the block at the specified {
 
 ```c++
  idx}. Must be between 0 and nb_blocks - 1.
- 
+
 
 ```
 """
@@ -20957,7 +20956,7 @@ Allocates memory for [`AVVideoEncParams`](@ref) of the given type, plus an array
 
  @param out_size if non-NULL, the size in bytes of the resulting data array is
  written here.
- 
+
 
 ```
 """
@@ -20974,7 +20973,7 @@ Allocates memory for AVEncodeInfoFrame plus an array of {
  nb_blocks} AVEncodeInfoBlock in the given AVFrame {@code frame}
  as AVFrameSideData of type AV_FRAME_DATA_VIDEO_ENC_PARAMS
  and initializes the variables.
- 
+
 
 ```
 """
@@ -23583,6 +23582,7 @@ struct_types = Type[]
 # Export everything
 for name in names(@__MODULE__, all = true)
     name in [Symbol("#eval"), Symbol("#include"), :include, :eval] && continue
+    startswith(string(name), "##") && continue
     @eval begin
         export $name
         $name isa Type && isstructtype($name) && push!(struct_types, $name)
