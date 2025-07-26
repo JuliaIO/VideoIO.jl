@@ -21,15 +21,11 @@ end
 
 # Helper functions
 function test_compare_frames(test_frame, ref_frame, tol = 0.05)
-    if isarm()
-        @test_skip test_frame == ref_frame
-    else
-        frames_similar = true
-        for (a, b) in zip(test_frame, ref_frame)
-            frames_similar &= compare_colors(a, b, tol)
-        end
-        @test frames_similar
+    frames_similar = true
+    for (a, b) in zip(test_frame, ref_frame)
+        frames_similar &= compare_colors(a, b, tol)
     end
+    @test frames_similar
 end
 
 # uses read!

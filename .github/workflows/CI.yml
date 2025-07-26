@@ -26,7 +26,7 @@ jobs:
           - 'x86'
           - 'aarch64'
         julia-version:
-          - '1.6'
+          - 'lts'
           - '1'
           - 'pre'
         exclude:
@@ -38,8 +38,6 @@ jobs:
             julia-arch: x86
           - os: macOS-14
             julia-arch: x64
-          - os: macOS-14
-            julia-version: '1.6'
 
     steps:
       - uses: actions/checkout@v4

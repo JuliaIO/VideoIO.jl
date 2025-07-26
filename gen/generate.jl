@@ -1,6 +1,5 @@
 using Clang.Generators
-using FFMPEG
-using FFMPEG.FFMPEG_jll
+using FFMPEG_jll
 using Vulkan_Headers_jll
 using LibGit2
 include("rewriter.jl")
@@ -9,7 +8,7 @@ cd(@__DIR__)
 
 # Ideally I could have loaded all headers, but it turns out to be too hard
 
-include_dir = joinpath(FFMPEG.FFMPEG_jll.artifact_dir, "include") |> normpath
+include_dir = joinpath(FFMPEG_jll.artifact_dir, "include") |> normpath
 
 vulkan_dir = joinpath(Vulkan_Headers_jll.artifact_dir, "include") |> normpath
 
