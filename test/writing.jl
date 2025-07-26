@@ -187,7 +187,7 @@ end
 @testset "Encoding video with rational frame rates" begin
     n = 100
     fr = 59 // 2 # 29.5
-    target_dur = 3.389831
+    target_dur = round(n / fr, digits = 6) # ffmpeg uses 6 digits of precision
     @testset "Encoding with frame rate $(float(fr))" begin
         imgstack = map(x -> rand(UInt8, 100, 100), 1:n)
         encoder_options = (color_range = 2, crf = 0, preset = "medium")
@@ -198,7 +198,7 @@ end
             command = VideoIO.FFMPEG.ffprobe,
             collect = true,
         )
-        @test parse(Float64, measured_dur_str[1]) ≈ target_dur
+        @test parse(Float64, measured_dur_str[1]) == target_dur
     end
 end
 
