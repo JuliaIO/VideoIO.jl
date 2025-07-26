@@ -525,6 +525,14 @@ function transfer_graph_output!(buf, r::VideoReader)
     return transfer_frame_to_img_buf!(buf, graph_output_frame(r), bytes_per_pixel)
 end
 
+# Helper function to capture PTS of the current frame for position tracking
+function capture_pts!(r::VideoReader, frame)
+    if frame.pts != AV_NOPTS_VALUE
+        r.last_consumed_pts = frame.pts
+    end
+    return r
+end
+
 # Converts a grabbed frame to the correct format (RGB by default)
 function _retrieve!(r::VideoReader, buf)
     fill_graph_input!(r)
@@ -532,10 +540,7 @@ function _retrieve!(r::VideoReader, buf)
     transfer_graph_output!(buf, r)
 
     # Capture the PTS of the frame we're about to return to the user
-    frame = graph_input_frame(r)
-    if frame.pts != AV_NOPTS_VALUE
-        r.last_consumed_pts = frame.pts
-    end
+    capture_pts!(r, graph_input_frame(r))
 
     remove_graph_input!(r)
     return buf
@@ -552,10 +557,7 @@ function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
     fill_graph_input!(r)
 
     # Capture the PTS of the frame we're about to return to the user
-    frame = graph_input_frame(r)
-    if frame.pts != AV_NOPTS_VALUE
-        r.last_consumed_pts = frame.pts
-    end
+    capture_pts!(r, graph_input_frame(r))
 
     stash_graph_input!(buf, r, align)
     remove_graph_input!(r)
