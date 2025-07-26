@@ -83,6 +83,7 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
 
     flush::Bool
     finished::Bool
+    last_consumed_pts::Int64  # Track PTS of last frame returned to user
 end
 
 """
@@ -368,6 +369,7 @@ function VideoReader(
         padded_bits_per_pixel,
         false,
         false,
+        AV_NOPTS_VALUE,  # Initialize last_consumed_pts to no timestamp
     )
 
     push!(avin.listening, stream_index0)
@@ -405,7 +407,7 @@ Like containers, elementary streams also can store timestamps, 1/time_base is th
 
 For some codecs, the time base is closer to the field rate than the frame rate.
 Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
-Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2. 
+Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
 framerate(f::VideoReader) =
     f.codec_context.time_base.den // f.codec_context.time_base.num // f.codec_context.ticks_per_frame
@@ -523,11 +525,23 @@ function transfer_graph_output!(buf, r::VideoReader)
     return transfer_frame_to_img_buf!(buf, graph_output_frame(r), bytes_per_pixel)
 end
 
+# Helper function to capture PTS of the current frame for position tracking
+function capture_pts!(r::VideoReader, frame)
+    if frame.pts != AV_NOPTS_VALUE
+        r.last_consumed_pts = frame.pts
+    end
+    return r
+end
+
 # Converts a grabbed frame to the correct format (RGB by default)
 function _retrieve!(r::VideoReader, buf)
     fill_graph_input!(r)
     execute_graph!(r)
     transfer_graph_output!(buf, r)
+
+    # Capture the PTS of the frame we're about to return to the user
+    capture_pts!(r, graph_input_frame(r))
+
     remove_graph_input!(r)
     return buf
 end
@@ -541,6 +555,10 @@ end
 
 function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
     fill_graph_input!(r)
+
+    # Capture the PTS of the frame we're about to return to the user
+    capture_pts!(r, graph_input_frame(r))
+
     stash_graph_input!(buf, r, align)
     remove_graph_input!(r)
     return buf
@@ -824,6 +842,7 @@ function reset_file_position_information!(r::VideoReader)
     avcodec_flush_buffers(r.codec_context)
     drop_frames!(r)
     r.flush = false
+    r.last_consumed_pts = AV_NOPTS_VALUE  # Reset position tracking after seek
     return r.finished = false
 end
 
@@ -995,19 +1014,15 @@ function close(avin::AVInput)
 end
 
 function position(r::VideoReader)
-    # this field is not indended for public use, should we be using it?
-    last_pts = r.codec_context.pts_correction_last_pts
-    # At the beginning, or just seeked
-    last_pts == AV_NOPTS_VALUE && return nothing
-    # Try to figure out the time of the oldest frame in the queue
+    # Return the timestamp of the last frame returned to the user
+    r.last_consumed_pts == AV_NOPTS_VALUE && return nothing
+
+    # Convert PTS to seconds using stream time_base
     stream = get_stream(r)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && return nothing
-    nqueued = n_queued_frames(r)
-    nqueued == 0 && return last_pts * time_base
-    frame_rate = convert(Rational, stream.r_frame_rate)
-    last_returned_pts = last_pts - round(Int, nqueued / (frame_rate * time_base))
-    return last_returned_pts * time_base
+
+    return r.last_consumed_pts * time_base
 end
 
 ### Camera Functions
