@@ -410,7 +410,7 @@ Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no
 Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
 framerate(f::VideoReader) =
-    f.codec_context.time_base.den // f.codec_context.time_base.num // f.codec_context.ticks_per_frame
+    f.codec_context.time_base.den // f.codec_context.time_base.num // ((f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2)
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
 
