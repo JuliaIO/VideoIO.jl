@@ -438,8 +438,8 @@ function framerate(f::VideoReader)
         end
     end
     
-    # If all else fails, return an invalid framerate that can be detected
-    return 0 // 1
+    # If all else fails, throw an error
+    error("Unable to determine valid framerate from codec_context.time_base, stream.r_frame_rate, or stream.avg_frame_rate")
 end
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
