@@ -409,8 +409,38 @@ For some codecs, the time base is closer to the field rate than the frame rate.
 Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
 Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
-framerate(f::VideoReader) =
-    f.codec_context.time_base.den // f.codec_context.time_base.num // f.codec_context.ticks_per_frame
+function framerate(f::VideoReader)
+    # Try codec_context time_base first
+    tb = f.codec_context.time_base
+    if tb.num != 0
+        fps = tb.den // tb.num // f.codec_context.ticks_per_frame
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+    
+    # Fallback to stream r_frame_rate if codec_context time_base is invalid
+    stream = f.avin.format_context.streams[f.stream_index0 + 1]
+    rfr = stream.r_frame_rate
+    if rfr.den != 0
+        fps = rfr.num // rfr.den
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+    
+    # Last resort: try avg_frame_rate
+    afr = stream.avg_frame_rate
+    if afr.den != 0
+        fps = afr.num // afr.den
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+    
+    # If all else fails, return an invalid framerate that can be detected
+    return 0 // 1
+end
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
 
