@@ -122,8 +122,18 @@ function pump(avin::AVInput)
         end
 
         if ret < 0
-            avin.finished = true
-            break
+            if ret == VIO_AVERROR_EOF
+                avin.finished = true
+                break
+            elseif ret == -Libc.EAGAIN
+                # Nothing ready yet - for live streams, this is normal
+                # Return -1 to indicate no frame available right now
+                return -1
+            else
+                # Real error - treat as EOF
+                avin.finished = true
+                break
+            end
         end
         stream_index = avin.packet.stream_index
         if stream_index in avin.listening
@@ -156,10 +166,20 @@ pump(r::StreamContext) = pump(r.avin)
 function pump_until_frame(r, err = false)
     while !frame_is_queued(r)
         idx = pump(r.avin)
-        idx == r.stream_index0 && break
-        if idx == -1
-            err ? throw(EOFError()) : return false
+        if idx == r.stream_index0
+            break
+        elseif idx == -1
+            # av_read_frame returned EAGAIN (nothing ready yet) or EOF
+            if r.avin.finished
+                # Real EOF - no more frames coming
+                err ? throw(EOFError()) : return false
+            else
+                # EAGAIN - nothing ready yet, wait a bit and retry
+                sleep(0.01)  # 10ms as recommended by FFmpeg docs
+                continue
+            end
         end
+        # idx is some other stream index, continue pumping
     end
     return true
 end
