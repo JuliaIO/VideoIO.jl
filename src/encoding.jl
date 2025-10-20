@@ -327,9 +327,6 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     set_class_options(codec_context, encoder_options)
     set_class_options(codec_context.priv_data, encoder_private_options)
 
-    # Set colorspace details before opening codec (required for newer FFmpeg versions)
-    maybe_configure_codec_context_colorspace_details!(codec_context, transfer_colorspace_details)
-
     @debug "Opening codec" codec=unsafe_string(codec.name) codec_context.width codec_context.height codec_context.pix_fmt codec_context.colorspace codec_context.color_range
 
     ret = disable_sigint() do
@@ -368,6 +365,9 @@ options, or pass the private options to `encoder_private_options` explicitly""",
         allow_vio_gray_transform &&
         transfer_pix_fmt in VIO_GRAY_SCALE_TYPES &&
         transfer_colorspace_details.color_range != codec_context.color_range
+    if !use_vio_gray_transform && transfer_pix_fmt == encoding_pix_fmt
+        maybe_configure_codec_context_colorspace_details!(codec_context, transfer_colorspace_details)
+    end
     frame_graph = create_encoding_frame_graph(
         transfer_pix_fmt,
         encoding_pix_fmt,
