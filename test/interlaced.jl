@@ -31,21 +31,24 @@
     end
 end
 
-@testset "Progressive video codec properties" begin
-    # Test with a progressive video for comparison
+@testset "Codec descriptor null safety" begin
+    # Test that the null check works properly for various codecs
     testvid_path = joinpath(VideoIO.TestVideos.videodir, "ladybird.mp4")
     
     VideoIO.openvideo(testvid_path) do reader
         # Verify codec_descriptor is not null
         @test reader.codec_context.codec_descriptor != C_NULL
         
-        # Check if it's a field-based codec (should NOT be for progressive)
-        is_field_based = (reader.codec_context.codec_descriptor.props & VideoIO.AV_CODEC_PROP_FIELDS) != 0
-        @test !is_field_based
+        # The AV_CODEC_PROP_FIELDS flag indicates the codec SUPPORTS fields,
+        # not that this specific video is interlaced. H.264 always has this flag.
+        # What matters is that our code handles both cases without crashing.
         
-        # Get framerate
+        # Get framerate - should work regardless of field flag
         fps = VideoIO.framerate(reader)
         @test fps > 0
         @test isfinite(fps)
+        
+        # For ladybird.mp4, we expect a reasonable framerate
+        @test 20 <= fps <= 60
     end
 end
