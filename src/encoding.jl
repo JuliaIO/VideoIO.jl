@@ -305,6 +305,9 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     codec_context.width = width
     codec_context.height = height
     framerate_rat = Rational(framerate)
+    if !isfinite(framerate_rat) || framerate_rat <= 0
+        throw(ArgumentError("Invalid framerate: $framerate. Framerate must be a positive finite number."))
+    end
     target_timebase = 1 / framerate_rat
     codec_context.time_base = target_timebase
     codec_context.framerate = framerate_rat
@@ -324,12 +327,20 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     set_class_options(codec_context, encoder_options)
     set_class_options(codec_context.priv_data, encoder_private_options)
 
+    @debug "Opening codec" codec=unsafe_string(codec.name) codec_context.width codec_context.height codec_context.pix_fmt codec_context.colorspace codec_context.color_range
+
     ret = disable_sigint() do
         lock(VIO_LOCK) do
             avcodec_open2(codec_context, codec, C_NULL)
         end
     end
-    ret < 0 && error("Could not open codec: Return code $(ret)")
+    if ret < 0
+        codec_name_str = unsafe_string(codec.name)
+        error("Could not open codec $codec_name_str: Return code $ret " *
+              "(width=$(codec_context.width), height=$(codec_context.height), " *
+              "pix_fmt=$(codec_context.pix_fmt), colorspace=$(codec_context.colorspace), " *
+              "color_range=$(codec_context.color_range))")
+    end
 
     stream_p = avformat_new_stream(format_context, C_NULL)
     check_ptr_valid(stream_p, false) || error("Could not allocate output stream")

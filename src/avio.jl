@@ -122,8 +122,18 @@ function pump(avin::AVInput)
         end
 
         if ret < 0
-            avin.finished = true
-            break
+            if ret == VIO_AVERROR_EOF
+                avin.finished = true
+                break
+            elseif ret == -Libc.EAGAIN
+                # Nothing ready yet - for live streams, this is normal
+                # Return -1 to indicate no frame available right now
+                return -1
+            else
+                # Real error - treat as EOF
+                avin.finished = true
+                break
+            end
         end
         stream_index = avin.packet.stream_index
         if stream_index in avin.listening
@@ -156,10 +166,20 @@ pump(r::StreamContext) = pump(r.avin)
 function pump_until_frame(r, err = false)
     while !frame_is_queued(r)
         idx = pump(r.avin)
-        idx == r.stream_index0 && break
-        if idx == -1
-            err ? throw(EOFError()) : return false
+        if idx == r.stream_index0
+            break
+        elseif idx == -1
+            # av_read_frame returned EAGAIN (nothing ready yet) or EOF
+            if r.avin.finished
+                # Real EOF - no more frames coming
+                err ? throw(EOFError()) : return false
+            else
+                # EAGAIN - nothing ready yet, wait a bit and retry
+                sleep(0.01)  # 10ms as recommended by FFmpeg docs
+                continue
+            end
         end
+        # idx is some other stream index, continue pumping
     end
     return true
 end
@@ -409,8 +429,38 @@ For some codecs, the time base is closer to the field rate than the frame rate.
 Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
 Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
-framerate(f::VideoReader) =
-    f.codec_context.time_base.den // f.codec_context.time_base.num // ((f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2)
+function framerate(f::VideoReader)
+    # Try codec_context time_base first
+    tb = f.codec_context.time_base
+    if tb.num != 0
+        fps = tb.den // tb.num // ((f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2)
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+    
+    # Fallback to stream r_frame_rate if codec_context time_base is invalid
+    stream = f.avin.format_context.streams[f.stream_index0 + 1]
+    rfr = stream.r_frame_rate
+    if rfr.den != 0
+        fps = rfr.num // rfr.den
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+    
+    # Last resort: try avg_frame_rate
+    afr = stream.avg_frame_rate
+    if afr.den != 0
+        fps = afr.num // afr.den
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+    
+    # If all else fails, throw an error
+    error("Unable to determine valid framerate from codec_context.time_base, stream.r_frame_rate, or stream.avg_frame_rate")
+end
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
 
