@@ -33,6 +33,8 @@ start_time = time()
     @memory_profile
     include("encoding_fix.jl")
     @memory_profile
+    include("interlaced.jl")
+    @memory_profile
     include("accuracy.jl")
     @memory_profile
 
