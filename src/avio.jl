@@ -445,7 +445,7 @@ function framerate(f::VideoReader)
             return fps
         end
     end
-    
+
     # Fallback to stream r_frame_rate if codec_context time_base is invalid
     stream = f.avin.format_context.streams[f.stream_index0 + 1]
     rfr = stream.r_frame_rate
@@ -455,7 +455,7 @@ function framerate(f::VideoReader)
             return fps
         end
     end
-    
+
     # Last resort: try avg_frame_rate
     afr = stream.avg_frame_rate
     if afr.den != 0
@@ -464,7 +464,7 @@ function framerate(f::VideoReader)
             return fps
         end
     end
-    
+
     # If all else fails, throw an error
     error("Unable to determine valid framerate from codec_context.time_base, stream.r_frame_rate, or stream.avg_frame_rate")
 end
