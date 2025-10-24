@@ -433,7 +433,14 @@ function framerate(f::VideoReader)
     # Try codec_context time_base first
     tb = f.codec_context.time_base
     if tb.num != 0
-        fps = tb.den // tb.num // ((f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2)
+        # FFmpeg 8+ deprecated ticks_per_frame. For field-based codecs (H.264/MPEG-2),
+        # the time_base represents field duration, so we divide by 2 to get frame rate.
+        # Check AV_CODEC_PROP_FIELDS flag via codec_descriptor.
+        ticks = 1  # default for progressive video
+        if f.codec_context.codec_descriptor != C_NULL
+            ticks = (f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2
+        end
+        fps = tb.den // tb.num // ticks
         if isfinite(fps) && fps > 0
             return fps
         end
