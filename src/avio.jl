@@ -431,14 +431,26 @@ Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
 function framerate(f::VideoReader)
     # Try codec_context time_base first
+    # NOTE: In modern FFmpeg (4+), codec_context.time_base is primarily used for encoding
+    # and is marked as unused (and is often 0/1) for decoding. This path may not be reachable with modern video files.
+    # The fallback paths below using stream.r_frame_rate/avg_frame_rate are more reliable.
+    # See: https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html#ab7bfeb9fa5840aac090e2b0bd0ef7589
     tb = f.codec_context.time_base
     if tb.num != 0
-        fps = tb.den // tb.num // f.codec_context.ticks_per_frame
+        # FFmpeg 8+ deprecated ticks_per_frame in favor of AV_CODEC_PROP_FIELDS for decoding.
+        # See: https://github.com/FFmpeg/FFmpeg/commit/7d1d61cc5f57708434ba720b03234b3dd93a4d1e
+        # For field-based codecs (H.264/MPEG-2), the time_base represents field duration,
+        # so we divide by 2 to get frame rate. Check AV_CODEC_PROP_FIELDS flag via codec_descriptor.
+        ticks = 1  # default for progressive video
+        if f.codec_context.codec_descriptor != C_NULL
+            ticks = (f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2
+        end
+        fps = tb.den // tb.num // ticks
         if isfinite(fps) && fps > 0
             return fps
         end
     end
-    
+
     # Fallback to stream r_frame_rate if codec_context time_base is invalid
     stream = f.avin.format_context.streams[f.stream_index0 + 1]
     rfr = stream.r_frame_rate
@@ -448,7 +460,7 @@ function framerate(f::VideoReader)
             return fps
         end
     end
-    
+
     # Last resort: try avg_frame_rate
     afr = stream.avg_frame_rate
     if afr.den != 0
@@ -457,7 +469,7 @@ function framerate(f::VideoReader)
             return fps
         end
     end
-    
+
     # If all else fails, throw an error
     error("Unable to determine valid framerate from codec_context.time_base, stream.r_frame_rate, or stream.avg_frame_rate")
 end
