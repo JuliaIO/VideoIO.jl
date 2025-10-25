@@ -16,5 +16,6 @@ makedocs(
         "Low Level Functionality"=>"lowlevel.md",
         "Index"=>"functionindex.md",
     ],
+    warnonly = :missing_docs,
 )
 deploydocs(repo = "github.com/JuliaIO/VideoIO.jl.git", push_preview = true)

@@ -4,7 +4,7 @@
         name = testvid.name
         test_frameno = testvid.testframe
         @testset "Reading $(testvid.name)" begin
-            testvid_path = joinpath(@__DIR__, "../videos", name)
+            testvid_path = joinpath(VideoIO.TestVideos.videodir, name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             f = VideoIO.testvideo(testvid_path)
             v = VideoIO.openvideo(f; swscale_options=swscale_options)
@@ -130,7 +130,8 @@
             if occursin("annie_oakley", name)
                 framestack = VideoIO.load(testvid_path)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                if VERSION < v"1.6.3"
+                # TODO: Replace this with a content check as summarysize is not stable across julia versions
+                if VERSION < v"1.6.3" || VERSION > v"1.11.0-0"
                     @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
                 else
                     @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
@@ -138,7 +139,8 @@
                 f = File{DataFormat{:OGG}}(testvid_path)
                 framestack = VideoIO.fileio_load(f)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                if VERSION < v"1.6.3"
+                # TODO: Replace this with a content check as summarysize is not stable across julia versions
+                if VERSION < v"1.6.3" || VERSION > v"1.11.0-0"
                     @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
                 else
                     @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
@@ -157,7 +159,7 @@ end
 @memory_profile
 
 @testset "Reading monochrome videos" begin
-    testvid_path = joinpath(@__DIR__, "../videos", "annie_oakley.ogg")
+    testvid_path = joinpath(VideoIO.TestVideos.videodir, "annie_oakley.ogg")
     # Test that limited range YCbCr values are translated to "full range"
     minp, maxp = VideoIO.openvideo(get_video_extrema, testvid_path, target_format=VideoIO.AV_PIX_FMT_GRAY8)
     @test typeof(minp) == Gray{N0f8}
@@ -188,7 +190,7 @@ end
         end
     end
     @testset "Full load" begin
-        testvid_path = joinpath(@__DIR__, "../videos", "ladybird.mp4")
+        testvid_path = joinpath(VideoIO.TestVideos.videodir, "ladybird.mp4")
         vid = VideoIO.load(testvid_path, target_format=VideoIO.AV_PIX_FMT_GRAY8)
         @test eltype(first(vid)) == Gray{N0f8}
     end
@@ -204,7 +206,7 @@ end
         # TODO: fix me?
         (startswith(name, "ladybird") || startswith(name, "NPS")) && continue
         @testset "Testing $name" begin
-            testvid_path = joinpath(@__DIR__, "../videos", name)
+            testvid_path = joinpath(VideoIO.TestVideos.videodir, name)
             comparison_frame = make_comparison_frame_png(load, testvid_path, test_frameno)
             filename = joinpath(videodir, name)
             VideoIO.openvideo(filename; swscale_options=swscale_options) do v

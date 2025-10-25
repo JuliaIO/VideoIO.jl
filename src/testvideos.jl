@@ -1,13 +1,27 @@
-# Tools for downloading test videos
+"""
+    VideoIO.TestVideos
 
+Tools for downloading test videos
+
+* `VideoIO.TestVideos.available()` prints a list of all available test videos.
+* `VideoIO.testvideo("annie_oakley")` returns an AVInput object for the
+  "annie_oakley" video. The video will be downloaded if it isn't available.
+* `VideoIO.TestVideos.download_all()` downloads all test videos
+* `VideoIO.TestVideos.remove_all()` removes all test videos
+"""
 module TestVideos
 
 using VideoIO: VideoIO
 import Base: show
 import Downloads: download
+using Scratch
 export testvideo
 
-videodir = joinpath(dirname(@__FILE__), "..", "videos")
+videodir = ""
+
+function __init__()
+    global videodir = @get_scratch!("videos")
+end
 
 mutable struct VideoFile{compression}
     name::AbstractString
@@ -105,19 +119,20 @@ const videofiles = Dict(
         1,
         4816,
     ),
-    "Big_Buck_Bunny_360_10s_1MB.mp4" => VideoFile(
-        "Big_Buck_Bunny_360_10s_1MB.mp4",
-        "Big Buck Bunny",
-        "Creative Commons: By Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/deed)",
-        "Credit: Blender Foundation | www.blender.org",
-        "https://peach.blender.org/",
-        "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
-        300,
-        # Can be also 30000/1001
-        30 // 1,
-        2,
-        207376840,
-    ),
+    # # This has started HTTP 526 erroring
+    # "Big_Buck_Bunny_360_10s_1MB.mp4" => VideoFile(
+    #     "Big_Buck_Bunny_360_10s_1MB.mp4",
+    #     "Big Buck Bunny",
+    #     "Creative Commons: By Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/deed)",
+    #     "Credit: Blender Foundation | www.blender.org",
+    #     "https://peach.blender.org/",
+    #     "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
+    #     300,
+    #     2,
+    #     207376840,
+    #     # Can be also 30000/1001
+    #     30 // 1,
+    # ),
 )
 
 """

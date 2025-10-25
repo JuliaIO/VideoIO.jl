@@ -83,6 +83,7 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
 
     flush::Bool
     finished::Bool
+    last_consumed_pts::Int64  # Track PTS of last frame returned to user
 end
 
 """
@@ -121,8 +122,18 @@ function pump(avin::AVInput)
         end
 
         if ret < 0
-            avin.finished = true
-            break
+            if ret == VIO_AVERROR_EOF
+                avin.finished = true
+                break
+            elseif ret == -Libc.EAGAIN
+                # Nothing ready yet - for live streams, this is normal
+                # Return -1 to indicate no frame available right now
+                return -1
+            else
+                # Real error - treat as EOF
+                avin.finished = true
+                break
+            end
         end
         stream_index = avin.packet.stream_index
         if stream_index in avin.listening
@@ -155,10 +166,20 @@ pump(r::StreamContext) = pump(r.avin)
 function pump_until_frame(r, err = false)
     while !frame_is_queued(r)
         idx = pump(r.avin)
-        idx == r.stream_index0 && break
-        if idx == -1
-            err ? throw(EOFError()) : return false
+        if idx == r.stream_index0
+            break
+        elseif idx == -1
+            # av_read_frame returned EAGAIN (nothing ready yet) or EOF
+            if r.avin.finished
+                # Real EOF - no more frames coming
+                err ? throw(EOFError()) : return false
+            else
+                # EAGAIN - nothing ready yet, wait a bit and retry
+                sleep(0.01)  # 10ms as recommended by FFmpeg docs
+                continue
+            end
         end
+        # idx is some other stream index, continue pumping
     end
     return true
 end
@@ -368,6 +389,7 @@ function VideoReader(
         padded_bits_per_pixel,
         false,
         false,
+        AV_NOPTS_VALUE,  # Initialize last_consumed_pts to no timestamp
     )
 
     push!(avin.listening, stream_index0)
@@ -413,8 +435,48 @@ Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 Read the framerate of a VideoReader object.
 """
 function framerate(f::VideoReader)
-    stream = get_stream(f)
-    return stream.time_base.den // stream.time_base.num // f.codec_context.ticks_per_frame
+    # Try codec_context time_base first
+    # NOTE: In modern FFmpeg (4+), codec_context.time_base is primarily used for encoding
+    # and is marked as unused (and is often 0/1) for decoding. This path may not be reachable with modern video files.
+    # The fallback paths below using stream.r_frame_rate/avg_frame_rate are more reliable.
+    # See: https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html#ab7bfeb9fa5840aac090e2b0bd0ef7589
+    tb = f.codec_context.time_base
+    if tb.num != 0
+        # FFmpeg 8+ deprecated ticks_per_frame in favor of AV_CODEC_PROP_FIELDS for decoding.
+        # See: https://github.com/FFmpeg/FFmpeg/commit/7d1d61cc5f57708434ba720b03234b3dd93a4d1e
+        # For field-based codecs (H.264/MPEG-2), the time_base represents field duration,
+        # so we divide by 2 to get frame rate. Check AV_CODEC_PROP_FIELDS flag via codec_descriptor.
+        ticks = 1  # default for progressive video
+        if f.codec_context.codec_descriptor != C_NULL
+            ticks = (f.codec_context.codec_descriptor.props & AV_CODEC_PROP_FIELDS) == 0 ? 1 : 2
+        end
+        fps = tb.den // tb.num // ticks
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+
+    # Fallback to stream r_frame_rate if codec_context time_base is invalid
+    stream = f.avin.format_context.streams[f.stream_index0 + 1]
+    rfr = stream.r_frame_rate
+    if rfr.den != 0
+        fps = rfr.num // rfr.den
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+
+    # Last resort: try avg_frame_rate
+    afr = stream.avg_frame_rate
+    if afr.den != 0
+        fps = afr.num // afr.den
+        if isfinite(fps) && fps > 0
+            return fps
+        end
+    end
+
+    # If all else fails, throw an error
+    error("Unable to determine valid framerate from codec_context.time_base, stream.r_frame_rate, or stream.avg_frame_rate")
 end
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
@@ -530,11 +592,23 @@ function transfer_graph_output!(buf, r::VideoReader)
     return transfer_frame_to_img_buf!(buf, graph_output_frame(r), bytes_per_pixel)
 end
 
+# Helper function to capture PTS of the current frame for position tracking
+function capture_pts!(r::VideoReader, frame)
+    if frame.pts != AV_NOPTS_VALUE
+        r.last_consumed_pts = frame.pts
+    end
+    return r
+end
+
 # Converts a grabbed frame to the correct format (RGB by default)
 function _retrieve!(r::VideoReader, buf)
     fill_graph_input!(r)
     execute_graph!(r)
     transfer_graph_output!(buf, r)
+
+    # Capture the PTS of the frame we're about to return to the user
+    capture_pts!(r, graph_input_frame(r))
+
     remove_graph_input!(r)
     return buf
 end
@@ -548,6 +622,10 @@ end
 
 function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
     fill_graph_input!(r)
+
+    # Capture the PTS of the frame we're about to return to the user
+    capture_pts!(r, graph_input_frame(r))
+
     stash_graph_input!(buf, r, align)
     remove_graph_input!(r)
     return buf
@@ -831,6 +909,7 @@ function reset_file_position_information!(r::VideoReader)
     avcodec_flush_buffers(r.codec_context)
     drop_frames!(r)
     r.flush = false
+    r.last_consumed_pts = AV_NOPTS_VALUE  # Reset position tracking after seek
     return r.finished = false
 end
 
@@ -839,10 +918,10 @@ get_frame_presentation_time(stream, frame) = convert(Rational, stream.time_base)
 function get_frame_period_timebase(r::VideoReader)
     # This is probably not valid for many codecs, frame period in timebase
     # units
-    stream = get_stream(s)
+    stream = get_stream(r)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && return nothing
-    frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
+    frame_rate = convert(Rational, stream.r_frame_rate)
     frame_period_timebase = round(Int64, 1 / (frame_rate * time_base))
     return frame_period_timebase
 end
@@ -865,7 +944,7 @@ function seek_trim(r::VideoReader, seconds::Number)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && error("No time base")
     target_pts = seconds_to_timestamp(seconds, time_base)
-    frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
+    frame_rate = convert(Rational, stream.r_frame_rate)
     frame_period_timebase = round(Int64, 1 / (frame_rate * time_base))
     gotframe = pump_until_frame(r, false)
     # If advancing another frame would still leave us before the target
@@ -1002,19 +1081,15 @@ function close(avin::AVInput)
 end
 
 function position(r::VideoReader)
-    # this field is not indended for public use, should we be using it?
-    last_pts = r.codec_context.pts_correction_last_pts
-    # At the beginning, or just seeked
-    last_pts == AV_NOPTS_VALUE && return nothing
-    # Try to figure out the time of the oldest frame in the queue
+    # Return the timestamp of the last frame returned to the user
+    r.last_consumed_pts == AV_NOPTS_VALUE && return nothing
+
+    # Convert PTS to seconds using stream time_base
     stream = get_stream(r)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && return nothing
-    nqueued = n_queued_frames(r)
-    nqueued == 0 && return last_pts * time_base
-    frame_rate = convert(Rational, av_stream_get_r_frame_rate(stream))
-    last_returned_pts = last_pts - round(Int, nqueued / (frame_rate * time_base))
-    return last_returned_pts * time_base
+
+    return r.last_consumed_pts * time_base
 end
 
 ### Camera Functions
@@ -1024,7 +1099,7 @@ const CAMERA_DEVICES = String[]
 const DEFAULT_CAMERA_DEVICE = Ref{String}()
 const DEFAULT_CAMERA_OPTIONS = AVDict()
 
-function get_camera_devices(ffmpeg, idev, idev_name)
+function get_camera_devices(idev, idev_name)
     camera_devices = String[]
 
     read_vid_devs = false
