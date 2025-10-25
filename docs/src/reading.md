@@ -89,6 +89,11 @@ Total available frame count is available via `counttotalframes(f)`
 VideoIO.counttotalframes
 ```
 
+The video framerate can be read via `framerate(f)`
+```@docs
+VideoIO.framerate
+```
+
 !!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames
 available for reading.
 

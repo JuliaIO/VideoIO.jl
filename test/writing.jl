@@ -25,6 +25,7 @@ end
                     VideoIO.save(
                         tempvidpath,
                         img_stack;
+                        framerate = 24,
                         codec_name = codec_name,
                         encoder_private_options = encoder_private_options,
                         encoder_options = encoder_options,
@@ -36,6 +37,7 @@ end
                     try
                         notempty = !eof(f)
                         @test notempty
+                        @test VideoIO.framerate(f) == 24
                         if notempty
                             img = read(f)
                             test_img = scanline_arg ? parent(img) : img
@@ -184,6 +186,30 @@ end
     end
 end
 
+@testset "Encoding video with integer frame rates" begin
+    n = 100
+    for fr in 20:30
+        target_dur = n / fr
+        @testset "Encoding with frame rate $(fr)" begin
+            imgstack = map(x -> rand(UInt8, 100, 100), 1:n)
+            encoder_options = (color_range = 2, crf = 0, preset = "medium")
+            VideoIO.save(tempvidpath, imgstack, framerate = fr, encoder_options = encoder_options)
+            @test stat(tempvidpath).size > 100
+            measured_dur_str = VideoIO.FFMPEG.exe(
+                `-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $(tempvidpath)`,
+                command = VideoIO.FFMPEG.ffprobe,
+                collect = true,
+            )
+            @test parse(Float64, measured_dur_str[1]) ≈ target_dur rtol = 0.01
+            @testset "Reading framerate" begin
+                f = VideoIO.openvideo(tempvidpath)
+                @test VideoIO.framerate(f) == fr
+                @test get_fps(tempvidpath) == fr # ffprobe sanity check
+            end
+        end
+    end
+end
+
 @testset "Encoding video with rational frame rates" begin
     n = 100
     fr = 59 // 2 # 29.5
@@ -199,6 +225,11 @@ end
             collect = true,
         )
         @test parse(Float64, measured_dur_str[1]) == target_dur
+        @testset "Reading framerate" begin
+            f = VideoIO.openvideo(tempvidpath)
+            @test VideoIO.framerate(f) == fr
+            @test get_fps(tempvidpath) == fr # ffprobe sanity check
+        end
     end
 end
 
@@ -217,5 +248,10 @@ end
             collect = true,
         )
         @test parse(Float64, measured_dur_str[1]) == target_dur
+        @testset "Reading framerate" begin
+            f = VideoIO.openvideo(tempvidpath)
+            @test VideoIO.framerate(f) == fr
+            @test get_fps(tempvidpath) == fr # ffprobe sanity check
+        end
     end
 end

@@ -429,6 +429,11 @@ For some codecs, the time base is closer to the field rate than the frame rate.
 Most notably, H.264 and MPEG-2 specify time_base as half of frame duration if no telecine is used ...
 Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
 =#
+"""
+    framerate(f::VideoReader)
+
+Read the framerate of a VideoReader object.
+"""
 function framerate(f::VideoReader)
     # Try codec_context time_base first
     # NOTE: In modern FFmpeg (4+), codec_context.time_base is primarily used for encoding

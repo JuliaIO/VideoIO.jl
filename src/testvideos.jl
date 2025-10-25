@@ -31,11 +31,10 @@ mutable struct VideoFile{compression}
     source::AbstractString
     download_url::AbstractString
     numframes::Int
+    framerate::Rational
     testframe::Int
     summarysize::Int
 
-    fps::Union{Nothing,Rational}
-
     VideoFile{compression}(
         name::AbstractString,
         description::AbstractString,
@@ -44,24 +43,11 @@ mutable struct VideoFile{compression}
         source::AbstractString,
         download_url::AbstractString,
         numframes::Int,
-        testframe::Int,
-        summarysize::Int,
-        fps::Rational,
-    ) where {compression} =
-        new(name, description, license, credit, source, download_url, numframes, testframe, summarysize, fps)
-
-    VideoFile{compression}(
-        name::AbstractString,
-        description::AbstractString,
-        license::AbstractString,
-        credit::AbstractString,
-        source::AbstractString,
-        download_url::AbstractString,
-        numframes::Int,
+        framerate::Rational,
         testframe::Int,
         summarysize::Int,
     ) where {compression} =
-        new(name, description, license, credit, source, download_url, numframes, testframe, summarysize, nothing)
+        new(name, description, license, credit, source, download_url, numframes, framerate, testframe, summarysize)
 end
 
 show(io::IO, v::VideoFile) = print(
@@ -75,15 +61,13 @@ VideoFile:
    source:       $(v.source)
    download_url: $(v.download_url)
    numframes:    $(v.numframes)
+   framerate:    $(v.framerate)
    summarysize:  $(v.summarysize)
  """,
 )
 
-VideoFile(name, description, license, credit, source, download_url, numframes, testframe, summarysize) =
-    VideoFile{:raw}(name, description, license, credit, source, download_url, numframes, testframe, summarysize)
-
-VideoFile(name, description, license, credit, source, download_url, numframes, testframe, summarysize, fps) =
-    VideoFile{:raw}(name, description, license, credit, source, download_url, numframes, testframe, summarysize, fps)
+VideoFile(name, description, license, credit, source, download_url, numframes, framerate, testframe, summarysize) =
+    VideoFile{:raw}(name, description, license, credit, source, download_url, numframes, framerate, testframe, summarysize)
 
 # Standard test videos
 const videofiles = Dict(
@@ -95,6 +79,7 @@ const videofiles = Dict(
         "https://downloadnatureclip.blogspot.com/p/download-links.html",
         "https://archive.org/download/LadybirdOpeningWingsCCBYNatureClip/Ladybird%20opening%20wings%20CC-BY%20NatureClip.mp4",
         397,
+        30000//1001,
         13,
         3216,
     ),
@@ -106,6 +91,7 @@ const videofiles = Dict(
         "https://commons.wikimedia.org/wiki/File:Annie_Oakley_shooting_glass_balls,_1894.ogg",
         "https://upload.wikimedia.org/wikipedia/commons/8/87/Annie_Oakley_shooting_glass_balls%2C_1894.ogv",
         726,
+        30000//1001,
         2,
         167311096,
     ),
@@ -117,6 +103,7 @@ const videofiles = Dict(
         "https://commons.wikimedia.org/wiki/File:2010-10-10-Lune.ogv",
         "https://upload.wikimedia.org/wikipedia/commons/e/ef/2010-10-10-Lune.ogv",
         1213,
+        25//1,
         1,
         9744,
     ),
@@ -128,6 +115,7 @@ const videofiles = Dict(
         "https://www.eso.org/public/videos/eso1004a/",
         "https://upload.wikimedia.org/wikipedia/commons/1/13/Artist%E2%80%99s_impression_of_the_black_hole_inside_NGC_300_X-1_%28ESO_1004c%29.webm",
         597,
+        25//1,
         1,
         4816,
     ),
