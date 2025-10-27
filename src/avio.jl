@@ -501,7 +501,7 @@ stash_graph_input(r, align = VIO_ALIGN) = stash_graph_input!(Vector{UInt8}(undef
 
 function unpack_stashed_planes!(r::VideoReader, imgbuf)
     frame = graph_input_frame(r)
-    av_make_writable(frame)
+    av_frame_make_writable(frame)
     av_image_fill_arrays(
         frame,
         frame.linesize,
@@ -523,6 +523,7 @@ function decode(r::VideoReader, packet)
         push!(r.frame_queue, stash_graph_input(r))
         remove_graph_input!(r)
     end
+    pret = 0
     if !r.flush
         pret = avcodec_send_packet(r.codec_context, packet)
         check_send_packet_return(pret)
@@ -643,7 +644,7 @@ end
 function retrieve(r::VideoReader{TRANSCODE}) # true=transcode
     pix_fmt = out_frame_format(r)
     if !is_pixel_type_supported(pix_fmt)
-        unsupported_retrieveal_format(pix_fmt)
+        unsupported_retrieval_format(pix_fmt)
     end
     elt = VIO_PIX_FMT_DEF_ELTYPE_LU[pix_fmt]
     width, height = out_frame_size(r)
@@ -1116,14 +1117,20 @@ function get_camera_devices(idev, idev_name)
 
         if read_vid_devs
             m = match(r"""\[.*"(.*)".?""", line)
-            if m != nothing
-                push!(camera_devices, m.captures[1])
+            if m !== nothing
+                cap = m.captures[1]
+                if cap !== nothing
+                    push!(camera_devices, cap)
+                end
             end
 
             # Alternative format (TODO: could be combined with the regex above)
             m = match(r"""\[.*\] \[[0-9]\] (.*)""", line)
-            if m != nothing
-                push!(camera_devices, m.captures[1])
+            if m !== nothing
+                cap = m.captures[1]
+                if cap !== nothing
+                    push!(camera_devices, cap)
+                end
             end
         end
     end
