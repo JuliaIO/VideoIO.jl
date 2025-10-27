@@ -6,6 +6,7 @@ makedocs(
         assets = ["assets/favicon.ico"],
         analytics = "UA-143027902-2",
         canonical = "https://juliaio.github.io/VideoIO.jl/stable/",
+        size_threshold = 2_000_000,  # 2 MB for FFmpeg reference page
     ),
     sitename = "VideoIO.jl",
     pages = Any[
