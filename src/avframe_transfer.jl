@@ -362,4 +362,4 @@ function transfer_img_buf_to_frame!(frame, img::AbstractArray{RGB{N6f10}}, scanl
 end
 
 # Fallback
-transfer_img_buf_to_frame!(frame, img, scanline_major) = _unsuported_append_encode_type()
+transfer_img_buf_to_frame!(frame, img, scanline_major) = _unsupported_append_encode_type()
