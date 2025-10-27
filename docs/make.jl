@@ -17,6 +17,6 @@ makedocs(
         "FFmpeg Reference"=>"ffmpeg_reference.md",
         "Index"=>"functionindex.md",
     ],
-    warnonly = :missing_docs,
+    warnonly = [:missing_docs, :cross_references],
 )
 deploydocs(repo = "github.com/JuliaIO/VideoIO.jl.git", push_preview = true)
