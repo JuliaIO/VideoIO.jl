@@ -14,6 +14,7 @@ makedocs(
         "Writing Videos"=>"writing.md",
         "Utilities"=>"utilities.md",
         "Low Level Functionality"=>"lowlevel.md",
+        "FFmpeg Reference"=>"ffmpeg_reference.md",
         "Index"=>"functionindex.md",
     ],
     warnonly = :missing_docs,
