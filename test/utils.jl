@@ -96,7 +96,7 @@ function test_tone!(
     a::AbstractMatrix{C},
     offset = 0,
     minval = 0,
-    maxval = reinterpet(one(X)),
+    maxval = reinterpret(one(X)),
 ) where {T,X<:Normed{T},C<:RGB{X}}
     modsize = maxval - minval + 1
     @inbounds for i in eachindex(a)
