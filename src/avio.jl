@@ -269,7 +269,7 @@ function AVInput(
             codec_type == AVMEDIA_TYPE_VIDEO ? avin.video_indices :
             codec_type == AVMEDIA_TYPE_AUDIO ? avin.audio_indices :
             codec_type == AVMEDIA_TYPE_DATA ? avin.data_indices :
-            codec_type == AVMEDIA_TYPE_SUBTITLE ? avin.data_indices :
+            codec_type == AVMEDIA_TYPE_SUBTITLE ? avin.subtitle_indices :
             codec_type == AVMEDIA_TYPE_ATTACHMENT ? avin.attachment_indices : avin.unknown_indices
         push!(target_array, i - 1)
         # Set the stream to discard all packets. Individual StreamContexts can
@@ -724,7 +724,7 @@ arguments listed below.
     scaling by `sws_scale`.
   - `allow_vio_gray_transform = true`: Instead of using `sws_scale` for gray data,
     use a more accurate color space transformation implemented in `VideoIO` if
-    `allow_vio_gray_gransform = true`. Otherwise, use `sws_scale`.
+    `allow_vio_gray_transform = true`. Otherwise, use `sws_scale`.
   - `swscale_options::OptionsT = (;)`: A `Namedtuple`, or `Dict{Symbol, Any}` of
     options for the swscale object used to perform color space scaling. Options
     must correspond with options for FFmpeg's
