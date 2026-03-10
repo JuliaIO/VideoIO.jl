@@ -35,7 +35,7 @@ end
 get_time_duration(fc::AVFormatContextPtr) = (get_start_time(fc), get_duration(fc))
 
 """
-    get_time_duration(file::String) -> (DateTime, Microsecond)
+    get_time_duration(file::String) -> (DateTime, Float64)
 
 Return the starting date & time as well as the duration of the video `file`. Note that if the starting date & time are missing, this function will return the Unix epoch (00:00 1st January 1970).
 """
