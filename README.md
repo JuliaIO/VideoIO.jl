@@ -47,21 +47,6 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://juliaio.github.io/VideoIO.jl/stable
 
-[travis-img]: https://travis-ci.org/JuliaIO/VideoIO.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/JuliaIO/VideoIO.jl
-
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/c1nc5aavymq76xun?svg=true
-[appveyor-url]: https://ci.appveyor.com/project/JuliaIO/videoio-jl
-
-[drone-img]: https://cloud.drone.io/api/badges/JuliaIO/VideoIO.jl/status.svg
-[drone-url]: https://cloud.drone.io/JuliaIO/VideoIO.jl
-
-[cirrus-img]: https://api.cirrus-ci.com/github/JuliaIO/VideoIO.jl.svg
-[cirrus-url]: https://cirrus-ci.com/github/JuliaIO/VideoIO.jl
-
-[codecov-img]: https://codecov.io/gh/JuliaIO/VideoIO.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/JuliaIO/VideoIO.jl
-
 [issues-url]: https://github.com/JuliaIO/VideoIO.jl/issues
 
 ____
