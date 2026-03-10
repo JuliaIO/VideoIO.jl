@@ -134,10 +134,16 @@ end
 @avptr AVFormatContextPtr AVFormatContext avformat_alloc_context avformat_close_input
 
 function output_AVFormatContextPtr(fname)
+    if isempty(splitext(fname)[2])
+        throw(ArgumentError(
+            "Filename \"$fname\" has no file extension. " *
+            "A file extension (e.g. .mp4, .avi, .mkv) is required to determine the container format."
+        ))
+    end
     dp = Ref(Ptr{AVFormatContext}())
     ret = avformat_alloc_output_context2(dp, C_NULL, C_NULL, fname)
     if ret != 0 || !check_ptr_valid(dp[], false)
-        error("Could not allocate AVFormatContext")
+        error("Could not allocate AVFormatContext for \"$fname\": $(av_error_string(ret))")
     end
     obj = AVFormatContextPtr(dp)
     finalizer(avformat_free_context, obj)
@@ -181,7 +187,7 @@ end
 
 @inline function set_class_option(ptr::NestedCStruct{T}, key, val, search = AV_OPT_SEARCH_CHILDREN) where {T}
     ret = av_opt_set(ptr, string(key), string(val), search)
-    return ret < 0 && error("Could not set class option $key to $val: got error $ret")
+    return ret < 0 && error("Could not set class option $key to $val: $(av_error_string(ret))")
 end
 
 function set_class_options(ptr, options::OptionsT, args...)

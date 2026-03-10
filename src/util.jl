@@ -2,6 +2,20 @@
 
 const VIO_AVERROR_EOF = -541478725 # AVERROR_EOF
 
+"""
+    av_error_string(errnum::Integer) -> String
+
+Convert an FFmpeg error code to a human-readable error message string.
+"""
+function av_error_string(errnum::Integer)
+    buf = Vector{UInt8}(undef, 256)
+    ret = GC.@preserve buf av_strerror(errnum, pointer(buf), Csize_t(length(buf)))
+    if ret < 0
+        return "Unknown error code $errnum"
+    end
+    return GC.@preserve buf unsafe_string(pointer(buf))
+end
+
 const LOG_LEVEL_STRINGS = [
     "VideoIO.libffmpeg.AV_LOG_QUIET",
     "VideoIO.libffmpeg.AV_LOG_PANIC",

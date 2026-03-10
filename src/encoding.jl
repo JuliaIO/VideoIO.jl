@@ -1,5 +1,9 @@
 export open_video_out, close_video_out!, get_codec_name
 
+# Coerce unsupported element types to supported ones for encoding
+_coerce_encoding_img(img::AbstractMatrix{<:RGBA}) = RGB.(img)
+_coerce_encoding_img(img::AbstractMatrix) = img
+
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
     codec_context::AVCodecContextPtr
@@ -26,7 +30,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
         fret = avcodec_send_frame(writer.codec_context, frame)
     end
     if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
-        error("Error $fret sending a frame for encoding")
+        error("Error sending a frame for encoding: $(av_error_string(fret))")
     end
 
     pret = Cint(0)
@@ -35,7 +39,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
         if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
             break
         elseif pret < 0
-            error("Error $pret during encoding")
+            error("Error during encoding: $(av_error_string(pret))")
         end
         if pkt.duration == 0
             codec_pts_duration = round(
@@ -52,12 +56,12 @@ function encode_mux!(writer::VideoWriter, flush = false)
         pkt.stream_index = writer.stream_index0
         ret = av_interleaved_write_frame(writer.format_context, pkt)
         # No packet_unref, av_interleaved_write_frame now owns packet.
-        ret != 0 && error("Error muxing packet")
+        ret != 0 && error("Error muxing packet: $(av_error_string(ret))")
     end
     if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
         fret = avcodec_send_frame(writer.codec_context, frame)
         if fret < 0 && fret != VIO_AVERROR_EOF
-            error("Error $fret sending a frame for encoding")
+            error("Error sending a frame for encoding: $(av_error_string(fret))")
         end
     end
     return pret
@@ -85,7 +89,7 @@ If `index` is provided, it must start at zero and increment monotonically.
 """
 function write(writer::VideoWriter, img, index::Int)
     isopen(writer) || error("VideoWriter is closed for writing")
-    prepare_video_frame!(writer, img, index)
+    prepare_video_frame!(writer, _coerce_encoding_img(img), index)
     encode_mux!(writer)
     return writer.next_index = index + 1
 end
@@ -336,7 +340,7 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     end
     if ret < 0
         codec_name_str = unsafe_string(codec.name)
-        error("Could not open codec $codec_name_str: Return code $ret " *
+        error("Could not open codec $codec_name_str: $(av_error_string(ret)) " *
               "(width=$(codec_context.width), height=$(codec_context.height), " *
               "pix_fmt=$(codec_context.pix_fmt), colorspace=$(codec_context.colorspace), " *
               "color_range=$(codec_context.color_range))")
@@ -387,8 +391,12 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     return VideoWriter(format_context, codec_context, frame_graph, packet, Int(stream_index0), scanline_major, 0)
 end
 
-VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where {T} =
-    VideoWriter(filename, img_params(img)...; kwargs...)
+VideoWriter(filename, img::AbstractMatrix; kwargs...) =
+    VideoWriter(filename, img_params(_coerce_encoding_img(img))...; kwargs...)
+
+# Allow bare Gray type to be used as shorthand for Gray{N0f8}
+VideoWriter(filename::AbstractString, ::Type{Gray}, sz::NTuple{2,Integer}; kwargs...) =
+    VideoWriter(filename, Gray{N0f8}, sz; kwargs...)
 
 """
     open_video_out(filename, ::Type{T}, sz::NTuple{2, Integer};
@@ -509,7 +517,8 @@ See also: [`open_video_out`](@ref), [`write`](@ref),
 [`close_video_out!`](@ref)
 """
 function save(filename::String, imgstack; kwargs...)
-    open_video_out(filename, first(imgstack); kwargs...) do writer
+    first_img = _coerce_encoding_img(first(imgstack))
+    open_video_out(filename, first_img; kwargs...) do writer
         for img in imgstack
             write(writer, img)
         end

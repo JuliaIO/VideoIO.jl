@@ -216,7 +216,7 @@ function open_avinput(avin::AVInput, io::IO, input_format = C_NULL, options = C_
     # "Open" the input
     ret = avformat_open_input(avin.format_context, C_NULL, input_format, options)
     if ret != 0
-        error("Unable to open input. avformat_open_input error code $(ret)")
+        error("Unable to open input: $(av_error_string(ret))")
     end
 
     return nothing
@@ -224,7 +224,7 @@ end
 
 function open_avinput(avin::AVInput, source::AbstractString, input_format = C_NULL, options = C_NULL)
     ret = avformat_open_input(avin.format_context, source, input_format, options)
-    ret != 0 && error("Could not open $source. avformat_open_input error code $(ret)")
+    ret != 0 && error("Could not open $source: $(av_error_string(ret))")
     return nothing
 end
 
@@ -534,7 +534,7 @@ function decode(r::VideoReader, packet)
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
     elseif fret != -Libc.EAGAIN
-        error("Decoding error $fret")
+        error("Decoding error: $(av_error_string(fret))")
     end
     if !r.finished && !r.flush && pret == -Libc.EAGAIN
         pret2 = avcodec_send_packet(r.codec_context, packet)
@@ -1046,7 +1046,12 @@ function eof(avin::AVInput)
     allfinished = mapreduce(is_finished, &, values(avin.stream_contexts), init = true)
     allfinished && return true
     got_frame = pump(avin) != -1
-    return !got_frame
+    if got_frame
+        return false
+    end
+    # pump returned -1: either EAGAIN (no frame ready yet) or actual EOF.
+    # Only report EOF if the stream actually finished.
+    return avin.finished
 end
 
 eof(r::VideoReader) = eof(r.avin)
