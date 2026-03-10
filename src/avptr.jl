@@ -181,7 +181,7 @@ end
 
 @inline function set_class_option(ptr::NestedCStruct{T}, key, val, search = AV_OPT_SEARCH_CHILDREN) where {T}
     ret = av_opt_set(ptr, string(key), string(val), search)
-    return ret < 0 && error("Could not set class option $key to $val: got error $ret")
+    return ret < 0 && error("Could not set class option $key to $val: $(av_error_string(ret))")
 end
 
 function set_class_options(ptr, options::OptionsT, args...)

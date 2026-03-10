@@ -1,3 +1,7 @@
+@testset "Friendly error messages (#360)" begin
+    @test_throws ErrorException("Could not open nonexistent_file.mp4: No such file or directory") VideoIO.openvideo("nonexistent_file.mp4")
+end
+
 if (Sys.islinux())
     @testset "c api memory leak test" begin
         function get_memory_usage()

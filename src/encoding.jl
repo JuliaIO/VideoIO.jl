@@ -26,7 +26,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
         fret = avcodec_send_frame(writer.codec_context, frame)
     end
     if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
-        error("Error $fret sending a frame for encoding")
+        error("Error sending a frame for encoding: $(av_error_string(fret))")
     end
 
     pret = Cint(0)
@@ -35,7 +35,7 @@ function encode_mux!(writer::VideoWriter, flush = false)
         if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
             break
         elseif pret < 0
-            error("Error $pret during encoding")
+            error("Error during encoding: $(av_error_string(pret))")
         end
         if pkt.duration == 0
             codec_pts_duration = round(
@@ -52,12 +52,12 @@ function encode_mux!(writer::VideoWriter, flush = false)
         pkt.stream_index = writer.stream_index0
         ret = av_interleaved_write_frame(writer.format_context, pkt)
         # No packet_unref, av_interleaved_write_frame now owns packet.
-        ret != 0 && error("Error muxing packet")
+        ret != 0 && error("Error muxing packet: $(av_error_string(ret))")
     end
     if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
         fret = avcodec_send_frame(writer.codec_context, frame)
         if fret < 0 && fret != VIO_AVERROR_EOF
-            error("Error $fret sending a frame for encoding")
+            error("Error sending a frame for encoding: $(av_error_string(fret))")
         end
     end
     return pret
@@ -336,7 +336,7 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     end
     if ret < 0
         codec_name_str = unsafe_string(codec.name)
-        error("Could not open codec $codec_name_str: Return code $ret " *
+        error("Could not open codec $codec_name_str: $(av_error_string(ret)) " *
               "(width=$(codec_context.width), height=$(codec_context.height), " *
               "pix_fmt=$(codec_context.pix_fmt), colorspace=$(codec_context.colorspace), " *
               "color_range=$(codec_context.color_range))")
