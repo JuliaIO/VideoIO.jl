@@ -79,7 +79,7 @@ function get_raw_luma_extrema(elt, vidpath, nw, nh)
     return reinterpret.(extrema(luma_vals))
 end
 
-using ColorTypes: RGB, HSV
+using ColorTypes: RGB
 using FixedPointNumbers: Normed, N6f10
 using Base: ReinterpretArray
 
@@ -88,22 +88,6 @@ function test_tone!(a::AbstractMatrix{X}, offset = 0, minval = 0, maxval = reint
     modsize = maxval - minval + 1
     @inbounds for i in eachindex(a)
         a[i] = reinterpret(X, T(minval + mod(i + offset - 1, modsize)))
-    end
-    return a
-end
-
-function test_tone!(
-    a::AbstractMatrix{C},
-    offset = 0,
-    minval = 0,
-    maxval = reinterpret(one(X)),
-) where {T,X<:Normed{T},C<:RGB{X}}
-    modsize = maxval - minval + 1
-    @inbounds for i in eachindex(a)
-        h = mod(i, 360)
-        v = minval + mod(i + offset - 1, modsize) / maxcodept
-        hsv = HSV(h, 1, v)
-        a[i] = convert(RGB{X}, hsv)
     end
     return a
 end
