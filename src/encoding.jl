@@ -1,5 +1,9 @@
 export open_video_out, close_video_out!, get_codec_name
 
+# Coerce unsupported element types to supported ones for encoding
+_coerce_encoding_img(img::AbstractMatrix{<:RGBA}) = RGB.(img)
+_coerce_encoding_img(img::AbstractMatrix) = img
+
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
     codec_context::AVCodecContextPtr
@@ -85,7 +89,7 @@ If `index` is provided, it must start at zero and increment monotonically.
 """
 function write(writer::VideoWriter, img, index::Int)
     isopen(writer) || error("VideoWriter is closed for writing")
-    prepare_video_frame!(writer, img, index)
+    prepare_video_frame!(writer, _coerce_encoding_img(img), index)
     encode_mux!(writer)
     return writer.next_index = index + 1
 end
@@ -387,8 +391,12 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     return VideoWriter(format_context, codec_context, frame_graph, packet, Int(stream_index0), scanline_major, 0)
 end
 
-VideoWriter(filename, img::AbstractMatrix{T}; kwargs...) where {T} =
-    VideoWriter(filename, img_params(img)...; kwargs...)
+VideoWriter(filename, img::AbstractMatrix; kwargs...) =
+    VideoWriter(filename, img_params(_coerce_encoding_img(img))...; kwargs...)
+
+# Allow bare Gray type to be used as shorthand for Gray{N0f8}
+VideoWriter(filename::AbstractString, ::Type{Gray}, sz::NTuple{2,Integer}; kwargs...) =
+    VideoWriter(filename, Gray{N0f8}, sz; kwargs...)
 
 """
     open_video_out(filename, ::Type{T}, sz::NTuple{2, Integer};
@@ -509,7 +517,8 @@ See also: [`open_video_out`](@ref), [`write`](@ref),
 [`close_video_out!`](@ref)
 """
 function save(filename::String, imgstack; kwargs...)
-    open_video_out(filename, first(imgstack); kwargs...) do writer
+    first_img = _coerce_encoding_img(first(imgstack))
+    open_video_out(filename, first_img; kwargs...) do writer
         for img in imgstack
             write(writer, img)
         end

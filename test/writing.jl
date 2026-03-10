@@ -11,6 +11,32 @@
     end
 end
 
+@testset "Encoding RGBA images (#440)" begin
+    using ColorTypes: RGBA
+    n = 10
+    imgstack = [rand(RGBA{N0f8}, 100, 100) for _ in 1:n]
+    encoder_options = (color_range = 2, crf = 0, preset = "medium")
+    VideoIO.save(tempvidpath, imgstack, framerate = 24, encoder_options = encoder_options)
+    @test stat(tempvidpath).size > 100
+    @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
+end
+
+@testset "Encoding with bare Gray type (#336)" begin
+    n = 10
+    imgstack = [rand(Gray{N0f8}, 100, 100) for _ in 1:n]
+    # Use bare Gray type directly with open_video_out
+    writer = VideoIO.open_video_out(tempvidpath, Gray, (100, 100), framerate = 24)
+    try
+        for img in imgstack
+            write(writer, img)
+        end
+    finally
+        VideoIO.close_video_out!(writer)
+    end
+    @test stat(tempvidpath).size > 100
+    @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
+end
+
 @testset "Simultaneous encoding and muxing" begin
     n = 100
     encoder_options = (color_range = 2,)
