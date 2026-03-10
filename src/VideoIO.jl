@@ -102,6 +102,7 @@ fileio_load(f::File; kwargs...) = load(f.filename; kwargs...)
 fileio_save(f::File, video; kwargs...) = save(f.filename, video; kwargs...)
 
 function __init__()
+    _init_log_levels!()
     loglevel!(libffmpeg.AV_LOG_FATAL)
     # @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `? VideoIO.loglevel!` for options"
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))

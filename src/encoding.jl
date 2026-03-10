@@ -357,7 +357,7 @@ options, or pass the private options to `encoder_private_options` explicitly""",
         ret = @preserve format_context avio_open(pb_ptr, filename, AVIO_FLAG_WRITE)
         ret < 0 && error("Could not open file $filename for writing")
     end
-    avformat_write_header(format_context, C_NULL)
+    ret = avformat_write_header(format_context, C_NULL)
     ret < 0 && error("Could not write header")
 
     use_vio_gray_transform =
