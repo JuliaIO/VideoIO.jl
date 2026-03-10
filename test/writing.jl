@@ -37,6 +37,12 @@ end
     @test VideoIO.openvideo(VideoIO.counttotalframes, tempvidpath) == n
 end
 
+@testset "Missing file extension error (#370)" begin
+    imgstack = [rand(RGB{N0f8}, 100, 100) for _ in 1:3]
+    no_ext = joinpath(tempdir(), "testvideo_noext")
+    @test_throws ArgumentError VideoIO.save(no_ext, imgstack)
+end
+
 @testset "Simultaneous encoding and muxing" begin
     n = 100
     encoder_options = (color_range = 2,)

@@ -134,10 +134,16 @@ end
 @avptr AVFormatContextPtr AVFormatContext avformat_alloc_context avformat_close_input
 
 function output_AVFormatContextPtr(fname)
+    if isempty(splitext(fname)[2])
+        throw(ArgumentError(
+            "Filename \"$fname\" has no file extension. " *
+            "A file extension (e.g. .mp4, .avi, .mkv) is required to determine the container format."
+        ))
+    end
     dp = Ref(Ptr{AVFormatContext}())
     ret = avformat_alloc_output_context2(dp, C_NULL, C_NULL, fname)
     if ret != 0 || !check_ptr_valid(dp[], false)
-        error("Could not allocate AVFormatContext")
+        error("Could not allocate AVFormatContext for \"$fname\": $(av_error_string(ret))")
     end
     obj = AVFormatContextPtr(dp)
     finalizer(avformat_free_context, obj)
