@@ -37,15 +37,15 @@ loglevel!(loglevel::Integer)
 
 Set FFMPEG log level. Options are:
 
-  - `VideoIO.AVUtil.AV_LOG_QUIET`
-  - `VideoIO.AVUtil.AV_LOG_PANIC`
-  - `VideoIO.AVUtil.AV_LOG_FATAL`
-  - `VideoIO.AVUtil.AV_LOG_ERROR`
-  - `VideoIO.AVUtil.AV_LOG_WARNING`
-  - `VideoIO.AVUtil.AV_LOG_INFO`
-  - `VideoIO.AVUtil.AV_LOG_VERBOSE`
-  - `VideoIO.AVUtil.AV_LOG_DEBUG`
-  - `VideoIO.AVUtil.AV_LOG_TRACE`
+  - `VideoIO.libffmpeg.AV_LOG_QUIET`
+  - `VideoIO.libffmpeg.AV_LOG_PANIC`
+  - `VideoIO.libffmpeg.AV_LOG_FATAL`
+  - `VideoIO.libffmpeg.AV_LOG_ERROR`
+  - `VideoIO.libffmpeg.AV_LOG_WARNING`
+  - `VideoIO.libffmpeg.AV_LOG_INFO`
+  - `VideoIO.libffmpeg.AV_LOG_VERBOSE`
+  - `VideoIO.libffmpeg.AV_LOG_DEBUG`
+  - `VideoIO.libffmpeg.AV_LOG_TRACE`
 """
 function loglevel!(level::Integer)
     av_log_set_level(level)
