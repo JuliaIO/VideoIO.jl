@@ -1046,7 +1046,12 @@ function eof(avin::AVInput)
     allfinished = mapreduce(is_finished, &, values(avin.stream_contexts), init = true)
     allfinished && return true
     got_frame = pump(avin) != -1
-    return !got_frame
+    if got_frame
+        return false
+    end
+    # pump returned -1: either EAGAIN (no frame ready yet) or actual EOF.
+    # Only report EOF if the stream actually finished.
+    return avin.finished
 end
 
 eof(r::VideoReader) = eof(r.avin)

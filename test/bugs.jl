@@ -2,6 +2,25 @@
     @test_throws ErrorException("Could not open nonexistent_file.mp4: No such file or directory") VideoIO.openvideo("nonexistent_file.mp4")
 end
 
+@testset "eof correctness for file streams (#320)" begin
+    file = joinpath(videodir, "annie_oakley.ogg")
+    f = VideoIO.openvideo(file)
+    try
+        @test !eof(f)
+        n = 0
+        while !eof(f)
+            read(f)
+            n += 1
+        end
+        @test n > 0
+        @test eof(f)
+    finally
+        close(f)
+    end
+    # eof on closed reader should return true
+    @test eof(f)
+end
+
 if (Sys.islinux())
     @testset "c api memory leak test" begin
         function get_memory_usage()
