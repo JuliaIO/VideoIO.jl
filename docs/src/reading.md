@@ -108,6 +108,49 @@ while !eof(f)
 end
 close(f)
 ```
+
+### Hardware-accelerated decoding
+
+VideoIO can use GPU-based decode pipelines when the underlying FFmpeg build
+supports hardware acceleration.  Passing `hwaccel = :<device>` to `openvideo`
+or `VideoReader` enables this:
+
+```julia
+# macOS (VideoToolbox)
+f = VideoIO.openvideo("video.mp4", hwaccel = :videotoolbox)
+
+# Linux with VA-API (Intel/AMD)
+f = VideoIO.openvideo("video.mp4", hwaccel = :vaapi)
+
+# Linux/Windows with CUDA (NVIDIA)
+f = VideoIO.openvideo("video.mp4", hwaccel = :cuda)
+
+img = read(f)   # RGB{N0f8} — identical interface to software decoding
+close(f)
+```
+
+Decoded frames are automatically downloaded from the hardware surface to CPU
+memory for you, so `read` returns the same element types and dimensions as with
+software decoding.  Hardware decoding therefore requires no changes to
+downstream image-processing code.
+
+To discover which device types the current FFmpeg build supports:
+
+```julia
+VideoIO.available_hw_devices()  # e.g. [:videotoolbox] on macOS
+```
+
+```@docs
+VideoIO.available_hw_devices
+```
+
+**Requirements:**  Hardware decoding requires an FFmpeg build compiled with
+the relevant hardware acceleration library (VideoToolbox, CUDA, VAAPI, etc.).
+The standard `FFMPEG_jll` packages include VideoToolbox support on macOS and
+may include VAAPI/CUDA on Linux depending on the version.  If
+`available_hw_devices()` returns an empty vector, no hardware device types are
+available in the current build.
+
 ## Reading Camera Output
 Frames can be read iteratively
 ```julia

@@ -4,6 +4,28 @@ export open_video_out, close_video_out!, get_codec_name
 _coerce_encoding_img(img::AbstractMatrix{<:RGBA}) = RGB.(img)
 _coerce_encoding_img(img::AbstractMatrix) = img
 
+# Find a hardware encoder for the given codec ID and device type.
+# Returns C_NULL if no matching encoder is found.
+function _vio_find_hw_encoder(codec_id, device_type)
+    opaque = Ref{Ptr{Cvoid}}(C_NULL)
+    while true
+        codec_ptr = av_codec_iterate(opaque)
+        codec_ptr == C_NULL && break
+        av_codec_is_encoder(codec_ptr) == 0 && continue
+        codec = AVCodecPtr(codec_ptr)
+        codec.id != codec_id && continue
+        i = Cint(0)
+        while true
+            cfg_ptr = avcodec_get_hw_config(codec_ptr, i)
+            cfg_ptr == C_NULL && break
+            cfg = unsafe_load(cfg_ptr)
+            cfg.device_type == device_type && return codec_ptr
+            i += Cint(1)
+        end
+    end
+    return Ptr{AVCodec}(C_NULL)
+end
+
 mutable struct VideoWriter{T<:GraphType}
     format_context::AVFormatContextPtr
     codec_context::AVCodecContextPtr
@@ -253,6 +275,7 @@ function VideoWriter(
     allow_vio_gray_transform = true,
     sws_color_options::OptionsT = (;),
     thread_count::Union{Nothing,Int} = nothing,
+    hwaccel::Union{Nothing,Symbol} = nothing,
 ) where {T}
     framerate > 0 || error("Framerate must be strictly positive")
 
@@ -286,8 +309,21 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     end
 
     format_context = output_AVFormatContextPtr(filename)
-    default_codec = codec_name === nothing
-    if default_codec
+    device_type = hwaccel !== nothing ? _vio_parse_hwaccel(hwaccel) : nothing
+    # default_codec: true only for the pure-SW path (no hwaccel, no explicit codec_name).
+    # When hwaccel auto-selects an encoder we skip the avformat_query_codec check
+    # because the HW encoder is chosen for the container's own default codec ID.
+    default_codec = codec_name === nothing && hwaccel === nothing
+    if hwaccel !== nothing && codec_name === nothing
+        # Auto-select a hardware encoder matching the container's default codec ID
+        sw_codec_enum = format_context.oformat.video_codec
+        sw_codec_enum == AV_CODEC_ID_NONE && error("No default codec found")
+        codec_p = _vio_find_hw_encoder(sw_codec_enum, device_type)
+        check_ptr_valid(codec_p, false) || error(
+            "No hardware encoder found for codec $(sw_codec_enum) on device ':$hwaccel'. " *
+            "Available HW encoders: $(available_hw_encoders())",
+        )
+    elseif codec_name === nothing
         codec_enum = format_context.oformat.video_codec
         codec_enum == AV_CODEC_ID_NONE && error("No default codec found")
         codec_p = avcodec_find_encoder(codec_enum)
@@ -330,6 +366,34 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     end
     set_class_options(codec_context, encoder_options)
     set_class_options(codec_context.priv_data, encoder_private_options)
+
+    # Set up hardware acceleration context for encoding
+    if hwaccel !== nothing
+        # Query codec's hw_config for the requested device
+        hw_method = UInt32(0)
+        i = Cint(0)
+        while true
+            cfg_ptr = avcodec_get_hw_config(codec_p, i)
+            cfg_ptr == C_NULL && break
+            cfg = unsafe_load(cfg_ptr)
+            if cfg.device_type == device_type
+                hw_method = cfg.methods
+                break
+            end
+            i += Cint(1)
+        end
+
+        # Only create hw_device_ctx when the codec advertises HW_DEVICE_CTX method
+        # (e.g. NVENC, QSV).  VT encoders accept SW frames directly and don't
+        # require an explicit device context.
+        if (hw_method & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) != 0
+            hw_ctx_ref = Ref{Ptr{AVBufferRef}}(C_NULL)
+            ret_hw = av_hwdevice_ctx_create(hw_ctx_ref, device_type, C_NULL, C_NULL, Cint(0))
+            ret_hw < 0 && error("Failed to create '$hwaccel' HW device context for encoding")
+            codec_context.hw_device_ctx = av_buffer_ref(hw_ctx_ref[])
+            av_buffer_unref(hw_ctx_ref)
+        end
+    end
 
     @debug "Opening codec" codec=unsafe_string(codec.name) codec_context.width codec_context.height codec_context.pix_fmt codec_context.colorspace codec_context.color_range
 
@@ -486,6 +550,14 @@ occurred.
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
   - `thread_count::Union{Nothing, Int} = nothing`: The number of threads the codec is
     allowed to use, or `nothing` for default codec behavior. Defaults to `nothing`.
+  - `hwaccel::Union{Nothing, Symbol} = nothing`: If set to a `Symbol` such as
+    `:videotoolbox` (macOS), `:cuda` (NVIDIA), `:vaapi` (Linux/Intel), or `:qsv`,
+    the corresponding FFmpeg hardware-accelerated encoder is automatically selected.
+    When `codec_name` is also `nothing`, VideoIO picks the best hardware encoder for
+    the container's default codec (e.g. `h264_videotoolbox` for `.mp4` on macOS).
+    You can also combine `hwaccel` with an explicit `codec_name` to use a specific
+    hardware encoder while still having the hardware device context created for you.
+    Use `VideoIO.available_hw_encoders()` to list available hardware encoders.
 
 See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
