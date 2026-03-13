@@ -103,3 +103,50 @@ If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `crf=0` should be s
 
 ### Encoding Performance
 See [`util/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/util/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.
+
+## Hardware-accelerated encoding
+
+On systems with supported hardware (macOS VideoToolbox, NVIDIA NVENC, Intel
+VAAPI/QSV), VideoIO can offload encoding to the GPU or media engine.  Pass
+`hwaccel = :<device>` to `open_video_out` or `save`:
+
+```julia
+# macOS – VideoToolbox
+VideoIO.save("video.mp4", imgstack; framerate = 30, hwaccel = :videotoolbox)
+
+# Linux – VAAPI
+VideoIO.save("video.mp4", imgstack; framerate = 30, hwaccel = :vaapi)
+
+# NVIDIA
+VideoIO.save("video.mp4", imgstack; framerate = 30, hwaccel = :cuda)
+```
+
+When `hwaccel` is set and no `codec_name` is specified, VideoIO automatically
+selects the best hardware encoder for the container's default codec (e.g.
+`h264_videotoolbox` for `.mp4` on macOS).  You can also combine `hwaccel` with an
+explicit `codec_name`:
+
+```julia
+VideoIO.save("video.mp4", imgstack; codec_name = "hevc_videotoolbox", hwaccel = :videotoolbox)
+```
+
+or use `codec_name` alone with a hardware encoder name (no `hwaccel` needed for
+codecs like VideoToolbox that don't require an explicit device context):
+
+```julia
+VideoIO.save("video.mp4", imgstack; codec_name = "h264_videotoolbox")
+```
+
+To list available hardware encoders:
+
+```julia
+VideoIO.available_hw_encoders()  # e.g. ["h264_videotoolbox", "hevc_videotoolbox"]
+```
+
+```@docs
+VideoIO.available_hw_encoders
+```
+
+**Requirements:**  Hardware encoding requires an FFmpeg build that includes the
+relevant hardware backend.  If `available_hw_encoders()` returns an empty vector
+no hardware encoders are available.

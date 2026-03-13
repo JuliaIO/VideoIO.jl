@@ -41,5 +41,7 @@ start_time = time()
 
     include("bugs.jl")
     @memory_profile
+    include("hwaccel.jl")
+    @memory_profile
 end
 #VideoIO.TestVideos.remove_all()
