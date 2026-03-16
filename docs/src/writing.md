@@ -140,7 +140,11 @@ VideoIO.save("video.mp4", imgstack; codec_name = "h264_videotoolbox")
 To list available hardware encoders:
 
 ```julia
+# All hardware encoders in this FFmpeg build
 VideoIO.available_hw_encoders()  # e.g. ["h264_videotoolbox", "hevc_videotoolbox"]
+
+# Check a specific device is usable before encoding
+VideoIO.hwaccel_available(:videotoolbox)  # true on macOS with hardware
 ```
 
 ```@docs
@@ -148,5 +152,6 @@ VideoIO.available_hw_encoders
 ```
 
 **Requirements:**  Hardware encoding requires an FFmpeg build that includes the
-relevant hardware backend.  If `available_hw_encoders()` returns an empty vector
-no hardware encoders are available.
+relevant hardware backend.  Use `VideoIO.hwaccel_available` to confirm the
+device is actually accessible at runtime. If `available_hw_encoders()` returns
+an empty vector no hardware encoders are available.

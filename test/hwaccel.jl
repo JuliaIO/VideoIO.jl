@@ -1,26 +1,35 @@
 @testset "Hardware acceleration" begin
     hw_devs = VideoIO.available_hw_devices()
-    @info "Available HW device types" hw_devs
+    @info "Available HW device types (compile-time)" hw_devs
 
     @testset "available_hw_devices returns a Vector{Symbol}" begin
         @test hw_devs isa Vector{Symbol}
     end
 
-    if isempty(hw_devs)
-        @info "No hardware device types available in this FFmpeg build; skipping hwaccel decode tests"
-    else
+    @testset "hwaccel_available" begin
+        @test VideoIO.hwaccel_available(:not_a_real_device) == false
         for dev in hw_devs
+            @test VideoIO.hwaccel_available(dev) isa Bool
+        end
+    end
+
+    # Filter to devices that are actually functional on this machine
+    working_hw_devs = filter(VideoIO.hwaccel_available, hw_devs)
+    @info "Functional HW device types (runtime)" working_hw_devs
+
+    if isempty(working_hw_devs)
+        @info "No functional hardware devices on this platform; skipping hwaccel decode tests"
+    else
+        for dev in working_hw_devs
             @testset "hwaccel = :$dev decoding" begin
                 frames_in = [rand(RGB{N0f8}, 64, 64) for _ in 1:10]
                 mktempdir() do dir
                     vidpath = joinpath(dir, "hw_test.mp4")
                     VideoIO.save(vidpath, frames_in; framerate = 30)
-
                     frames_out = VideoIO.openvideo(vidpath; hwaccel = dev) do r
                         @test VideoIO.out_frame_eltype(r) == RGB{N0f8}
                         collect(r)
                     end
-
                     @test length(frames_out) == length(frames_in)
                     @test eltype(frames_out[1]) == RGB{N0f8}
                     @test size(frames_out[1]) == size(frames_in[1])
@@ -28,7 +37,6 @@
             end
 
             @testset "hwaccel = :$dev preserves frame content" begin
-                # Build a recognisable frame: top half red, bottom half green
                 h, w = 64, 64
                 frame = zeros(RGB{N0f8}, h, w)
                 frame[1:h÷2, :] .= RGB{N0f8}(1, 0, 0)
@@ -37,20 +45,17 @@
 
                 mktempdir() do dir
                     vidpath = joinpath(dir, "hw_content_test.mp4")
-                    # CRF 0 lossless encoding so we can do a meaningful pixel check
                     VideoIO.save(
                         vidpath, frames_in;
                         framerate = 30,
                         encoder_options = (color_range = 2, crf = 0, preset = "ultrafast"),
                     )
-
                     frames_hw = VideoIO.openvideo(vidpath; hwaccel = dev) do r
                         collect(r)
                     end
                     frames_sw = VideoIO.openvideo(vidpath) do r
                         collect(r)
                     end
-
                     @test length(frames_hw) == length(frames_sw)
                     for (f_hw, f_sw) in zip(frames_hw, frames_sw)
                         diff = mean(abs.(Float32.(channelview(f_hw)) .- Float32.(channelview(f_sw))))
@@ -69,7 +74,7 @@
                         while !eof(r)
                             read!(r, buf)
                         end
-                        @test true  # reached here without error
+                        @test true
                     end
                 end
             end
@@ -101,8 +106,8 @@
         @test hw_encoders isa Vector{String}
     end
 
-    if !isempty(hw_devs) && !isempty(hw_encoders)
-        for dev in hw_devs
+    if !isempty(working_hw_devs) && !isempty(hw_encoders)
+        for dev in working_hw_devs
             @testset "hwaccel = :$dev encoding" begin
                 frames_in = [rand(RGB{N0f8}, 64, 64) for _ in 1:10]
                 mktempdir() do dir
@@ -136,13 +141,8 @@
                         @test_broken false
                         return
                     end
-                    frames_hw = try
-                        VideoIO.openvideo(collect, vidpath; hwaccel = dev)
-                    catch
-                        VideoIO.openvideo(collect, vidpath)
-                    end
+                    frames_hw = VideoIO.openvideo(collect, vidpath; hwaccel = dev)
                     @test length(frames_hw) == length(frames_in)
-                    # Lossy codec, so just check broad structure is preserved
                     for f in frames_hw
                         top_red  = mean(red.(f[1:h÷2, :]))
                         bot_green = mean(green.(f[h÷2+1:end, :]))
@@ -154,7 +154,7 @@
         end
 
         @testset "hwaccel encoding with explicit codec_name" begin
-            dev = first(hw_devs)
+            dev = first(working_hw_devs)
             for enc_name in hw_encoders
                 mktempdir() do dir
                     vidpath = joinpath(dir, "hw_explicit_codec.mp4")
@@ -171,6 +171,6 @@
             end
         end
     else
-        @info "No HW devices or encoders available; skipping hwaccel encoding tests"
+        @info "No functional HW devices or encoders available; skipping hwaccel encoding tests"
     end
 end

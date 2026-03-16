@@ -21,7 +21,8 @@ export read,
     out_bytes_size,
     out_frame_eltype,
     available_hw_devices,
-    available_hw_encoders
+    available_hw_encoders,
+    hwaccel_available
 
 const ReaderBitTypes = Union{UInt8,UInt16}
 const ReaderNormedTypes = Normed{T} where {T<:ReaderBitTypes}
@@ -93,6 +94,32 @@ function available_hw_encoders()
         is_hw && push!(encoders, unsafe_string(codec.name))
     end
     return encoders
+end
+
+"""
+    hwaccel_available(sym::Symbol) -> Bool
+
+Return `true` if the hardware device type `sym` is both supported by the
+current FFmpeg build *and* functional on this machine (i.e. the underlying
+hardware or driver is present and can be opened).
+
+Unlike `available_hw_devices()`, which only reflects compile-time support,
+this function actually attempts to create the device context.
+
+# Example
+```julia
+VideoIO.hwaccel_available(:videotoolbox)  # true on macOS with Apple Silicon/Intel
+VideoIO.hwaccel_available(:vaapi)         # false on systems without GPU hardware
+```
+"""
+function hwaccel_available(sym::Symbol)
+    device_type = av_hwdevice_find_type_by_name(string(sym))
+    device_type == AV_HWDEVICE_TYPE_NONE && return false
+    hw_ctx = Ref{Ptr{AVBufferRef}}(C_NULL)
+    ret = av_hwdevice_ctx_create(hw_ctx, device_type, C_NULL, C_NULL, Cint(0))
+    ret < 0 && return false
+    av_buffer_unref(hw_ctx)
+    return true
 end
 
 function _vio_parse_hwaccel(sym::Symbol)
@@ -399,7 +426,9 @@ function VideoReader(
         device_type = _vio_parse_hwaccel(hwaccel)
         hw_ctx = Ref{Ptr{AVBufferRef}}(C_NULL)
         ret_hw = av_hwdevice_ctx_create(hw_ctx, device_type, C_NULL, C_NULL, Cint(0))
-        ret_hw < 0 && error("Failed to create '$hwaccel' HW device context")
+        ret_hw < 0 && error("Failed to create '$hwaccel' HW device context — " *
+            "hardware may not be present or driver not loaded. " *
+            "Use `VideoIO.hwaccel_available(:$hwaccel)` to check before use.")
         codec_context.hw_device_ctx = av_buffer_ref(hw_ctx[])
         av_buffer_unref(hw_ctx)  # release our ref; codec holds its own
     end

@@ -389,7 +389,9 @@ options, or pass the private options to `encoder_private_options` explicitly""",
         if (hw_method & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) != 0
             hw_ctx_ref = Ref{Ptr{AVBufferRef}}(C_NULL)
             ret_hw = av_hwdevice_ctx_create(hw_ctx_ref, device_type, C_NULL, C_NULL, Cint(0))
-            ret_hw < 0 && error("Failed to create '$hwaccel' HW device context for encoding")
+            ret_hw < 0 && error("Failed to create '$hwaccel' HW device context for encoding — " *
+                "hardware may not be present or driver not loaded. " *
+                "Use `VideoIO.hwaccel_available(:$hwaccel)` to check before use.")
             codec_context.hw_device_ctx = av_buffer_ref(hw_ctx_ref[])
             av_buffer_unref(hw_ctx_ref)
         end
