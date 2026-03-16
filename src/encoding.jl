@@ -182,6 +182,15 @@ function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt, codec,
     return encoding_pix_fmt
 end
 
+# Return true when fmt is a packed-RGB/RGBA family format (AV_PIX_FMT_FLAG_RGB).
+# Hardware encoders that accept SW input typically require YUV, not packed RGB.
+function _vio_is_rgb_pix_fmt(fmt::Cint)
+    desc_ptr = av_pix_fmt_desc_get(fmt)
+    desc_ptr == C_NULL && return false
+    desc = unsafe_load(desc_ptr)
+    return (desc.flags & AV_PIX_FMT_FLAG_RGB) != 0
+end
+
 function create_encoding_frame_graph(
     transfer_pix_fmt,
     encoding_pix_fmt,
@@ -337,6 +346,16 @@ options, or pass the private options to `encoder_private_options` explicitly""",
         error("Codec has no supported pixel formats")
     end
     encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt, codec, pix_fmt_loss_flags)
+    # Hardware encoders (videotoolbox, nvenc, vaapi …) accept SW-format input frames and
+    # perform the RGB→YUV conversion internally, but they do NOT accept packed-RGB formats
+    # (e.g. BGRA) even though those formats may appear in the codec's pix_fmts list.
+    # avcodec_find_best_pix_fmt_of_list prefers BGRA over NV12 for RGB24 input because
+    # BGRA has zero chroma subsampling loss.  When hwaccel is in use and the chosen format
+    # is an RGB family format, re-select using NV12 as the source to obtain a YUV target.
+    if hwaccel !== nothing && target_pix_fmt === nothing && _vio_is_rgb_pix_fmt(encoding_pix_fmt)
+        yuv_fmt, _ = @preserve codec _vio_determine_best_pix_fmt(AV_PIX_FMT_NV12, codec.pix_fmts)
+        yuv_fmt != AV_PIX_FMT_NONE && (encoding_pix_fmt = yuv_fmt)
+    end
     if !default_codec
         ret = avformat_query_codec(format_context.oformat, codec.id, libffmpeg.FF_COMPLIANCE_NORMAL)
         ret == 1 || error("Format not compatible with codec $codec_name")

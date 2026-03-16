@@ -85,10 +85,15 @@ function available_hw_encoders()
             # Also detect codecs with hw_config entries (e.g. h264_videotoolbox
             # lacks AV_CODEC_CAP_HARDWARE but has hw_config). Require a real
             # device_type to exclude SW codecs that also have hw_config entries.
-            cfg_ptr = avcodec_get_hw_config(codec_ptr, Cint(0))
-            if cfg_ptr != C_NULL
+            # Iterate all config indices (not just 0) to avoid missing encoders
+            # whose primary hw config is not at index 0.
+            i = Cint(0)
+            while !is_hw
+                cfg_ptr = avcodec_get_hw_config(codec_ptr, i)
+                cfg_ptr == C_NULL && break
                 cfg = unsafe_load(cfg_ptr)
                 is_hw = cfg.device_type != AV_HWDEVICE_TYPE_NONE
+                i += Cint(1)
             end
         end
         is_hw && push!(encoders, unsafe_string(codec.name))
@@ -512,6 +517,10 @@ function VideoReader(
             swscale_options,
         )
         set_basic_frame_properties!(frame_graph.dstframe, width, height, dst_pix_fmt)
+        # Store destination colorspace details on the frame so _vio_rebuild_sws_for_hw!
+        # can recover them without falling back to format-derived defaults.
+        frame_graph.dstframe.color_range = colorspace_details.color_range
+        frame_graph.dstframe.color_primaries = colorspace_details.color_primaries
     end
 
     vr = VideoReader{transcode,typeof(frame_graph),I}(
@@ -684,11 +693,18 @@ function decode(r::VideoReader, packet)
                 # The frame is already CPU-accessible; use it directly.
                 av_frame_move_ref(graph_input_frame(r), r.hw_recv_frame)
             end
-            # Lazily fix the SwsTransform if the actual sw_format differs from our
-            # initial guess (e.g. VT returns YUVJ420P instead of NV12 for full-range).
+            # Lazily fix the SwsTransform / input_pix_fmt if the actual sw_format
+            # differs from our initial guess (e.g. VT returns YUVJ420P not NV12).
             actual_sw_fmt = Cint(graph_input_frame(r).format)
-            if r.frame_graph isa SwsTransform && actual_sw_fmt != r.input_pix_fmt
-                _vio_rebuild_sws_for_hw!(r, actual_sw_fmt)
+            if actual_sw_fmt != r.input_pix_fmt
+                if r.frame_graph isa SwsTransform
+                    _vio_rebuild_sws_for_hw!(r, actual_sw_fmt)
+                else
+                    # No SwsTransform to update; just track the real format so that
+                    # raw_pixel_format(), stash_graph_input!, and unpack_stashed_planes!
+                    # all use the correct format (affects transcode=false paths).
+                    r.input_pix_fmt = actual_sw_fmt
+                end
             end
         end
         r.graph_input_occupied = true
@@ -711,11 +727,9 @@ graph_output_frame(r::VideoReader) = graph_output_frame(r.frame_graph)
 # format it was originally configured for (determined lazily on first HW frame).
 function _vio_rebuild_sws_for_hw!(r::VideoReader, actual_sw_fmt::Cint)
     fg = r.frame_graph
-    dst_pix_fmt    = Cint(fg.dstframe.format)
-    dst_color_range = fg.dstframe.color_range
-    dst_primaries  = get(
-        VIO_DEFAULT_TRANSFER_COLORSPACE_DETAILS, dst_pix_fmt, VIO_DEFAULT_COLORSPACE_DETAILS,
-    ).color_primaries
+    dst_pix_fmt     = Cint(fg.dstframe.format)
+    dst_color_range  = fg.dstframe.color_range   # set at VideoReader construction
+    dst_primaries    = fg.dstframe.color_primaries # set at VideoReader construction
     new_sws = SwsTransform(
         r.codec_context.width, r.codec_context.height, actual_sw_fmt,
         r.codec_context.color_primaries, r.codec_context.color_range,
@@ -814,6 +828,7 @@ function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
 end
 
 function retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
+    fill_graph_input!(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
     if !raw_buff_check(buf, r, align)
         throw(ArgumentError("Buffer is the wrong size or stride"))
     end
@@ -837,8 +852,9 @@ end
 retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidRawBuff, args...) = retrieve_raw!(r, buf, args...)
 
 function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
-    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))
-    retrieve_raw!(r, imgbuf, align)
+    fill_graph_input!(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
+    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))  # sized for the real format
+    _retrieve_raw!(r, imgbuf, align)
     return imgbuf, align
 end
 

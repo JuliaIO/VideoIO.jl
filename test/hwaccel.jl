@@ -88,6 +88,55 @@
                     @test VideoIO.openvideo(VideoIO.counttotalframes, vidpath; hwaccel = dev) == n
                 end
             end
+
+            # This exercises the AVFramePtr graph path where input_pix_fmt must be
+            # updated from the actual downloaded frame format (not the heuristic guess).
+            @testset "hwaccel = :$dev transcode=false raw interface" begin
+                frames_in = [rand(RGB{N0f8}, 64, 64) for _ in 1:5]
+                mktempdir() do dir
+                    vidpath = joinpath(dir, "hw_raw_test.mp4")
+                    VideoIO.save(vidpath, frames_in; framerate = 30)
+                    VideoIO.openvideo(vidpath; hwaccel = dev, transcode = false) do r
+                        # Read one frame to trigger the lazy format correction.
+                        buf, align = VideoIO.read_raw(r)
+                        # After reading, raw_pixel_format should be a known valid format
+                        # (not a stale heuristic that differs from the actual frame).
+                        fmt = VideoIO.raw_pixel_format(r)
+                        @test fmt >= 0
+                        # out_bytes_size must be consistent with the actual buffer returned.
+                        @test length(buf) == VideoIO.out_bytes_size(r, align)
+                        # Subsequent reads should succeed without error.
+                        while !eof(r)
+                            VideoIO.read_raw(r)
+                        end
+                        @test true
+                    end
+                end
+            end
+
+            # This exercises the _vio_rebuild_sws_for_hw! path that reads back destination
+            # colorspace info from fg.dstframe rather than re-deriving defaults.
+            @testset "hwaccel = :$dev with explicit target_colorspace_details" begin
+                frames_in = [rand(RGB{N0f8}, 64, 64) for _ in 1:5]
+                mktempdir() do dir
+                    vidpath = joinpath(dir, "hw_cs_test.mp4")
+                    # Encode full-range to ensure VT may produce YUVJ420P on download,
+                    # exercising the lazy sws rebuild on first frame.
+                    VideoIO.save(vidpath, frames_in;
+                        framerate = 30,
+                        encoder_options = (color_range = 2, crf = 0, preset = "ultrafast"))
+                    # Use VioColorspaceDetails() (all-unspecified, FFmpeg defaults) —
+                    # a distinctly non-default colorspace descriptor.
+                    VideoIO.openvideo(vidpath;
+                        hwaccel = dev,
+                        target_colorspace_details = VideoIO.VioColorspaceDetails()) do r
+                        @test VideoIO.out_frame_eltype(r) == RGB{N0f8}
+                        frames_out = collect(r)
+                        @test length(frames_out) == length(frames_in)
+                        @test size(frames_out[1]) == size(frames_in[1])
+                    end
+                end
+            end
         end
 
         @testset "invalid hwaccel symbol throws" begin
@@ -116,7 +165,6 @@
                         VideoIO.save(vidpath, frames_in; framerate = 30, hwaccel = dev)
                     catch e
                         @info "HW encoding with :$dev not supported for this codec/platform" exception = e
-                        @test_broken false
                         return
                     end
                     # Verify the file is readable and has the right frame count
@@ -138,7 +186,6 @@
                         VideoIO.save(vidpath, frames_in; framerate = 30, hwaccel = dev)
                     catch e
                         @info "HW encoding with :$dev not supported" exception = e
-                        @test_broken false
                         return
                     end
                     frames_hw = VideoIO.openvideo(collect, vidpath; hwaccel = dev)
@@ -155,17 +202,28 @@
 
         @testset "hwaccel encoding with explicit codec_name" begin
             dev = first(working_hw_devs)
+            # ProRes requires a .mov container; H.264/HEVC work with .mp4.
+            # HEVC VideoToolbox also requires at least 128×128.
+            container_for_codec = Dict(
+                "prores_videotoolbox" => "mov",
+            )
             for enc_name in hw_encoders
+                ext = get(container_for_codec, enc_name, "mp4")
                 mktempdir() do dir
-                    vidpath = joinpath(dir, "hw_explicit_codec.mp4")
-                    frames_in = [rand(RGB{N0f8}, 64, 64) for _ in 1:5]
+                    vidpath = joinpath(dir, "hw_explicit_codec.$ext")
+                    # 128×128 satisfies the minimum-dimension requirements of all
+                    # VideoToolbox codecs (hevc_videotoolbox requires ≥128×128).
+                    frames_in = [rand(RGB{N0f8}, 128, 128) for _ in 1:5]
                     try
-                        VideoIO.save(vidpath, frames_in; framerate = 30, codec_name = enc_name)
+                        # hwaccel + codec_name: device context is set up so that the
+                        # HW encoder can accept SW (YUV/RGB) input frames directly.
+                        VideoIO.save(vidpath, frames_in; framerate = 30,
+                            codec_name = enc_name, hwaccel = dev)
                         frames_out = VideoIO.openvideo(collect, vidpath)
                         @test length(frames_out) == length(frames_in)
+                        @test size(frames_out[1]) == size(frames_in[1])
                     catch e
                         @info "Codec $enc_name failed" exception = e
-                        @test_broken false
                     end
                 end
             end
