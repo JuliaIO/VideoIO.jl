@@ -671,7 +671,7 @@ function decode(r::VideoReader, packet)
     fret = avcodec_receive_frame(r.codec_context, recv_frame)
     if fret == 0
         if check_ptr_valid(r.hw_recv_frame, false)
-            if check_ptr_valid(r.hw_recv_frame[].hw_frames_ctx, false)
+            if check_ptr_valid(r.hw_recv_frame.hw_frames_ctx, false)
                 # True hardware frame — download from GPU surface to CPU memory.
                 # Leave dst->format at AV_PIX_FMT_NONE (-1) so av_hwframe_transfer_data
                 # auto-selects the sw_format from hw_frames_ctx (FFmpeg ≥7.0 behaviour).
