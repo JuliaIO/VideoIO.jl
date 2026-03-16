@@ -130,21 +130,10 @@
             if occursin("annie_oakley", name)
                 framestack = VideoIO.load(testvid_path)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                # TODO: Replace this with a content check as summarysize is not stable across julia versions
-                if VERSION < v"1.6.3" || VERSION > v"1.11.0-0"
-                    @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
-                else
-                    @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
-                end
+                # summarysize is not stable across Julia versions, so only test frame count
                 f = File{DataFormat{:OGG}}(testvid_path)
                 framestack = VideoIO.fileio_load(f)
                 @test length(framestack) == VideoIO.TestVideos.videofiles[name].numframes
-                # TODO: Replace this with a content check as summarysize is not stable across julia versions
-                if VERSION < v"1.6.3" || VERSION > v"1.11.0-0"
-                    @test_broken Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
-                else
-                    @test Base.summarysize(framestack) == VideoIO.TestVideos.videofiles[name].summarysize
-                end
                 path, io = mktemp()
                 f = File{DataFormat{:MP4}}(path * ".mp4")
                 VideoIO.fileio_save(f, framestack)
