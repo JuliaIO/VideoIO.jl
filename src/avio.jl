@@ -671,13 +671,19 @@ function decode(r::VideoReader, packet)
     fret = avcodec_receive_frame(r.codec_context, recv_frame)
     if fret == 0
         if check_ptr_valid(r.hw_recv_frame, false)
-            # Do NOT pre-set dst->format: av_hwframe_transfer_data only auto-selects
-            # sw_format from hw_frames_ctx when dst->format == AV_PIX_FMT_NONE (-1).
-            # Pre-setting a format blocks that and causes AVERROR_UNKNOWN if the
-            # CVPixelBuffer layout (e.g. YUVJ420P) doesn't match the pre-set (NV12).
-            ret = av_hwframe_transfer_data(graph_input_frame(r), r.hw_recv_frame, Cint(0))
-            av_frame_unref(r.hw_recv_frame)
-            ret < 0 && error("Could not transfer HW frame to CPU: $(av_error_string(ret)) [code $ret]")
+            if check_ptr_valid(r.hw_recv_frame[].hw_frames_ctx, false)
+                # True hardware frame — download from GPU surface to CPU memory.
+                # Leave dst->format at AV_PIX_FMT_NONE (-1) so av_hwframe_transfer_data
+                # auto-selects the sw_format from hw_frames_ctx (FFmpeg ≥7.0 behaviour).
+                ret = av_hwframe_transfer_data(graph_input_frame(r), r.hw_recv_frame, Cint(0))
+                av_frame_unref(r.hw_recv_frame)
+                ret < 0 && error("Could not transfer HW frame to CPU: $(av_error_string(ret)) [code $ret]")
+            else
+                # hw_frames_ctx is not set — HW decoder fell back to software for this
+                # frame (e.g. VideoToolbox on very small or unsupported content).
+                # The frame is already CPU-accessible; use it directly.
+                av_frame_move_ref(graph_input_frame(r), r.hw_recv_frame)
+            end
             # Lazily fix the SwsTransform if the actual sw_format differs from our
             # initial guess (e.g. VT returns YUVJ420P instead of NV12 for full-range).
             actual_sw_fmt = Cint(graph_input_frame(r).format)
