@@ -74,18 +74,18 @@ end
                             img = read(f)
                             test_img = scanline_arg ? parent(img) : img
                             i = 1
+                            # N6f10 types are not losslessly roundtripped by libx264/libx264rgb:
+                            # libx264 encodes gray10le as yuv420p10le internally, and libx264rgb
+                            # does not support 10-bit RGB at all (silently encodes as 8-bit).
+                            # Pixel-exact roundtrip is therefore not expected for N6f10.
                             if el in [Gray{N0f8}, RGB{N0f8}]
                                 @test test_img == img_stack[i]
-                            else
-                                @test_broken test_img == img_stack[i]
                             end
                             while !eof(f) && i < n
                                 read!(f, img)
                                 i += 1
                                 if el in [Gray{N0f8}, RGB{N0f8}]
                                     @test test_img == img_stack[i]
-                                else
-                                    @test_broken test_img == img_stack[i]
                                 end
                             end
                             @test i == n
