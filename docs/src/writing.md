@@ -69,10 +69,12 @@ VideoIO.close_video_out!
 ```
 
 ## Supported Colortypes
-Encoding of the following image element color types currently supported:
+Encoding of the following image element color types is currently supported:
 - `UInt8`
 - `Gray{N0f8}`
+- `Gray{N6f10}`
 - `RGB{N0f8}`
+- `RGB{N6f10}`
 
 ## Encoder Options
 
@@ -100,6 +102,12 @@ If lossless encoding of `RGB{N0f8}` is required, _true_ lossless requires passin
 ### Lossless Grayscale
 If lossless encoding of `Gray{N0f8}` or `UInt8` is required, `crf=0` should be set, as well as `color_range=2` to ensure full 8-bit pixel color representation. i.e.
 ```(color_range=2, crf=0, preset="medium")```
+
+### 10-bit Limitations
+Pixel-exact round-trip encoding is **not** guaranteed for 10-bit types (`Gray{N6f10}` and `RGB{N6f10}`):
+
+- **`Gray{N6f10}`**: libx264 stores the data as `yuv420p10le` internally. On decode, the Y-plane values are converted back via a YUV→gray sws transform, which introduces small rounding errors (~1–10 counts out of 1023). The video is still perceptually lossless, but bitwise identical frames cannot be guaranteed.
+- **`RGB{N6f10}`**: libx264rgb does not support 10-bit RGB. Frames are silently downsampled to 8-bit (`bgr24`) during encoding, making this inherently lossy. For 10-bit RGB, consider a codec that natively supports it (e.g. `ffv1`).
 
 ### Encoding Performance
 See [`util/lossless_video_encoding_testing.jl`](https://github.com/JuliaIO/VideoIO.jl/blob/master/util/lossless_video_encoding_testing.jl) for testing of losslessness, speed, and compression as a function of h264 encoding preset, for 3 example videos.
