@@ -19,7 +19,10 @@ export read,
     out_frame_size,
     raw_pixel_format,
     out_bytes_size,
-    out_frame_eltype
+    out_frame_eltype,
+    available_hw_devices,
+    available_hw_encoders,
+    hwaccel_available
 
 const ReaderBitTypes = Union{UInt8,UInt16}
 const ReaderNormedTypes = Normed{T} where {T<:ReaderBitTypes}
@@ -32,6 +35,105 @@ const VidArray{T,N} = Union{StridedArray{T,N},PermutedArray{T,N}}
 const VidRawBuff = StridedArray{UInt8}
 
 const VIO_ALIGN = 32
+
+"""
+    available_hw_devices() -> Vector{Symbol}
+
+Return a list of hardware device type names (as `Symbol`s) supported by the
+current FFmpeg build. Each element is a valid value for the `hwaccel` keyword
+argument of `openvideo`.
+
+# Example
+```julia
+VideoIO.available_hw_devices()  # e.g. [:videotoolbox] on macOS
+```
+"""
+function available_hw_devices()
+    types = Symbol[]
+    t = AV_HWDEVICE_TYPE_NONE
+    while true
+        t = av_hwdevice_iterate_types(t)
+        t == AV_HWDEVICE_TYPE_NONE && break
+        name_ptr = av_hwdevice_get_type_name(t)
+        name_ptr != C_NULL && push!(types, Symbol(unsafe_string(name_ptr)))
+    end
+    return types
+end
+
+"""
+    available_hw_encoders() -> Vector{String}
+
+Return a list of hardware-accelerated video encoder names (as `String`s)
+available in the current FFmpeg build.
+
+# Example
+```julia
+VideoIO.available_hw_encoders()  # e.g. ["h264_videotoolbox", "hevc_videotoolbox"] on macOS
+```
+"""
+function available_hw_encoders()
+    encoders = String[]
+    opaque = Ref{Ptr{Cvoid}}(C_NULL)
+    while true
+        codec_ptr = av_codec_iterate(opaque)
+        codec_ptr == C_NULL && break
+        av_codec_is_encoder(codec_ptr) == 0 && continue
+        codec = AVCodecPtr(codec_ptr)
+        codec.type != AVMEDIA_TYPE_VIDEO && continue
+        is_hw = (codec.capabilities & AV_CODEC_CAP_HARDWARE) != 0
+        if !is_hw
+            # Also detect codecs with hw_config entries (e.g. h264_videotoolbox
+            # lacks AV_CODEC_CAP_HARDWARE but has hw_config). Require a real
+            # device_type to exclude SW codecs that also have hw_config entries.
+            # Iterate all config indices (not just 0) to avoid missing encoders
+            # whose primary hw config is not at index 0.
+            i = Cint(0)
+            while !is_hw
+                cfg_ptr = avcodec_get_hw_config(codec_ptr, i)
+                cfg_ptr == C_NULL && break
+                cfg = unsafe_load(cfg_ptr)
+                is_hw = cfg.device_type != AV_HWDEVICE_TYPE_NONE
+                i += Cint(1)
+            end
+        end
+        is_hw && push!(encoders, unsafe_string(codec.name))
+    end
+    return encoders
+end
+
+"""
+    hwaccel_available(sym::Symbol) -> Bool
+
+Return `true` if the hardware device type `sym` is both supported by the
+current FFmpeg build *and* functional on this machine (i.e. the underlying
+hardware or driver is present and can be opened).
+
+Unlike `available_hw_devices()`, which only reflects compile-time support,
+this function actually attempts to create the device context.
+
+# Example
+```julia
+VideoIO.hwaccel_available(:videotoolbox)  # true on macOS with Apple Silicon/Intel
+VideoIO.hwaccel_available(:vaapi)         # false on systems without GPU hardware
+```
+"""
+function hwaccel_available(sym::Symbol)
+    device_type = av_hwdevice_find_type_by_name(string(sym))
+    device_type == AV_HWDEVICE_TYPE_NONE && return false
+    hw_ctx = Ref{Ptr{AVBufferRef}}(C_NULL)
+    ret = av_hwdevice_ctx_create(hw_ctx, device_type, C_NULL, C_NULL, Cint(0))
+    ret < 0 && return false
+    av_buffer_unref(hw_ctx)
+    return true
+end
+
+function _vio_parse_hwaccel(sym::Symbol)
+    device_type = av_hwdevice_find_type_by_name(string(sym))
+    device_type == AV_HWDEVICE_TYPE_NONE &&
+        error("Hardware device type ':$(sym)' not found or not supported by this FFmpeg build. " *
+              "Available types: $(available_hw_devices())")
+    return device_type
+end
 
 abstract type StreamContext end
 
@@ -84,6 +186,10 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     flush::Bool
     finished::Bool
     last_consumed_pts::Int64  # Track PTS of last frame returned to user
+    input_pix_fmt::Cint       # Effective sw pixel format feeding the frame graph
+    hw_recv_frame::AVFramePtr # AVFramePtr(C_NULL) for SW; allocated frame for HW
+    _swscale_options::OptionsT    # Saved for HW format rebuild
+    _sws_color_options::OptionsT  # Saved for HW format rebuild
 end
 
 """
@@ -293,6 +399,7 @@ function VideoReader(
     swscale_options::OptionsT = (;),
     sws_color_options::OptionsT = (;),
     thread_count::Union{Nothing,Int} = Sys.CPU_THREADS,
+    hwaccel::Union{Nothing,Symbol} = nothing,
 ) where {I}
     bad_px_type = transcode && target_format !== nothing && !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -316,6 +423,20 @@ function VideoReader(
     ret = avcodec_parameters_to_context(codec_context, stream.codecpar)
     ret < 0 && error("Could not copy the codec parameters to the decoder")
     codec_context.pix_fmt < 0 && error("Unknown pixel format")
+    stream_pix_fmt = codec_context.pix_fmt  # snapshot before hwaccel may change it
+
+    # Set up hardware acceleration if requested
+    device_type = AV_HWDEVICE_TYPE_NONE
+    if hwaccel !== nothing
+        device_type = _vio_parse_hwaccel(hwaccel)
+        hw_ctx = Ref{Ptr{AVBufferRef}}(C_NULL)
+        ret_hw = av_hwdevice_ctx_create(hw_ctx, device_type, C_NULL, C_NULL, Cint(0))
+        ret_hw < 0 && error("Failed to create '$hwaccel' HW device context — " *
+            "hardware may not be present or driver not loaded. " *
+            "Use `VideoIO.hwaccel_available(:$hwaccel)` to check before use.")
+        codec_context.hw_device_ctx = av_buffer_ref(hw_ctx[])
+        av_buffer_unref(hw_ctx)  # release our ref; codec holds its own
+    end
 
     # Open the decoder
     ret = disable_sigint() do
@@ -325,8 +446,27 @@ function VideoReader(
     end
     ret < 0 && error("Could not open codec")
 
+    # Determine the effective software pixel format that will feed the frame graph.
+    # With hwaccel the codec may update pix_fmt to the HW format; sw_pix_fmt holds
+    # the software format that frames will be in after av_hwframe_transfer_data.
+    # When sw_pix_fmt is not yet set (NONE), use a device-specific known native format:
+    # VideoToolbox always downloads to NV12 (semi-planar YUV) for 8-bit content.
+    input_pix_fmt = if device_type != AV_HWDEVICE_TYPE_NONE
+        sw_fmt = codec_context.sw_pix_fmt
+        if sw_fmt != AV_PIX_FMT_NONE
+            sw_fmt
+        elseif device_type == AV_HWDEVICE_TYPE_VIDEOTOOLBOX
+            AV_PIX_FMT_NV12
+        else
+            stream_pix_fmt
+        end
+    else
+        stream_pix_fmt
+    end
+    hw_recv_frame = device_type != AV_HWDEVICE_TYPE_NONE ? AVFramePtr() : AVFramePtr(C_NULL)
+
     if target_format === nothing # automatically determine format
-        dst_pix_fmt, pix_fmt_loss = _vio_determine_best_pix_fmt(codec_context.pix_fmt; loss_flags = pix_fmt_loss_flags)
+        dst_pix_fmt, pix_fmt_loss = _vio_determine_best_pix_fmt(input_pix_fmt; loss_flags = pix_fmt_loss_flags)
     else
         dst_pix_fmt = target_format
     end
@@ -342,14 +482,14 @@ function VideoReader(
 
     use_vio_gray_transform =
         transcode &&
-        codec_context.pix_fmt == dst_pix_fmt &&
+        input_pix_fmt == dst_pix_fmt &&
         allow_vio_gray_transform &&
         dst_pix_fmt in VIO_GRAY_SCALE_TYPES &&
         colorspace_details.color_range != codec_context.color_range
 
     @debug "use_vio_gray_transform" use_vio_gray_transform
     @debug "transcode" transcode
-    @debug "pixel format" codec_context.pix_fmt dst_pix_fmt (codec_context.pix_fmt == dst_pix_fmt)
+    @debug "pixel format" input_pix_fmt dst_pix_fmt (input_pix_fmt == dst_pix_fmt)
     @debug "allow transform" allow_vio_gray_transform
     @debug "allowed pix format" (dst_pix_fmt in VIO_GRAY_SCALE_TYPES)
     @debug "color_range" colorspace_details.color_range codec_context.color_range (
@@ -361,13 +501,13 @@ function VideoReader(
         set_basic_frame_properties!(frame_graph.dstframe, width, height, dst_pix_fmt)
         frame_graph.src_depth = frame_graph.dst_depth = bit_depth
         frame_graph.dstframe.color_range = colorspace_details.color_range
-    elseif !transcode || codec_context.pix_fmt == dst_pix_fmt
+    elseif !transcode || input_pix_fmt == dst_pix_fmt
         frame_graph = AVFramePtr()
     else
         frame_graph = SwsTransform(
             width,
             height,
-            codec_context.pix_fmt,
+            input_pix_fmt,
             codec_context.color_primaries,
             codec_context.color_range,
             dst_pix_fmt,
@@ -377,6 +517,10 @@ function VideoReader(
             swscale_options,
         )
         set_basic_frame_properties!(frame_graph.dstframe, width, height, dst_pix_fmt)
+        # Store destination colorspace details on the frame so _vio_rebuild_sws_for_hw!
+        # can recover them without falling back to format-derived defaults.
+        frame_graph.dstframe.color_range = colorspace_details.color_range
+        frame_graph.dstframe.color_primaries = colorspace_details.color_primaries
     end
 
     vr = VideoReader{transcode,typeof(frame_graph),I}(
@@ -390,6 +534,10 @@ function VideoReader(
         false,
         false,
         AV_NOPTS_VALUE,  # Initialize last_consumed_pts to no timestamp
+        input_pix_fmt,
+        hw_recv_frame,
+        swscale_options,
+        sws_color_options,
     )
 
     push!(avin.listening, stream_index0)
@@ -489,7 +637,7 @@ function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)
         length(imgbuf),
         Ref(frame.data),
         Ref(frame.linesize),
-        r.codec_context.pix_fmt,
+        r.input_pix_fmt,
         r.codec_context.width,
         r.codec_context.height,
         align,
@@ -506,7 +654,7 @@ function unpack_stashed_planes!(r::VideoReader, imgbuf)
         frame,
         frame.linesize,
         imgbuf,
-        r.codec_context.pix_fmt,
+        r.input_pix_fmt,
         r.codec_context.width,
         r.codec_context.height,
         VIO_ALIGN,
@@ -528,8 +676,37 @@ function decode(r::VideoReader, packet)
         pret = avcodec_send_packet(r.codec_context, packet)
         check_send_packet_return(pret)
     end
-    fret = avcodec_receive_frame(r.codec_context, graph_input_frame(r))
+    recv_frame = check_ptr_valid(r.hw_recv_frame, false) ? r.hw_recv_frame : graph_input_frame(r)
+    fret = avcodec_receive_frame(r.codec_context, recv_frame)
     if fret == 0
+        if check_ptr_valid(r.hw_recv_frame, false)
+            if check_ptr_valid(r.hw_recv_frame.hw_frames_ctx, false)
+                # True hardware frame — download from GPU surface to CPU memory.
+                # Leave dst->format at AV_PIX_FMT_NONE (-1) so av_hwframe_transfer_data
+                # auto-selects the sw_format from hw_frames_ctx (FFmpeg ≥7.0 behaviour).
+                ret = av_hwframe_transfer_data(graph_input_frame(r), r.hw_recv_frame, Cint(0))
+                av_frame_unref(r.hw_recv_frame)
+                ret < 0 && error("Could not transfer HW frame to CPU: $(av_error_string(ret)) [code $ret]")
+            else
+                # hw_frames_ctx is not set — HW decoder fell back to software for this
+                # frame (e.g. VideoToolbox on very small or unsupported content).
+                # The frame is already CPU-accessible; use it directly.
+                av_frame_move_ref(graph_input_frame(r), r.hw_recv_frame)
+            end
+            # Lazily fix the SwsTransform / input_pix_fmt if the actual sw_format
+            # differs from our initial guess (e.g. VT returns YUVJ420P not NV12).
+            actual_sw_fmt = Cint(graph_input_frame(r).format)
+            if actual_sw_fmt != r.input_pix_fmt
+                if r.frame_graph isa SwsTransform
+                    _vio_rebuild_sws_for_hw!(r, actual_sw_fmt)
+                else
+                    # No SwsTransform to update; just track the real format so that
+                    # raw_pixel_format(), stash_graph_input!, and unpack_stashed_planes!
+                    # all use the correct format (affects transcode=false paths).
+                    r.input_pix_fmt = actual_sw_fmt
+                end
+            end
+        end
         r.graph_input_occupied = true
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
@@ -545,6 +722,24 @@ end
 
 graph_input_frame(r::VideoReader) = graph_input_frame(r.frame_graph)
 graph_output_frame(r::VideoReader) = graph_output_frame(r.frame_graph)
+
+# Rebuild the SwsContext when the actual hw download format differs from the
+# format it was originally configured for (determined lazily on first HW frame).
+function _vio_rebuild_sws_for_hw!(r::VideoReader, actual_sw_fmt::Cint)
+    fg = r.frame_graph
+    dst_pix_fmt     = Cint(fg.dstframe.format)
+    dst_color_range  = fg.dstframe.color_range   # set at VideoReader construction
+    dst_primaries    = fg.dstframe.color_primaries # set at VideoReader construction
+    new_sws = SwsTransform(
+        r.codec_context.width, r.codec_context.height, actual_sw_fmt,
+        r.codec_context.color_primaries, r.codec_context.color_range,
+        dst_pix_fmt, dst_primaries, dst_color_range,
+        r._sws_color_options, r._swscale_options,
+    )
+    fg.sws_context = new_sws.sws_context
+    fg.srcframe.format = actual_sw_fmt
+    r.input_pix_fmt = actual_sw_fmt
+end
 
 unsupported_retrieval_format(fmt) = error("Unsupported format $(fmt)")
 
@@ -633,6 +828,7 @@ function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
 end
 
 function retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
+    fill_graph_input!(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
     if !raw_buff_check(buf, r, align)
         throw(ArgumentError("Buffer is the wrong size or stride"))
     end
@@ -656,8 +852,9 @@ end
 retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidRawBuff, args...) = retrieve_raw!(r, buf, args...)
 
 function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
-    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))
-    retrieve_raw!(r, imgbuf, align)
+    fill_graph_input!(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
+    imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))  # sized for the real format
+    _retrieve_raw!(r, imgbuf, align)
     return imgbuf, align
 end
 
@@ -734,6 +931,13 @@ arguments listed below.
     (http://ffmpeg.org/doxygen/2.5/group__libsws.html#ga541bdffa8149f5f9203664f955faa040).
   - `thread_count::Union{Nothing, Int} = Sys.CPU_THREADS`: The number of threads the codec is
     allowed to use or `nothing` for default codec behavior. Defaults to `Sys.CPU_THREADS`.
+  - `hwaccel::Union{Nothing, Symbol} = nothing`: If set to a `Symbol` such as `:videotoolbox`
+    (macOS), `:cuda` (NVIDIA), `:vaapi` (Linux/Intel), or `:qsv`, the corresponding FFmpeg
+    hardware-accelerated decoder is used.  Decoded frames are automatically downloaded from the
+    hardware surface to the CPU before being presented to the rest of the VideoIO pipeline, so
+    the element type and pixel format of the returned frames are identical to software decoding.
+    Use `VideoIO.available_hw_devices()` to query the device types supported by the current
+    FFmpeg build.  Throws an error if the requested device type is not available.
 """
 openvideo(s::Union{IO,AbstractString,AVInput}, args...; kwargs...) = VideoReader(s, args...; kwargs...)
 
@@ -825,7 +1029,7 @@ Return the pixel format for frames of `reader`. The return value will be a
 This will determine the format of byte arrays returned by `read_raw`, and
 `read_raw!`.
 """
-raw_pixel_format(r::VideoReader) = r.codec_context.pix_fmt
+raw_pixel_format(r::VideoReader) = r.input_pix_fmt
 
 out_frame_format(r::VideoReader{<:Any,AVFramePtr}) = raw_pixel_format(r)
 out_frame_format(t::SwsTransform) = t.dstframe.format
