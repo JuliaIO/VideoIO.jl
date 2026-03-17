@@ -107,6 +107,7 @@ function __init__()
     # @info "VideoIO: Low-level FFMPEG reporting set to minimal (AV_LOG_FATAL). See `? VideoIO.loglevel!` for options"
     read_packet[] = @cfunction(_read_packet, Cint, (Ptr{AVInput}, Ptr{UInt8}, Cint))
     libffmpeg.avdevice_register_all()
+    atexit(() -> shutdown!(timeout_s = 2.0, poll_interval_s = 0.01))
 end
 
 @setup_workload begin

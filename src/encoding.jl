@@ -1,5 +1,45 @@
 export open_video_out, close_video_out!, get_codec_name
 
+const _active_writers = IdDict{Any,Nothing}()
+const _active_writers_lock = ReentrantLock()
+const _shutdown_requested = Ref(false)
+
+function _register_active_writer!(writer)
+    lock(_active_writers_lock) do
+        _shutdown_requested[] && error("VideoIO is shutting down; opening new writers is disabled")
+        _active_writers[writer] = nothing
+    end
+    return writer
+end
+
+function _unregister_active_writer!(writer)
+    lock(_active_writers_lock) do
+        delete!(_active_writers, writer)
+    end
+    return nothing
+end
+
+"""
+    shutdown!(; timeout_s = 2.0, poll_interval_s = 0.01) -> Bool
+
+Request VideoIO shutdown and wait for active writers to close.
+Returns `true` if all active writers drained before timeout, otherwise `false`.
+"""
+function shutdown!(; timeout_s::Real = 2.0, poll_interval_s::Real = 0.01)
+    lock(_active_writers_lock) do
+        _shutdown_requested[] = true
+    end
+    deadline = time() + timeout_s
+    while true
+        nactive = lock(_active_writers_lock) do
+            length(_active_writers)
+        end
+        nactive == 0 && return true
+        time() >= deadline && return false
+        sleep(poll_interval_s)
+    end
+end
+
 # Coerce unsupported element types to supported ones for encoding
 _coerce_encoding_img(img::AbstractMatrix{<:RGBA}) = RGB.(img)
 _coerce_encoding_img(img::AbstractMatrix) = img
@@ -44,58 +84,66 @@ isopen(w::VideoWriter) = check_ptr_valid(w.format_context, false)
 
 function encode_mux!(writer::VideoWriter, flush = false)
     pkt = writer.packet
-    av_init_packet(pkt)
     frame = graph_output_frame(writer)
-    if flush
-        fret = avcodec_send_frame(writer.codec_context, C_NULL)
-    else
-        fret = avcodec_send_frame(writer.codec_context, frame)
-    end
-    if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
-        error("Error sending a frame for encoding: $(av_error_string(fret))")
-    end
-
-    pret = Cint(0)
-    while pret >= 0
-        pret = avcodec_receive_packet(writer.codec_context, pkt)
-        if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
-            break
-        elseif pret < 0
-            error("Error during encoding: $(av_error_string(pret))")
+    format_context = writer.format_context
+    codec_context = writer.codec_context
+    @preserve pkt frame writer format_context codec_context begin
+        av_init_packet(pkt)
+        if flush
+            fret = avcodec_send_frame(codec_context, C_NULL)
+        else
+            fret = avcodec_send_frame(codec_context, frame)
         end
-        if pkt.duration == 0
-            codec_pts_duration = round(
-                Int,
-                1 / (
-                    convert(Rational, writer.codec_context.framerate) *
-                    convert(Rational, writer.codec_context.time_base)
-                ),
-            )
-            pkt.duration = codec_pts_duration
-        end
-        stream = writer.format_context.streams[writer.stream_index0+1]
-        av_packet_rescale_ts(pkt, writer.codec_context.time_base, stream.time_base)
-        pkt.stream_index = writer.stream_index0
-        ret = av_interleaved_write_frame(writer.format_context, pkt)
-        # No packet_unref, av_interleaved_write_frame now owns packet.
-        ret != 0 && error("Error muxing packet: $(av_error_string(ret))")
-    end
-    if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
-        fret = avcodec_send_frame(writer.codec_context, frame)
-        if fret < 0 && fret != VIO_AVERROR_EOF
+        if fret < 0 && !in(fret, [-Libc.EAGAIN, VIO_AVERROR_EOF])
             error("Error sending a frame for encoding: $(av_error_string(fret))")
         end
+
+        pret = Cint(0)
+        while pret >= 0
+            pret = avcodec_receive_packet(codec_context, pkt)
+            if pret == -Libc.EAGAIN || pret == VIO_AVERROR_EOF
+                break
+            elseif pret < 0
+                error("Error during encoding: $(av_error_string(pret))")
+            end
+            if pkt.duration == 0
+                codec_pts_duration = round(
+                    Int,
+                    1 / (
+                        convert(Rational, codec_context.framerate) *
+                        convert(Rational, codec_context.time_base)
+                    ),
+                )
+                pkt.duration = codec_pts_duration
+            end
+            stream = format_context.streams[writer.stream_index0+1]
+            av_packet_rescale_ts(pkt, codec_context.time_base, stream.time_base)
+            pkt.stream_index = writer.stream_index0
+            ret = av_interleaved_write_frame(format_context, pkt)
+            # No packet_unref, av_interleaved_write_frame now owns packet.
+            ret != 0 && error("Error muxing packet: $(av_error_string(ret))")
+        end
+        if !flush && fret == -Libc.EAGAIN && pret != VIO_AVERROR_EOF
+            fret = avcodec_send_frame(codec_context, frame)
+            if fret < 0 && fret != VIO_AVERROR_EOF
+                error("Error sending a frame for encoding: $(av_error_string(fret))")
+            end
+        end
+        return pret
     end
-    return pret
 end
 
 function prepare_video_frame!(writer::VideoWriter, img, index)
+    frame_graph = writer.frame_graph
     dstframe = graph_output_frame(writer)
-    ret = av_frame_make_writable(dstframe)
-    ret < 0 && error("av_frame_make_writable() error")
-    dstframe.pts = index
-    transfer_img_buf_to_frame!(graph_input_frame(writer), img, writer.scanline_major)
-    return execute_graph!(writer)
+    srcframe = graph_input_frame(writer)
+    @preserve dstframe srcframe frame_graph writer begin
+        ret = av_frame_make_writable(dstframe)
+        ret < 0 && error("av_frame_make_writable() error")
+        dstframe.pts = index
+        transfer_img_buf_to_frame!(srcframe, img, writer.scanline_major)
+        return execute_graph!(writer)
+    end
 end
 
 execute_graph!(writer::VideoWriter) = exec!(writer.frame_graph)
@@ -126,23 +174,27 @@ then it must be closed with this function to flush any cached frames to the file
 and then finally close the file and release resources associated with `writer`.
 """
 function close_video_out!(writer::VideoWriter)
-    if check_ptr_valid(writer.format_context, false)
-        encode_mux!(writer, true) # flush
-        format_context = writer.format_context
-        ret = av_write_trailer(format_context)
-        ret < 0 && error("Could not write trailer")
-        if format_context.oformat.flags & AVFMT_NOFILE == 0
-            pb_ptr = field_ptr(format_context, :pb)
-            ret = @preserve writer avio_closep(pb_ptr)
-            ret < 0 && error("Could not free AVIOContext")
+    try
+        if check_ptr_valid(writer.format_context, false)
+            encode_mux!(writer, true) # flush
+            format_context = writer.format_context
+            ret = @preserve format_context writer av_write_trailer(format_context)
+            ret < 0 && error("Could not write trailer")
+            if format_context.oformat.flags & AVFMT_NOFILE == 0
+                pb_ptr = field_ptr(format_context, :pb)
+                ret = @preserve writer avio_closep(pb_ptr)
+                ret < 0 && error("Could not free AVIOContext")
+            end
         end
+    finally
+        _unregister_active_writer!(writer)
+        # Free allocated memory through finalizers
+        writer.format_context = AVFormatContextPtr(C_NULL)
+        writer.codec_context = AVCodecContextPtr(C_NULL)
+        writer.frame_graph = null_graph(writer.frame_graph)
+        writer.packet = AVPacketPtr(C_NULL)
+        writer.stream_index0 = -1
     end
-    # Free allocated memory through finalizers
-    writer.format_context = AVFormatContextPtr(C_NULL)
-    writer.codec_context = AVCodecContextPtr(C_NULL)
-    writer.frame_graph = null_graph(writer.frame_graph)
-    writer.packet = AVPacketPtr(C_NULL)
-    writer.stream_index0 = -1
     return writer
 end
 
@@ -582,7 +634,10 @@ occurred.
 
 See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
-open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...; kwargs...)
+function open_video_out(s::AbstractString, args...; kwargs...)
+    writer = VideoWriter(s, args...; kwargs...)
+    return _register_active_writer!(writer)
+end
 
 function open_video_out(f, s::AbstractString, args...; kwargs...)
     writer = open_video_out(s, args...; kwargs...)
