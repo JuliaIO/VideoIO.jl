@@ -4,6 +4,16 @@ const _active_writers = IdDict{Any,Nothing}()
 const _active_writers_lock = ReentrantLock()
 const _shutdown_requested = Ref(false)
 
+"""
+    VideoIO.shutdown_timeout_s
+
+Timeout (in seconds) used by the automatic `atexit` shutdown barrier.
+Increase this if background encoders need more time to drain on exit:
+
+    VideoIO.shutdown_timeout_s[] = 10.0
+"""
+const shutdown_timeout_s = Ref(2.0)
+
 function _register_active_writer!(writer)
     lock(_active_writers_lock) do
         _shutdown_requested[] && error("VideoIO is shutting down; opening new writers is disabled")
@@ -20,12 +30,13 @@ function _unregister_active_writer!(writer)
 end
 
 """
-    shutdown!(; timeout_s = 2.0, poll_interval_s = 0.01) -> Bool
+    shutdown!(; timeout_s = VideoIO.shutdown_timeout_s[], poll_interval_s = 0.01) -> Bool
 
 Request VideoIO shutdown and wait for active writers to close.
 Returns `true` if all active writers drained before timeout, otherwise `false`.
+The default timeout is read from [`VideoIO.shutdown_timeout_s`](@ref).
 """
-function shutdown!(; timeout_s::Real = 2.0, poll_interval_s::Real = 0.01)
+function shutdown!(; timeout_s::Real = shutdown_timeout_s[], poll_interval_s::Real = 0.01)
     lock(_active_writers_lock) do
         _shutdown_requested[] = true
     end
