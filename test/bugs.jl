@@ -70,3 +70,10 @@ if (Sys.islinux())
         end
     end
 end
+
+@testset "No segfault when exiting during multithreaded encoding (#381)" begin
+    script = joinpath(@__DIR__, "mwe_381.jl")
+    cmd = `$(Base.julia_cmd()) -t2 --project=$(Base.active_project()) --startup-file=no $script`
+    proc = run(cmd; wait = true)
+    @test proc.exitcode == 0
+end
