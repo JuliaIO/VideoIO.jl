@@ -12,7 +12,7 @@ Increase this if background encoders need more time to drain on exit:
 
     VideoIO.shutdown_timeout_s[] = 10.0
 """
-const shutdown_timeout_s = Ref(2.0)
+const shutdown_timeout_s = Ref(5.0)
 
 function _register_active_writer!(writer)
     lock(_active_writers_lock) do
@@ -46,7 +46,10 @@ function shutdown!(; timeout_s::Real = shutdown_timeout_s[], poll_interval_s::Re
             length(_active_writers)
         end
         nactive == 0 && return true
-        time() >= deadline && return false
+        if time() >= deadline
+            println("VideoIO shutdown timeout reached with $nactive active writer(s) still open")
+            return false
+        end
         sleep(poll_interval_s)
     end
 end
