@@ -14015,7 +14015,7 @@ struct AVAMFDeviceContext
     memory_type::Cint
 end
 
-mutable struct AMF_SURFACE_FORMAT end
+const AMF_SURFACE_FORMAT = Cint
 
 function av_av_to_amf_format(fmt::AVPixelFormat)
     ccall((:av_av_to_amf_format, libavutil), AMF_SURFACE_FORMAT, (AVPixelFormat,), fmt)
