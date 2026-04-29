@@ -14015,31 +14015,31 @@ struct AVAMFDeviceContext
     memory_type::Cint
 end
 
-const AMF_SURFACE_FORMAT = Cint
+const AMF_SURFACE_FORMAT = Int32
 
-AMF_SURFACE_UNKNOWN = 0
-AMF_SURFACE_NV12 = 1
-AMF_SURFACE_YV12 = 2
-AMF_SURFACE_BGRA = 3
-AMF_SURFACE_ARGB = 4
-AMF_SURFACE_RGBA = 5
-AMF_SURFACE_GRAY8 = 6
-AMF_SURFACE_YUV420P = 7
-AMF_SURFACE_U8V8 = 8
-AMF_SURFACE_YUY2 = 9
-AMF_SURFACE_P010 = 10
-AMF_SURFACE_RGBA_F16 = 11
-AMF_SURFACE_UYVY = 12
-AMF_SURFACE_R10G10B10A2 = 13
-AMF_SURFACE_Y210 = 14
-AMF_SURFACE_AYUV = 15
-AMF_SURFACE_Y410 = 16
-AMF_SURFACE_Y416 = 17
-AMF_SURFACE_GRAY9 = 18
-AMF_SURFACE_GRAY10 = 19
-AMF_SURFACE_GRAY12 = 20
-AMF_SURFACE_GRAY14 = 21
-AMF_SURFACE_GRAY16 = 22
+const AMF_SURFACE_UNKNOWN     = 0  % Int32
+const AMF_SURFACE_NV12        = 1  % Int32
+const AMF_SURFACE_YV12        = 2  % Int32
+const AMF_SURFACE_BGRA        = 3  % Int32
+const AMF_SURFACE_ARGB        = 4  % Int32
+const AMF_SURFACE_RGBA        = 5  % Int32
+const AMF_SURFACE_GRAY8       = 6  % Int32
+const AMF_SURFACE_YUV420P     = 7  % Int32
+const AMF_SURFACE_U8V8        = 8  % Int32
+const AMF_SURFACE_YUY2        = 9  % Int32
+const AMF_SURFACE_P010        = 10 % Int32
+const AMF_SURFACE_RGBA_F16    = 11 % Int32
+const AMF_SURFACE_UYVY        = 12 % Int32
+const AMF_SURFACE_R10G10B10A2 = 13 % Int32
+const AMF_SURFACE_Y210        = 14 % Int32
+const AMF_SURFACE_AYUV        = 15 % Int32
+const AMF_SURFACE_Y410        = 16 % Int32
+const AMF_SURFACE_Y416        = 17 % Int32
+const AMF_SURFACE_GRAY9       = 18 % Int32
+const AMF_SURFACE_GRAY10      = 19 % Int32
+const AMF_SURFACE_GRAY12      = 20 % Int32
+const AMF_SURFACE_GRAY14      = 21 % Int32
+const AMF_SURFACE_GRAY16      = 22 % Int32
 
 function av_av_to_amf_format(fmt::AVPixelFormat)
     ccall((:av_av_to_amf_format, libavutil), AMF_SURFACE_FORMAT, (AVPixelFormat,), fmt)
