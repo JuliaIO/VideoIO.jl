@@ -22,7 +22,21 @@ export read,
     out_frame_eltype,
     available_hw_devices,
     available_hw_encoders,
-    hwaccel_available
+    hwaccel_available,
+    VideoCorruptionError
+
+"""
+    VideoCorruptionError(message)
+
+Exception thrown by [`openvideo`](@ref) / `decode` when the decoder reports
+a bitstream or CRC error while reading a video opened with `strict = true`.
+"""
+struct VideoCorruptionError <: Exception
+    message::String
+end
+
+Base.showerror(io::IO, e::VideoCorruptionError) =
+    print(io, "VideoCorruptionError: ", e.message)
 
 const ReaderBitTypes = Union{UInt8,UInt16}
 const ReaderNormedTypes = Normed{T} where {T<:ReaderBitTypes}
@@ -190,6 +204,7 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     hw_recv_frame::AVFramePtr # AVFramePtr(C_NULL) for SW; allocated frame for HW
     _swscale_options::OptionsT    # Saved for HW format rebuild
     _sws_color_options::OptionsT  # Saved for HW format rebuild
+    strict::Bool                  # Throw VideoCorruptionError on decoder bitstream errors
 end
 
 """
@@ -400,6 +415,7 @@ function VideoReader(
     sws_color_options::OptionsT = (;),
     thread_count::Union{Nothing,Int} = Sys.CPU_THREADS,
     hwaccel::Union{Nothing,Symbol} = nothing,
+    strict::Bool = false,
 ) where {I}
     bad_px_type = transcode && target_format !== nothing && !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -424,6 +440,13 @@ function VideoReader(
     ret < 0 && error("Could not copy the codec parameters to the decoder")
     codec_context.pix_fmt < 0 && error("Unknown pixel format")
     stream_pix_fmt = codec_context.pix_fmt  # snapshot before hwaccel may change it
+
+    # Strict mode: ask the decoder to fail loudly on bitstream/CRC errors
+    # instead of silently concealing them. Must be set before avcodec_open2.
+    if strict
+        codec_context.err_recognition = codec_context.err_recognition |
+            libffmpeg.AV_EF_EXPLODE | libffmpeg.AV_EF_CRCCHECK | libffmpeg.AV_EF_BITSTREAM
+    end
 
     # Set up hardware acceleration if requested
     device_type = AV_HWDEVICE_TYPE_NONE
@@ -538,6 +561,7 @@ function VideoReader(
         hw_recv_frame,
         swscale_options,
         sws_color_options,
+        strict,
     )
 
     push!(avin.listening, stream_index0)
@@ -711,6 +735,8 @@ function decode(r::VideoReader, packet)
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
     elseif fret != -Libc.EAGAIN
+        r.strict && throw(VideoCorruptionError(
+            "Decoder reported a bitstream error: $(av_error_string(fret))"))
         error("Decoding error: $(av_error_string(fret))")
     end
     if !r.finished && !r.flush && pret == -Libc.EAGAIN
@@ -938,6 +964,36 @@ arguments listed below.
     the element type and pixel format of the returned frames are identical to software decoding.
     Use `VideoIO.available_hw_devices()` to query the device types supported by the current
     FFmpeg build.  Throws an error if the requested device type is not available.
+  - `strict::Bool = false`: When `true`, the decoder is opened with the FFmpeg
+    `AV_EF_EXPLODE | AV_EF_CRCCHECK | AV_EF_BITSTREAM` error-recognition flags,
+    so bitstream / CRC errors propagate out of the decoder instead of being
+    silently concealed. Such errors are raised as a [`VideoCorruptionError`](@ref).
+    Use this when reproducibility / data integrity matters and synthetic pixels
+    from error concealment are not acceptable. The default (`false`) preserves
+    standard "lossy playback" behaviour.
+
+# Example
+
+```julia
+# Normal mode (default) - errors concealed for smooth playback
+video = openvideo("video.mp4")
+for frame in video
+    display(frame)
+end
+close(video)
+
+# Strict mode - reject corrupted videos
+try
+    openvideo("corrupted.mp4", strict=true) do video
+        for frame in video
+            analyze(frame)  # guaranteed no error-concealed pixels
+        end
+    end
+catch e
+    e isa VideoCorruptionError || rethrow()
+    @error "Video corruption detected" exception=e
+end
+```
 """
 openvideo(s::Union{IO,AbstractString,AVInput}, args...; kwargs...) = VideoReader(s, args...; kwargs...)
 

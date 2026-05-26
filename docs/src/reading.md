@@ -163,6 +163,38 @@ may include VAAPI/CUDA on Linux depending on the version.  Use
 `hwaccel_available` to check whether hardware is actually accessible at
 runtime before relying on it.
 
+### Strict Mode for Data Integrity
+
+When data integrity is critical, use
+`strict = true` to reject corrupted videos instead of applying error concealment:
+
+```julia
+try
+    video = VideoIO.openvideo("measurement.mp4", strict=true)
+    for frame in video
+        analyze(frame)  # Guaranteed no synthetic pixels from error concealment
+    end
+    close(video)
+catch e
+    if e isa VideoCorruptionError
+        @error "Video corrupted" exception=e
+        # Handle appropriately: reject measurement, prompt retake, etc.
+    end
+end
+```
+
+By default (`strict=false`), FFMPEG conceals decoder errors for smooth playback.
+However, error concealment algorithms vary across FFMPEG versions, causing
+non-deterministic results. Strict mode ensures:
+
+- **Deterministic decoding** across all FFMPEG versions
+- **No synthetic pixels** from probabilistic error reconstruction
+- **Fail-fast behavior** when corruption is detected
+
+```@docs
+VideoIO.VideoCorruptionError
+```
+
 ## Reading Camera Output
 Frames can be read iteratively
 ```julia
