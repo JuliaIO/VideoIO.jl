@@ -22,7 +22,23 @@ export read,
     out_frame_eltype,
     available_hw_devices,
     available_hw_encoders,
-    hwaccel_available
+    hwaccel_available,
+    VideoCorruptionError
+
+"""
+    VideoCorruptionError(message)
+
+Exception thrown by [`openvideo`](@ref) / `decode` when the decoder reports
+a bitstream error, CRC failure, or corrupt frame flags while reading a video
+opened with `strict = true`. This indicates FFmpeg detected corruption that
+would otherwise result in error-concealed pixels.
+"""
+struct VideoCorruptionError <: Exception
+    message::String
+end
+
+Base.showerror(io::IO, e::VideoCorruptionError) =
+    print(io, "VideoCorruptionError: ", e.message)
 
 const ReaderBitTypes = Union{UInt8,UInt16}
 const ReaderNormedTypes = Normed{T} where {T<:ReaderBitTypes}
@@ -190,6 +206,7 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     hw_recv_frame::AVFramePtr # AVFramePtr(C_NULL) for SW; allocated frame for HW
     _swscale_options::OptionsT    # Saved for HW format rebuild
     _sws_color_options::OptionsT  # Saved for HW format rebuild
+    strict::Bool                  # Throw VideoCorruptionError on decoder bitstream errors
 end
 
 """
@@ -400,6 +417,7 @@ function VideoReader(
     sws_color_options::OptionsT = (;),
     thread_count::Union{Nothing,Int} = Sys.CPU_THREADS,
     hwaccel::Union{Nothing,Symbol} = nothing,
+    strict::Bool = false,
 ) where {I}
     bad_px_type = transcode && target_format !== nothing && !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
@@ -424,6 +442,13 @@ function VideoReader(
     ret < 0 && error("Could not copy the codec parameters to the decoder")
     codec_context.pix_fmt < 0 && error("Unknown pixel format")
     stream_pix_fmt = codec_context.pix_fmt  # snapshot before hwaccel may change it
+
+    # Strict mode: ask the decoder to fail loudly on bitstream/CRC errors
+    # instead of silently concealing them. Must be set before avcodec_open2.
+    if strict
+        codec_context.err_recognition = Int32(codec_context.err_recognition |
+            libffmpeg.AV_EF_EXPLODE | libffmpeg.AV_EF_CRCCHECK | libffmpeg.AV_EF_BITSTREAM)
+    end
 
     # Set up hardware acceleration if requested
     device_type = AV_HWDEVICE_TYPE_NONE
@@ -538,6 +563,7 @@ function VideoReader(
         hw_recv_frame,
         swscale_options,
         sws_color_options,
+        strict,
     )
 
     push!(avin.listening, stream_index0)
@@ -662,7 +688,17 @@ function unpack_stashed_planes!(r::VideoReader, imgbuf)
     return r
 end
 
-check_send_packet_return(r) = (r < 0 && r != -Libc.EAGAIN) && error("Could not send packet")
+# Helper function to check decode operation return codes in strict mode
+function check_decode_return(r::VideoReader, ret::Integer, where::AbstractString)
+    if ret < 0 && ret != -Libc.EAGAIN
+        # AVERROR_INVALIDDATA is defined as UInt32, but FFmpeg returns Int32
+        # Convert to signed for comparison
+        if r.strict && ret == reinterpret(Int32, libffmpeg.AVERROR_INVALIDDATA)
+            throw(VideoCorruptionError("$where: bitstream corruption detected: $(av_error_string(ret))"))
+        end
+        error("$where: $(av_error_string(ret))")
+    end
+end
 
 function decode(r::VideoReader, packet)
     # Do we already have a complete frame that hasn't been consumed?
@@ -674,7 +710,7 @@ function decode(r::VideoReader, packet)
     pret = 0
     if !r.flush
         pret = avcodec_send_packet(r.codec_context, packet)
-        check_send_packet_return(pret)
+        check_decode_return(r, pret, "avcodec_send_packet")
     end
     recv_frame = check_ptr_valid(r.hw_recv_frame, false) ? r.hw_recv_frame : graph_input_frame(r)
     fret = avcodec_receive_frame(r.codec_context, recv_frame)
@@ -707,15 +743,25 @@ function decode(r::VideoReader, packet)
                 end
             end
         end
+        # In strict mode, check if the decoded frame is marked as corrupt
+        if r.strict
+            frame = graph_input_frame(r)
+            if (frame.flags & libffmpeg.AV_FRAME_FLAG_CORRUPT) != 0
+                throw(VideoCorruptionError("Decoded frame marked corrupt (AV_FRAME_FLAG_CORRUPT)"))
+            end
+            if frame.decode_error_flags != 0
+                throw(VideoCorruptionError("Decoded frame has decode errors (decode_error_flags=$(frame.decode_error_flags))"))
+            end
+        end
         r.graph_input_occupied = true
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
     elseif fret != -Libc.EAGAIN
-        error("Decoding error: $(av_error_string(fret))")
+        check_decode_return(r, fret, "avcodec_receive_frame")
     end
     if !r.finished && !r.flush && pret == -Libc.EAGAIN
         pret2 = avcodec_send_packet(r.codec_context, packet)
-        check_send_packet_return(pret2)
+        check_decode_return(r, pret2, "avcodec_send_packet (retry)")
     end
     return
 end
@@ -938,6 +984,37 @@ arguments listed below.
     the element type and pixel format of the returned frames are identical to software decoding.
     Use `VideoIO.available_hw_devices()` to query the device types supported by the current
     FFmpeg build.  Throws an error if the requested device type is not available.
+  - `strict::Bool = false`: When `true`, the decoder is opened with the FFmpeg
+    `AV_EF_EXPLODE | AV_EF_CRCCHECK | AV_EF_BITSTREAM` error-recognition flags,
+    so bitstream / CRC errors propagate out of the decoder instead of being
+    silently concealed. Additionally, successfully decoded frames are checked for
+    corruption flags. Such errors are raised as a [`VideoCorruptionError`](@ref).
+    Use this when reproducibility / data integrity matters. Note that corruption
+    detection is codec and container dependent. The default (`false`) preserves
+    standard "lossy playback" behaviour.
+
+# Example
+
+```julia
+# Normal mode (default) - errors concealed for smooth playback
+video = openvideo("video.mp4")
+for frame in video
+    display(frame)
+end
+close(video)
+
+# Strict mode - reject corrupted videos
+try
+    openvideo("corrupted.mp4", strict=true) do video
+        for frame in video
+            analyze(frame)  # FFmpeg will reject detected corruption
+        end
+    end
+catch e
+    e isa VideoCorruptionError || rethrow()
+    @error "Video corruption detected" exception=e
+end
+```
 """
 openvideo(s::Union{IO,AbstractString,AVInput}, args...; kwargs...) = VideoReader(s, args...; kwargs...)
 

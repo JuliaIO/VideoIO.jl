@@ -1,3 +1,13 @@
+VideoIO v1.7.0 Release Notes
+============================
+## New features
+
+- Add `strict` mode for video corruption detection: `openvideo(file, strict=true)` throws `VideoCorruptionError`
+  when FFmpeg detects bitstream errors, CRC failures, or corrupt frame flags, ensuring more deterministic decoding
+  and rejecting frames with synthetic pixels from error concealment. Useful for applications requiring data integrity.
+  Note: corruption detection is codec and container dependent.
+
+
 VideoIO v1.1.0 Release Notes
 ======================
 ## Removal
