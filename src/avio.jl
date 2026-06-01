@@ -735,8 +735,10 @@ function decode(r::VideoReader, packet)
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
     elseif fret != -Libc.EAGAIN
-        r.strict && throw(VideoCorruptionError(
-            "Decoder reported a bitstream error: $(av_error_string(fret))"))
+        # In strict mode, throw VideoCorruptionError specifically for bitstream/corruption errors
+        if r.strict && fret == libffmpeg.AVERROR_INVALIDDATA
+            throw(VideoCorruptionError("Bitstream corruption detected: $(av_error_string(fret))"))
+        end
         error("Decoding error: $(av_error_string(fret))")
     end
     if !r.finished && !r.flush && pret == -Libc.EAGAIN

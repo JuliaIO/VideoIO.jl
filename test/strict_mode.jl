@@ -64,12 +64,13 @@ using FixedPointNumbers
                     end
                 end
             catch e
-                # Either VideoCorruptionError (preferred) or a plain decode/open
-                # error if the container itself was damaged. Both indicate the
-                # decoder did not silently produce concealed pixels.
+                # Corruption should throw VideoCorruptionError with AVERROR_INVALIDDATA,
+                # or potentially a plain error if container/other issues occur first.
+                # Either way, decoder did not silently produce concealed pixels.
                 threw_strict = true
                 if e isa VideoIO.VideoCorruptionError
-                    @test occursin("bitstream", e.message) || occursin("Decoder", e.message)
+                    @test occursin("corruption", lowercase(e.message)) || 
+                          occursin("bitstream", lowercase(e.message))
                 end
             end
             @test threw_strict
