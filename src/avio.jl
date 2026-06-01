@@ -691,7 +691,9 @@ end
 # Helper function to check decode operation return codes in strict mode
 function check_decode_return(r::VideoReader, ret::Integer, where::AbstractString)
     if ret < 0 && ret != -Libc.EAGAIN
-        if r.strict && ret == libffmpeg.AVERROR_INVALIDDATA
+        # AVERROR_INVALIDDATA is defined as UInt32, but FFmpeg returns Int32
+        # Convert to signed for comparison
+        if r.strict && ret == reinterpret(Int32, libffmpeg.AVERROR_INVALIDDATA)
             throw(VideoCorruptionError("$where: bitstream corruption detected: $(av_error_string(ret))"))
         end
         error("$where: $(av_error_string(ret))")

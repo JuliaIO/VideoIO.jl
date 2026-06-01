@@ -43,38 +43,55 @@ using FixedPointNumbers
             end
         end
 
-        @testset "Corrupted bitstream throws VideoCorruptionError in strict mode" begin
+        @testset "Corrupted bitstream detection in strict mode" begin
+            # Create a corrupt video using a known recipe that triggers AVERROR_INVALIDDATA
+            # Recipe discovered empirically: write 0xFFFFFFFF at offset 772 triggers
+            # bitstream corruption in a small H.264 video with specific encoding settings
+            
             corrupt_video = joinpath(dir, "corrupt.mp4")
-            cp(clean_video, corrupt_video; force = true)
-            # Corrupt bytes deep in the file where compressed video data lives
-            # (well past the moov/header region). Multiple small corruptions
-            # raise the chance of hitting a slice rather than just NAL framing.
-            sz = filesize(corrupt_video)
-            open(corrupt_video, "r+") do f
-                for off in (div(sz * 6, 10), div(sz * 7, 10), div(sz * 8, 10))
-                    seek(f, off)
-                    write(f, rand(UInt8, 32))
+            
+            # Create a clean video with settings that make corruption detectable
+            height, width = 32, 48
+            clean_tmp = joinpath(dir, "clean_tmp.mp4")
+            open_video_out(clean_tmp, RGB{N0f8}, (height, width),
+                         framerate = 30, 
+                         encoder_options = (crf = 23, preset = "ultrafast")) do writer
+                for i in 1:5
+                    write(writer, fill(RGB{N0f8}(i/5, 0.5, 0.5), height, width))
                 end
             end
-
-            # Strict mode must throw VideoCorruptionError specifically
+            
+            # Apply corruption at known offset that reliably triggers AVERROR_INVALIDDATA
+            cp(clean_tmp, corrupt_video, force=true)
+            rm(clean_tmp)
+            
+            open(corrupt_video, "r+") do f
+                seek(f, 772)  # Empirically found offset in H.264 bitstream
+                write(f, UInt8[0xff, 0xff, 0xff, 0xff])
+            end
+            
+            # Test strict mode - must throw VideoCorruptionError
             @test_throws VideoIO.VideoCorruptionError begin
                 openvideo(corrupt_video, strict = true) do video
                     for _ in video
                     end
                 end
             end
-
-            # Non-strict mode may succeed or fail, but should not throw VideoCorruptionError
-            # (it might error on container damage, but won't throw our specific exception type)
+            
+            # Test non-strict mode - should NOT throw VideoCorruptionError
+            # (it may succeed with concealment or throw a different error)
+            non_strict_threw_corruption = false
             try
                 openvideo(corrupt_video, strict = false) do video
                     for _ in video
                     end
                 end
             catch e
-                @test !(e isa VideoIO.VideoCorruptionError)
+                if e isa VideoIO.VideoCorruptionError
+                    non_strict_threw_corruption = true
+                end
             end
+            @test !non_strict_threw_corruption
         end
     end
 end
