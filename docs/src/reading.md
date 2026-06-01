@@ -166,13 +166,13 @@ runtime before relying on it.
 ### Strict Mode for Data Integrity
 
 When data integrity is critical, use
-`strict = true` to reject corrupted videos instead of applying error concealment:
+`strict = true` to detect corrupted videos instead of applying error concealment:
 
 ```julia
 try
     video = VideoIO.openvideo("measurement.mp4", strict=true)
     for frame in video
-        analyze(frame)  # Guaranteed no synthetic pixels from error concealment
+        analyze(frame)  # FFmpeg will reject detected corruption
     end
     close(video)
 catch e
@@ -183,12 +183,15 @@ catch e
 end
 ```
 
-By default (`strict=false`), FFMPEG conceals decoder errors for smooth playback.
-However, error concealment algorithms vary across FFMPEG versions, causing
-non-deterministic results. Strict mode ensures:
+By default (`strict=false`), FFmpeg conceals decoder errors for smooth playback.
+However, error concealment algorithms vary across FFmpeg versions, causing
+non-deterministic results. Strict mode asks FFmpeg to fail on detected
+bitstream/CRC errors and raises `VideoCorruptionError` for decoder-reported
+corruption. **Note:** Corruption detection is codec and container dependent;
+not all corruption may be detectable.
 
-- **Deterministic decoding** across all FFMPEG versions
-- **No synthetic pixels** from probabilistic error reconstruction
+- **More deterministic decoding** across FFmpeg versions
+- **Rejects synthetic pixels** from probabilistic error reconstruction when detected
 - **Fail-fast behavior** when corruption is detected
 
 ```@docs

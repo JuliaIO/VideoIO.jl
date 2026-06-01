@@ -29,7 +29,9 @@ export read,
     VideoCorruptionError(message)
 
 Exception thrown by [`openvideo`](@ref) / `decode` when the decoder reports
-a bitstream or CRC error while reading a video opened with `strict = true`.
+a bitstream error, CRC failure, or corrupt frame flags while reading a video
+opened with `strict = true`. This indicates FFmpeg detected corruption that
+would otherwise result in error-concealed pixels.
 """
 struct VideoCorruptionError <: Exception
     message::String
@@ -686,7 +688,15 @@ function unpack_stashed_planes!(r::VideoReader, imgbuf)
     return r
 end
 
-check_send_packet_return(r) = (r < 0 && r != -Libc.EAGAIN) && error("Could not send packet")
+# Helper function to check decode operation return codes in strict mode
+function check_decode_return(r::VideoReader, ret::Integer, where::AbstractString)
+    if ret < 0 && ret != -Libc.EAGAIN
+        if r.strict && ret == libffmpeg.AVERROR_INVALIDDATA
+            throw(VideoCorruptionError("$where: bitstream corruption detected: $(av_error_string(ret))"))
+        end
+        error("$where: $(av_error_string(ret))")
+    end
+end
 
 function decode(r::VideoReader, packet)
     # Do we already have a complete frame that hasn't been consumed?
@@ -698,7 +708,7 @@ function decode(r::VideoReader, packet)
     pret = 0
     if !r.flush
         pret = avcodec_send_packet(r.codec_context, packet)
-        check_send_packet_return(pret)
+        check_decode_return(r, pret, "avcodec_send_packet")
     end
     recv_frame = check_ptr_valid(r.hw_recv_frame, false) ? r.hw_recv_frame : graph_input_frame(r)
     fret = avcodec_receive_frame(r.codec_context, recv_frame)
@@ -731,19 +741,25 @@ function decode(r::VideoReader, packet)
                 end
             end
         end
+        # In strict mode, check if the decoded frame is marked as corrupt
+        if r.strict
+            frame = graph_input_frame(r)
+            if (frame.flags & libffmpeg.AV_FRAME_FLAG_CORRUPT) != 0
+                throw(VideoCorruptionError("Decoded frame marked corrupt (AV_FRAME_FLAG_CORRUPT)"))
+            end
+            if frame.decode_error_flags != 0
+                throw(VideoCorruptionError("Decoded frame has decode errors (decode_error_flags=$(frame.decode_error_flags))"))
+            end
+        end
         r.graph_input_occupied = true
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
     elseif fret != -Libc.EAGAIN
-        # In strict mode, throw VideoCorruptionError specifically for bitstream/corruption errors
-        if r.strict && fret == libffmpeg.AVERROR_INVALIDDATA
-            throw(VideoCorruptionError("Bitstream corruption detected: $(av_error_string(fret))"))
-        end
-        error("Decoding error: $(av_error_string(fret))")
+        check_decode_return(r, fret, "avcodec_receive_frame")
     end
     if !r.finished && !r.flush && pret == -Libc.EAGAIN
         pret2 = avcodec_send_packet(r.codec_context, packet)
-        check_send_packet_return(pret2)
+        check_decode_return(r, pret2, "avcodec_send_packet (retry)")
     end
     return
 end
@@ -969,9 +985,10 @@ arguments listed below.
   - `strict::Bool = false`: When `true`, the decoder is opened with the FFmpeg
     `AV_EF_EXPLODE | AV_EF_CRCCHECK | AV_EF_BITSTREAM` error-recognition flags,
     so bitstream / CRC errors propagate out of the decoder instead of being
-    silently concealed. Such errors are raised as a [`VideoCorruptionError`](@ref).
-    Use this when reproducibility / data integrity matters and synthetic pixels
-    from error concealment are not acceptable. The default (`false`) preserves
+    silently concealed. Additionally, successfully decoded frames are checked for
+    corruption flags. Such errors are raised as a [`VideoCorruptionError`](@ref).
+    Use this when reproducibility / data integrity matters. Note that corruption
+    detection is codec and container dependent. The default (`false`) preserves
     standard "lossy playback" behaviour.
 
 # Example
@@ -988,7 +1005,7 @@ close(video)
 try
     openvideo("corrupted.mp4", strict=true) do video
         for frame in video
-            analyze(frame)  # guaranteed no error-concealed pixels
+            analyze(frame)  # FFmpeg will reject detected corruption
         end
     end
 catch e

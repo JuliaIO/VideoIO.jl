@@ -57,23 +57,24 @@ using FixedPointNumbers
                 end
             end
 
-            threw_strict = false
-            try
+            # Strict mode must throw VideoCorruptionError specifically
+            @test_throws VideoIO.VideoCorruptionError begin
                 openvideo(corrupt_video, strict = true) do video
                     for _ in video
                     end
                 end
-            catch e
-                # Corruption should throw VideoCorruptionError with AVERROR_INVALIDDATA,
-                # or potentially a plain error if container/other issues occur first.
-                # Either way, decoder did not silently produce concealed pixels.
-                threw_strict = true
-                if e isa VideoIO.VideoCorruptionError
-                    @test occursin("corruption", lowercase(e.message)) || 
-                          occursin("bitstream", lowercase(e.message))
-                end
             end
-            @test threw_strict
+
+            # Non-strict mode may succeed or fail, but should not throw VideoCorruptionError
+            # (it might error on container damage, but won't throw our specific exception type)
+            try
+                openvideo(corrupt_video, strict = false) do video
+                    for _ in video
+                    end
+                end
+            catch e
+                @test !(e isa VideoIO.VideoCorruptionError)
+            end
         end
     end
 end
