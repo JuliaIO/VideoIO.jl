@@ -6,41 +6,6 @@ VideoIO v1.7.0 Release Notes
   when FFmpeg encounters corrupted macroblocks or applies error concealment, ensuring deterministic decoding
   and preventing synthetic pixels from reaching the application. Useful for applications requiring data integrity guarantees.
 
-  On earlier VideoIO versions the `err_recognition` flags cannot be set before
-  `avcodec_open2`, so corruption can only be detected out-of-band by capturing
-  FFmpeg's log output around the decode and matching on the printf format strings
-  the codec uses (e.g. `"error while decoding MB"`, `"mb_skip_run %d is invalid"`,
-  `"concealing"`, `"corrupt"`):
-
-  ```julia
-  using VideoIO, FFMPEG_jll
-
-  const LOGS = String[]
-  function cb(_, level::Cint, fmt::Ptr{UInt8}, _vl::Ptr{Cvoid})
-      level <= 24 && push!(LOGS, unsafe_string(fmt))  # WARNING and below
-      return
-  end
-  const CB = @cfunction(cb, Cvoid, (Ptr{Cvoid}, Cint, Ptr{UInt8}, Ptr{Cvoid}))
-
-  empty!(LOGS)
-  ccall((:av_log_set_level, libavutil), Cvoid, (Cint,), Cint(32))  # AV_LOG_INFO
-  ccall((:av_log_set_callback, libavutil), Cvoid, (Ptr{Cvoid},), CB)
-  try
-      VideoIO.openvideo(file) do r
-          for f in r; end
-      end
-  finally
-      ccall((:av_log_set_callback, libavutil), Cvoid, (Ptr{Cvoid},),
-            cglobal((:av_log_default_callback, libavutil)))
-  end
-  any(l -> occursin(r"corrupt|concealing|error while decoding|invalid"i, l), LOGS) &&
-      error("Video corruption detected")
-  ```
-
-  This relies on FFmpeg's log strings rather than typed errors, installs a
-  process-global callback (avoid in multi-threaded decode), and only flags codecs
-  whose error paths actually log. Upgrade to v1.7.0 for the deterministic API.
-
 
 VideoIO v1.1.0 Release Notes
 ======================
