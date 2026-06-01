@@ -23,6 +23,8 @@ export read,
     available_hw_devices,
     available_hw_encoders,
     hwaccel_available,
+    frame_metadata,
+    FrameMetadata,
     VideoCorruptionError
 
 """
@@ -202,6 +204,8 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     flush::Bool
     finished::Bool
     last_consumed_pts::Int64  # Track PTS of last frame returned to user
+    last_pict_type::AVPictureType # Picture type of last frame returned to user
+    last_keyframe::Bool           # Whether last frame returned to user was a keyframe
     input_pix_fmt::Cint       # Effective sw pixel format feeding the frame graph
     hw_recv_frame::AVFramePtr # AVFramePtr(C_NULL) for SW; allocated frame for HW
     _swscale_options::OptionsT    # Saved for HW format rebuild
@@ -559,6 +563,8 @@ function VideoReader(
         false,
         false,
         AV_NOPTS_VALUE,  # Initialize last_consumed_pts to no timestamp
+        AV_PICTURE_TYPE_NONE,  # Initialize last_pict_type to none
+        false,  # Initialize last_keyframe to false
         input_pix_fmt,
         hw_recv_frame,
         swscale_options,
@@ -654,6 +660,67 @@ function framerate(f::VideoReader)
 end
 height(f::VideoReader) = f.codec_context.height
 width(f::VideoReader) = f.codec_context.width
+
+"""
+    FrameMetadata
+
+Metadata about a decoded video frame.
+
+# Fields
+- `pict_type::Char`: Frame type ('I' for keyframe, 'P' for predicted, 'B' for
+  bidirectional, 'S'/'i'/'p' for SVC-P/SI/SP, '?' if unknown)
+- `is_keyframe::Bool`: Whether this frame is a keyframe (I-frame)
+- `pts::Int64`: Presentation timestamp
+"""
+struct FrameMetadata
+    pict_type::Char
+    is_keyframe::Bool
+    pts::Int64
+end
+
+function pict_type_char(pict_type_val)
+    if pict_type_val == AV_PICTURE_TYPE_I
+        'I'
+    elseif pict_type_val == AV_PICTURE_TYPE_P
+        'P'
+    elseif pict_type_val == AV_PICTURE_TYPE_B
+        'B'
+    elseif pict_type_val == AV_PICTURE_TYPE_S
+        'S'
+    elseif pict_type_val == AV_PICTURE_TYPE_SI
+        'i'  # lowercase for SI
+    elseif pict_type_val == AV_PICTURE_TYPE_SP
+        'p'  # lowercase for SP
+    else
+        '?'
+    end
+end
+
+"""
+    frame_metadata(r::VideoReader) -> FrameMetadata
+
+Get metadata about the most recently read frame.
+
+Returns frame type, keyframe status, and presentation timestamp. This is useful
+for determining GOP structure and recovery points after decoding errors.
+
+# Example
+```julia
+video = openvideo("video.mp4")
+frame = read(video)
+meta = frame_metadata(video)
+if meta.is_keyframe
+    println("Frame is a keyframe (", meta.pict_type, "-frame)")
+end
+```
+
+# Note
+This reflects the last frame returned to the user by `read`/`read!`. It is reset
+after seeking and is undefined before the first frame has been read.
+"""
+function frame_metadata(r::VideoReader)
+    return FrameMetadata(pict_type_char(r.last_pict_type), r.last_keyframe, r.last_consumed_pts)
+end
 
 # Does not check input size, meant for internal use only
 function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)
@@ -834,11 +901,13 @@ function transfer_graph_output!(buf, r::VideoReader)
     return transfer_frame_to_img_buf!(buf, graph_output_frame(r), bytes_per_pixel)
 end
 
-# Helper function to capture PTS of the current frame for position tracking
+# Helper function to capture PTS and metadata of the current frame
 function capture_pts!(r::VideoReader, frame)
     if frame.pts != AV_NOPTS_VALUE
         r.last_consumed_pts = frame.pts
     end
+    r.last_pict_type = frame.pict_type
+    r.last_keyframe = (frame.flags & AV_FRAME_FLAG_KEY) != 0
     return r
 end
 
@@ -1192,6 +1261,8 @@ function reset_file_position_information!(r::VideoReader)
     drop_frames!(r)
     r.flush = false
     r.last_consumed_pts = AV_NOPTS_VALUE  # Reset position tracking after seek
+    r.last_pict_type = AV_PICTURE_TYPE_NONE
+    r.last_keyframe = false
     return r.finished = false
 end
 

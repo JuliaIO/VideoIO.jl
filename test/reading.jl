@@ -275,4 +275,39 @@ end
         @test_throws ErrorException VideoIO.get_number_frames("Not_a_file")
     end
 end
+
+@testset "Frame metadata (pict_type / keyframe)" begin
+    file = joinpath(videodir, "annie_oakley.ogg")
+    v = VideoIO.openvideo(file)
+    try
+        read(v)
+        meta = VideoIO.frame_metadata(v)
+        # The first frame of a video is always a keyframe (I-frame)
+        @test meta isa VideoIO.FrameMetadata
+        @test meta.pict_type == 'I'
+        @test meta.is_keyframe == true
+
+        # Subsequent frames are non-keyframes until the next GOP boundary
+        found_non_keyframe = false
+        for _ in 1:10
+            eof(v) && break
+            read(v)
+            m = VideoIO.frame_metadata(v)
+            @test m.pict_type in ('I', 'P', 'B', 'S', 'i', 'p', '?')
+            if !m.is_keyframe
+                found_non_keyframe = true
+                @test m.pict_type != 'I'
+            end
+        end
+        @test found_non_keyframe
+
+        # Seeking resets the metadata
+        VideoIO.seek(v, 0.0)
+        meta_after_seek = VideoIO.frame_metadata(v)
+        @test meta_after_seek.pict_type == '?'
+        @test meta_after_seek.is_keyframe == false
+    finally
+        close(v)
+    end
+end
 @memory_profile

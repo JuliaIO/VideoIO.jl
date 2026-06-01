@@ -94,6 +94,14 @@ The video framerate can be read via `framerate(f)`
 VideoIO.framerate
 ```
 
+Metadata about the most recently read frame (frame type and keyframe status) is
+available via `frame_metadata(f)`. This is useful for inspecting GOP structure
+and finding recovery points (the next keyframe) after a decoding error.
+```@docs
+VideoIO.frame_metadata
+VideoIO.FrameMetadata
+```
+
 !!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames
 available for reading.
 
