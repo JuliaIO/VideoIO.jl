@@ -446,8 +446,8 @@ function VideoReader(
     # Strict mode: ask the decoder to fail loudly on bitstream/CRC errors
     # instead of silently concealing them. Must be set before avcodec_open2.
     if strict
-        codec_context.err_recognition = codec_context.err_recognition |
-            libffmpeg.AV_EF_EXPLODE | libffmpeg.AV_EF_CRCCHECK | libffmpeg.AV_EF_BITSTREAM
+        codec_context.err_recognition = Int32(codec_context.err_recognition |
+            libffmpeg.AV_EF_EXPLODE | libffmpeg.AV_EF_CRCCHECK | libffmpeg.AV_EF_BITSTREAM)
     end
 
     # Set up hardware acceleration if requested
