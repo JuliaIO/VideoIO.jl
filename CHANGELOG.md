@@ -1,3 +1,12 @@
+VideoIO v1.8.0 Release Notes
+============================
+## New features
+
+- Add `frame_metadata(reader)` returning a `FrameMetadata` (frame picture type, keyframe flag, and presentation
+  timestamp) for the most recently read frame. Useful for inspecting GOP structure and locating the next keyframe to
+  deterministically recover decoder state after a decoding error.
+
+
 VideoIO v1.7.0 Release Notes
 ============================
 ## New features
