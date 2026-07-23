@@ -53,12 +53,17 @@ function SwsTransform(
 
     inv_table = _vio_primaries_to_sws_table(src_primaries)
     table = _vio_primaries_to_sws_table(dst_primaries)
+    # sws src/dst_range are 0/1 FLAGS (1 = full swing); AVColorRange is an enum
+    # where MPEG (limited) == 1 — passed raw, a limited-range source reads as
+    # full range and the conversion skips the 16..235 → 0..255 expansion,
+    # washing out every decoded RGB frame
+    swsrange(r) = Cint(r == AVCOL_RANGE_JPEG ? 1 : 0)
     ret = sws_update_color_details(
         sws_context;
         inv_table = inv_table,
-        src_range = src_color_range,
+        src_range = swsrange(src_color_range),
         table = table,
-        dst_range = dst_color_range,
+        dst_range = swsrange(dst_color_range),
         sws_color_options...,
     )
     ret || error("Could not set sws color details")
