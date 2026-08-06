@@ -11,14 +11,21 @@ frame-to-frame motion from the codec motion vectors exposed by
 to decide cheaply which frames actually require a full image-domain
 registration pass.
 
+!!! warning "Experimental"
+    `VideoRegistration` is experimental. Its API may change in breaking ways
+    between minor VideoIO releases, and the module may be moved out of
+    VideoIO into a separate package in the future (it is self-contained —
+    stdlib dependencies only — precisely to allow that). The motion-vector
+    extraction API in VideoIO itself (`export_mvs`, `motion_vectors`,
+    `MotionVector`, `correspondences`) is not affected and would remain in
+    VideoIO.
+
 !!! note
     Codec motion vectors are *compression decisions*, not measured optical
     flow. They may be coarse, reference non-adjacent frames, and be misleading
     around scene cuts and intra-coded regions. The module therefore fits
     models robustly (RANSAC) and reports quality metrics so that unreliable
     estimates can be detected and a conventional registration fallback used.
-    The module is self-contained (stdlib dependencies only) and may move to a
-    separate package in the future.
 
 ```@docs
 VideoIO.VideoRegistration
@@ -26,8 +33,10 @@ VideoIO.VideoRegistration
 
 !!! tip "Demo"
     `util/motion_vector_demo.jl` in the VideoIO repository renders a
-    side-by-side video (original | annotated) with per-block dots colored by
-    RANSAC inlier status and an arrow showing the fitted global translation:
+    triple-pane video (original | annotated | globally corrected): per-block
+    dots colored by RANSAC inlier status, an arrow showing the fitted global
+    translation, and a third pane stabilized by warping each frame with the
+    chained global-motion estimates:
     ```
     julia --project=. util/motion_vector_demo.jl [input.mp4] [output.mp4]
     ```
@@ -66,4 +75,5 @@ residuals
 apply_transform
 transform_points
 invert_transform
+compose_transform
 ```

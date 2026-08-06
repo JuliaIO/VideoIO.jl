@@ -890,8 +890,8 @@ vector side data (e.g. I-frames, or codecs that do not export motion vectors).
 Motion vectors are the encoder's *compression decisions*, not measured optical
 flow: they are block-based, may reference non-adjacent frames, and can be
 missing or misleading around scene cuts and intra-coded regions. See the
-`VideoIO.VideoRegistration` module for robust global-motion estimation from
-these vectors.
+(experimental) `VideoIO.VideoRegistration` module for robust global-motion
+estimation from these vectors.
 
 # Example
 ```julia

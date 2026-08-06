@@ -148,6 +148,14 @@ end
         Ainv = invert_transform(A_true)
         @test VideoRegistration.transform_points(Ainv, src) ≈ dst atol = 1e-8
         @test all(residuals(A_true, dst, src) .< 1e-8)
+
+        # composition: applies A first, then B
+        B = [0.9 0.1 -4.0; -0.1 0.9 6.0]
+        C = compose_transform(B, A_true)
+        p = (17.0, -3.0)
+        @test collect(apply_transform(C, p)) ≈
+              collect(apply_transform(B, apply_transform(A_true, p))) atol = 1e-12
+        @test compose_transform(Ainv, A_true) ≈ [1 0 0; 0 1 0] atol = 1e-8
     end
 
     @testset "RANSAC with outliers" begin

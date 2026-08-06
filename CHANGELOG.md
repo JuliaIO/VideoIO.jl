@@ -5,10 +5,11 @@ VideoIO v1.9.0 Release Notes
 - Add decoder motion vector export: `openvideo(file, export_mvs=true)` enables FFmpeg's `AV_CODEC_FLAG2_EXPORT_MVS`,
   and `motion_vectors(reader)` returns the block `MotionVector`s of the most recently read frame. Software decoding
   only (incompatible with `hwaccel`). `correspondences(mvs)` converts them to filtered sub-pixel point-pair matrices.
-- Add the self-contained `VideoIO.VideoRegistration` submodule (candidate for a future standalone package) for robust
-  2D point-set registration from such correspondences: RANSAC-based translation / similarity / affine fitting,
-  residual local motion, quality metrics, and confidence classification for deciding when to fall back to full
-  image-domain registration.
+- Add the self-contained `VideoIO.VideoRegistration` submodule for robust 2D point-set registration from such
+  correspondences: RANSAC-based translation / similarity / affine fitting, residual local motion, quality metrics, and
+  confidence classification for deciding when to fall back to full image-domain registration. **Experimental**: its
+  API may change in breaking ways between minor releases, and the module may be moved out of VideoIO into a separate
+  package in the future.
 
 
 VideoIO v1.8.0 Release Notes

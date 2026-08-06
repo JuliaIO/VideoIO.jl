@@ -6,10 +6,14 @@ residual local motion) from point correspondences, such as those derived from
 codec block motion vectors via `openvideo(...; export_mvs = true)`,
 `VideoIO.motion_vectors`, and `VideoIO.correspondences`.
 
-This module is deliberately self-contained — stdlib dependencies only, and a
-purely point-based API (`n×2` matrices) — so that it can be moved to a
-separate package unchanged. All codec-specific knowledge (motion vector
-semantics, filtering) lives in VideoIO.
+!!! warning "Experimental"
+    This module is experimental: its API may change in breaking ways between
+    minor VideoIO releases, and it may be moved out of VideoIO into a
+    separate package in the future. It is deliberately self-contained —
+    stdlib dependencies only, and a purely point-based API (`n×2` matrices) —
+    so that such a move can happen with the code unchanged. All
+    codec-specific knowledge (motion vector semantics, filtering) lives in
+    VideoIO and would stay there.
 
 Codec motion vectors are *compression decisions*, not measured optical flow.
 This module therefore emphasises robust fitting (RANSAC + closed-form model
@@ -74,6 +78,7 @@ export fit_translation,
     transform_points,
     apply_transform,
     invert_transform,
+    compose_transform,
     residuals,
     local_residuals,
     classify_confidence
@@ -113,6 +118,24 @@ function invert_transform(A::AbstractMatrix)
     Minv = inv(M)
     t = Minv * [-A[1, 3], -A[2, 3]]
     return [Minv[1, 1] Minv[1, 2] t[1]; Minv[2, 1] Minv[2, 2] t[2]]
+end
+
+"""
+    compose_transform(B, A) -> Matrix{Float64}
+
+Compose two 2×3 affine transforms: the result applies `A` first, then `B`, so
+`apply_transform(compose_transform(B, A), p) ==
+apply_transform(B, apply_transform(A, p))`.
+
+Useful for chaining per-frame global-motion estimates into a cumulative
+transform relative to an anchor frame (e.g. for stabilization):
+`C_n = compose_transform(C_{n-1}, A_n)`.
+"""
+function compose_transform(B::AbstractMatrix, A::AbstractMatrix)
+    return [
+        B[1, 1]*A[1, 1]+B[1, 2]*A[2, 1] B[1, 1]*A[1, 2]+B[1, 2]*A[2, 2] B[1, 1]*A[1, 3]+B[1, 2]*A[2, 3]+B[1, 3]
+        B[2, 1]*A[1, 1]+B[2, 2]*A[2, 1] B[2, 1]*A[1, 2]+B[2, 2]*A[2, 2] B[2, 1]*A[1, 3]+B[2, 2]*A[2, 3]+B[2, 3]
+    ]
 end
 
 """

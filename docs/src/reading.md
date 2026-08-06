@@ -120,7 +120,8 @@ close(f)
 These are the encoder's compression decisions, not measured optical flow, but
 they provide a fast approximate motion signal — see
 [Motion-vector based registration](@ref) for robust global-motion estimation
-from them.
+from them (via the experimental `VideoIO.VideoRegistration` module, which may
+move to a separate package in the future).
 
 ```@docs
 VideoIO.motion_vectors
