@@ -13,6 +13,7 @@ makedocs(
         "Introduction"=>"index.md",
         "Reading Videos"=>"reading.md",
         "Writing Videos"=>"writing.md",
+        "Motion-Vector Registration"=>"registration.md",
         "Utilities"=>"utilities.md",
         "Low Level Functionality"=>"lowlevel.md",
         "FFmpeg Reference"=>"ffmpeg_reference.md",

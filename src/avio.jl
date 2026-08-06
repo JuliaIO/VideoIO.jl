@@ -25,7 +25,10 @@ export read,
     hwaccel_available,
     frame_metadata,
     FrameMetadata,
-    VideoCorruptionError
+    VideoCorruptionError,
+    motion_vectors,
+    MotionVector,
+    correspondences
 
 """
     VideoCorruptionError(message)
@@ -190,6 +193,144 @@ end
 const TRANSCODE = true
 const NO_TRANSCODE = false
 
+"""
+    MotionVector
+
+A single block motion vector exported by the decoder (see FFmpeg's
+`AVMotionVector`). Motion vectors describe where the predictor for a block in
+the current frame was taken from in a reference frame:
+
+    src_x = dst_x + motion_x / motion_scale
+    src_y = dst_y + motion_y / motion_scale
+
+# Fields
+- `source::Int32`: negative if the reference frame is in the past, positive if
+  it is in the future (B-frame backward prediction). Note that this does not
+  identify *which* reference frame was used.
+- `w::UInt8`, `h::UInt8`: width and height of the predicted block, in pixels
+- `src_x::Int16`, `src_y::Int16`: absolute source position (rounded to pixels).
+  Use [`src_position`](@ref) for the sub-pixel position.
+- `dst_x::Int16`, `dst_y::Int16`: absolute position of the block in the current frame
+- `flags::UInt64`: currently unused by FFmpeg
+- `motion_x::Int32`, `motion_y::Int32`: motion vector components, in
+  `1 / motion_scale` pixel units
+- `motion_scale::UInt16`: sub-pixel resolution of `motion_x`/`motion_y` (e.g. 4
+  for quarter-pel)
+"""
+struct MotionVector
+    source::Int32
+    w::UInt8
+    h::UInt8
+    src_x::Int16
+    src_y::Int16
+    dst_x::Int16
+    dst_y::Int16
+    flags::UInt64
+    motion_x::Int32
+    motion_y::Int32
+    motion_scale::UInt16
+end
+
+MotionVector(av::libffmpeg.AVMotionVector) = MotionVector(
+    av.source, av.w, av.h, av.src_x, av.src_y, av.dst_x, av.dst_y, av.flags,
+    av.motion_x, av.motion_y, av.motion_scale,
+)
+
+"""
+    displacement(mv::MotionVector) -> (dx, dy)
+
+Sub-pixel displacement from the destination block to its source in the
+reference frame, in pixels: `src = dst .+ displacement(mv)`.
+"""
+function displacement(mv::MotionVector)
+    if mv.motion_scale == 0 # defensive; FFmpeg always sets a nonzero scale
+        return (Float64(mv.src_x - mv.dst_x), Float64(mv.src_y - mv.dst_y))
+    end
+    return (mv.motion_x / Float64(mv.motion_scale), mv.motion_y / Float64(mv.motion_scale))
+end
+
+"""
+    dst_position(mv::MotionVector) -> (x, y)
+
+Position of the predicted block in the current frame, in pixels.
+"""
+dst_position(mv::MotionVector) = (Float64(mv.dst_x), Float64(mv.dst_y))
+
+"""
+    src_position(mv::MotionVector) -> (x, y)
+
+Sub-pixel position of the prediction source in the reference frame, in pixels.
+"""
+src_position(mv::MotionVector) = dst_position(mv) .+ displacement(mv)
+
+"""
+    correspondences(mvs::AbstractVector{MotionVector};
+                    past_only = true, min_block_size = 4,
+                    max_displacement = Inf, frame_size = nothing,
+                    border = 0) -> (dst::Matrix{Float64}, src::Matrix{Float64})
+
+Convert motion vectors into point correspondences suitable for transform
+fitting (e.g. with `VideoIO.VideoRegistration`), applying basic plausibility
+filters. Source positions are computed at sub-pixel resolution from
+`motion_x / motion_scale`.
+
+Filters:
+- `past_only`: drop vectors whose reference frame is in the future
+  (`source > 0`, i.e. B-frame backward prediction).
+- `min_block_size`: drop vectors from blocks smaller than this (either
+  dimension); small partitions tend to be unstable.
+- `max_displacement`: drop vectors whose displacement magnitude (pixels)
+  exceeds this.
+- `frame_size = (width, height)` with `border`: drop vectors whose destination
+  or source point lies outside the frame (shrunk by `border` pixels on each
+  side). Requires `frame_size` to be provided.
+
+Returns `n×2` matrices `dst` (current-frame points) and `src`
+(reference-frame points), row-aligned, with columns `(x, y)` in pixels.
+"""
+function correspondences(
+    mvs::AbstractVector{MotionVector};
+    past_only::Bool = true,
+    min_block_size::Integer = 4,
+    max_displacement::Real = Inf,
+    frame_size::Union{Nothing,Tuple{<:Real,<:Real}} = nothing,
+    border::Real = 0,
+)
+    dst = Float64[]
+    src = Float64[]
+    for mv in mvs
+        past_only && mv.source > 0 && continue
+        (mv.w < min_block_size || mv.h < min_block_size) && continue
+        dx, dy = displacement(mv)
+        hypot(dx, dy) > max_displacement && continue
+        x, y = dst_position(mv)
+        if frame_size !== nothing
+            w, h = frame_size
+            inframe(px, py) = border <= px <= w - border && border <= py <= h - border
+            (inframe(x, y) && inframe(x + dx, y + dy)) || continue
+        end
+        push!(dst, x, y)
+        push!(src, x + dx, y + dy)
+    end
+    n = length(dst) ÷ 2
+    return permutedims(reshape(dst, 2, n)), permutedims(reshape(src, 2, n))
+end
+
+# Read AV_FRAME_DATA_MOTION_VECTORS side data from a decoded frame. Returns an
+# empty vector when the frame carries none (e.g. I-frames).
+function extract_motion_vectors(frame)
+    sd = av_frame_get_side_data(frame, libffmpeg.AV_FRAME_DATA_MOTION_VECTORS)
+    check_ptr_valid(sd, false) || return MotionVector[]
+    sd_loaded = unsafe_load(sd)
+    n = Int(sd_loaded.size ÷ sizeof(libffmpeg.AVMotionVector))
+    mvs = Vector{MotionVector}(undef, n)
+    data = Ptr{libffmpeg.AVMotionVector}(sd_loaded.data)
+    for i in 1:n
+        mvs[i] = MotionVector(unsafe_load(data, i))
+    end
+    return mvs
+end
+
 mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     avin::AVInput{I}
     stream_index0::Int
@@ -211,6 +352,9 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     _swscale_options::OptionsT    # Saved for HW format rebuild
     _sws_color_options::OptionsT  # Saved for HW format rebuild
     strict::Bool                  # Throw VideoCorruptionError on decoder bitstream errors
+    export_mvs::Bool              # Decoder exports motion vector side data
+    mv_queue::Vector{Vector{MotionVector}} # MVs of decoded-but-unconsumed frames (FIFO, parallels frame queue)
+    last_motion_vectors::Vector{MotionVector} # MVs of last frame returned to user
 end
 
 """
@@ -422,7 +566,10 @@ function VideoReader(
     thread_count::Union{Nothing,Int} = Sys.CPU_THREADS,
     hwaccel::Union{Nothing,Symbol} = nothing,
     strict::Bool = false,
+    export_mvs::Bool = false,
 ) where {I}
+    export_mvs && hwaccel !== nothing &&
+        error("`export_mvs` requires software decoding and cannot be combined with `hwaccel`")
     bad_px_type = transcode && target_format !== nothing && !is_pixel_type_supported(target_format)
     bad_px_type && error("Unsupported pixel format $target_format")
 
@@ -452,6 +599,12 @@ function VideoReader(
     if strict
         codec_context.err_recognition = Int32(codec_context.err_recognition |
             libffmpeg.AV_EF_EXPLODE | libffmpeg.AV_EF_CRCCHECK | libffmpeg.AV_EF_BITSTREAM)
+    end
+
+    # Ask the decoder to export motion vectors as frame side data. Must be set
+    # before avcodec_open2.
+    if export_mvs
+        codec_context.flags2 = Cint(codec_context.flags2 | libffmpeg.AV_CODEC_FLAG2_EXPORT_MVS)
     end
 
     # Set up hardware acceleration if requested
@@ -570,6 +723,9 @@ function VideoReader(
         swscale_options,
         sws_color_options,
         strict,
+        export_mvs,
+        Vector{MotionVector}[],
+        MotionVector[],
     )
 
     push!(avin.listening, stream_index0)
@@ -722,6 +878,39 @@ function frame_metadata(r::VideoReader)
     return FrameMetadata(pict_type_char(r.last_pict_type), r.last_keyframe, r.last_consumed_pts)
 end
 
+"""
+    motion_vectors(r::VideoReader) -> Vector{MotionVector}
+
+Return the decoder motion vectors for the most recently read frame.
+
+The video must have been opened with `export_mvs = true` (see [`openvideo`](@ref)),
+otherwise an error is thrown. Returns an empty vector for frames without motion
+vector side data (e.g. I-frames, or codecs that do not export motion vectors).
+
+Motion vectors are the encoder's *compression decisions*, not measured optical
+flow: they are block-based, may reference non-adjacent frames, and can be
+missing or misleading around scene cuts and intra-coded regions. See the
+`VideoIO.VideoRegistration` module for robust global-motion estimation from
+these vectors.
+
+# Example
+```julia
+video = openvideo("video.mp4", export_mvs = true)
+frame = read(video)
+mvs = motion_vectors(video)
+```
+
+# Note
+This reflects the last frame returned to the user by `read`/`read!`. It is
+reset after seeking and is empty before the first frame has been read.
+"""
+function motion_vectors(r::VideoReader)
+    r.export_mvs || error(
+        "Motion vector export not enabled. Open the video with `export_mvs = true`.",
+    )
+    return r.last_motion_vectors
+end
+
 # Does not check input size, meant for internal use only
 function stash_graph_input!(imgbuf, r::VideoReader, align = VIO_ALIGN)
     frame = graph_input_frame(r)
@@ -820,6 +1009,9 @@ function decode(r::VideoReader, packet)
                 throw(VideoCorruptionError("Decoded frame has decode errors (decode_error_flags=$(frame.decode_error_flags))"))
             end
         end
+        # Capture motion vector side data now: it is lost if the frame is later
+        # stashed to the byte-buffer frame queue. Consumed FIFO alongside frames.
+        r.export_mvs && push!(r.mv_queue, extract_motion_vectors(graph_input_frame(r)))
         r.graph_input_occupied = true
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
@@ -858,19 +1050,24 @@ unsupported_retrieval_format(fmt) = error("Unsupported format $(fmt)")
 
 function drop_frame!(r::VideoReader)
     if isempty(r.frame_queue)
-        graph_blocked(r) && remove_graph_input!(r)
+        if graph_blocked(r)
+            remove_graph_input!(r)
+            r.export_mvs && !isempty(r.mv_queue) && popfirst!(r.mv_queue)
+        end
     else
         if r.graph_input_occupied
             push!(r.frame_queue, stash_graph_input(r))
             remove_graph_input!(r)
         end
         popfirst!(r.frame_queue)
+        r.export_mvs && !isempty(r.mv_queue) && popfirst!(r.mv_queue)
     end
     return r
 end
 
 function drop_frames!(r::VideoReader)
     empty!(r.frame_queue)
+    empty!(r.mv_queue)
     return remove_graph_input!(r)
 end
 
@@ -908,6 +1105,9 @@ function capture_pts!(r::VideoReader, frame)
     end
     r.last_pict_type = frame.pict_type
     r.last_keyframe = (frame.flags & AV_FRAME_FLAG_KEY) != 0
+    if r.export_mvs && !isempty(r.mv_queue)
+        r.last_motion_vectors = popfirst!(r.mv_queue)
+    end
     return r
 end
 
@@ -1061,6 +1261,12 @@ arguments listed below.
     Use this when reproducibility / data integrity matters. Note that corruption
     detection is codec and container dependent. The default (`false`) preserves
     standard "lossy playback" behaviour.
+  - `export_mvs::Bool = false`: When `true`, the decoder is opened with the
+    FFmpeg `AV_CODEC_FLAG2_EXPORT_MVS` flag so that block motion vectors are
+    exported for each decoded frame; retrieve them with
+    [`motion_vectors`](@ref) after each `read`/`read!`. Only supported by
+    software decoders that expose motion vectors (e.g. H.264/MPEG), and cannot
+    be combined with `hwaccel`.
 
 # Example
 
@@ -1263,6 +1469,8 @@ function reset_file_position_information!(r::VideoReader)
     r.last_consumed_pts = AV_NOPTS_VALUE  # Reset position tracking after seek
     r.last_pict_type = AV_PICTURE_TYPE_NONE
     r.last_keyframe = false
+    # Fresh vector rather than empty! — the user may hold the returned vector
+    r.last_motion_vectors = MotionVector[]
     return r.finished = false
 end
 

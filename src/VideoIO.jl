@@ -39,6 +39,8 @@ include("avdictionary.jl")
 include("avframe_transfer.jl")
 include("frame_graph.jl")
 include("avio.jl")
+include("registration.jl")
+include("registration_glue.jl")
 include("encoding.jl")
 include("testvideos.jl")
 
