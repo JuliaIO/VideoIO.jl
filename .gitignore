@@ -10,3 +10,4 @@ docs/build/
 test/temp.stream
 .vscode/
 *.heapsnapshot
+tmp/

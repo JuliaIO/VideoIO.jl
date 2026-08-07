@@ -37,6 +37,8 @@ start_time = time()
     @memory_profile
     include("strict_mode.jl")
     @memory_profile
+    include("registration.jl")
+    @memory_profile
 
     GC.gc()
     rm(tempvidpath, force = true)

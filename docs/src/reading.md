@@ -102,6 +102,36 @@ VideoIO.frame_metadata
 VideoIO.FrameMetadata
 ```
 
+### Codec motion vectors
+
+Opening a video with `export_mvs = true` asks the decoder to export the block
+motion vectors it used for inter-frame prediction (e.g. for H.264). After each
+`read`/`read!`, they are available via `motion_vectors(f)`:
+
+```julia
+f = VideoIO.openvideo(filename, export_mvs = true)
+while !eof(f)
+    img = read(f)
+    mvs = VideoIO.motion_vectors(f)  # empty for I-frames
+end
+close(f)
+```
+
+These are the encoder's compression decisions, not measured optical flow, but
+they provide a fast approximate motion signal — see
+[Motion-vector based registration](@ref) for robust global-motion estimation
+from them (via the experimental `VideoIO.VideoRegistration` module, which may
+move to a separate package in the future).
+
+```@docs
+VideoIO.motion_vectors
+VideoIO.MotionVector
+VideoIO.displacement
+VideoIO.src_position
+VideoIO.dst_position
+VideoIO.correspondences
+```
+
 !!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames
 available for reading.
 
