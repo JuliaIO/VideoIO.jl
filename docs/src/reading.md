@@ -132,9 +132,6 @@ VideoIO.dst_position
 VideoIO.correspondences
 ```
 
-!!! note H264 videos encoded with `crf>0` have been observed to have 4-fewer frames
-available for reading.
-
 ### Changing the target pixel format for reading
 It can be helpful to be explicit in which pixel format you wish to read frames as.
 Here a grayscale video is read and parsed into a `Vector(Array{UInt8}}`
