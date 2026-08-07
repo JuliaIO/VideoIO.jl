@@ -28,7 +28,7 @@ registration pass.
     estimates can be detected and a conventional registration fallback used.
 
 ```@docs
-VideoIO.VideoRegistration
+VideoRegistration
 ```
 
 !!! tip "Demo"
