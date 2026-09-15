@@ -39,6 +39,7 @@ include("avdictionary.jl")
 include("avframe_transfer.jl")
 include("frame_graph.jl")
 include("avio.jl")
+include("audio.jl")
 include("registration.jl")
 include("registration_glue.jl")
 include("encoding.jl")
@@ -140,6 +141,8 @@ VideoIO supports reading and writing video files.
   - `openvideo` and `opencamera` provide access to video files and livestreams
   - `read` and `read!` allow reading frames
   - `seek`, `seekstart`, `skipframe`, and `skipframes` support access of specific frames
+  - `openaudio` and `VideoIO.loadaudio` decode audio streams into sample matrices
+  - `VideoIO.extract_audio` writes the audio of a video to an audio file
   - `VideoIO.save` for encoding an entire framestack in one step
   - `open_video_out`, `write` for writing frames sequentially to a file
   - `gettime` and `counttotalframes` provide information
