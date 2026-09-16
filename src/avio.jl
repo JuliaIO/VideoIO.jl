@@ -1548,8 +1548,10 @@ next_frame_pts(r::VideoReader) = isempty(r.meta_queue) ? graph_input_frame(r).pt
     seek(avin::AVInput, seconds::AbstractFloat, video_stream::Integer=1)
 
 Seek through the container format `avin` so that the next frame returned by
-the stream indicated by `video_stream` will have a timestamp greater than or
-equal to `seconds`.
+the stream indicated by `video_stream` is the one being shown at `seconds`:
+the frame whose presentation interval holds `seconds`, so its timestamp can be
+up to one frame period earlier. A target before the stream lands on its first
+frame. Other readers sharing `avin` are repositioned to `seconds` as well.
 """
 function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer = 1) where {T<:AbstractString}
     return _seek_stream!(avin, seconds, avin.video_indices[video_stream])
