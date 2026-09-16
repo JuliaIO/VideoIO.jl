@@ -1,3 +1,28 @@
+VideoIO v1.10.0 Release Notes
+=============================
+## New features
+
+- Add audio decoding. `openaudio(file)` returns an `AudioReader` that decodes an audio stream into
+  `nsamples × nchannels` matrices via `read`, `read(reader, n)`, `read!`, or iteration, with `seek`, `seekstart`,
+  `eof`, and `gettime` support. Keyword arguments `samplerate`, `nchannels` and `eltype` resample, remix and convert
+  the samples (e.g. `openaudio(file, samplerate = 16000, nchannels = 1)` for mono 16 kHz `Float32`). Audio and video
+  streams of one file can be read side by side by opening both from the same `VideoIO.open(file)` `AVInput`.
+  `VideoIO.loadaudio(file)` decodes a whole stream (or a `start`/`duration` portion) into memory, returning
+  `(samples, samplerate)`. `VideoIO.extract_audio(input, output)` writes an audio stream to a standalone audio file
+  (WAV, FLAC, MP3, M4A, ...) via the `ffmpeg` executable, optionally re-encoding, resampling, or stream-copying.
+  Fixes #7.
+
+## Bug fixes
+
+- Reading several streams of one `AVInput` side by side (e.g. `openvideo(io)` and `openaudio(io)`) now works:
+  - `eof(reader)` only reports the state of that reader's stream. Previously it reported `false` whenever *any*
+    stream had decoded frames waiting, after which `read` failed with "Could not scale frame".
+  - Video frames decoded while another stream is being read are queued as raw bytes; reading them back crashed
+    with a `MethodError`, and they lost their timestamps (so `gettime` and `frame_metadata` went stale).
+  - Seeking reset and trimmed the readers one at a time, so packets pumped while trimming the first reader were
+    discarded from the others, skipping up to a container interleave (~0.5 s in MP4) of their data.
+
+
 VideoIO v1.9.0 Release Notes
 ============================
 ## New features
