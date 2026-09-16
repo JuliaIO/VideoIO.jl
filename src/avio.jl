@@ -1539,23 +1539,54 @@ function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer = 1) wher
     # is not reliable for this: it can be later than the first decoded frame), which ends the loop.
     margin = 0
     previous = AV_NOPTS_VALUE
+    landed = AV_NOPTS_VALUE
     while true
-        ret = avformat_seek_file(avin.format_context, stream_index0, typemin(Int), pts - margin, typemax(Int), 0)
-        ret < 0 && throw(ErrorException("Could not seek in stream"))
-        avin.finished = false
-        for r in values(avin.stream_contexts)
-            reset_file_position_information!(r)
-        end
-        pump_until_frame(reader, false) || break
-        landed = graph_input_frame(reader).pts
+        landed = seek_landing_pts!(avin, stream_index0, pts - margin)
         (landed == AV_NOPTS_VALUE || landed <= pts || landed == previous) && break
         previous = landed
         margin = margin == 0 ? seconds_to_timestamp(1, time_base) : 2margin
     end
     for r in values(avin.stream_contexts)
-        seek_trim(r, seconds)
+        r === reader || seek_trim(r, seconds)
+    end
+    if landed == AV_NOPTS_VALUE
+        seek_trim(reader, seconds)
+    elseif landed < pts
+        # Trim forward to the frame whose [pts, pts + period) holds the target. The period is measured from the decoded
+        # timestamps rather than taken from `r_frame_rate` (as `seek_trim` does): on field-coded interlaced video
+        # `r_frame_rate` and `frame.duration` are the *field* period, half the frame period, so a target between two
+        # frames landed on the later one. A frame is only known to be the one once the next has been decoded, so when
+        # that next frame is past the target, seek to the same point again, which lands on the same frame.
+        current = landed
+        while true
+            drop_frame!(reader)
+            if !pump_until_frame(reader, false) || graph_input_frame(reader).pts == AV_NOPTS_VALUE
+                break
+            end
+            next = graph_input_frame(reader).pts
+            if next > pts
+                seek_landing_pts!(avin, stream_index0, pts - margin) == current || seek_trim(reader, seconds)
+                break
+            end
+            next + (next - current) > pts && break
+            current = next
+        end
     end
     return avin
+end
+
+# Seek the container to `target_pts` in the stream `stream_index0`, reset every stream's decoding state, and decode that
+# stream's first frame, returning its pts (`AV_NOPTS_VALUE` if there is no frame or it has no timestamp).
+function seek_landing_pts!(avin::AVInput, stream_index0, target_pts)
+    ret = avformat_seek_file(avin.format_context, stream_index0, typemin(Int), target_pts, typemax(Int), 0)
+    ret < 0 && throw(ErrorException("Could not seek in stream"))
+    avin.finished = false
+    for r in values(avin.stream_contexts)
+        reset_file_position_information!(r)
+    end
+    reader = avin.stream_contexts[stream_index0]
+    pump_until_frame(reader, false) || return AV_NOPTS_VALUE
+    return graph_input_frame(reader).pts
 end
 """
     seekstart(reader::VideoReader)
