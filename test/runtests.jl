@@ -1,7 +1,7 @@
 using Test
 using ColorTypes: RGB, Gray, N0f8, red, green, blue
 using ColorVectorSpace: ColorVectorSpace
-using FileIO, ImageCore, Dates, Statistics, StatsBase
+using FileIO, ImageCore, Dates, Downloads, Statistics, StatsBase
 using Profile
 
 using FFMPEG: FFMPEG

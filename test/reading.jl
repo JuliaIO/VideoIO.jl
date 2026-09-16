@@ -337,3 +337,41 @@ end
         rm(tspath, force = true)
     end
 end
+
+@testset "Seeking in field-coded interlaced video lands on the target frame (#468)" begin
+    # On field-coded (PAFF) H.264 with one packet per field, `r_frame_rate` is the field rate, twice the rate at which
+    # decoded frames arrive, so trimming a seek by it dropped the frame holding a target in the second half of its
+    # interval. ffmpeg has no PAFF encoder, so this uses FI1_Sony_E from the ITU-T H.264.1 (JVT) conformance suite
+    # (I and P frames only, so pts = dts) and gives its field packets 1/50 s timestamps, as in the MPEG-TS from a 50i
+    # camcorder.
+    fps = 25
+    rawpath = joinpath(tempdir(), "videoio_seek_468.jsv")
+    Downloads.download("https://github.com/JuliaIO/VideoIO.jl/releases/download/test-videos/FI1_Sony_E.jsv", rawpath)
+    try
+        for (fmt, ext) in (("mpegts", "ts"), ("mp4", "mp4"))
+            path = joinpath(tempdir(), "videoio_seek_468.$ext")
+            FFMPEG.exe(`-y -v error -f h264 -framerate $(2fps) -i $rawpath -c copy -bsf:v setts=pts=DTS -f $fmt $path`)
+            try
+                @test get_fps(path) == 2fps # the field rate, the case that used to fail
+                v = VideoIO.openvideo(path)
+                try
+                    img = read(v)
+                    t0 = VideoIO.gettime(v)
+                    # 17 frames; the frame whose [pts, pts + period) holds the target, or the first frame before the stream
+                    for s in (-1.0, 0.0, 0.01, 0.02, 0.04, 0.06, 0.2, 0.22, 0.3, 0.5, 0.52, 0.58, 0.63)
+                        seek(v, t0 + s)
+                        read!(v, img)
+                        expected = t0 + max(0, floor(Int, round(s * fps, digits = 3))) / fps
+                        @test VideoIO.gettime(v) ≈ expected atol = 1 / 2fps
+                    end
+                finally
+                    close(v)
+                end
+            finally
+                rm(path, force = true)
+            end
+        end
+    finally
+        rm(rawpath, force = true)
+    end
+end
