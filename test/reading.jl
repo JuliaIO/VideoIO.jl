@@ -311,3 +311,29 @@ end
     end
 end
 @memory_profile
+
+@testset "Seeking in MPEG-TS lands on the target frame (#427)" begin
+    # MPEG-TS has no seek index, and a seek there used to land up to a GOP after the target.
+    fps = 25
+    tspath = joinpath(tempdir(), "videoio_seek_427.ts")
+    source = `-f lavfi -i testsrc2=size=160x120:rate=$fps -t 10`
+    FFMPEG.exe(`-y -v error $source -c:v libx264 -g 13 -pix_fmt yuv420p -f mpegts $tspath`)
+    try
+        v = VideoIO.openvideo(tspath)
+        try
+            img = read(v)
+            t0 = VideoIO.gettime(v)
+            # the frame whose [pts, pts + period) holds the target, or the first frame before the stream
+            for s in (-1.0, 0.0, 0.01, 0.04, 0.2, 0.5, 0.52, 1.0, 1.3, 2.0, 7.77)
+                seek(v, t0 + s)
+                read!(v, img)
+                expected = t0 + max(0, floor(Int, round(s * fps, digits = 3))) / fps
+                @test VideoIO.gettime(v) ≈ expected atol = 1 / 2fps
+            end
+        finally
+            close(v)
+        end
+    finally
+        rm(tspath, force = true)
+    end
+end

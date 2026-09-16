@@ -1530,11 +1530,29 @@ function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer = 1) wher
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && error("No time base for stream")
     pts = seconds_to_timestamp(seconds, time_base)
-    ret = avformat_seek_file(avin.format_context, stream_index0, typemin(Int), pts, typemax(Int), 0)
-    ret < 0 && throw(ErrorException("Could not seek in stream"))
-    avin.finished = false
+    reader = avin.stream_contexts[stream_index0]
+    # In containers without a seek index (e.g. MPEG-TS), the demuxer's seek plus the decoder's wait
+    # for a keyframe can make the first decoded frame land up to a GOP *after* `pts`, and `seek_trim`
+    # only drops frames, so it cannot recover (#427). So check where the first frame landed and, while
+    # it is past the target, seek again from further back — one second, then doubling. Once backing
+    # off no longer moves the landing frame, the seek is at the start of the stream (`stream.start_time`
+    # is not reliable for this: it can be later than the first decoded frame), which ends the loop.
+    margin = 0
+    previous = AV_NOPTS_VALUE
+    while true
+        ret = avformat_seek_file(avin.format_context, stream_index0, typemin(Int), pts - margin, typemax(Int), 0)
+        ret < 0 && throw(ErrorException("Could not seek in stream"))
+        avin.finished = false
+        for r in values(avin.stream_contexts)
+            reset_file_position_information!(r)
+        end
+        pump_until_frame(reader, false) || break
+        landed = graph_input_frame(reader).pts
+        (landed == AV_NOPTS_VALUE || landed <= pts || landed == previous) && break
+        previous = landed
+        margin = margin == 0 ? seconds_to_timestamp(1, time_base) : 2margin
+    end
     for r in values(avin.stream_contexts)
-        reset_file_position_information!(r)
         seek_trim(r, seconds)
     end
     return avin
