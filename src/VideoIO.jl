@@ -28,7 +28,9 @@ import Base:
 const VIO_LOCK = ReentrantLock()
 
 include("util.jl")
-include("../lib/libffmpeg.jl")
+import FFMPEG_jll
+# Struct layouts and enum values change between FFmpeg major versions, so load the bindings for the one in use
+include("../lib/libffmpeg_$(pkgversion(FFMPEG_jll).major).jl")
 using .libffmpeg
 using FFMPEG: ffmpeg, FFMPEG
 
