@@ -1535,15 +1535,22 @@ function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer = 1) wher
     # for a keyframe can make the first decoded frame land up to a GOP *after* `pts`, and `seek_trim`
     # only drops frames, so it cannot recover (#427). So check where the first frame landed and, while
     # it is past the target, seek again from further back — one second, then doubling. Once backing
-    # off no longer moves the landing frame, the seek is at the start of the stream (`stream.start_time`
-    # is not reliable for this: it can be later than the first decoded frame), which ends the loop.
+    # off from a target already before the container's start time no longer moves the landing frame, the
+    # seek is at the start of the stream, which ends the loop (`stream.start_time` alone is not reliable
+    # for this: it can be later than the first decoded frame). An unchanged landing frame is not enough on
+    # its own: a seek to the first keyframe's pts, or slightly before it, can land on the next keyframe,
+    # while a seek from further back still reaches it.
+    fc_start = avin.format_context.start_time
+    container_start = fc_start == AV_NOPTS_VALUE ? typemax(Int64) : seconds_to_timestamp(fc_start // AV_TIME_BASE, time_base)
     margin = 0
     previous = AV_NOPTS_VALUE
+    previous_target = typemax(Int64)
     landed = AV_NOPTS_VALUE
     while true
         landed = seek_landing_pts!(avin, stream_index0, pts - margin)
-        (landed == AV_NOPTS_VALUE || landed <= pts || landed == previous) && break
+        (landed == AV_NOPTS_VALUE || landed <= pts || (landed == previous && previous_target < container_start)) && break
         previous = landed
+        previous_target = pts - margin
         margin = margin == 0 ? seconds_to_timestamp(1, time_base) : 2margin
     end
     for r in values(avin.stream_contexts)
