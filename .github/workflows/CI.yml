@@ -8,7 +8,45 @@ on:
     tags: '*'
 
 jobs:
+  # Bindings are loaded per FFmpeg major version, so every minor version of FFMPEG_jll that compat allows is tested.
+  # The newest resolves by default in the main matrix, and the older ones get extra jobs on Julia 1.
+  ffmpeg_jll_versions:
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.versions.outputs.include }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1'
+      - id: versions
+        shell: julia --color=yes {0}
+        run: |
+          using Downloads, Pkg, TOML
+          spec = Pkg.Versions.semver_spec(TOML.parsefile("Project.toml")["compat"]["FFMPEG_jll"])
+          url = "https://raw.githubusercontent.com/JuliaRegistries/General/master/jll/F/FFMPEG_jll/Versions.toml"
+          registered = TOML.parse(read(Downloads.download(url), String))
+          versions = [VersionNumber(v) for (v, info) in registered if !get(info, "yanked", false)]
+          filter!(in(spec), versions)
+          # The newest release of each minor version
+          latest = Dict{Tuple{UInt32,UInt32},VersionNumber}()
+          for v in versions
+              key = (v.major, v.minor)
+              latest[key] = max(get(latest, key, v), v)
+          end
+          older = sort!(collect(values(latest)))[1:(end - 1)]
+          runners = [("ubuntu-latest", "x64"), ("macos-latest", "aarch64"), ("windows-latest", "x64")]
+          entries = [
+              """{"os":"$os","julia-arch":"$arch","julia-version":"1","ffmpeg_jll":"$(v.major).$(v.minor).$(v.patch)"}"""
+              for v in older for (os, arch) in runners
+          ]
+          open(ENV["GITHUB_OUTPUT"], "a") do io
+              println(io, "include=[", join(entries, ","), "]")
+          end
+
   test:
+    needs: ffmpeg_jll_versions
+    name: test (${{ matrix.os }}, ${{ matrix.julia-arch }}, ${{ matrix.julia-version }}${{ matrix.ffmpeg_jll && format(', FFMPEG_jll {0}', matrix.ffmpeg_jll) || '' }})
     # needed to allow julia-actions/cache to delete old caches that it has created
     permissions:
       actions: write
@@ -29,6 +67,8 @@ jobs:
           - 'lts'
           - '1'
           - 'pre'
+        ffmpeg_jll:
+          - '' # whatever resolves, the newest allowed by compat
         exclude:
           - os: ubuntu-latest
             julia-arch: aarch64
@@ -38,6 +78,7 @@ jobs:
             julia-arch: x86
           - os: macos-latest
             julia-arch: x64
+        include: ${{ fromJSON(needs.ffmpeg_jll_versions.outputs.include) }}
 
     steps:
       - uses: actions/checkout@v7
@@ -45,10 +86,19 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
       - uses: julia-actions/cache@v3
+      - name: Pin FFMPEG_jll to ${{ matrix.ffmpeg_jll }}
+        if: matrix.ffmpeg_jll != ''
+        shell: julia --color=yes {0}
+        run: |
+          using TOML
+          old = TOML.parsefile("Project.toml")["compat"]["FFMPEG_jll"]
+          s = replace(read("Project.toml", String), "FFMPEG_jll = \"$old\"" => "FFMPEG_jll = \"=$(ENV["FFMPEG_JLL"])\"")
+          write("Project.toml", s)
+        env:
+          FFMPEG_JLL: ${{ matrix.ffmpeg_jll }}
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
-

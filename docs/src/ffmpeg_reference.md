@@ -11,6 +11,8 @@ Depth = 2
 
 VideoIO provides Julia bindings to FFmpeg through the `VideoIO.libffmpeg` module. This module contains over 1,000 functions, constants, and types from FFmpeg's C libraries. While most users will use VideoIO's high-level API (see [Reading Videos](@ref) and [Writing Videos](@ref)), advanced users may need direct access to FFmpeg functionality.
 
+VideoIO supports the two most recent FFmpeg major versions (currently 8 and 9), and `libffmpeg` matches the major version of the installed `FFMPEG_jll`. Struct fields, constants and functions can differ between them, so code using `libffmpeg` directly should stick to what both provide.
+
 ### FFmpeg Subpackages
 
 Each FFmpeg library is exposed as a VideoIO subpackage:
