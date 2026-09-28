@@ -355,6 +355,7 @@ mutable struct VideoReader{transcode,T<:GraphType,I} <: StreamContext
     export_mvs::Bool              # Decoder exports motion vector side data
     mv_queue::Vector{Vector{MotionVector}} # MVs of decoded-but-unconsumed frames (FIFO, parallels frame queue)
     last_motion_vectors::Vector{MotionVector} # MVs of last frame returned to user
+    meta_queue::Vector{Tuple{Int64,AVPictureType,Bool}} # (pts, pict_type, keyframe) of decoded-but-unconsumed frames (FIFO)
 end
 
 """
@@ -726,6 +727,7 @@ function VideoReader(
         export_mvs,
         Vector{MotionVector}[],
         MotionVector[],
+        Tuple{Int64,AVPictureType,Bool}[],
     )
 
     push!(avin.listening, stream_index0)
@@ -929,17 +931,26 @@ end
 
 stash_graph_input(r, align = VIO_ALIGN) = stash_graph_input!(Vector{UInt8}(undef, out_bytes_size(r, align)), r, align)
 
+# Copy the planes stashed in `imgbuf` (see `stash_graph_input!`) into a fresh
+# buffer owned by the graph input frame.
 function unpack_stashed_planes!(r::VideoReader, imgbuf)
     frame = graph_input_frame(r)
-    av_frame_make_writable(frame)
-    av_image_fill_arrays(
-        frame,
-        frame.linesize,
-        imgbuf,
+    width = r.codec_context.width
+    height = r.codec_context.height
+    av_frame_unref(frame)
+    set_basic_frame_properties!(frame, width, height, r.input_pix_fmt)
+    src_data = Vector{Ptr{UInt8}}(undef, 8)
+    src_linesize = Vector{Cint}(undef, 8)
+    ret = av_image_fill_arrays(src_data, src_linesize, imgbuf, r.input_pix_fmt, width, height, VIO_ALIGN)
+    ret < 0 && error("Could not interpret stashed frame data: $(av_error_string(ret))")
+    GC.@preserve imgbuf av_image_copy(
+        convert(Ptr{Ptr{UInt8}}, field_ptr(frame, :data)),
+        convert(Ptr{Cint}, field_ptr(frame, :linesize)),
+        src_data,
+        src_linesize,
         r.input_pix_fmt,
-        r.codec_context.width,
-        r.codec_context.height,
-        VIO_ALIGN,
+        width,
+        height,
     )
     return r
 end
@@ -1012,6 +1023,10 @@ function decode(r::VideoReader, packet)
         # Capture motion vector side data now: it is lost if the frame is later
         # stashed to the byte-buffer frame queue. Consumed FIFO alongside frames.
         r.export_mvs && push!(r.mv_queue, extract_motion_vectors(graph_input_frame(r)))
+        # Likewise timestamps and picture type: a stashed frame is raw bytes only.
+        let frame = graph_input_frame(r)
+            push!(r.meta_queue, (frame.pts, frame.pict_type, (frame.flags & AV_FRAME_FLAG_KEY) != 0))
+        end
         r.graph_input_occupied = true
     elseif fret == VIO_AVERROR_EOF
         r.finished = true
@@ -1053,6 +1068,7 @@ function drop_frame!(r::VideoReader)
         if graph_blocked(r)
             remove_graph_input!(r)
             r.export_mvs && !isempty(r.mv_queue) && popfirst!(r.mv_queue)
+            !isempty(r.meta_queue) && popfirst!(r.meta_queue)
         end
     else
         if r.graph_input_occupied
@@ -1061,6 +1077,7 @@ function drop_frame!(r::VideoReader)
         end
         popfirst!(r.frame_queue)
         r.export_mvs && !isempty(r.mv_queue) && popfirst!(r.mv_queue)
+        !isempty(r.meta_queue) && popfirst!(r.meta_queue)
     end
     return r
 end
@@ -1068,6 +1085,7 @@ end
 function drop_frames!(r::VideoReader)
     empty!(r.frame_queue)
     empty!(r.mv_queue)
+    empty!(r.meta_queue)
     return remove_graph_input!(r)
 end
 
@@ -1100,11 +1118,16 @@ end
 
 # Helper function to capture PTS and metadata of the current frame
 function capture_pts!(r::VideoReader, frame)
-    if frame.pts != AV_NOPTS_VALUE
-        r.last_consumed_pts = frame.pts
+    if isempty(r.meta_queue)
+        pts, pict_type, keyframe = frame.pts, frame.pict_type, (frame.flags & AV_FRAME_FLAG_KEY) != 0
+    else
+        pts, pict_type, keyframe = popfirst!(r.meta_queue)
     end
-    r.last_pict_type = frame.pict_type
-    r.last_keyframe = (frame.flags & AV_FRAME_FLAG_KEY) != 0
+    if pts != AV_NOPTS_VALUE
+        r.last_consumed_pts = pts
+    end
+    r.last_pict_type = pict_type
+    r.last_keyframe = keyframe
     if r.export_mvs && !isempty(r.mv_queue)
         r.last_motion_vectors = popfirst!(r.mv_queue)
     end
@@ -1143,7 +1166,7 @@ function _retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
 end
 
 function retrieve_raw!(r, buf::VidRawBuff, align = VIO_ALIGN)
-    fill_graph_input!(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
+    pump_until_frame(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
     if !raw_buff_check(buf, r, align)
         throw(ArgumentError("Buffer is the wrong size or stride"))
     end
@@ -1167,7 +1190,7 @@ end
 retrieve!(r::VideoReader{NO_TRANSCODE}, buf::VidRawBuff, args...) = retrieve_raw!(r, buf, args...)
 
 function retrieve_raw(r::VideoReader, align = VIO_ALIGN)
-    fill_graph_input!(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
+    pump_until_frame(r)  # pump first: lazy HW format correction may update r.input_pix_fmt
     imgbuf = Vector{UInt8}(undef, out_bytes_size(r, align))  # sized for the real format
     _retrieve_raw!(r, imgbuf, align)
     return imgbuf, align
@@ -1462,7 +1485,7 @@ function gettime(s::VideoReader)
 end
 
 # To be called for all stream contexts following a seek of AVInput
-function reset_file_position_information!(r::VideoReader)
+function reset_file_position_information!(r::VideoReader, _)
     avcodec_flush_buffers(r.codec_context)
     drop_frames!(r)
     r.flush = false
@@ -1509,52 +1532,69 @@ function seek_trim(r::VideoReader, seconds::Number)
     frame_period_timebase = round(Int64, 1 / (frame_rate * time_base))
     gotframe = pump_until_frame(r, false)
     # If advancing another frame would still leave us before the target
-
-    frame = graph_input_frame(r)
-    while gotframe && frame.pts != AV_NOPTS_VALUE && frame.pts + frame_period_timebase <= target_pts
+    while gotframe
+        pts = next_frame_pts(r)
+        (pts != AV_NOPTS_VALUE && pts + frame_period_timebase <= target_pts) || break
         drop_frame!(r)
         gotframe = pump_until_frame(r, false)
     end
 end
 
+# pts of the next frame `read` would return: the front of the queue, or the
+# graph input frame when nothing is queued
+next_frame_pts(r::VideoReader) = isempty(r.meta_queue) ? graph_input_frame(r).pts : r.meta_queue[1][1]
+
 """
     seek(avin::AVInput, seconds::AbstractFloat, video_stream::Integer=1)
 
 Seek through the container format `avin` so that the next frame returned by
-the stream indicated by `video_stream` will have a timestamp greater than or
-equal to `seconds`.
+the stream indicated by `video_stream` is the one being shown at `seconds`:
+the frame whose presentation interval holds `seconds`, so its timestamp can be
+up to one frame period earlier. A target before the stream lands on its first
+frame. Other readers sharing `avin` are repositioned to `seconds` as well.
 """
 function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer = 1) where {T<:AbstractString}
-    stream_index0 = avin.video_indices[video_stream]
+    return _seek_stream!(avin, seconds, avin.video_indices[video_stream])
+end
+
+# Seconds of data a reader needs to decode before `seek` output is accurate
+seek_preroll(::StreamContext) = 0.0
+
+# Seek the container using the time base of stream `stream_index0`, landing
+# far enough before `seconds` for every attached reader's decoder to warm up,
+# then reposition every attached reader (video or audio) to `seconds`.
+function _seek_stream!(avin::AVInput{<:AbstractString}, seconds::Number, stream_index0::Integer)
     stream = get_stream(avin, stream_index0)
     time_base = convert(Rational, stream.time_base)
     time_base == 0 && error("No time base for stream")
     pts = seconds_to_timestamp(seconds, time_base)
+    # Land far enough before the target for every attached reader's decoder to warm up
+    preroll = maximum(seek_preroll, values(avin.stream_contexts); init = 0.0)
+    target = seconds_to_timestamp(max(seconds - preroll, 0), time_base)
     reader = avin.stream_contexts[stream_index0]
     # In containers without a seek index (e.g. MPEG-TS), the demuxer's seek plus the decoder's wait
-    # for a keyframe can make the first decoded frame land up to a GOP *after* `pts`, and `seek_trim`
+    # for a keyframe can make the first decoded frame land up to a GOP *after* `target`, and `seek_trim`
     # only drops frames, so it cannot recover (#427). So check where the first frame landed and, while
-    # it is past the target, seek again from further back — one second, then doubling. Once backing
-    # off from a target already before the container's start time no longer moves the landing frame, the
-    # seek is at the start of the stream, which ends the loop (`stream.start_time` alone is not reliable
-    # for this: it can be later than the first decoded frame). An unchanged landing frame is not enough on
-    # its own: a seek to the first keyframe's pts, or slightly before it, can land on the next keyframe,
-    # while a seek from further back still reaches it.
+    # it is past the target, seek again from further back — one second, then doubling. Every reader is
+    # checked: in MPEG-TS an audio stream lands on target while a video stream sharing the input waits
+    # for its next keyframe. Once the target is before the container's start time, seek to the start
+    # through the container's default stream instead, and stop there. A seek through the stream itself is
+    # not reliable near the start: a target at or just before the first keyframe can land on the next
+    # one, and a seek through an audio stream cannot reach a video keyframe that comes before the first
+    # audio packet. If the start time is unknown, stop once backing off no longer moves any landing.
     fc_start = avin.format_context.start_time
-    container_start = fc_start == AV_NOPTS_VALUE ? typemax(Int64) : seconds_to_timestamp(fc_start // AV_TIME_BASE, time_base)
+    container_start = fc_start == AV_NOPTS_VALUE ? typemin(Int64) : seconds_to_timestamp(fc_start // AV_TIME_BASE, time_base)
+    land!(margin) = seek_landing_pts!(avin, stream_index0, target - margin; from_start = target - margin < container_start)
     margin = 0
-    previous = AV_NOPTS_VALUE
-    previous_target = typemax(Int64)
+    previous = nothing
     landed = AV_NOPTS_VALUE
     while true
-        landed = seek_landing_pts!(avin, stream_index0, pts - margin)
-        (landed == AV_NOPTS_VALUE || landed <= pts || (landed == previous && previous_target < container_start)) && break
-        previous = landed
-        previous_target = pts - margin
+        landed = land!(margin)
+        times = [landing_time(r) for r in values(avin.stream_contexts)]
+        late = (landed != AV_NOPTS_VALUE && landed > target) || any(>(seconds), times)
+        (!late || target - margin < container_start || (fc_start == AV_NOPTS_VALUE && isequal((landed, times), previous))) && break
+        previous = (landed, times)
         margin = margin == 0 ? seconds_to_timestamp(1, time_base) : 2margin
-    end
-    for r in values(avin.stream_contexts)
-        r === reader || seek_trim(r, seconds)
     end
     if landed == AV_NOPTS_VALUE
         seek_trim(reader, seconds)
@@ -1567,34 +1607,62 @@ function seek(avin::AVInput{T}, seconds::Number, video_stream::Integer = 1) wher
         current = landed
         while true
             drop_frame!(reader)
-            if !pump_until_frame(reader, false) || graph_input_frame(reader).pts == AV_NOPTS_VALUE
+            if !pump_until_frame(reader, false) || next_frame_pts(reader) == AV_NOPTS_VALUE
                 break
             end
-            next = graph_input_frame(reader).pts
+            next = next_frame_pts(reader)
             if next > pts
-                seek_landing_pts!(avin, stream_index0, pts - margin) == current || seek_trim(reader, seconds)
+                land!(margin) == current || seek_trim(reader, seconds)
                 break
             end
             next + (next - current) > pts && break
             current = next
         end
     end
+    # The other readers last: the re-seek above resets every reader, and pumping for `reader` queues
+    # frames for the others, which `seek_trim` allows for.
+    for r in values(avin.stream_contexts)
+        r === reader || seek_trim(r, seconds)
+    end
     return avin
 end
 
-# Seek the container to `target_pts` in the stream `stream_index0`, reset every stream's decoding state, and decode that
-# stream's first frame, returning its pts (`AV_NOPTS_VALUE` if there is no frame or it has no timestamp).
-function seek_landing_pts!(avin::AVInput, stream_index0, target_pts)
-    ret = avformat_seek_file(avin.format_context, stream_index0, typemin(Int), target_pts, typemax(Int), 0)
+_seek_stream!(avin::AVInput{<:IO}, args...) = throw(ErrorException("Sorry, Seeking is not supported from IO streams"))
+
+# Seek the container to `target_pts` in the stream `stream_index0`, or to its start by its default stream if
+# `from_start`, reset every stream's decoding state, and decode the first frame of stream `stream_index0`, returning its
+# pts (`AV_NOPTS_VALUE` if there is no frame or it has no timestamp).
+function seek_landing_pts!(avin::AVInput, stream_index0, target_pts; from_start::Bool = false)
+    fc = avin.format_context
+    if from_start
+        # A second early, as a seek to exactly the first keyframe can land on the next one
+        ret = avformat_seek_file(fc, -1, typemin(Int), fc.start_time - AV_TIME_BASE, typemax(Int), 0)
+        seconds = fc.start_time / AV_TIME_BASE
+    else
+        ret = avformat_seek_file(fc, stream_index0, typemin(Int), target_pts, typemax(Int), 0)
+        seconds = Float64(target_pts * convert(Rational, get_stream(avin, stream_index0).time_base))
+    end
     ret < 0 && throw(ErrorException("Could not seek in stream"))
     avin.finished = false
+    seconds = max(seconds, 0.0)
     for r in values(avin.stream_contexts)
-        reset_file_position_information!(r)
+        reset_file_position_information!(r, seconds)
     end
-    reader = avin.stream_contexts[stream_index0]
-    pump_until_frame(reader, false) || return AV_NOPTS_VALUE
-    return graph_input_frame(reader).pts
+    return landing_pts(avin.stream_contexts[stream_index0])
 end
+
+landing_pts(r::VideoReader) = pump_until_frame(r, false) ? next_frame_pts(r) : AV_NOPTS_VALUE
+# Only a video reader driving a seek trims frame by frame; an audio reader is trimmed from wherever it landed
+landing_pts(::StreamContext) = AV_NOPTS_VALUE
+
+# Time (s) of the first output of a reader after a seek, NaN if unknown
+function landing_time(r::VideoReader)
+    pump_until_frame(r, false) || return NaN
+    pts = next_frame_pts(r)
+    pts == AV_NOPTS_VALUE && return NaN
+    return Float64(pts * convert(Rational, get_stream(r).time_base))
+end
+
 """
     seekstart(reader::VideoReader)
 
@@ -1670,7 +1738,23 @@ function eof(avin::AVInput)
     return avin.finished
 end
 
-eof(r::VideoReader) = eof(r.avin)
+# Stream-specific EOF: keep pumping the container while packets only feed other
+# streams, so that a reader sharing an `AVInput` with others is not fooled by
+# frames queued for those other streams.
+function eof_stream(r::StreamContext)
+    isopen(r) || return true
+    frame_is_queued(r) && return false
+    is_finished(r) && return true
+    while true
+        idx = pump(r.avin)
+        idx == r.stream_index0 && return false
+        # -1: either EAGAIN (live source, nothing ready yet) or the container
+        # and every decoder is exhausted
+        idx == -1 && return r.avin.finished
+    end
+end
+
+eof(r::VideoReader) = eof_stream(r)
 
 close(r::VideoReader) = close(r.avin)
 
