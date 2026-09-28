@@ -1,3 +1,12 @@
+VideoIO v1.10.0 Release Notes
+=============================
+## New features
+
+- Support FFmpeg 9 (`FFMPEG_jll` 9.0) alongside FFmpeg 8. VideoIO now supports the two most recent FFmpeg major
+  versions. The low-level `VideoIO.libffmpeg` module matches the major version of the installed `FFMPEG_jll`, so its
+  struct fields, constants and functions can differ between them (e.g. FFmpeg 9 removes `AVCodec.pix_fmts`).
+
+
 VideoIO v1.9.0 Release Notes
 ============================
 ## New features
