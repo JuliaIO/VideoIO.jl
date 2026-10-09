@@ -2,6 +2,7 @@ export open_video_out, close_video_out!, get_codec_name
 
 const _active_writers = IdDict{Any,Nothing}()
 const _active_writers_lock = ReentrantLock()
+const _writers_opening = Ref(0)
 const _shutdown_requested = Ref(false)
 
 """
@@ -14,12 +15,27 @@ Increase this if background encoders need more time to drain on exit:
 """
 const shutdown_timeout_s = Ref(5.0)
 
-function _register_active_writer!(writer)
+function _begin_writer_open!()
     lock(_active_writers_lock) do
         _shutdown_requested[] && error("VideoIO is shutting down; opening new writers is disabled")
+        _writers_opening[] += 1
+    end
+    return nothing
+end
+
+function _register_active_writer!(writer)
+    lock(_active_writers_lock) do
         _active_writers[writer] = nothing
+        _writers_opening[] -= 1
     end
     return writer
+end
+
+function _abort_writer_open!()
+    lock(_active_writers_lock) do
+        _writers_opening[] -= 1
+    end
+    return nothing
 end
 
 function _unregister_active_writer!(writer)
@@ -42,12 +58,15 @@ function shutdown!(; timeout_s::Real = shutdown_timeout_s[], poll_interval_s::Re
     end
     deadline = time() + timeout_s
     while true
-        nactive = lock(_active_writers_lock) do
-            length(_active_writers)
+        nactive, nopening = lock(_active_writers_lock) do
+            (length(_active_writers), _writers_opening[])
         end
-        nactive == 0 && return true
+        nactive == 0 && nopening == 0 && return true
         if time() >= deadline
-            println("VideoIO shutdown timeout reached with $nactive active writer(s) still open")
+            println(
+                "VideoIO shutdown timeout reached with $nactive active writer(s) " *
+                "and $nopening writer(s) still opening",
+            )
             return false
         end
         sleep(poll_interval_s)
@@ -332,7 +351,7 @@ function get_codec_name(w::VideoWriter)
     end
 end
 
-function VideoWriter(
+function _new_video_writer(
     filename::AbstractString,
     ::Type{T},
     sz::NTuple{2,Integer};
@@ -542,6 +561,17 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     return VideoWriter(format_context, codec_context, frame_graph, packet, Int(stream_index0), scanline_major, 0)
 end
 
+function VideoWriter(filename::AbstractString, ::Type{T}, sz::NTuple{2,Integer}; kwargs...) where {T}
+    _begin_writer_open!()
+    writer = try
+        _new_video_writer(filename, T, sz; kwargs...)
+    catch
+        _abort_writer_open!()
+        rethrow()
+    end
+    return _register_active_writer!(writer)
+end
+
 VideoWriter(filename, img::AbstractMatrix; kwargs...) =
     VideoWriter(filename, img_params(_coerce_encoding_img(img))...; kwargs...)
 
@@ -648,10 +678,7 @@ occurred.
 
 See also: [`write`](@ref), [`close_video_out!`](@ref)
 """
-function open_video_out(s::AbstractString, args...; kwargs...)
-    writer = VideoWriter(s, args...; kwargs...)
-    return _register_active_writer!(writer)
-end
+open_video_out(s::AbstractString, args...; kwargs...) = VideoWriter(s, args...; kwargs...)
 
 function open_video_out(f, s::AbstractString, args...; kwargs...)
     writer = open_video_out(s, args...; kwargs...)

@@ -74,6 +74,16 @@ end
 @testset "No segfault when exiting during multithreaded encoding (#381)" begin
     script = joinpath(@__DIR__, "mwe_381.jl")
     cmd = `$(Base.julia_cmd()) -t2 --project=$(Base.active_project()) --startup-file=no $script`
+    output = IOBuffer()
+    proc = run(pipeline(ignorestatus(cmd); stdout = output, stderr = output); wait = true)
+    log = String(take!(output))
+    @test success(proc)
+    @test !occursin(r"signal \(11", log)
+end
+
+@testset "Shutdown waits for writers that are still opening (#455)" begin
+    script = joinpath(@__DIR__, "mwe_455.jl")
+    cmd = `$(Base.julia_cmd()) -t2 --project=$(Base.active_project()) --startup-file=no $script`
     proc = run(cmd; wait = true)
     @test proc.exitcode == 0
 end
