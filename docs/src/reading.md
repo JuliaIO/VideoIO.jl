@@ -1,5 +1,4 @@
 # Video Reading
-Note: Reading of audio streams is not yet implemented
 
 ## Reading Video Files
 
@@ -270,6 +269,95 @@ julia> VideoIO.DEFAULT_CAMERA_OPTIONS["framerate"] = 30
 
 julia> julia> opencamera()
 VideoReader(...)
+```
+
+## Reading Audio
+
+The audio stream of a video (or of a plain audio file) can be decoded into
+Julia matrices with one row per sample and one column per channel. The
+simplest form decodes a whole stream into memory, returning the samples and
+their sample rate in Hz:
+
+```julia
+using VideoIO
+samples, fs = VideoIO.loadaudio("video.mp4")             # e.g. 584704×2 Matrix{Float32}, 44100
+mono, fs = VideoIO.loadaudio("video.mp4", samplerate = 16000, nchannels = 1, start = 10, duration = 5)
+```
+```@docs
+VideoIO.loadaudio
+```
+
+For streaming access, `openaudio` returns an `AudioReader` that behaves much
+like a `VideoReader`: `read(a)` returns the next codec-sized block of samples,
+`read(a, n)` returns exactly `n` samples (fewer at the end of the stream),
+`read!(a, buf)` fills a preallocated `Matrix`, and iterating over the reader
+yields blocks until `eof`. `seek`, `seekstart`, `gettime`, and `close` work as
+for video readers, with seeking accurate to the sample. Times follow the
+container's own timeline, so `gettime` after the first read need not be exactly
+zero (MP3 files, for instance, start at the encoder delay of 0.023 s).
+
+```julia
+using VideoIO
+a = openaudio("video.mp4", samplerate = 16000, nchannels = 1)  # Float32 samples in [-1, 1]
+fs = VideoIO.samplerate(a)
+buf = zeros(Float32, 1024, VideoIO.nchannels(a))
+while !eof(a)
+    block = read(a, 1024)   # 1024×1 (or fewer rows at the end)
+    # Do something with block
+end
+close(a)
+```
+
+Floating point element types (`Float32`, `Float64`) are scaled to `[-1, 1]`;
+integer element types (`UInt8`, `Int16`, `Int32`) use their full range.
+Resampling and channel remixing are performed by FFmpeg's `libswresample`.
+
+```@docs
+VideoIO.openaudio
+VideoIO.AudioReader
+VideoIO.samplerate
+VideoIO.nchannels
+VideoIO.sample_eltype
+```
+```@docs
+read(::VideoIO.AudioReader)
+read(::VideoIO.AudioReader, ::Integer)
+read!(::VideoIO.AudioReader{T}, ::AbstractVecOrMat{T}) where {T}
+seek(::VideoIO.AudioReader, ::Number)
+VideoIO.gettime(::VideoIO.AudioReader)
+```
+
+### Reading video and audio together
+
+Open both streams from the same `AVInput` so that they share one demuxer.
+Seeking either reader repositions both. Note that packets are decoded in file
+order, so decoded frames of the stream that is read less often are queued in
+memory until they are consumed: read the two streams roughly in step, or seek
+before reading if you only need a portion.
+
+```julia
+io = VideoIO.open("video.mp4")
+v = openvideo(io)
+a = openaudio(io)
+img = read(v)
+block = read(a)
+close(io)
+```
+
+### Extracting audio to a file
+
+To write the audio stream of a video to a standalone audio file, use
+`VideoIO.extract_audio`. The output container is chosen from the file
+extension, and the compressed stream can be copied without re-encoding when
+the container allows it.
+
+```julia
+VideoIO.extract_audio("video.mp4", "audio.wav")
+VideoIO.extract_audio("video.mp4", "audio.m4a", codec = "copy")
+VideoIO.extract_audio("video.mp4", "speech.wav", samplerate = 16000, nchannels = 1, start = 60, duration = 30)
+```
+```@docs
+VideoIO.extract_audio
 ```
 
 ## Video Properties & Metadata

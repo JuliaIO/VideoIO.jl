@@ -24,7 +24,9 @@ printer_blacklist = [
     "Picture",
     "AV_BPRINT_SIZE_UNLIMITED",
     "FF_CEIL_RSHIFT",
-    "AV_CHANNEL_LAYOUT_.*"
+    "AV_CHANNEL_LAYOUT_.*",
+    "AMF_SURFACE_FORMAT",
+    "AV_(PRINTF|SCANF)_FMT"
 ]
 extract_c_comment_style = "doxygen"
 [codegen]

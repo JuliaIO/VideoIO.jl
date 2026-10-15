@@ -336,6 +336,25 @@ end
     finally
         rm(tspath, force = true)
     end
+    # With a GOP longer than the first one-second back-off, that back-off can land on the second keyframe as well,
+    # so an unchanged landing frame does not yet mean the seek is at the start of the stream.
+    FFMPEG.exe(`-y -v error $source -c:v libx264 -g 50 -pix_fmt yuv420p -f mpegts $tspath`)
+    try
+        v = VideoIO.openvideo(tspath)
+        try
+            img = read(v)
+            t0 = VideoIO.gettime(v)
+            for s in (0.96, 1.0, 1.5, 1.96)
+                seek(v, t0 + s)
+                read!(v, img)
+                @test VideoIO.gettime(v) ≈ t0 + floor(Int, round(s * fps, digits = 3)) / fps atol = 1 / 2fps
+            end
+        finally
+            close(v)
+        end
+    finally
+        rm(tspath, force = true)
+    end
 end
 
 @testset "Seeking in field-coded interlaced video lands on the target frame (#468)" begin

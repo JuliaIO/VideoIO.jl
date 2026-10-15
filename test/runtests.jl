@@ -29,6 +29,8 @@ start_time = time()
     @memory_profile
     include("reading.jl")
     @memory_profile
+    include("audio.jl")
+    @memory_profile
     include("writing.jl")
     @memory_profile
     include("encoding_fix.jl")

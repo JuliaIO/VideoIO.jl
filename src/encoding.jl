@@ -214,33 +214,42 @@ end
 
 function get_array_from_avarray(ptr::Union{Ptr{T},Ref{T},NestedCStruct{T}}, term; make_copy = true) where {T}
     check_ptr_valid(ptr, false) || return Vector{T}()
+    load(i) = ptr isa Ptr ? unsafe_load(ptr, i) : ptr[i]
     i = 1
-    el = ptr[i]
+    el = load(i)
     while el != term
         i += 1
-        el = ptr[i]
+        el = load(i)
     end
     len = i - 1
     if make_copy
-        dst = Vector{T}(undef, len)
-        unsafe_copyto!(dst, ptr, len)
+        dst = ptr isa Ptr ? copy(unsafe_wrap(Array, ptr, len)) : unsafe_copyto!(Vector{T}(undef, len), ptr, len)
     else
         dst = unsafe_wrap(Array, ptr, len)
     end
     return dst
 end
 
+# Pixel formats the encoder accepts, as a list owned by FFmpeg that ends with AV_PIX_FMT_NONE, or C_NULL if unknown.
+# Queried rather than read from the codec, which no longer lists them from FFmpeg 9 on.
+function codec_pix_fmts(codec)
+    configs = Ref{Ptr{Cvoid}}(C_NULL)
+    ret = avcodec_get_supported_config(C_NULL, codec, AV_CODEC_CONFIG_PIX_FORMAT, 0, configs, C_NULL)
+    ret < 0 && error("Could not query the codec's pixel formats: $(av_error_string(ret))")
+    return Ptr{AVPixelFormat}(configs[])
+end
+
 function determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt, codec, loss_flags = 0)
     if target_pix_fmt === nothing
         @preserve codec begin
             encoding_pix_fmt, losses =
-                _vio_determine_best_pix_fmt(transfer_pix_fmt, codec.pix_fmts; loss_flags = loss_flags)
+                _vio_determine_best_pix_fmt(transfer_pix_fmt, codec_pix_fmts(codec); loss_flags = loss_flags)
         end
     else
         @preserve codec begin
-            codec_pix_fmts = get_array_from_avarray(codec.pix_fmts, AV_PIX_FMT_NONE; make_copy = false)
+            supported = get_array_from_avarray(codec_pix_fmts(codec), AV_PIX_FMT_NONE; make_copy = false)
             codec_name = unsafe_string(codec.name)
-            target_pix_fmt in codec_pix_fmts ||
+            target_pix_fmt in supported ||
                 throw(ArgumentError("Pixel format $target_pix_fmt not compatible with codec $codec_name"))
         end
         encoding_pix_fmt = target_pix_fmt
@@ -408,7 +417,7 @@ options, or pass the private options to `encoder_private_options` explicitly""",
         check_ptr_valid(codec_p, false) || error("Codec '$codec_name' not found")
     end
     codec = AVCodecPtr(codec_p)
-    if !check_ptr_valid(codec.pix_fmts, false)
+    if !check_ptr_valid(codec_pix_fmts(codec), false)
         error("Codec has no supported pixel formats")
     end
     encoding_pix_fmt = determine_best_encoding_format(target_pix_fmt, transfer_pix_fmt, codec, pix_fmt_loss_flags)
@@ -419,7 +428,7 @@ options, or pass the private options to `encoder_private_options` explicitly""",
     # BGRA has zero chroma subsampling loss.  When hwaccel is in use and the chosen format
     # is an RGB family format, re-select using NV12 as the source to obtain a YUV target.
     if hwaccel !== nothing && target_pix_fmt === nothing && _vio_is_rgb_pix_fmt(encoding_pix_fmt)
-        yuv_fmt, _ = @preserve codec _vio_determine_best_pix_fmt(AV_PIX_FMT_NV12, codec.pix_fmts)
+        yuv_fmt, _ = @preserve codec _vio_determine_best_pix_fmt(AV_PIX_FMT_NV12, codec_pix_fmts(codec))
         yuv_fmt != AV_PIX_FMT_NONE && (encoding_pix_fmt = yuv_fmt)
     end
     if !default_codec
