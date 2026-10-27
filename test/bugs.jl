@@ -77,3 +77,15 @@ end
     proc = run(cmd; wait = true)
     @test proc.exitcode == 0
 end
+
+@testset "AMF color profile return type is an Int32 enum (#474)" begin
+    @test VideoIO.libffmpeg.AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM === Int32
+    # Only the FFmpeg 9 bindings have this function. Generating code for a ccall that returns an
+    # empty mutable struct, as the binding used to, crashes or hangs Julia (JuliaLang/julia#64383).
+    if isdefined(VideoIO.libffmpeg, :av_amf_get_color_profile)
+        f = VideoIO.libffmpeg.av_amf_get_color_profile
+        sig = (VideoIO.libffmpeg.AVColorRange, VideoIO.libffmpeg.AVColorSpace)
+        @test only(Base.return_types(f, sig)) === Int32
+        @test occursin("ret i32", sprint(io -> InteractiveUtils.code_llvm(io, f, sig)))
+    end
+end

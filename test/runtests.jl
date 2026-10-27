@@ -3,6 +3,7 @@ using ColorTypes: RGB, Gray, N0f8, red, green, blue
 using ColorVectorSpace: ColorVectorSpace
 using FileIO, ImageCore, Dates, Downloads, Statistics, StatsBase
 using Profile
+using InteractiveUtils: InteractiveUtils
 
 using FFMPEG: FFMPEG
 

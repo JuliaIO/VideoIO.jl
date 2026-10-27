@@ -42,6 +42,19 @@ const AMF_SURFACE_GRAY10      = 19 % Int32
 const AMF_SURFACE_GRAY12      = 20 % Int32
 const AMF_SURFACE_GRAY14      = 21 % Int32
 
+# Also from the AMF SDK (components/ColorSpace.h), returned by av_amf_get_color_profile
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM = Int32
+
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_UNKNOWN   = -1 % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_601       = 0  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_709       = 1  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_2020      = 2  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_JPEG      = 3  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_FULL_601  = 3  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_FULL_709  = 7  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_FULL_2020 = 8  % Int32
+const AMF_VIDEO_CONVERTER_COLOR_PROFILE_COUNT     = 9  % Int32
+
 
 const VdpChromaType = UInt32
 
@@ -16166,8 +16179,6 @@ end
 function av_amf_to_av_format(fmt::AMF_SURFACE_FORMAT)
     ccall((:av_amf_to_av_format, libavutil), AVPixelFormat, (AMF_SURFACE_FORMAT,), fmt)
 end
-
-mutable struct AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM end
 
 function av_amf_get_color_profile(color_range::AVColorRange, color_space::AVColorSpace)
     ccall((:av_amf_get_color_profile, libavutil), AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM, (AVColorRange, AVColorSpace), color_range, color_space)
