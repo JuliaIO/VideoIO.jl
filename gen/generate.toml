@@ -26,6 +26,7 @@ printer_blacklist = [
     "FF_CEIL_RSHIFT",
     "AV_CHANNEL_LAYOUT_.*",
     "AMF_SURFACE_FORMAT",
+    "AMF_VIDEO_CONVERTER_COLOR_PROFILE_ENUM",
     "AV_(PRINTF|SCANF)_FMT"
 ]
 extract_c_comment_style = "doxygen"
